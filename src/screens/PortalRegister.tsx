@@ -1,0 +1,186 @@
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Screen } from '../types';
+import LogoIcon from '../components/LogoIcon';
+import { Paperclip, Calendar, Loader2, User, Briefcase, ChevronLeft } from 'lucide-react';
+import { doc, setDoc } from 'firebase/firestore';
+import { db, auth } from '../firebase';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+
+export default function PortalRegister({ onNavigate }: { onNavigate: (s: Screen) => void }) {
+  const [role, setRole] = useState<'Company' | 'Individual'>('Company');
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  // Common Registration State
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('');
+  
+  // Role specific State
+  const [companyName, setCompanyName] = useState('');
+  const [trnNumber, setTrnNumber] = useState('');
+  const [expiryDate, setExpiryDate] = useState('');
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      // Determine what role to use
+      const assignedRole = role === 'Company' ? 'merchant' : 'user';
+
+      await setDoc(doc(db, 'users', cred.user.uid), {
+        uid: cred.user.uid,
+        email: cred.user.email,
+        displayName: name,
+        phoneNumber: phone,
+        role: assignedRole,
+        type: role,
+        companyName: role === 'Company' ? companyName : '',
+        trnNumber: role === 'Company' ? trnNumber : '',
+        createdAt: new Date().toISOString()
+      });
+
+      setSuccess(true);
+      setTimeout(() => {
+        onNavigate(role === 'Company' ? 'merchant_dashboard' : 'user_dashboard');
+      }, 2000);
+    } catch (e: any) {
+      console.error(e);
+      alert(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#F4F7FA] font-sans text-slate-800 flex flex-col">
+      <header className="p-6 md:p-8 flex items-center justify-between z-10 w-full max-w-[1400px] mx-auto">
+        <div className="flex items-center gap-3 cursor-pointer" onClick={() => onNavigate('landing_page')}>
+           <LogoIcon className="h-10 w-auto" variant="dark" />
+        </div>
+        <button 
+           onClick={() => onNavigate('hub')}
+           className="flex items-center gap-1.5 text-slate-500 hover:text-slate-800 font-bold uppercase text-[10px] tracking-widest transition-colors"
+        >
+           <ChevronLeft className="w-4 h-4" /> Go Back
+        </button>
+      </header>
+      
+      <main className="flex-1 flex flex-col items-center justify-center p-4 py-12">
+        <div className="w-full max-w-[900px] mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
+           <div className="md:col-span-5 flex flex-col justify-center">
+             <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-4 tracking-tight">Create Account</h1>
+             <p className="text-slate-500 font-medium mb-10 leading-relaxed text-sm">
+                Join the most advanced shipping and dispatch ecosystem. Enter your details to get started with instant routing.
+             </p>
+             
+             <form onSubmit={handleRegister} className="space-y-4">
+                 <input required type="text" placeholder="Full Name" value={name} onChange={e => setName(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all font-semibold" />
+                 <input required type="email" placeholder="Email Address" value={email} onChange={e => setEmail(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all font-semibold" />
+                 <input required type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} minLength={6} className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all font-semibold" />
+                 <input required type="tel" placeholder="Phone Number" value={phone} onChange={e => setPhone(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all font-semibold pr-16" />
+                 
+                 <button disabled={loading || success} type="submit" className="w-full py-4 mt-4 bg-brand hover:bg-[brand/90] text-white font-bold uppercase tracking-widest text-[11px] rounded-xl transition-all shadow-md active:scale-95 flex justify-center items-center h-14">
+                   {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : success ? "Account Created!" : "Register Setup"}
+                 </button>
+             </form>
+           </div>
+           
+           <div className="md:col-span-7">
+               {/* Document Upload Area based on user requirements */}
+               <h2 className="text-brand text-3xl font-black mb-6 uppercase tracking-wider">DOCUMENTS</h2>
+               
+               <div className="flex gap-1 mb-0 relative z-10 w-fit">
+                  <button 
+                    onClick={() => setRole('Company')}
+                    className={`px-8 py-2.5 rounded-t-xl font-bold text-sm tracking-wide transition-all ${role === 'Company' ? 'bg-brand text-white shadow-lg' : 'bg-slate-200 text-slate-500 hover:bg-slate-300'}`}
+                  >
+                    Company
+                  </button>
+                  <button 
+                    onClick={() => setRole('Individual')}
+                    className={`px-8 py-2.5 rounded-t-xl font-bold text-sm tracking-wide transition-all ${role === 'Individual' ? 'bg-brand text-white shadow-lg' : 'bg-slate-200 text-slate-500 hover:bg-slate-300'}`}
+                  >
+                    Individual
+                  </button>
+               </div>
+               
+               <div className="bg-white rounded-3xl rounded-tl-none p-8 md:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col gap-6">
+                 <AnimatePresence mode="wait">
+                    {role === 'Company' && (
+                       <motion.div key="company" initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-10}} className="space-y-6">
+                          <h3 className="text-brand font-bold text-lg mb-2">Trade License</h3>
+                          
+                          <div className="space-y-2">
+                             <label className="text-xs font-bold text-brand block">Company Name</label>
+                             <input type="text" placeholder="Ex: Shiplifier LLC" value={companyName} onChange={e => setCompanyName(e.target.value)} className="w-full px-5 py-3 border border-[#85AEE0] rounded-full text-slate-700 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-brand/30 bg-transparent font-medium" />
+                          </div>
+                          
+                          <div className="flex justify-end">
+                            <button className="flex items-center gap-2 bg-brand hover:bg-[brand/90] text-white px-6 py-2.5 rounded-full font-bold text-sm transition-all shadow-md whitespace-nowrap active:scale-95">
+                               <Paperclip className="w-4 h-4" /> Attach New File
+                            </button>
+                          </div>
+                          
+                          <div className="space-y-2">
+                             <label className="text-xs font-bold text-brand block">Expiry Date</label>
+                             <div className="relative">
+                               <input type="text" value={expiryDate} onChange={e => setExpiryDate(e.target.value)} placeholder=" " className="w-full px-5 py-3 border border-[#85AEE0] rounded-full text-slate-700 outline-none focus:ring-2 focus:ring-brand/30 bg-transparent font-medium" />
+                               <Calendar className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                             </div>
+                             <p className="text-[10px] font-semibold text-[#85AEE0] pt-1 px-2 uppercase tracking-wide">DD/MM/YYYY</p>
+                          </div>
+                          
+                          <div className="space-y-2">
+                             <label className="text-xs font-bold text-brand block">TRN Number</label>
+                             <input type="text" placeholder="Ex: 1234567890" value={trnNumber} onChange={e => setTrnNumber(e.target.value)} className="w-full px-5 py-3 border border-[#85AEE0] rounded-full text-slate-700 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-brand/30 bg-transparent font-medium" />
+                          </div>
+                          
+                          <div className="flex justify-end pt-4">
+                            <button type="button" className="bg-[#B3D4F5] hover:bg-[#9DC8F1] text-white px-10 py-3 block rounded-full font-bold text-sm transition-all">
+                              Save
+                            </button>
+                          </div>
+                       </motion.div>
+                    )}
+                    
+                    {role === 'Individual' && (
+                       <motion.div key="individual" initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-10}} className="space-y-6">
+                          <h3 className="text-brand font-bold text-lg mb-4">Emirates ID</h3>
+                          
+                          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                            <button className="flex-1 flex items-center justify-center gap-2 bg-brand hover:bg-[brand/90] text-white px-4 py-3 rounded-full font-bold text-sm transition-all shadow-md active:scale-95">
+                               <Paperclip className="w-4 h-4" /> Attach Emirates ID (Front)
+                            </button>
+                            <button className="flex-1 flex items-center justify-center gap-2 bg-brand hover:bg-[brand/90] text-white px-4 py-3 rounded-full font-bold text-sm transition-all shadow-md active:scale-95">
+                               <Paperclip className="w-4 h-4" /> Attach Emirates ID (Back)
+                            </button>
+                          </div>
+                          
+                          <div className="space-y-2">
+                             <label className="text-xs font-bold text-brand block">Expiry Date</label>
+                             <div className="relative">
+                               <input type="text" placeholder=" " className="w-full px-5 py-3 border border-[#85AEE0] rounded-full text-slate-700 outline-none focus:ring-2 focus:ring-brand/30 bg-transparent font-medium" />
+                               <Calendar className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                             </div>
+                             <p className="text-[10px] font-semibold text-[#85AEE0] pt-1 px-2 uppercase tracking-wide">DD/MM/YYYY</p>
+                          </div>
+                          
+                          <div className="flex justify-end pt-12">
+                            <button type="button" className="bg-[#B3D4F5] hover:bg-[#9DC8F1] text-white px-10 py-3 block rounded-full font-bold text-sm transition-all">
+                              Save
+                            </button>
+                          </div>
+                       </motion.div>
+                    )}
+                 </AnimatePresence>
+               </div>
+           </div>
+        </div>
+      </main>
+    </div>
+  );
+}

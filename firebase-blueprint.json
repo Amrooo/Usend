@@ -1,0 +1,117 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Unique identifier for the user"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "User's email address"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "User's full name"
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "User's phone number"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the user account was created"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["user", "admin", "merchant", "driver"],
+          "description": "User's role in the system"
+        }
+      },
+      "required": ["uid", "email", "createdAt", "role"]
+    },
+    "Request": {
+      "title": "Request",
+      "description": "A shipment or service request",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "channel": { "type": "string" },
+        "date": { "type": "string" },
+        "status": { "type": "string" },
+        "address": { "type": "string" },
+        "itemType": { "type": "string" },
+        "description": { "type": "string" },
+        "photoUrl": { "type": "string" },
+        "amountType": { "type": "string" },
+        "paymentMethod": { "type": "string" },
+        "orderAmount": { "type": "string" },
+        "applicantType": { "type": "string" },
+        "fromDestination": { "type": "string" },
+        "toDestination": { "type": "string" },
+        "etaTime": { "type": "string" },
+        "driverId": { "type": "string" },
+        "userId": { "type": "string" },
+        "merchantId": { "type": "string" },
+        "position": {
+           "type": "array",
+           "items": { "type": "number" },
+           "minItems": 2,
+           "maxItems": 2
+        }
+      },
+      "required": ["id", "name", "channel", "date", "status", "address"]
+    },
+    "Merchant": {
+      "title": "Merchant",
+      "description": "A business partner or merchant",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "sector": { "type": "string" },
+        "status": { "type": "string" },
+        "integration": { "type": "string" },
+        "orders": { "type": "number" },
+        "contact": { "type": "string" }
+      },
+      "required": ["id", "name", "status"]
+    },
+    "PlatformSettings": {
+      "title": "PlatformSettings",
+      "description": "Global platform configurations",
+      "type": "object",
+      "properties": {
+        "merchantCommission": { "type": "number" },
+        "driverPlatformFee": { "type": "number" },
+        "baseDeliveryFee": { "type": "number" },
+        "perKmRate": { "type": "number" }
+      },
+      "required": ["merchantCommission", "driverPlatformFee", "baseDeliveryFee", "perKmRate"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "Collection of user profiles"
+    },
+    "requests/{requestId}": {
+      "schema": "Request",
+      "description": "Collection of shipment requests"
+    },
+    "merchants/{merchantId}": {
+      "schema": "Merchant",
+      "description": "Collection of merchants"
+    },
+    "settings/global": {
+      "schema": "PlatformSettings",
+      "description": "Global platform settings"
+    }
+  }
+}

@@ -1,0 +1,134 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Global Safety Net
+    // ===============================================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+        (getUserData().role == 'admin' ||
+          (request.auth.token.email == "octman.sam@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isMerchant() {
+      return isSignedIn() && getUserData().role == 'merchant';
+    }
+
+    function isDriver() {
+      return isSignedIn() && getUserData().role == 'driver';
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // ===============================================================
+    // Validation Helpers
+    // ===============================================================
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'createdAt', 'role']) &&
+             data.keys().hasOnly(['uid', 'email', 'displayName', 'phoneNumber', 'createdAt', 'role']) &&
+             data.uid is string && data.uid.size() > 0 &&
+             data.email is string && isValidEmail(data.email) &&
+             data.role in ['user', 'admin', 'merchant', 'driver'] &&
+             data.createdAt is string;
+    }
+
+    function isValidRequest(data) {
+      return data.keys().hasAll(['id', 'name', 'channel', 'date', 'status', 'address']) &&
+             data.id is string && data.name is string && data.status is string &&
+             data.address is string && data.channel is string;
+    }
+
+    function isValidMerchant(data) {
+      return data.keys().hasAll(['id', 'name', 'status']) &&
+             data.id is string && data.name is string && data.status is string;
+    }
+
+    function isValidSettings(data) {
+      return data.keys().hasAll(['merchantCommission', 'driverPlatformFee', 'baseDeliveryFee', 'perKmRate']) &&
+             data.merchantCommission is number && data.driverPlatformFee is number &&
+             data.baseDeliveryFee is number && data.perKmRate is number;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && isValidUser(incoming()) && (incoming().role == 'user' || isAdmin());
+      allow update: if (isOwner(userId) || isAdmin()) && isValidUser(incoming()) && 
+                       incoming().uid == existing().uid &&
+                       (incoming().role == existing().role || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    match /requests/{requestId} {
+      allow read: if isSignedIn() && (
+        isAdmin() || 
+        existing().userId == request.auth.uid || 
+        existing().merchantId == request.auth.uid || 
+        existing().driverId == request.auth.uid
+      );
+      allow create: if isValidRequest(incoming()) && (
+        (incoming().userId == 'anonymous') ||
+        (isSignedIn() && (
+          incoming().userId == request.auth.uid || 
+          incoming().merchantId == request.auth.uid || 
+          isAdmin()
+        ))
+      );
+      allow update: if isSignedIn() && isValidRequest(incoming()) && (
+        isAdmin() ||
+        (isOwner(existing().userId) && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'description', 'address', 'itemType'])) ||
+        (isMerchant() && existing().merchantId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'description'])) ||
+        (isDriver() && existing().driverId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'etaTime']))
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /merchants/{merchantId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /settings/global {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+  }
+}
