@@ -6,6 +6,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useApp } from '../../context/AppContext';
 import { useState } from 'react';
 import Modal from '../../components/Modal';
+import NotificationBell from '../../components/NotificationBell';
 
 interface UserDashboardProps {
   key?: string;
@@ -56,6 +57,7 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
             </div>
 
             <div className="flex items-center gap-4">
+              <NotificationBell />
               <button 
                 onClick={() => onNavigate('user_individual')}
                 className="h-14 px-8 rounded-2xl bg-brand text-white font-black text-[12px] uppercase tracking-widest shadow-xl shadow-brand/20 transition-all active:scale-95 flex items-center justify-center gap-2"
@@ -135,7 +137,14 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
                   </div>
                 </div>
               )) : (
-                <div className="col-span-full p-20 text-center text-zinc-400 italic">No previous orders found.</div>
+                <div className="col-span-full flex flex-col items-center justify-center p-16 bg-white border border-dashed border-zinc-300 rounded-[2rem] text-center">
+                  <div className="w-20 h-20 bg-zinc-50 rounded-full flex items-center justify-center mb-6">
+                    <Package className="w-10 h-10 text-zinc-300" />
+                  </div>
+                  <h3 className="text-xl font-display font-medium text-zinc-900 mb-2">No Past Orders Yet</h3>
+                  <p className="text-zinc-500 max-w-sm mb-6 text-sm">Your order history is empty. When your active deliveries are completed, they will appear here.</p>
+                  <button onClick={() => onNavigate('user_individual')} className="bg-brand text-white font-black text-xs uppercase tracking-widest px-6 py-3 rounded-xl shadow-lg hover:bg-brand/90 transition-colors">Create First Order</button>
+                </div>
               )}
             </div>
           </div>
@@ -242,6 +251,36 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
                   <div>
                     <p className="text-[13px] font-black text-zinc-400 uppercase tracking-widest">Delivery Address</p>
                     <p className="text-sm font-medium text-zinc-600">{selectedOrder.address}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tracking Timeline */}
+              <div className="p-5 rounded-2xl border border-zinc-100 bg-zinc-50 space-y-6">
+                <h4 className="text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-2">Delivery Timeline</h4>
+                <div className="relative pl-6 space-y-6">
+                  <div className="absolute left-2.5 top-2 bottom-2 w-px bg-zinc-200"></div>
+                  
+                  <div className="relative z-10 flex gap-4">
+                    <div className="w-5 h-5 rounded-full bg-brand flex items-center justify-center shrink-0 mt-0.5 border-[3px] border-zinc-50">
+                      <CheckCircle2 className="w-3 h-3 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-zinc-900">Delivered Successfully</p>
+                      <p className="text-xs text-zinc-500">{selectedOrder.date}</p>
+                    </div>
+                  </div>
+                  <div className="relative z-10 flex gap-4">
+                    <div className="w-5 h-5 rounded-full bg-zinc-400 flex items-center justify-center shrink-0 mt-0.5 border-[3px] border-zinc-50"></div>
+                    <div>
+                      <p className="text-sm font-bold text-zinc-700">Out for Delivery</p>
+                    </div>
+                  </div>
+                  <div className="relative z-10 flex gap-4">
+                    <div className="w-5 h-5 rounded-full bg-zinc-400 flex items-center justify-center shrink-0 mt-0.5 border-[3px] border-zinc-50"></div>
+                    <div>
+                      <p className="text-sm font-bold text-zinc-700">Order Dispatched</p>
+                    </div>
                   </div>
                 </div>
               </div>

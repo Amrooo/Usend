@@ -6,7 +6,7 @@ import {
   ArrowRight, Globe2, ChevronDown, ArrowUp, Zap, Smartphone, Shield, 
   ChevronLeft, ChevronRight, XCircle, Truck, Package, Plane, Warehouse, 
   Bot, Star, Users, Calculator, Check, MapPin, Play, Plus, Building, 
-  ArrowUpRight, Phone, Award, ShieldAlert, HelpCircle, Lock, Mail, Loader2
+  ArrowUpRight, Phone, Award, ShieldAlert, HelpCircle, Lock, Mail, Loader2, Search
 } from 'lucide-react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase';
@@ -17,6 +17,7 @@ import shiomentImg from '../components/shioment.png';
 import LoginModal from '../components/LoginModal';
 
 import OrderWizard from '../components/OrderWizard';
+import PublicTrackingModal from '../components/PublicTrackingModal';
 
 // AeroLogoIcon renders the abstract geometric flight wings icon shown in the sample image
 const AeroLogoIcon = ({ className = "w-6 h-6" }: { className?: string }) => (
@@ -337,6 +338,10 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
   const [loginError, setLoginError] = useState<string | null>(null);
   const [loginLoading, setLoginLoading] = useState(false);
 
+  // Public Tracking Modal State
+  const [showTrackingModal, setShowTrackingModal] = useState(false);
+  const [trackingNumber, setTrackingNumber] = useState('');
+
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginLoading(true);
@@ -505,6 +510,21 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
         durationStr = estWeight > 15 ? 'Next Day Priority' : 'Express 2-3 Hours';
       }
 
+      // PREPARE ARAMEX LIVE INTEGRATION PAYLOAD
+      // This bridges the business logic gap by formulating the correct request 
+      // structure for the courier engine, ready to be dispatched to /api/courier/calculate
+      const livePayload = {
+        originCity: estSource || 'Dubai',
+        originCountry: 'AE',
+        destCity: estTarget || 'Abu Dhabi',
+        destCountry: isInter ? 'SA' : 'AE',
+        weightKb: estWeight,
+        isExpress: estWeight <= 15,
+      };
+      
+      console.log('Prepared Live Courier Integration Payload:', livePayload);
+      // TODO: Connect to courierEngine.calculateRate('aramex', { ...livePayload, credentials: {...} })
+
       setEstimateResult({
         calculated: true,
         basePrice: baseVal,
@@ -538,13 +558,13 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
   return (
     <div 
       id="landing-root"
-      className="min-h-screen bg-gradient-to-b from-[#DBEAFE] via-[#EFF6FF] to-white text-slate-900 font-sans selection:bg-[#1452D1]/20 overflow-x-hidden relative" 
+      className="min-h-screen bg-gradient-to-b from-[#DBEAFE] via-[#EFF6FF] to-white text-slate-900 font-sans selection:bg-[#1452D1]/20 overflow-x-clip relative" 
       dir={isRTL ? "rtl" : "ltr"} 
       ref={targetRef}
     >
       
       {/* Pristine elegant standard viewport flow (no extra nested scroll restraints) */}
-      <div className="w-full relative overflow-hidden flex flex-col min-h-screen bg-gradient-to-b from-[#EFF6FF] via-white via-[250px] to-white">
+      <div className="w-full relative overflow-clip flex flex-col min-h-screen bg-gradient-to-b from-[#EFF6FF] via-white via-[250px] to-white">
         
         {/* Decorative Fluid Gradients behind page for premium Parallax depth */}
         <div className="absolute top-0 inset-x-0 h-[1000px] overflow-hidden pointer-events-none z-0">
@@ -659,11 +679,11 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
               <LogoIcon className="h-16 sm:h-20 md:h-24 w-auto transform hover:scale-105 transition-transform duration-300 filter drop-shadow-[0_10px_20px_rgba(20,82,209,0.15)]" />
             </motion.div>
 
-            <h1 className="text-[2.6rem] sm:text-[3.9rem] md:text-[4.5rem] font-bold text-slate-900 tracking-tight leading-[1.12]">
+            <h1 className="text-[2.6rem] sm:text-[3.9rem] md:text-[4.5rem] font-bold text-slate-950 tracking-tight leading-[1.12]">
               {content.smartSolutionsTitle} <span className="text-[#1452D1]">{content.smartSolutionsForShipping}</span>
             </h1>
 
-            <p className="text-slate-500 text-sm sm:text-base font-medium max-w-xl mx-auto select-none leading-relaxed">
+            <p className="text-slate-700 text-sm sm:text-base font-medium max-w-xl mx-auto select-none leading-relaxed">
               {content.smartSolutionsDesc}
             </p>
 
@@ -681,12 +701,44 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
               <a 
                 href="#estimator"
                 onClick={(e) => handleScrollTo(e, 'estimator')}
-                className="px-7 py-3 rounded-full bg-blue-50 text-[#1452D1] hover:bg-blue-100 font-bold transition-all text-[12px] block text-center border border-blue-100/50"
+                className="px-7 py-3 rounded-full bg-blue-50 text-[#1452D1] hover:bg-blue-100 font-bold transition-all text-[12px] flex items-center justify-center gap-2 border border-blue-100/50"
                 id="hero-learn-btn"
               >
-                {content.talkToSalesBtn}
+                <Calculator className="w-4 h-4" />
+                {content.btnLearnMore}
               </a>
             </div>
+
+            {/* DYNAMIC TRACKING INPUT */}
+            <div className="w-full max-w-xl mx-auto mt-8 md:mt-10 px-4 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+              <div className="relative flex items-center w-full h-14 md:h-16 rounded-full bg-white shadow-xl shadow-[#1452D1]/10 border-2 border-transparent focus-within:border-[#1452D1]/40 focus-within:ring-4 focus-within:ring-[#1452D1]/10 transition-all overflow-hidden group">
+                <div className="pl-5 md:pl-6 pr-2 md:pr-3 flex items-center justify-center text-slate-400 group-focus-within:text-[#1452D1] transition-colors">
+                  <Package className="w-5 h-5 md:w-6 md:h-6" />
+                </div>
+                <input
+                  type="text"
+                  value={trackingNumber}
+                  onChange={(e) => setTrackingNumber(e.target.value)}
+                  placeholder="Enter Tracking Number (e.g. AWB-123456)"
+                  className="w-full h-full bg-transparent outline-none text-slate-800 font-bold tracking-wide placeholder:text-slate-400 placeholder:font-medium placeholder:tracking-normal text-sm md:text-base px-2"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && trackingNumber.trim()) {
+                      setShowTrackingModal(true);
+                    }
+                  }}
+                />
+                <button
+                  onClick={() => {
+                    if (trackingNumber.trim()) setShowTrackingModal(true);
+                  }}
+                  className="h-[calc(100%-12px)] md:h-[calc(100%-16px)] mr-1.5 md:mr-2 px-6 md:px-8 rounded-full bg-[#1452D1] text-white font-bold text-sm hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-500/30 transition-all flex items-center gap-2 active:scale-95"
+                >
+                  <Search className="w-4 h-4" />
+                  <span className="hidden sm:inline">Track</span>
+                </button>
+              </div>
+            </div>
+
 
           </motion.div>
 
@@ -928,9 +980,9 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                         {/* Departure -> Destination */}
                         <div className="space-y-1 bg-slate-50 p-2 rounded-xl border border-slate-100">
                           <div className="flex justify-between items-center text-[12px] font-black text-slate-800 uppercase">
-                            <span>Los Angeles, US</span>
+                            <span>Dubai, UAE</span>
                             <span className="text-[#1452D1]">➡️</span>
-                            <span>Canberra, AU</span>
+                            <span>Abu Dhabi, UAE</span>
                           </div>
                           <p className="text-[13px] font-mono font-bold text-slate-450 text-right">Estimate: 14/03/2025</p>
                         </div>
@@ -1041,7 +1093,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
 
         {/* ABOUT US SECTION - Remodeled with ultra-premium Parallax scrolling depth */}
         <section id="about" className="py-28 bg-white relative border-b border-slate-50 overflow-hidden">
-          <div className="max-w-7xl mx-auto px-4 md:px-12 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.7, ease: "easeOut" }} className="max-w-7xl mx-auto px-4 md:px-12 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
             {/* Left Column: Side-by-side 98% dark card + Cargo Truck photo with parallax style scroll */}
             <motion.div style={{ y: aboutImageY }} className="lg:col-span-6 grid grid-cols-12 gap-4 items-stretch h-full">
@@ -1085,7 +1137,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
               </p>
             </motion.div>
 
-          </div>
+          </motion.div>
         </section>
 
 
@@ -1093,7 +1145,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
       <section id="portals" className="py-24 bg-slate-900 text-white relative">
         <div className="absolute top-0 inset-x-0 h-[200px] bg-gradient-to-b from-white to-transparent pointer-events-none opacity-5" />
         
-        <motion.div style={{ y: portalsY }} className="max-w-7xl mx-auto px-4 md:px-8 relative z-10">
+        <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.7, ease: "easeOut" }} className="max-w-7xl mx-auto px-4 md:px-8 relative z-10">
           
           <div className="text-center max-w-3xl mx-auto space-y-4 mb-20">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-[#1452D1] text-[12px] font-extrabold uppercase tracking-widest shadow-sm">
@@ -1231,7 +1283,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
 
       {/* HOW WE WORK SECTION - How We Manage Every Shipment With Care */}
       <section id="how" className="py-24 bg-white relative">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
+        <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.7, ease: "easeOut" }} className="max-w-7xl mx-auto px-4 md:px-8">
           
           <div className="text-center max-w-2xl mx-auto space-y-4 mb-16">
             <span className="text-[12px] font-black text-[#1452D1] uppercase tracking-[0.4em]">{content.howBadge}</span>
@@ -1304,14 +1356,14 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
             </div>
           </div>
 
-        </div>
+        </motion.div>
       </section>
 
       {/* DYNAMIC SHIPPING RATE ESTIMATOR - CALCULATOR COMPONENT */}
       <section id="estimator" className="py-24 bg-slate-900 text-white relative">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(20,82,209,0.12)_0%,transparent_75%)] pointer-events-none" />
         
-        <motion.div style={{ y: estimatorY }} className="max-w-7xl mx-auto px-4 md:px-8 relative z-10">
+        <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.7, ease: "easeOut" }} className="max-w-7xl mx-auto px-4 md:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 xl:gap-20 items-center">
             
             {/* Left side text headers */}
@@ -1512,7 +1564,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
 
       {/* MEET THE TEAM BEHIND THE MOVE - Aeroship Jane Robert Robert Fox */}
       <section id="team" className="py-24 bg-white relative">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
+        <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.7, ease: "easeOut" }} className="max-w-7xl mx-auto px-4 md:px-8">
           
           <div className="text-center max-w-2xl mx-auto space-y-4 mb-16">
             <span className="text-[12px] font-black text-[#1452D1] uppercase tracking-[0.4em]">{content.teamBadge}</span>
@@ -1586,7 +1638,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
 
           </div>
 
-        </div>
+        </motion.div>
       </section>
 
       
@@ -1833,6 +1885,13 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
         defaultRole={loginRole} 
         onNavigate={onNavigate} 
       />
+
+      <PublicTrackingModal
+        isOpen={showTrackingModal}
+        onClose={() => setShowTrackingModal(false)}
+        trackingNumber={trackingNumber}
+      />
+
     </div>
   );
 };

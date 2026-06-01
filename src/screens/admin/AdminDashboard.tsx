@@ -38,7 +38,9 @@ import {
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
+import { useApp } from '../../context/AppContext';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import NotificationBell from '../../components/NotificationBell';
 
 interface AdminDashboardProps {
   onNavigate: (screen: Screen) => void;
@@ -56,12 +58,50 @@ const revenueData = [
 
 function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
   const { t, isRTL } = useLanguage();
+  const { activeRequests } = useApp();
+
+  const parseAmount = (amt: string) => parseFloat(amt?.replace(/[^0-9.]/g, '') || '0');
+
+  // Dynamic KPI Calculation
+  const todaysRevenue = activeRequests
+    .filter(req => req.status === 'delivered')
+    .reduce((sum, req) => sum + parseAmount(req.orderAmount), 0);
+  
+  const pendingCount = activeRequests.filter(req => req.status === 'Pending' || req.status === 'processing').length;
+  const settlementsDue = todaysRevenue * 0.95; // Assuming 5% platform fee for merchants
+  
+  // Fake merchants count for now since merchant accounts aren't fully integrated into activeRequests
+  const activeMerchants = new Set(activeRequests.map(r => r.merchantId).filter(Boolean)).size || 842;
+
   const stats = [
-    { label: 'Today\'s Revenue', value: '42,500 AED', trend: '+12%', icon: <DollarSign className="w-5 h-5" />, color: 'text-brand' },
-    { label: 'Pending Requests', value: '142', trend: '+5', icon: <Clock className="w-5 h-5" />, color: 'text-orange-500' },
-    { label: 'Settlements Due', value: '1.2M AED', trend: '-2%', icon: <Wallet className="w-5 h-5" />, color: 'text-purple-600' },
-    { label: t('active_merchants') || 'Active Merchants', value: '842', trend: '+18', icon: <Store className="w-5 h-5" />, color: 'text-blue-500' },
+    { label: t('todays_revenue') || 'Today\'s Revenue', value: `${todaysRevenue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} AED`, trend: '+12%', icon: <DollarSign className="w-5 h-5" />, color: 'text-brand' },
+    { label: t('pending_requests') || 'Pending Requests', value: pendingCount.toString(), trend: '+5', icon: <Clock className="w-5 h-5" />, color: 'text-orange-500' },
+    { label: t('settlements_due') || 'Settlements Due', value: `${settlementsDue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} AED`, trend: '-2%', icon: <Wallet className="w-5 h-5" />, color: 'text-purple-600' },
+    { label: t('active_merchants') || 'Active Merchants', value: activeMerchants.toString(), trend: '+18', icon: <Store className="w-5 h-5" />, color: 'text-blue-500' },
   ];
+
+  // Dynamic Chart Calculation
+  let dynamicChartData = [];
+  if (activeRequests.filter(r => r.status === 'delivered').length >= 5) {
+     // If we have enough real data, aggregate by date
+     const groupedByDate: Record<string, number> = {};
+     activeRequests.filter(r => r.status === 'delivered').forEach(req => {
+        const dateStr = new Date(req.createdAt || req.date).toLocaleDateString('en-US', { weekday: 'short' });
+        groupedByDate[dateStr] = (groupedByDate[dateStr] || 0) + parseAmount(req.orderAmount);
+     });
+     dynamicChartData = Object.entries(groupedByDate).map(([name, rev]) => ({ name, revenue: rev, settlements: rev * 0.95 })).slice(-7);
+  } else {
+     // Fallback demo data
+     dynamicChartData = [
+      { name: 'Mon', revenue: 24000, settlements: 12000 },
+      { name: 'Tue', revenue: 13980, settlements: 8000 },
+      { name: 'Wed', revenue: 38000, settlements: 20000 },
+      { name: 'Thu', revenue: 39080, settlements: 22000 },
+      { name: 'Fri', revenue: 48000, settlements: 30000 },
+      { name: 'Sat', revenue: 68000, settlements: 40000 },
+      { name: 'Sun', revenue: 63000, settlements: 35000 },
+    ];
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -107,7 +147,7 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
           
           <div className="h-[300px] w-full mt-4">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={revenueData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+              <AreaChart data={dynamicChartData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#1452D1" stopOpacity={0.1}/>
@@ -172,8 +212,6 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
     </div>
   );
 }
-
-import { useApp } from '../../context/AppContext';
 
 // Deterministic generators to simulate 1000 users and 150 merchants safely without memory bloat
 const generateUsersArray = (baseUsers: any[]): any[] => {
@@ -695,6 +733,21 @@ function RequestsHub() {
             <h3 className="text-xl font-display font-medium uppercase tracking-tight text-zinc-900 mb-1">Active Express Shipments ({totalExpressItems.toLocaleString()})</h3>
             <p className="text-xs text-zinc-500 font-medium font-sans">Simulate active IoT package transitions or inspect physical pickup routes live across UAE.</p>
           </div>
+          <button 
+             onClick={() => {
+                const csvContent = "data:text/csv;charset=utf-8," + "ID,Applicant,Type,Address,Amount,Status\n" + filteredRequests.map(r => `${r.id},"${r.name}","${r.itemType}","${r.address}",${r.orderAmount},${r.status}`).join("\n");
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "express_requests_export.csv");
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+             }}
+             className="px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-2"
+          >
+             <FileText className="w-4 h-4" /> Export CSV
+          </button>
         </div>
         
         {paginatedRequests.length === 0 ? (
@@ -764,8 +817,14 @@ function RequestsHub() {
                               )}
 
                               {req.status === 'in_transit' && (
-                                <button onClick={() => { updateRequestStatus(req.id, 'delivered'); triggerToast(`Order ${req.id} deliver success!`); }} className="bg-blue-600 hover:bg-blue-700 text-white font-black text-[13px] uppercase tracking-widest px-3 py-1.5 rounded-xl transition-all">
-                                  Sign Deliver
+                                <button onClick={() => { updateRequestStatus(req.id, 'delivered'); triggerToast(`Marked ${req.id} as Delivered!`); }} className="bg-brand hover:bg-brand/90 text-white font-black text-[13px] uppercase tracking-widest px-3 py-1.5 rounded-xl transition-all">
+                                  Log Delivery
+                                </button>
+                              )}
+
+                              {req.status !== 'delivered' && req.status !== 'Rejected' && req.status !== 'Cancelled' && (
+                                <button onClick={() => { updateRequestStatus(req.id, 'Cancelled'); triggerToast(`Order ${req.id} manually cancelled.`); }} className="w-8 h-8 rounded-full bg-red-50 text-red-600 flex items-center justify-center hover:bg-red-100 transition-colors ml-2" title="Force Cancel Order">
+                                  <X className="w-4 h-4" />
                                 </button>
                               )}
 
@@ -3122,11 +3181,8 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                    <span className="text-[12px] font-black uppercase tracking-widest">{language === 'en' ? 'AR' : 'EN'}</span>
                 </div>
               </button>
-              <div className="relative">
-                <div className="w-12 h-12 rounded-2xl bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 hover:bg-zinc-50 transition-colors cursor-pointer relative group">
-                  <Bell className="w-5 h-5" />
-                  <span className="absolute top-2 right-2 w-2 h-2 bg-brand rounded-full shadow-[0_0_8px_#1452D1]"></span>
-                </div>
+              <div className="relative flex items-center">
+                <NotificationBell />
               </div>
               <div className={`flex items-center gap-4 ${isRTL ? 'pr-4 border-r' : 'pl-4 border-l'} border-zinc-200`}>
                 <div className="w-12 h-12 rounded-full border-2 border-brand p-0.5">

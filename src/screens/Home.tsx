@@ -1,8 +1,8 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { Bell, Mic, Sofa, Monitor, FileText, Package, MapPin, Sun, Moon, Languages, X, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { Bell, Mic, Sofa, Monitor, FileText, Package, MapPin, Sun, Moon, Languages, X, CheckCircle, Clock, AlertCircle, Search } from 'lucide-react';
 import { Screen } from '../types';
 import BottomNav from '../components/BottomNav';
-import Logo from '../components/Logo';
+import LogoIcon from '../components/LogoIcon';
 import { useDarkMode } from '../hooks/useDarkMode';
 import { useLanguage } from '../context/LanguageContext';
 import { useState } from 'react';
@@ -89,7 +89,7 @@ export default function Home({ onNavigate }: HomeProps) {
 
         {/* Logo & Greeting */}
         <div className="flex flex-col items-center text-center space-y-4">
-          <Logo className="origin-center" />
+          <LogoIcon className="h-10 w-auto origin-center" variant="dark" />
           <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 leading-tight px-4 transition-colors duration-300">
             {t('what_moving')}
           </h1>
@@ -109,6 +109,25 @@ export default function Home({ onNavigate }: HomeProps) {
           <span className="flex-1 text-left rtl:text-right text-zinc-500 dark:text-zinc-400 text-sm">e.g. 'I need to move a king size bed'</span>
           <Mic className="w-5 h-5 text-zinc-400 dark:text-zinc-500" />
         </button>
+
+        {/* Tracking Input */}
+        <div className="relative flex items-center w-full h-16 rounded-2xl bg-white dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-800 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10 transition-all overflow-hidden group shadow-sm dark:shadow-none">
+          <div className="pl-4 pr-3 flex items-center justify-center text-zinc-400 group-focus-within:text-blue-500 transition-colors">
+            <Package className="w-5 h-5" />
+          </div>
+          <input
+            type="text"
+            placeholder="Enter Tracking Number (e.g. AWB-123456)"
+            className="w-full h-full bg-transparent outline-none text-zinc-800 dark:text-zinc-100 font-bold placeholder:text-zinc-400 placeholder:font-normal text-sm px-2"
+          />
+          <button
+            onClick={() => onNavigate('tracking')}
+            className="h-[calc(100%-16px)] mr-2 px-5 rounded-xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-500 transition-all flex items-center gap-2 active:scale-95 shadow-sm"
+          >
+            <Search className="w-4 h-4" />
+            <span className="hidden sm:inline">Track</span>
+          </button>
+        </div>
 
         {/* Quick Actions */}
         <div>

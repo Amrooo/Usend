@@ -5,6 +5,10 @@ import { Package, TrendingUp, Clock, DollarSign, ArrowUpRight, ArrowDownRight, C
 import { useLanguage } from '../../context/LanguageContext';
 import { useApp } from '../../context/AppContext';
 
+import Modal from '../../components/Modal';
+import NotificationBell from '../../components/NotificationBell';
+import { useState } from 'react';
+
 interface MerchantDashboardProps {
   key?: string;
   onNavigate: (screen: Screen) => void;
@@ -12,7 +16,8 @@ interface MerchantDashboardProps {
 
 export default function MerchantDashboard({ onNavigate }: MerchantDashboardProps) {
   const { t, isRTL } = useLanguage();
-  const { activeRequests, user } = useApp();
+  const { activeRequests, user, settings } = useApp();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const merchantRequests = activeRequests.filter(req => 
     (user?.uid && req.merchantId === user.uid) || 
@@ -20,7 +25,8 @@ export default function MerchantDashboard({ onNavigate }: MerchantDashboardProps
   );
 
   const totalRev = merchantRequests.reduce((sum, req) => sum + parseFloat(req.orderAmount?.replace(/[^0-9.]/g, '') || '0'), 0);
-  const platformFees = totalRev * 0.05;
+  const feePercentage = (settings?.merchantCommission ?? 5) / 100;
+  const platformFees = totalRev * feePercentage;
 
   const stats = [
     { label: t('total_orders'), value: merchantRequests.length.toLocaleString(), change: '+12%', isPositive: true, icon: Package },
@@ -28,6 +34,12 @@ export default function MerchantDashboard({ onNavigate }: MerchantDashboardProps
     { label: t('total_revenue'), value: `AED ${totalRev.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, change: '+8.5%', isPositive: true, icon: TrendingUp },
     { label: t('platform_fees'), value: `AED ${platformFees.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, change: '-2.1%', isPositive: false, icon: DollarSign },
   ];
+
+  const pendingDispatch = merchantRequests.filter(o => o.status?.toLowerCase() === 'pending' || o.status?.toLowerCase() === 'processing').length;
+  const filteredRequests = merchantRequests.filter(req => 
+    (req.id || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+    (req.name || '').toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className={`flex flex-col md:flex-row h-screen overflow-hidden bg-zinc-50 text-zinc-900 font-sans ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
@@ -52,6 +64,7 @@ export default function MerchantDashboard({ onNavigate }: MerchantDashboardProps
             </div>
 
             <div className="flex items-center gap-4">
+              <NotificationBell />
               <button 
                 onClick={() => onNavigate('merchant_individual')}
                 className="h-14 px-8 rounded-2xl bg-white border border-zinc-200 hover:border-brand/40 text-zinc-900 font-black text-[12px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-sm"
@@ -94,16 +107,53 @@ export default function MerchantDashboard({ onNavigate }: MerchantDashboardProps
             ))}
           </div>
 
-          {/* Recent Orders Table */}
-          <div className="bg-white border border-zinc-200 rounded-[3rem] overflow-hidden shadow-sm">
-            <div className="p-10 border-b border-zinc-100 flex items-center justify-between bg-zinc-50/50">
-              <h2 className="text-xl font-display font-medium uppercase tracking-tight text-zinc-900">{t('recent_orders')}</h2>
+          {/* Action Center Banner */}
+          {pendingDispatch > 0 && (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+              className="bg-orange-50 border border-orange-200 rounded-3xl p-6 flex flex-col md:flex-row items-center justify-between gap-4"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
+                  <Bell className="w-6 h-6 animate-pulse" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-zinc-900 text-lg">Action Required</h3>
+                  <p className="text-zinc-600 font-medium text-sm">You have {pendingDispatch} order(s) awaiting dispatch. Review and assign couriers to avoid SLA breaches.</p>
+                </div>
+              </div>
               <button 
                 onClick={() => onNavigate('merchant_tracking')}
-                className="text-brand font-black text-[12px] uppercase tracking-widest hover:opacity-70 transition-opacity"
+                className="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm rounded-xl transition-colors shrink-0"
               >
-                {t('view_all_orders')}
+                Review Pending Orders
               </button>
+            </motion.div>
+          )}
+
+          {/* Recent Orders Table */}
+          <div className="bg-white border border-zinc-200 rounded-[3rem] overflow-hidden shadow-sm">
+            <div className="p-10 border-b border-zinc-100 flex flex-col md:flex-row md:items-center justify-between bg-zinc-50/50 gap-4">
+              <h2 className="text-xl font-display font-medium uppercase tracking-tight text-zinc-900">{t('recent_orders')}</h2>
+              
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                  <input 
+                    type="text" 
+                    placeholder="Search by ID or Customer..." 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 text-sm focus:outline-none focus:border-brand w-64 bg-white"
+                  />
+                </div>
+                <button 
+                  onClick={() => onNavigate('merchant_tracking')}
+                  className="text-brand font-black text-[12px] uppercase tracking-widest hover:opacity-70 transition-opacity whitespace-nowrap"
+                >
+                  {t('view_all_orders')}
+                </button>
+              </div>
             </div>
             <div className="overflow-x-auto">
               <table className={`w-full ${isRTL ? 'text-right' : 'text-left'} border-collapse min-w-[800px]`}>
@@ -118,7 +168,7 @@ export default function MerchantDashboard({ onNavigate }: MerchantDashboardProps
                   </tr>
                 </thead>
                 <tbody className="text-sm font-medium">
-                  {merchantRequests.length > 0 ? merchantRequests.map((order, i) => (
+                  {filteredRequests.length > 0 ? filteredRequests.map((order, i) => (
                     <tr key={i} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors group">
                       <td className="p-8 text-zinc-900 font-bold">{order.id}</td>
                       <td className="p-8 text-zinc-500">{order.name}</td>
@@ -134,7 +184,7 @@ export default function MerchantDashboard({ onNavigate }: MerchantDashboardProps
                         </span>
                       </td>
                       <td className="p-8 text-zinc-900 font-bold" dir="ltr">{order.orderAmount}</td>
-                      <td className="p-8 text-red-500 opacity-60" dir="ltr">-AED {((parseFloat(order.orderAmount?.replace(/[^0-9.]/g, '') || '0')) * 0.05).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                      <td className="p-8 text-red-500 opacity-60" dir="ltr">-AED {((parseFloat(order.orderAmount?.replace(/[^0-9.]/g, '') || '0')) * feePercentage).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                       <td className="p-8 text-zinc-400 text-center">{order.date}</td>
                     </tr>
                   )) : (

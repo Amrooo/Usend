@@ -172,8 +172,8 @@ export const courierIntegrationService = {
             PaymentType: "P",
             ProductGroup: isDomestic ? "DOM" : "EXP",
             ProductType: params.isExpress ? (isDomestic ? "OND" : "PDX") : (isDomestic ? "DOM" : "DPX"),
-            ActualWeight: { Value: params.weightKb, Unit: "KG" },
-            ChargeableWeight: { Value: params.weightKb, Unit: "KG" },
+            ActualWeight: { Value: Math.max(0.1, params.weightKb), Unit: "KG" },
+            ChargeableWeight: { Value: Math.max(0.1, params.weightKb), Unit: "KG" },
             NumberOfPieces: 1
           }
         };
@@ -383,8 +383,8 @@ export const courierIntegrationService = {
               },
               Details: {
                 Dimensions: { Length: 10, Width: 10, Height: 10, Unit: "CM" },
-                ActualWeight: { Value: params.weightKg || 1, Unit: "KG" },
-                ChargeableWeight: { Value: params.weightKg || 1, Unit: "KG" },
+                ActualWeight: { Value: Math.max(0.1, params.weightKg || 1), Unit: "KG" },
+                ChargeableWeight: { Value: Math.max(0.1, params.weightKg || 1), Unit: "KG" },
                 DescriptionOfGoods: params.goodsDescription || "Goods",
                 GoodsOriginCountry: params.senderCountry || "AE",
                 NumberOfPieces: 1,
@@ -392,12 +392,12 @@ export const courierIntegrationService = {
                 ProductType: (params.senderCountry || "AE") === (params.receiverCountry || "AE") ? "ONP" : "EPX",
                 PaymentType: "P",
                 PaymentOptions: "",
-                CustomsValueAmount: { Value: 0, CurrencyCode: "AED" },
-                CashOnDeliveryAmount: params.codAmountAED > 0 ? { Value: params.codAmountAED, CurrencyCode: "AED" } : { Value: 0, CurrencyCode: "AED" },
-                InsuranceAmount: { Value: 0, CurrencyCode: "AED"},
-                CashAdditionalAmount: { Value: 0, CurrencyCode: "AED"},
+                CustomsValueAmount: { Value: 0, CurrencyCode: "USD" },
+                CashOnDeliveryAmount: params.codAmountAED > 0 ? { Value: Number((params.codAmountAED / 3.67).toFixed(2)), CurrencyCode: "USD" } : { Value: 0, CurrencyCode: "USD" },
+                InsuranceAmount: { Value: 0, CurrencyCode: "USD"},
+                CashAdditionalAmount: { Value: 0, CurrencyCode: "USD"},
                 CashAdditionalAmountDescription: "",
-                CollectAmount: { Value: 0, CurrencyCode: "AED" },
+                CollectAmount: { Value: 0, CurrencyCode: "USD" },
                 Services: params.codAmountAED > 0 ? "CODS" : "",
                 Items: []
               }

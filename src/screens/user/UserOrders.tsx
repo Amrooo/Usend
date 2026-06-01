@@ -39,8 +39,20 @@ export default function UserOrders({ onNavigate }: UserOrdersProps) {
   
   const previousOrders = myRequests.filter((req: any) => req.status === 'delivered');
   const [searchTerm, setSearchTerm] = useState('');
-  const filteredOrders = previousOrders.filter((req: any) => req.id.toLowerCase().includes(searchTerm.toLowerCase()) || (req.name || req.toDestination || '').toLowerCase().includes(searchTerm.toLowerCase()));
+  const [sortOption, setSortOption] = useState<'newest' | 'oldest'>('newest');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
+  const filteredOrders = previousOrders
+    .filter((req: any) => req.id.toLowerCase().includes(searchTerm.toLowerCase()) || (req.name || req.toDestination || '').toLowerCase().includes(searchTerm.toLowerCase()))
+    .sort((a: any, b: any) => {
+      // Fallback simple sort, since dates are strings
+      if (sortOption === 'newest') return b.id.localeCompare(a.id);
+      return a.id.localeCompare(b.id);
+    });
+
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+  const paginatedOrders = filteredOrders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <div className={`flex flex-col md:flex-row h-screen overflow-hidden bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
@@ -53,26 +65,36 @@ export default function UserOrders({ onNavigate }: UserOrdersProps) {
           className="max-w-6xl mx-auto space-y-10"
         >
           {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 bg-white dark:bg-zinc-900 p-6 rounded-[2rem] border border-zinc-200 dark:border-zinc-800 shadow-sm">
             <div>
               <h1 className="text-3xl font-black uppercase tracking-tight text-zinc-900 dark:text-zinc-100">
                 {t('previous_orders') || 'Previous Orders'}
               </h1>
               <p className="text-zinc-500 dark:text-zinc-400 mt-1">Review and re-send your past deliveries.</p>
             </div>
-            <div className="relative">
-              <Search className={`w-5 h-5 text-zinc-400 absolute ${isRTL ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2`} />
-              <input 
-                type="text" 
-                placeholder="Search orders..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                className={`bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl ${isRTL ? 'pr-12 pl-4' : 'pl-12 pr-4'} py-3 text-sm focus:ring-2 focus:ring-brand outline-none w-full md:w-72 shadow-sm transition-all`}
-              />
+            <div className="flex flex-col sm:flex-row gap-3 items-center w-full md:w-auto">
+              <div className="relative w-full sm:w-64">
+                <Search className={`w-5 h-5 text-zinc-400 absolute ${isRTL ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2`} />
+                <input 
+                  type="text" 
+                  placeholder="Search orders..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                  className={`bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl ${isRTL ? 'pr-12 pl-4' : 'pl-12 pr-4'} py-3 text-sm focus:ring-2 focus:ring-brand outline-none w-full transition-all`}
+                />
+              </div>
+              <select 
+                value={sortOption} 
+                onChange={(e: any) => { setSortOption(e.target.value); setCurrentPage(1); }}
+                className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand outline-none transition-all w-full sm:w-auto cursor-pointer"
+              >
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+              </select>
             </div>
           </div>
 
           {/* Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredOrders.length > 0 ? filteredOrders.map((order: any, i: number) => (
+            {paginatedOrders.length > 0 ? paginatedOrders.map((order: any, i: number) => (
               <motion.div
                 key={order.id}
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -130,6 +152,42 @@ export default function UserOrders({ onNavigate }: UserOrdersProps) {
               <div className="col-span-full p-20 text-center text-zinc-400 italic">No previous orders found.</div>
             )}
           </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-8 bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
+              <span className="text-sm font-medium text-zinc-500">
+                Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredOrders.length)} of {filteredOrders.length} orders
+              </span>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 disabled:opacity-50 text-sm font-bold shadow-sm transition-all hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                >
+                  Previous
+                </button>
+                <div className="flex items-center gap-1 hidden sm:flex">
+                  {Array.from({ length: totalPages }).map((_, idx) => (
+                    <button 
+                      key={idx}
+                      onClick={() => setCurrentPage(idx + 1)}
+                      className={`w-10 h-10 rounded-xl text-sm font-bold flex items-center justify-center transition-all ${currentPage === idx + 1 ? 'bg-brand text-white shadow-md' : 'bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700'}`}
+                    >
+                      {idx + 1}
+                    </button>
+                  ))}
+                </div>
+                <button 
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 disabled:opacity-50 text-sm font-bold shadow-sm transition-all hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Details Modal */}
           <Modal

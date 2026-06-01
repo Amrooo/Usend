@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Phone, ArrowRight, X, CheckCircle2, MessageSquare, ShieldCheck } from 'lucide-react';
 import { Screen } from '../types';
 import { useLanguage } from '../context/LanguageContext';
-import Logo from '../components/Logo';
+import LogoIcon from '../components/LogoIcon';
 
 interface PhoneAuthProps {
   onNavigate: (screen: Screen) => void;
@@ -77,7 +77,7 @@ export default function PhoneAuth({ onNavigate }: PhoneAuthProps) {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.1 }}
         >
-          <Logo />
+          <LogoIcon className="w-auto h-24 mb-6 mx-auto" />
         </motion.div>
 
         <div className="text-center space-y-3">

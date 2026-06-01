@@ -28,7 +28,7 @@ if (!admin.apps.length) {
 const dbAdmin = admin.firestore();
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3001;
 
 // Initialize Stripe Client lazily to avoid crashing on boot if key is missing
 let stripeClient: Stripe | null = null;
@@ -453,7 +453,7 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  app.listen(Number(PORT), "0.0.0.0", () => {
     console.log(`Server running on port ${PORT}`);
   });
 }
