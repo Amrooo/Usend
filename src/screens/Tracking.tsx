@@ -104,10 +104,10 @@ export default function Tracking({ onNavigate }: TrackingProps) {
                 >
                   <X className="w-3 h-3" />
                 </button>
-                <p className="text-[10px] font-bold tracking-widest text-zinc-400 dark:text-zinc-500 uppercase mb-1">{t('pickup_address')}</p>
+                <p className="text-[12px] font-bold tracking-widest text-zinc-400 dark:text-zinc-500 uppercase mb-1">{t('pickup_address')}</p>
                 <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate">{currentRequest?.address || '221B Baker St, London'}</p>
-                <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mt-1">Contact: {currentRequest?.name || 'John Doe'}</p>
-                <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">ID: {currentRequest?.id}</p>
+                <p className="text-[12px] font-medium text-zinc-500 dark:text-zinc-400 mt-1">Contact: {currentRequest?.name || 'John Doe'}</p>
+                <p className="text-[12px] font-medium text-zinc-500 dark:text-zinc-400">ID: {currentRequest?.id}</p>
                 <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white dark:bg-zinc-900 border-b border-r border-zinc-100 dark:border-zinc-800 rotate-45"></div>
               </motion.div>
             )}
@@ -137,9 +137,9 @@ export default function Tracking({ onNavigate }: TrackingProps) {
                 >
                   <X className="w-3 h-3" />
                 </button>
-                <p className="text-[10px] font-bold tracking-widest text-zinc-400 dark:text-zinc-500 uppercase mb-1">{t('dropoff_address')}</p>
+                <p className="text-[12px] font-bold tracking-widest text-zinc-400 dark:text-zinc-500 uppercase mb-1">{t('dropoff_address')}</p>
                 <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate">{currentRequest?.toDestination || '88 Logistics Way, Palo Alto'}</p>
-                <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mt-1">Status: {currentRequest?.status || 'Pending'}</p>
+                <p className="text-[12px] font-medium text-zinc-500 dark:text-zinc-400 mt-1">Status: {currentRequest?.status || 'Pending'}</p>
                 <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white dark:bg-zinc-900 border-b border-r border-zinc-100 dark:border-zinc-800 rotate-45"></div>
               </motion.div>
             )}
@@ -202,7 +202,7 @@ export default function Tracking({ onNavigate }: TrackingProps) {
         >
           <div className="w-12 h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full mb-2"></div>
           {isMinimized && (
-            <span className="text-[10px] font-bold tracking-widest text-zinc-400 dark:text-zinc-500 uppercase">
+            <span className="text-[12px] font-bold tracking-widest text-zinc-400 dark:text-zinc-500 uppercase">
               {t('delivery_details') || 'Delivery Details'}
             </span>
           )}
@@ -246,7 +246,7 @@ export default function Tracking({ onNavigate }: TrackingProps) {
                   />
                 </div>
                 <div className={`absolute -bottom-1 ${isRTL ? '-left-1' : '-right-1'} bg-white dark:bg-zinc-900 rounded-full p-0.5 shadow-sm`}>
-                  <div className="bg-yellow-400 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
+                  <div className="bg-yellow-400 text-white text-[12px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
                     <Star className="w-2 h-2 fill-current" /> 4.9
                   </div>
                 </div>

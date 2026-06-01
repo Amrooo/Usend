@@ -16,7 +16,19 @@ export default function PortalRegister({ onNavigate }: { onNavigate: (s: Screen)
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState('+971 ');
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let val = e.target.value;
+    if (!val.startsWith('+971 ')) {
+       if (val.length < 5) val = '+971 ';
+       else val = '+971 ' + val.replace(/^\+?9?7?1?\s*/, '').replace(/[^0-9]/g, '');
+    } else {
+       val = '+971 ' + val.slice(5).replace(/[^0-9]/g, ''); 
+    }
+    if (val.length > 14) val = val.slice(0, 14);
+    setPhone(val);
+  };
   
   // Role specific State
   const [companyName, setCompanyName] = useState('');
@@ -63,7 +75,7 @@ export default function PortalRegister({ onNavigate }: { onNavigate: (s: Screen)
         </div>
         <button 
            onClick={() => onNavigate('hub')}
-           className="flex items-center gap-1.5 text-slate-500 hover:text-slate-800 font-bold uppercase text-[10px] tracking-widest transition-colors"
+           className="flex items-center gap-1.5 text-slate-500 hover:text-slate-800 font-bold uppercase text-[12px] tracking-widest transition-colors"
         >
            <ChevronLeft className="w-4 h-4" /> Go Back
         </button>
@@ -81,9 +93,9 @@ export default function PortalRegister({ onNavigate }: { onNavigate: (s: Screen)
                  <input required type="text" placeholder="Full Name" value={name} onChange={e => setName(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all font-semibold" />
                  <input required type="email" placeholder="Email Address" value={email} onChange={e => setEmail(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all font-semibold" />
                  <input required type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} minLength={6} className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all font-semibold" />
-                 <input required type="tel" placeholder="Phone Number" value={phone} onChange={e => setPhone(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all font-semibold pr-16" />
+                 <input required type="tel" placeholder="+971 XXXXXX" value={phone} onChange={handlePhoneChange} className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all font-semibold font-mono tracking-widest" dir="ltr" />
                  
-                 <button disabled={loading || success} type="submit" className="w-full py-4 mt-4 bg-brand hover:bg-[brand/90] text-white font-bold uppercase tracking-widest text-[11px] rounded-xl transition-all shadow-md active:scale-95 flex justify-center items-center h-14">
+                 <button disabled={loading || success} type="submit" className="w-full py-4 mt-4 bg-brand hover:bg-[brand/90] text-white font-bold uppercase tracking-widest text-[13px] rounded-xl transition-all shadow-md active:scale-95 flex justify-center items-center h-14">
                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : success ? "Account Created!" : "Register Setup"}
                  </button>
              </form>
@@ -131,7 +143,7 @@ export default function PortalRegister({ onNavigate }: { onNavigate: (s: Screen)
                                <input type="text" value={expiryDate} onChange={e => setExpiryDate(e.target.value)} placeholder=" " className="w-full px-5 py-3 border border-[#85AEE0] rounded-full text-slate-700 outline-none focus:ring-2 focus:ring-brand/30 bg-transparent font-medium" />
                                <Calendar className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                              </div>
-                             <p className="text-[10px] font-semibold text-[#85AEE0] pt-1 px-2 uppercase tracking-wide">DD/MM/YYYY</p>
+                             <p className="text-[12px] font-semibold text-[#85AEE0] pt-1 px-2 uppercase tracking-wide">DD/MM/YYYY</p>
                           </div>
                           
                           <div className="space-y-2">
@@ -166,7 +178,7 @@ export default function PortalRegister({ onNavigate }: { onNavigate: (s: Screen)
                                <input type="text" placeholder=" " className="w-full px-5 py-3 border border-[#85AEE0] rounded-full text-slate-700 outline-none focus:ring-2 focus:ring-brand/30 bg-transparent font-medium" />
                                <Calendar className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                              </div>
-                             <p className="text-[10px] font-semibold text-[#85AEE0] pt-1 px-2 uppercase tracking-wide">DD/MM/YYYY</p>
+                             <p className="text-[12px] font-semibold text-[#85AEE0] pt-1 px-2 uppercase tracking-wide">DD/MM/YYYY</p>
                           </div>
                           
                           <div className="flex justify-end pt-12">

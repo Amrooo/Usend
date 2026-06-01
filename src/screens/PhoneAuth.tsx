@@ -103,11 +103,11 @@ export default function PhoneAuth({ onNavigate }: PhoneAuthProps) {
             >
               <div className="relative group">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 border-r border-zinc-200 dark:border-zinc-800 pr-3">
-                  <span className="text-sm font-bold text-zinc-400">🇱🇾 +218</span>
+                  <span className="text-sm font-bold text-zinc-400">🇦🇪 +971</span>
                 </div>
                 <input
                   type="tel"
-                  placeholder="92 000 0000"
+                  placeholder="50 123 4567"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value.replace(/[^0-9]/g, ''))}
                   className="w-full h-16 pl-24 pr-4 rounded-3xl bg-zinc-50 dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800 focus:border-blue-600 outline-none text-lg font-bold tracking-wider transition-all placeholder:font-medium"
@@ -155,7 +155,7 @@ export default function PhoneAuth({ onNavigate }: PhoneAuthProps) {
                 >
                   Resend Code
                 </button>
-                <div className="flex items-center gap-2 text-[10px] uppercase font-black text-zinc-400 tracking-tighter">
+                <div className="flex items-center gap-2 text-[12px] uppercase font-black text-zinc-400 tracking-tighter">
                    <ShieldCheck className="w-3 h-3" /> Secure Verification by USend
                 </div>
               </div>

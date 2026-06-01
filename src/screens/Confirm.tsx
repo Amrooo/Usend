@@ -38,7 +38,7 @@ export default function Confirm({ onNavigate }: ConfirmProps) {
       photoUrl: '',
       amountType: 'packages',
       paymentMethod: selectedPaymentMethod === 'apple_pay' ? 'Apple Pay' : 'Credit Card',
-      orderAmount: `$${(selectedV?.price ?? 0).toFixed(2)}`,
+      orderAmount: `AED ${(selectedV?.price ?? 0).toFixed(2)}`,
       applicantType: 'Individual User',
       fromDestination: '88 Logistics Way, Palo Alto',
       toDestination: '241 Tech Plaza, San Francisco',
@@ -52,7 +52,7 @@ export default function Confirm({ onNavigate }: ConfirmProps) {
     { 
       id: 'apple_pay', 
       name: t('apple_pay'), 
-      icon: <div className="w-10 h-6 bg-black dark:bg-white rounded flex items-center justify-center text-white dark:text-black text-[10px] font-bold transition-colors duration-300">Pay</div> 
+      icon: <div className="w-10 h-6 bg-black dark:bg-white rounded flex items-center justify-center text-white dark:text-black text-[12px] font-bold transition-colors duration-300">Pay</div> 
     },
     { 
       id: 'card_4492', 
@@ -85,7 +85,7 @@ export default function Confirm({ onNavigate }: ConfirmProps) {
         {/* Delivery Summary */}
         <section>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-[10px] font-bold tracking-widest text-zinc-500 dark:text-zinc-400 uppercase">{t('delivery_summary')}</h3>
+            <h3 className="text-[12px] font-bold tracking-widest text-zinc-500 dark:text-zinc-400 uppercase">{t('delivery_summary')}</h3>
           </div>
           
           <div className="bg-white dark:bg-zinc-900 rounded-2xl p-4 shadow-sm border border-zinc-100 dark:border-zinc-800 transition-colors duration-300">
@@ -100,7 +100,7 @@ export default function Confirm({ onNavigate }: ConfirmProps) {
                 </div>
               </div>
               <div className={isRTL ? 'text-left' : 'text-right'}>
-                <p className="text-[10px] font-bold tracking-widest text-zinc-400 dark:text-zinc-500 uppercase">{t('distance')}</p>
+                <p className="text-[12px] font-bold tracking-widest text-zinc-400 dark:text-zinc-500 uppercase">{t('distance')}</p>
                 <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">12.4 mi</p>
               </div>
             </div>
@@ -120,7 +120,7 @@ export default function Confirm({ onNavigate }: ConfirmProps) {
 
         {/* Select Vehicle */}
         <section>
-          <h3 className="text-[10px] font-bold tracking-widest text-zinc-500 dark:text-zinc-400 uppercase mb-4">{t('select_vehicle')}</h3>
+          <h3 className="text-[12px] font-bold tracking-widest text-zinc-500 dark:text-zinc-400 uppercase mb-4">{t('select_vehicle')}</h3>
           <div className="space-y-3">
             {vehicles.map((v) => (
               <button
@@ -141,9 +141,9 @@ export default function Confirm({ onNavigate }: ConfirmProps) {
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
                       <h4 className="font-bold text-zinc-900 dark:text-zinc-100">{v.name}</h4>
-                      <span className="text-[10px] font-bold tracking-widest text-[#f5502c] bg-[#f5502c]/10 px-2 py-0.5 rounded-full uppercase">{v.eta}</span>
+                      <span className="text-[12px] font-bold tracking-widest text-[#f5502c] bg-[#f5502c]/10 px-2 py-0.5 rounded-full uppercase">{v.eta}</span>
                     </div>
-                    <span className="font-bold text-zinc-900 dark:text-zinc-100">${v.price.toFixed(2)}</span>
+                    <span className="font-bold text-zinc-900 dark:text-zinc-100">AED {v.price.toFixed(2)}</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs">
                     <span className={selectedVehicle === v.id ? 'text-[#f5502c] font-black' : 'text-zinc-500 dark:text-zinc-400'}>
@@ -163,7 +163,7 @@ export default function Confirm({ onNavigate }: ConfirmProps) {
 
         {/* Payment Method */}
         <section>
-          <h3 className="text-[10px] font-bold tracking-widest text-zinc-500 dark:text-zinc-400 uppercase mb-4">{t('payment_method')}</h3>
+          <h3 className="text-[12px] font-bold tracking-widest text-zinc-500 dark:text-zinc-400 uppercase mb-4">{t('payment_method')}</h3>
           <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800 shadow-sm overflow-hidden transition-colors duration-300">
             {paymentMethods.map((method, index) => (
               <button 
@@ -194,13 +194,13 @@ export default function Confirm({ onNavigate }: ConfirmProps) {
       <div className="absolute bottom-0 inset-x-0 p-6 bg-white dark:bg-zinc-950 border-t border-zinc-100 dark:border-zinc-800 z-20 transition-colors duration-300">
         <div className="flex items-end justify-between mb-4">
           <div className="text-left rtl:text-right">
-            <p className="text-[10px] font-bold tracking-widest text-zinc-400 dark:text-zinc-500 uppercase mb-1">{t('total_fare')}</p>
+            <p className="text-[12px] font-bold tracking-widest text-zinc-400 dark:text-zinc-500 uppercase mb-1">{t('total_fare')}</p>
             <p className="text-3xl font-black text-zinc-900 dark:text-zinc-100">
-              ${(vehicles.find(v => v.id === selectedVehicle)?.price ?? 0).toFixed(2)}
+              AED {(vehicles.find(v => v.id === selectedVehicle)?.price ?? 0).toFixed(2)}
             </p>
           </div>
           <div className={isRTL ? 'text-left' : 'text-right'}>
-            <p className="text-[10px] font-bold tracking-widest text-zinc-400 dark:text-zinc-500 uppercase mb-1">{t('est_time')}</p>
+            <p className="text-[12px] font-bold tracking-widest text-zinc-400 dark:text-zinc-500 uppercase mb-1">{t('est_time')}</p>
             <p className="text-sm font-bold text-[#f5502c]">~18 mins total</p>
           </div>
         </div>

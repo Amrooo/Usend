@@ -41,7 +41,7 @@ export default function Completed({ onNavigate }: CompletedProps) {
 
         {/* Order Summary */}
         <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-5 shadow-sm border border-zinc-100 dark:border-zinc-800 transition-colors duration-300 mb-6">
-          <h3 className="text-[10px] font-bold tracking-widest text-zinc-500 dark:text-zinc-400 uppercase mb-4">{t('order_summary')}</h3>
+          <h3 className="text-[12px] font-bold tracking-widest text-zinc-500 dark:text-zinc-400 uppercase mb-4">{t('order_summary')}</h3>
           
           <div className="flex items-center justify-between mb-4 pb-4 border-b border-zinc-100 dark:border-zinc-800">
             <div className="flex items-center gap-3">
@@ -54,7 +54,7 @@ export default function Completed({ onNavigate }: CompletedProps) {
               </div>
             </div>
             <div className={isRTL ? 'text-left' : 'text-right'}>
-              <p className="text-[10px] font-bold tracking-widest text-zinc-400 dark:text-zinc-500 uppercase">{t('total_paid')}</p>
+              <p className="text-[12px] font-bold tracking-widest text-zinc-400 dark:text-zinc-500 uppercase">{t('total_paid')}</p>
               <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">AED 12.50</p>
             </div>
           </div>

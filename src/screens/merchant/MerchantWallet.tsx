@@ -71,7 +71,7 @@ export default function MerchantWallet({ onNavigate }: MerchantWalletProps) {
           {/* Page Headers */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 pb-5">
             <div>
-              <span className="text-blue-600 font-bold text-[10px] uppercase tracking-[0.4em] block">
+              <span className="text-blue-600 font-bold text-[12px] uppercase tracking-[0.4em] block">
                 Financial Operations Ledger
               </span>
               <h1 className="text-3xl font-display font-medium text-zinc-900 uppercase tracking-tight mt-1">
@@ -115,7 +115,7 @@ export default function MerchantWallet({ onNavigate }: MerchantWalletProps) {
                      <Coins className="w-5 h-5" />
                    </div>
                    <div>
-                     <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">COD Collected Waiting Payout</span>
+                     <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-wider">COD Collected Waiting Payout</span>
                      <h3 className="text-3xl font-black text-zinc-900 font-mono mt-1">AED {codPending.toFixed(2)}</h3>
                    </div>
                    <button
@@ -139,7 +139,7 @@ export default function MerchantWallet({ onNavigate }: MerchantWalletProps) {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="bg-zinc-50 border-b border-zinc-100 text-zinc-400 text-[10px] font-black uppercase tracking-wide">
+                      <tr className="bg-zinc-50 border-b border-zinc-100 text-zinc-400 text-[12px] font-black uppercase tracking-wide">
                         <th className="p-4 pl-6">Reference ID</th>
                         <th className="p-4">Time & Date</th>
                         <th className="p-4">Log Type</th>
@@ -152,7 +152,7 @@ export default function MerchantWallet({ onNavigate }: MerchantWalletProps) {
                         <tr key={idx} className="hover:bg-zinc-50/10">
                           <td className="p-4 pl-6">
                             <span className="font-bold text-zinc-800 block">{txn.id}</span>
-                            <span className="text-[10px] text-zinc-400 font-mono">{txn.ref}</span>
+                            <span className="text-[12px] text-zinc-400 font-mono">{txn.ref}</span>
                           </td>
                           <td className="p-4 text-zinc-400">{txn.date}</td>
                           <td className="p-4">
@@ -218,19 +218,19 @@ export default function MerchantWallet({ onNavigate }: MerchantWalletProps) {
                 </div>
                 <div className="space-y-1">
                   <h4 className="font-bold text-sm text-zinc-800">Processing Stripe UAE Gateway Settle...</h4>
-                  <p className="text-[11px] text-zinc-400">Verifying 3D secure and registering order at ae.stripe.com...</p>
+                  <p className="text-[13px] text-zinc-400">Verifying 3D secure and registering order at ae.stripe.com...</p>
                 </div>
               </div>
             ) : (
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-black text-zinc-900">Top-up Wallet Portal</h3>
-                  <span className="px-2 py-0.5 rounded-full text-[8.5px] font-black uppercase bg-blue-50 text-blue-600 border border-blue-100 font-mono">stripe.com</span>
+                  <span className="px-2 py-0.5 rounded-full text-[12px] font-black uppercase bg-blue-50 text-blue-600 border border-blue-100 font-mono">stripe.com</span>
                 </div>
 
                 <form onSubmit={handleTopupSubmit} className="space-y-4 text-left">
                   <div className="space-y-1">
-                     <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 pl-0.5">Settle top-up Amount (AED)</label>
+                     <label className="text-[12px] font-bold uppercase tracking-wider text-zinc-400 pl-0.5">Settle top-up Amount (AED)</label>
                      <input 
                        required
                        type="number" 
@@ -243,7 +243,7 @@ export default function MerchantWallet({ onNavigate }: MerchantWalletProps) {
 
                   {/* Payment Channel Selection */}
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 pl-0.5 block">Select Acceptance Gateway</label>
+                    <label className="text-[12px] font-bold uppercase tracking-wider text-zinc-400 pl-0.5 block">Select Acceptance Gateway</label>
                     <div className="grid grid-cols-2 gap-2 text-xs">
                       <button
                         type="button"
@@ -275,14 +275,14 @@ export default function MerchantWallet({ onNavigate }: MerchantWalletProps) {
 
                   {stripeMethod !== 'standard' && (
                     <div className="bg-blue-50/40 p-4 rounded-2xl border border-blue-100 space-y-3 animate-in fade-in duration-100 text-xs">
-                      <div className="flex items-center justify-between text-[9px] text-blue-700 font-black tracking-widest uppercase">
+                      <div className="flex items-center justify-between text-[13px] text-blue-700 font-black tracking-widest uppercase">
                         <span>Stripe UAE sandbox card</span>
                         <span>Active</span>
                       </div>
                       
                       <div className="space-y-1.5">
                         <div className="space-y-1">
-                          <label className="text-[9px] font-bold text-blue-800 uppercase pl-0.5">Card number</label>
+                          <label className="text-[13px] font-bold text-blue-800 uppercase pl-0.5">Card number</label>
                           <input 
                             required
                             type="text" 
@@ -294,7 +294,7 @@ export default function MerchantWallet({ onNavigate }: MerchantWalletProps) {
 
                         <div className="grid grid-cols-2 gap-2">
                           <div className="space-y-1">
-                            <label className="text-[9px] font-bold text-blue-800 uppercase pl-0.5">Expiry</label>
+                            <label className="text-[13px] font-bold text-blue-800 uppercase pl-0.5">Expiry</label>
                             <input 
                               required
                               type="text" 
@@ -304,7 +304,7 @@ export default function MerchantWallet({ onNavigate }: MerchantWalletProps) {
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-[9px] font-bold text-blue-800 uppercase pl-0.5">CVV</label>
+                            <label className="text-[13px] font-bold text-blue-800 uppercase pl-0.5">CVV</label>
                             <input 
                               required
                               type="password" 

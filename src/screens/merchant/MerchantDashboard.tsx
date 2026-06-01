@@ -45,7 +45,7 @@ export default function MerchantDashboard({ onNavigate }: MerchantDashboardProps
           {/* Header */}
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
             <div>
-              <p className="text-brand font-black text-[9px] uppercase tracking-[0.5em] mb-3">Merchant Intelligence</p>
+              <p className="text-brand font-black text-[12px] uppercase tracking-[0.5em] mb-3">Merchant Intelligence</p>
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-medium tracking-tight uppercase leading-tight text-zinc-900">
                 {t('dashboard')}
               </h1>
@@ -54,14 +54,14 @@ export default function MerchantDashboard({ onNavigate }: MerchantDashboardProps
             <div className="flex items-center gap-4">
               <button 
                 onClick={() => onNavigate('merchant_individual')}
-                className="h-14 px-8 rounded-2xl bg-white border border-zinc-200 hover:border-brand/40 text-zinc-900 font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-sm"
+                className="h-14 px-8 rounded-2xl bg-white border border-zinc-200 hover:border-brand/40 text-zinc-900 font-black text-[12px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-sm"
               >
                 <PlusCircle className="w-4 h-4" />
                 {t('individual_order')}
               </button>
               <button 
                 onClick={() => onNavigate('merchant_batch')}
-                className="h-14 px-8 rounded-2xl bg-brand text-white font-black text-[10px] uppercase tracking-widest shadow-xl shadow-brand/20 transition-all active:scale-95 flex items-center justify-center gap-2"
+                className="h-14 px-8 rounded-2xl bg-brand text-white font-black text-[12px] uppercase tracking-widest shadow-xl shadow-brand/20 transition-all active:scale-95 flex items-center justify-center gap-2"
               >
                 <Package className="w-4 h-4" />
                 {t('create_batch_orders')}
@@ -83,13 +83,13 @@ export default function MerchantDashboard({ onNavigate }: MerchantDashboardProps
                   <div className="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center text-brand group-hover:scale-110 transition-transform">
                     <stat.icon className="w-6 h-6" />
                   </div>
-                  <div className={`flex items-center gap-1 text-[10px] font-black uppercase tracking-widest ${stat.isPositive ? 'text-blue-600 bg-blue-50' : 'text-red-500 bg-red-50'} px-3 py-1 rounded-full`}>
+                  <div className={`flex items-center gap-1 text-[12px] font-black uppercase tracking-widest ${stat.isPositive ? 'text-blue-600 bg-blue-50' : 'text-red-500 bg-red-50'} px-3 py-1 rounded-full`}>
                     {stat.isPositive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                     <span dir="ltr">{stat.change}</span>
                   </div>
                 </div>
                 <h3 className="text-3xl lg:text-4xl font-display font-medium mb-2 tracking-tight text-zinc-900" dir="ltr">{stat.value}</h3>
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">{stat.label}</p>
+                <p className="text-[12px] font-black uppercase tracking-[0.3em] text-zinc-400">{stat.label}</p>
               </motion.div>
             ))}
           </div>
@@ -100,7 +100,7 @@ export default function MerchantDashboard({ onNavigate }: MerchantDashboardProps
               <h2 className="text-xl font-display font-medium uppercase tracking-tight text-zinc-900">{t('recent_orders')}</h2>
               <button 
                 onClick={() => onNavigate('merchant_tracking')}
-                className="text-brand font-black text-[10px] uppercase tracking-widest hover:opacity-70 transition-opacity"
+                className="text-brand font-black text-[12px] uppercase tracking-widest hover:opacity-70 transition-opacity"
               >
                 {t('view_all_orders')}
               </button>
@@ -108,7 +108,7 @@ export default function MerchantDashboard({ onNavigate }: MerchantDashboardProps
             <div className="overflow-x-auto">
               <table className={`w-full ${isRTL ? 'text-right' : 'text-left'} border-collapse min-w-[800px]`}>
                 <thead>
-                  <tr className="bg-zinc-50 text-zinc-400 text-[10px] font-black uppercase tracking-widest border-b border-zinc-100">
+                  <tr className="bg-zinc-50 text-zinc-400 text-[12px] font-black uppercase tracking-widest border-b border-zinc-100">
                     <th className="p-8 font-black">{t('order_id')}</th>
                     <th className="p-8 font-black">{t('customer')}</th>
                     <th className="p-8 font-black">{t('status')}</th>
@@ -123,7 +123,7 @@ export default function MerchantDashboard({ onNavigate }: MerchantDashboardProps
                       <td className="p-8 text-zinc-900 font-bold">{order.id}</td>
                       <td className="p-8 text-zinc-500">{order.name}</td>
                       <td className="p-8">
-                        <span className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                        <span className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[12px] font-black uppercase tracking-widest ${
                           order.status === 'delivered' ? 'bg-blue-50 text-blue-600' :
                           order.status === 'in_transit' || order.status === 'En-route' ? 'bg-blue-50 text-brand' :
                           'bg-orange-50 text-orange-600'

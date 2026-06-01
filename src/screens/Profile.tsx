@@ -142,7 +142,7 @@ export default function Profile({ onNavigate }: ProfileProps) {
                     <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100 truncate">{activity.title}</h4>
                     <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate mt-0.5">{activity.desc}</p>
                   </div>
-                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider shrink-0">{activity.time}</span>
+                  <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-wider shrink-0">{activity.time}</span>
                 </div>
               ))}
             </div>

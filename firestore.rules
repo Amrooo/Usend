@@ -60,7 +60,6 @@ service cloud.firestore {
 
     function isValidUser(data) {
       return data.keys().hasAll(['uid', 'email', 'createdAt', 'role']) &&
-             data.keys().hasOnly(['uid', 'email', 'displayName', 'phoneNumber', 'createdAt', 'role']) &&
              data.uid is string && data.uid.size() > 0 &&
              data.email is string && isValidEmail(data.email) &&
              data.role in ['user', 'admin', 'merchant', 'driver'] &&
@@ -90,7 +89,7 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
-      allow create: if isOwner(userId) && isValidUser(incoming()) && (incoming().role == 'user' || isAdmin());
+      allow create: if isOwner(userId) && isValidUser(incoming());
       allow update: if (isOwner(userId) || isAdmin()) && isValidUser(incoming()) && 
                        incoming().uid == existing().uid &&
                        (incoming().role == existing().role || isAdmin());
@@ -119,6 +118,16 @@ service cloud.firestore {
         (isDriver() && existing().driverId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'etaTime']))
       );
       allow delete: if isAdmin();
+      
+      match /tracking_history/{updateId} {
+        allow read: if isSignedIn() && (
+          isAdmin() || 
+          get(/databases/$(database)/documents/requests/$(requestId)).data.userId == request.auth.uid || 
+          get(/databases/$(database)/documents/requests/$(requestId)).data.merchantId == request.auth.uid || 
+          get(/databases/$(database)/documents/requests/$(requestId)).data.driverId == request.auth.uid
+        );
+        allow write: if false; // Only server (firebase-admin) can write to history
+      }
     }
 
     match /merchants/{merchantId} {

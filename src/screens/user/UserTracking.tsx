@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Screen } from '../../types';
 import UserSidebar from '../../components/UserSidebar';
 import { Search, MapPin, Package, Clock, X, Phone, FileText, CheckCircle2, AlertCircle, Truck, Navigation } from 'lucide-react';
-import { useState, useEffect, ReactNode } from 'react';
+import { useState, useEffect, ReactNode, FC } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useApp, USendRequest } from '../../context/AppContext';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
@@ -27,18 +27,41 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
   const [isMapReady, setIsMapReady] = useState(false);
   const [filter, setFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
   useEffect(() => {
     const timer = setTimeout(() => setIsMapReady(true), 100);
     return () => clearTimeout(timer);
   }, []);
 
+  const storedGuestData = JSON.parse(localStorage.getItem('guestOrders') || '[]');
+  const storedGuestIds = storedGuestData.map((g: any) => g.id);
   const myRequests = activeRequests.filter(req => 
-    (user?.uid && req.userId === user.uid) || 
-    (!user?.uid && (req.applicantType === 'Individual User' || req.applicantType === 'User'))
+    (user?.uid && (req.userId === user.uid || req.phone === user.phoneNumber)) || 
+    (!user?.uid && (req.applicantType === 'Individual User' || req.applicantType === 'User' || storedGuestIds.includes(req.id)))
   );
   const activeOrders = myRequests;
   const [selectedOrder, setSelectedOrder] = useState<USendRequest | null>(null);
+  const [aramexSteps, setAramexSteps] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (selectedOrder?.externalTrackingNumber && selectedOrder.carrier === 'aramex') {
+      import('../../services/courierIntegration').then(({ courierIntegrationService }) => {
+        courierIntegrationService.trackShipment('aramex', selectedOrder.externalTrackingNumber!)
+          .then(res => {
+            if (res.success && res.steps.length > 0) {
+              setAramexSteps(res.steps);
+            }
+          })
+          .catch(err => console.error(err));
+      });
+    } else {
+      setAramexSteps([]);
+    }
+  }, [selectedOrder]);
 
   const filteredOrders = activeOrders.filter(order => {
     // If search query is typed, verify tracking number (ID) or basic fields
@@ -54,15 +77,35 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
       }
     }
 
-    const statusMap: Record<string, string> = {
-      'in_transit': 'in_transit',
-      'assigning': 'pending',
-      'Pending': 'pending'
-    };
+    let matchesDate = true;
+    if (dateRange.start || dateRange.end) {
+      const orderTime = order.createdAt ? new Date(order.createdAt).getTime() : Date.parse(order.date);
+      if (!isNaN(orderTime)) {
+         if (dateRange.start && orderTime < new Date(dateRange.start).getTime()) matchesDate = false;
+         if (dateRange.end && orderTime > new Date(dateRange.end).getTime() + 86400000) matchesDate = false;
+      }
+    }
+
+    if (!matchesDate) return false;
+
     if (filter === 'all') return true;
     const orderStatus = order.status.toLowerCase().replace(' ', '_');
-    return orderStatus === filter || (filter === 'pending' && (orderStatus === 'pending' || orderStatus === 'assigning')) || (filter === 'in_transit' && orderStatus === 'in_transit');
+    return orderStatus === filter || (filter === 'pending' && (orderStatus === 'pending' || orderStatus === 'assigning')) || (filter === 'in_transit' && orderStatus === 'in_transit') || (filter === 'exceptions' && (orderStatus === 'rejected' || orderStatus === 'exceptions'));
+  }).sort((a, b) => {
+      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : (Date.parse(a.date) || 0);
+      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : (Date.parse(b.date) || 0);
+
+      if (sortOrder === 'newest') {
+         if (timeA !== timeB) return timeB - timeA;
+         return b.id.localeCompare(a.id);
+      } else {
+         if (timeA !== timeB) return timeA - timeB;
+         return a.id.localeCompare(b.id);
+      }
   });
+
+  const paginatedOrders = filteredOrders.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const totalPages = Math.ceil(filteredOrders.length / pageSize);
 
   const mapCenter: [number, number] = [25.2048, 55.2708];
 
@@ -71,9 +114,10 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
     { id: 'pending', label: t('pending') || 'Pending' },
     { id: 'picked_up', label: t('picked_up') || 'Picked Up' },
     { id: 'in_transit', label: t('in_transit') || 'In Transit' },
+    { id: 'exceptions', label: 'Exceptions' }
   ];
 
-  const TimelinePart = ({ dot, title, desc, active, last }: { dot: ReactNode, title: string, desc: string, active?: boolean, last?: boolean }) => (
+  const TimelinePart: FC<{ dot: ReactNode, title: string, desc: string, active?: boolean, last?: boolean }> = ({ dot, title, desc, active, last }) => (
     <div className="flex gap-4 min-h-[60px]">
        <div className="flex flex-col items-center">
           <div className={`w-8 h-8 rounded-full flex items-center justify-center z-10 ${active ? 'bg-gradient-to-r from-blue-700 to-blue-500 text-white shadow-lg shadow-blue-500/30' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
@@ -103,17 +147,40 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
               <h1 className="text-2xl md:text-3xl font-black text-zinc-900 dark:text-zinc-100">{t('order_tracking') || 'Tracking'}</h1>
               <p className="text-zinc-500 dark:text-zinc-400 mt-1">{t('monitor_active_deliveries') || 'Monitor your deliveries'}</p>
             </div>
-            <div className="flex gap-3">
-              <div className="relative">
+            <div className="flex flex-col md:flex-row gap-3">
+              <div className="relative flex-1 md:w-64">
                 <Search className={`w-5 h-5 text-zinc-400 absolute ${isRTL ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2`} />
                 <input 
                   type="text" 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={t('search_orders') || 'Search...'} 
-                  className={`bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none text-zinc-900 dark:text-zinc-100 w-full md:w-64`}
+                  className={`w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none text-zinc-900 dark:text-zinc-100`}
                 />
               </div>
+              <div className="flex gap-2">
+                <input 
+                   type="date" 
+                   value={dateRange.start} 
+                   onChange={(e) => setDateRange(p => ({...p, start: e.target.value}))}
+                   className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-sm text-zinc-600 outline-none font-medium"
+                />
+                <span className="text-zinc-400 self-center">-</span>
+                <input 
+                   type="date" 
+                   value={dateRange.end} 
+                   onChange={(e) => setDateRange(p => ({...p, end: e.target.value}))}
+                   className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-sm text-zinc-600 outline-none font-medium"
+                />
+              </div>
+              <select
+                 value={sortOrder}
+                 onChange={(e) => setSortOrder(e.target.value as any)}
+                 className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2.5 text-sm font-bold text-zinc-700 outline-none min-w-[120px]"
+              >
+                 <option value="newest">Newest First</option>
+                 <option value="oldest">Oldest First</option>
+              </select>
             </div>
           </div>
 
@@ -174,7 +241,7 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                 </h2>
               </div>
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {filteredOrders.length > 0 ? filteredOrders.map((order) => {
+                  {paginatedOrders.length > 0 ? paginatedOrders.map((order) => {
                     const isRejected = order.status === 'Rejected' || order.status === 'Cancelled';
                     return (
                   <button 
@@ -195,14 +262,14 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                            <div className="flex items-center gap-2">
                              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{order.name}</h3>
                            </div>
-                           <div className="flex items-center gap-1 mt-1 text-[11px] font-medium text-zinc-500">
+                           <div className="flex items-center gap-1 mt-1 text-[13px] font-medium text-zinc-500">
                              <span className="px-1.5 py-0.5 rounded-md bg-zinc-200/50 dark:bg-zinc-700/50 font-black text-zinc-500">
                                {order.id}
                              </span>
                            </div>
                         </div>
                         <div className="flex flex-col items-end gap-1">
-                           <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black tracking-wider uppercase ${
+                           <span className={`px-2 py-0.5 rounded-lg text-[13px] font-black tracking-wider uppercase ${
                              order.status === 'in_transit' ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400' :
                              order.status === 'Approved' ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' :
                              'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400'
@@ -220,6 +287,26 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                    </div>
                 )}
               </div>
+              
+              {totalPages > 1 && (
+                <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/20 flex items-center justify-between rounded-b-3xl">
+                  <button 
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm font-bold text-zinc-700 dark:text-zinc-300 disabled:opacity-50 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
+                  >
+                    Prev
+                  </button>
+                  <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Page {currentPage} of {totalPages}</span>
+                  <button 
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm font-bold text-zinc-700 dark:text-zinc-300 disabled:opacity-50 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </motion.div>
@@ -261,7 +348,7 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                   {/* Courier Assigment */}
                   <div className="bg-zinc-50 dark:bg-zinc-800/50 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black uppercase text-zinc-500 tracking-widest">Handled By</span>
+                        <span className="text-[12px] font-black uppercase text-zinc-500 tracking-widest">Handled By</span>
                      </div>
                      <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
@@ -271,7 +358,7 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                            <p className="font-bold text-sm text-zinc-900 dark:text-zinc-100">
                              {selectedOrder.courier || (selectedOrder.channel === 'Merchant Portal' ? 'Aramex' : 'USend Fleet')}
                            </p>
-                           <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">
+                           <p className="text-[12px] text-zinc-500 font-bold uppercase tracking-wider">
                              {(selectedOrder.courier === 'Aramex Cargo' || selectedOrder.channel === 'Merchant Portal') ? 'External Logistics Provider' : 'Internal Fleet Driver'}
                            </p>
                         </div>
@@ -292,7 +379,7 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                               <div className="w-0.5 h-10 bg-zinc-200 dark:bg-zinc-700" />
                            </div>
                            <div>
-                              <p className="text-[9px] font-black text-blue-600 tracking-widest uppercase">Pickup Location</p>
+                              <p className="text-[13px] font-black text-blue-600 tracking-widest uppercase">Pickup Location</p>
                               <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 line-clamp-2">
                                 {selectedOrder.pickupAddress || selectedOrder.fromDestination || 'Dubai, Main Warehouse'}
                               </p>
@@ -304,7 +391,7 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                               <div className="w-3 h-3 rounded-full border-2 border-blue-500 bg-blue-50" />
                            </div>
                            <div>
-                              <p className="text-[9px] font-black text-blue-600 tracking-widest uppercase">Drop-off Location</p>
+                              <p className="text-[13px] font-black text-blue-600 tracking-widest uppercase">Drop-off Location</p>
                               <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 line-clamp-2">
                                 {selectedOrder.toDestination || selectedOrder.address || 'Loading...'}
                               </p>
@@ -324,30 +411,45 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                        </div>
                     </div>
                     <div className="space-y-1">
-                       <TimelinePart 
-                         dot={<CheckCircle2 className="w-5 h-5" />} 
-                         title="Order Created" 
-                         desc="System Received" 
-                         active={true}
-                       />
-                       <TimelinePart 
-                         dot={<Package className="w-5 h-5" />} 
-                         title="Picked Up" 
-                         desc="Courier assigned" 
-                         active={selectedOrder.status !== 'Pending' && selectedOrder.status !== 'assigning'}
-                       />
-                       <TimelinePart 
-                         dot={<Clock className="w-4 h-4" />} 
-                         title="In Transit" 
-                         desc="On the way" 
-                         active={selectedOrder.status === 'in_transit'}
-                       />
-                       <TimelinePart 
-                         dot={<MapPin className="w-5 h-5" />} 
-                         title="Delivered" 
-                         desc="Recipient location" 
-                         last
-                       />
+                       {aramexSteps.length > 0 ? (
+                          aramexSteps.map((step, idx) => (
+                             <TimelinePart 
+                               key={idx}
+                               dot={idx === 0 ? <CheckCircle2 className="w-5 h-5" /> : idx === aramexSteps.length - 1 ? <MapPin className="w-5 h-5" /> : <Package className="w-5 h-5" />}
+                               title={step.status || "Status Update"}
+                               desc={`${step.location || ""} • ${new Date(step.time).toLocaleString()}`}
+                               active={true}
+                               last={idx === aramexSteps.length - 1}
+                             />
+                          ))
+                       ) : (
+                         <>
+                           <TimelinePart 
+                             dot={<CheckCircle2 className="w-5 h-5" />} 
+                             title="Order Created" 
+                             desc="System Received" 
+                             active={true}
+                           />
+                           <TimelinePart 
+                             dot={<Package className="w-5 h-5" />} 
+                             title="Picked Up" 
+                             desc="Courier assigned" 
+                             active={selectedOrder.status !== 'Pending' && selectedOrder.status !== 'assigning'}
+                           />
+                           <TimelinePart 
+                             dot={<Clock className="w-4 h-4" />} 
+                             title="In Transit" 
+                             desc="On the way" 
+                             active={selectedOrder.status === 'in_transit'}
+                           />
+                           <TimelinePart 
+                             dot={<MapPin className="w-5 h-5" />} 
+                             title="Delivered" 
+                             desc="Recipient location" 
+                             last
+                           />
+                         </>
+                       )}
                     </div>
                   </div>
 
@@ -362,6 +464,34 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                       >
                         <X className="w-5 h-5" />
                         {t('cancel_order') || 'Cancel Order'}
+                      </button>
+                    </div>
+                  )}
+
+                  {(selectedOrder.status === 'delivered' || selectedOrder.status === 'in_transit') && (
+                    <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800 flex flex-col gap-3">
+                      {selectedOrder.status === 'delivered' && (
+                        <button
+                          onClick={() => {
+                            alert(t('leave_review_prompt') || "Rate your experience with the courier (1-5 stars):\n\n★★★★★");
+                          }}
+                          className="w-full py-3.5 border-2 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-[13px] uppercase tracking-widest cursor-pointer"
+                        >
+                          {t('rate_courier') || 'Rate Courier & Review'}
+                        </button>
+                      )}
+                      
+                      <button
+                        onClick={() => {
+                          alert(t('return_processing_alert') || "Generating reverse-pickup RMA label with Aramex... \n\nCheck your email for the Return Waybill.");
+                          // Simulate return generation
+                          updateRequestStatus(selectedOrder.id, 'Pending', 'RMA Processing');
+                          setSelectedOrder(null);
+                        }}
+                        className="w-full py-3.5 bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-900 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-[13px] uppercase tracking-widest cursor-pointer"
+                      >
+                        <Package className="w-4 h-4" />
+                        {t('create_rma') || 'Create Return Request (RMA)'}
                       </button>
                     </div>
                   )}

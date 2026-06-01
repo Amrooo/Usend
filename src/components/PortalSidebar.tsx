@@ -67,14 +67,14 @@ export default function PortalSidebar({ currentScreen, onNavigate }: PortalSideb
           </div>
           <div>
             <h1 className="text-xs font-black uppercase tracking-widest text-[#f4f4f5] leading-none">USend Portal</h1>
-            <span className="text-[9.5px] text-zinc-500 font-bold uppercase tracking-widest mt-1 block">{isMerchant ? 'Merchant Access' : 'Consumer Access'}</span>
+            <span className="text-[13px] text-zinc-500 font-bold uppercase tracking-widest mt-1 block">{isMerchant ? 'Merchant Access' : 'Consumer Access'}</span>
           </div>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto py-5 px-4 space-y-6 hide-scrollbar">
         <div className="space-y-1.5">
-          <h2 className={`text-[9.5px] font-black uppercase tracking-[0.25em] text-zinc-500 px-3.5 mb-2.5 ${isRTL ? 'text-right' : 'text-left'}`}>
+          <h2 className={`text-[12px] font-black uppercase tracking-[0.25em] text-zinc-500 px-3.5 mb-2.5 ${isRTL ? 'text-right' : 'text-left'} opacity-90`}>
             {isMerchant ? 'Merchant Control' : 'User Portal'}
           </h2>
           <div className="space-y-[3px]">
@@ -94,7 +94,7 @@ export default function PortalSidebar({ currentScreen, onNavigate }: PortalSideb
                     <item.icon className={`w-[17px] h-[17px] shrink-0 transition-transform ${
                       isActive ? 'text-white' : 'text-zinc-400 group-hover/btn:text-zinc-200 group-hover/btn:scale-105'
                     }`} />
-                    <span className="text-[11.5px] font-semibold leading-none truncate tracking-wide text-left">{item.label}</span>
+                    <span className="text-[12px] font-semibold leading-none truncate tracking-wide text-left">{item.label}</span>
                   </div>
                   {isActive ? (
                     <div className="w-1.5 h-1.5 rounded-full bg-white shrink-0 shadow-sm" />
@@ -111,14 +111,14 @@ export default function PortalSidebar({ currentScreen, onNavigate }: PortalSideb
       <div className="p-4 border-t border-zinc-900 bg-[#050507] space-y-1.5">
         <button
           onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
-          className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 text-[10.5px] font-black uppercase tracking-widest transition-all"
+          className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 text-[12px] font-black uppercase tracking-widest transition-all"
         >
           <Globe className="w-4 h-4 text-zinc-500 group-hover:text-zinc-300" />
           <span>{language === 'en' ? 'العربية' : 'English'}</span>
         </button>
         <button
           onClick={() => handleItemClick('landing_page')}
-          className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-50/10 text-[10.5px] font-black uppercase tracking-widest transition-all"
+          className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-50/10 text-[12px] font-black uppercase tracking-widest transition-all"
         >
           <LogOut className="w-4 h-4 text-red-400" />
           <span>{t('exit_portal') || 'Exit Portal'}</span>

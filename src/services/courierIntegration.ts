@@ -36,6 +36,7 @@ export interface ShipmentParams {
   goodsDescription: string;
   weightKg: number;
   codAmountAED: number;
+  printFormat?: 'PDF' | 'ZPL';
 }
 
 export interface TrackingStep {
@@ -297,6 +298,8 @@ export const courierIntegrationService = {
     const timestamp = new Date().toISOString();
     let requestPayload = {};
     let responsePayload = {};
+    let labelUrl = "";
+    let base64Label = "";
 
     if (courierId === 'aramex') {
       try {
@@ -385,8 +388,8 @@ export const courierIntegrationService = {
                 DescriptionOfGoods: params.goodsDescription || "Goods",
                 GoodsOriginCountry: params.senderCountry || "AE",
                 NumberOfPieces: 1,
-                ProductGroup: "DOM",
-                ProductType: "ONP",
+                ProductGroup: (params.senderCountry || "AE") === (params.receiverCountry || "AE") ? "DOM" : "EXP",
+                ProductType: (params.senderCountry || "AE") === (params.receiverCountry || "AE") ? "ONP" : "EPX",
                 PaymentType: "P",
                 PaymentOptions: "",
                 CustomsValueAmount: { Value: 0, CurrencyCode: "AED" },
@@ -402,7 +405,7 @@ export const courierIntegrationService = {
           ],
           LabelInfo: {
             ReportID: 9201,
-            ReportType: "URL"
+            ReportType: params.printFormat === 'ZPL' ? 'ZPLStream' : 'URL'
           }
         };
 
@@ -424,6 +427,13 @@ export const courierIntegrationService = {
         if (processedShipment && processedShipment.ID) {
            trackingNumber = processedShipment.ID;
            createdWaybills.add(trackingNumber);
+        }
+        
+        const labelData = data.Shipments?.[0]?.ShipmentLabel;
+        if (labelData?.LabelURL) {
+           labelUrl = labelData.LabelURL;
+        } else if (labelData?.LabelFileContents) {
+           base64Label = labelData.LabelFileContents;
         }
 
       } catch (err: any) {
@@ -458,12 +468,14 @@ export const courierIntegrationService = {
     }
 
     return {
-      success: true,
+      success: !!trackingNumber,
       trackingNumber,
       carrierReference: `REF-${randomNo}`,
       requestPayload,
       responsePayload,
       timestamp,
+      labelUrl: labelUrl || undefined,
+      base64Label: base64Label || undefined,
       labelPreview: {
         awb: trackingNumber,
         weight: `${params.weightKg} Kg`,
@@ -641,6 +653,104 @@ export const courierIntegrationService = {
       trackingNumber: cleanNum,
       currentStatus: "OUT_FOR_DELIVERY",
       steps,
+      requestPayload,
+      responsePayload,
+      timestamp
+    };
+  },
+
+  // 4. PICKUP API
+  schedulePickup: async (courierId: string, params: { credentials?: CourierCredentials, pickupDate: string, contactRegion: string, readyTime: string, contactPhone: string, contactName: string }) => {
+    const timestamp = new Date().toISOString();
+    let requestPayload = {};
+    let responsePayload = {};
+    const randomPickNo = Math.floor(10000 + Math.random() * 90000);
+    let guid = `PRQ-GUID-${randomPickNo}`;
+    let success = false;
+    let pickupId = "";
+
+    if (courierId === 'aramex') {
+      try {
+        const aramexPayload = {
+          ClientInfo: {
+            UserName: params.credentials?.username || "testingapi@aramex.com",
+            Password: params.credentials?.password || "R123456789$r",
+            Version: params.credentials?.version || "v1",
+            AccountNumber: params.credentials?.accountNumber || "45796",
+            AccountPin: params.credentials?.accountPin || "116216",
+            AccountEntity: params.credentials?.accountEntity || "DXB",
+            AccountCountryCode: params.credentials?.accountCountryCode || "AE",
+            Source: parseInt(params.credentials?.source || "24", 10)
+          },
+          Transaction: { Reference1: `PICK-${randomPickNo}` },
+          Pickup: {
+            PickupAddress: {
+              Line1: "Central Warehouse Route B",
+              City: params.contactRegion || "Dubai",
+              CountryCode: "AE"
+            },
+            PickupContact: {
+              PersonName: params.contactName || "Depot Administrator",
+              CompanyName: "USEND Merchant",
+              PhoneNumber1: params.contactPhone || "+971501234567",
+              CellPhone: params.contactPhone || "+971501234567",
+              EmailAddress: "admin@merchant.ae"
+            },
+            PickupLocation: "Front Desk Loading Bay",
+            PickupDate: `/Date(${new Date(params.pickupDate).getTime()})/`,
+            ReadyTime: `/Date(${new Date(`${params.pickupDate}T${params.readyTime}`).getTime()})/`,
+            LastPickupTime: `/Date(${new Date(`${params.pickupDate}T18:00:00`).getTime()})/`,
+            ClosingTime: `/Date(${new Date(`${params.pickupDate}T19:00:00`).getTime()})/`,
+            Status: "Ready",
+            PickupItems: [
+              { ProductGroup: "DOM", Payment: "P", Quantity: 1, Weight: { Value: 1.5, Unit: "KG" }, Shipments: [] }
+            ]
+          }
+        };
+
+        const res = await fetch("/api/aramex/pickup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(aramexPayload)
+        });
+        
+        const data = await res.json();
+        requestPayload = aramexPayload;
+        responsePayload = data;
+
+        if (data.HasErrors) {
+          throw new Error(data.Notifications?.[0]?.Message || "Aramex Pickup API Error");
+        }
+
+        if (data.ProcessedPickup) {
+          success = true;
+          pickupId = data.ProcessedPickup.ID || `ARX-PIK-${randomPickNo}`;
+          guid = data.ProcessedPickup.GUID || guid;
+        }
+
+      } catch (err: any) {
+        console.error("Aramex pickup logic failed", err);
+        return {
+          success: false,
+          pickupId: "",
+          error: err.message || "Failed to contact Aramex pickup API",
+          requestPayload,
+          responsePayload,
+          timestamp
+        };
+      }
+    } else {
+       // Mock for DHL/Fedex
+       success = true;
+       pickupId = `${courierId.toUpperCase()}-PIK-${randomPickNo}`;
+       requestPayload = { pickupConfig: params };
+       responsePayload = { status: "Success", pickupId, guid };
+    }
+
+    return {
+      success,
+      pickupId,
+      guid,
       requestPayload,
       responsePayload,
       timestamp

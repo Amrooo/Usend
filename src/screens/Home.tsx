@@ -59,7 +59,7 @@ export default function Home({ onNavigate }: HomeProps) {
               />
             </div>
             <div className="text-left rtl:text-right">
-              <p className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase">{t('good_evening')}</p>
+              <p className="text-[12px] font-bold tracking-widest text-zinc-400 uppercase">{t('good_evening')}</p>
               <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Alex Rivera</h2>
             </div>
           </div>
@@ -170,11 +170,11 @@ export default function Home({ onNavigate }: HomeProps) {
                   <Package className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold tracking-widest text-zinc-500 uppercase mb-0.5">ID: MRSL-9921-X</p>
+                  <p className="text-[12px] font-bold tracking-widest text-zinc-500 uppercase mb-0.5">ID: MRSL-9921-X</p>
                   <h4 className="font-bold text-sm">{t('in_transit')}</h4>
                 </div>
               </div>
-              <span className="px-2.5 py-1 rounded-full border border-blue-500/30 text-blue-400 text-[10px] font-bold tracking-wider uppercase bg-blue-500/10">
+              <span className="px-2.5 py-1 rounded-full border border-blue-500/30 text-blue-400 text-[12px] font-bold tracking-wider uppercase bg-blue-500/10">
                 Active
               </span>
             </div>
@@ -241,7 +241,7 @@ export default function Home({ onNavigate }: HomeProps) {
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
                         <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100">{notif.title}</h4>
-                        <span className="text-[10px] text-zinc-400 font-medium tracking-wider uppercase">{notif.time}</span>
+                        <span className="text-[12px] text-zinc-400 font-medium tracking-wider uppercase">{notif.time}</span>
                       </div>
                       <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">{notif.message}</p>
                     </div>

@@ -75,7 +75,7 @@ export default function Orders({ onNavigate }: OrdersProps) {
                     <h4 className="font-bold text-base text-zinc-900 dark:text-zinc-100">{order.items}</h4>
                   </div>
                 </div>
-                <div className={`px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5 shrink-0 ${
+                <div className={`px-3 py-1.5 rounded-full text-[12px] font-bold tracking-wider uppercase flex items-center gap-1.5 shrink-0 ${
                   order.active 
                     ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400' 
                     : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400'

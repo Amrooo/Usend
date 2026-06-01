@@ -42,41 +42,41 @@ export default function MerchantSidebar({ currentScreen, onNavigate }: SidebarPr
     {
       title: '',
       items: [
-        { id: 'merchant_dashboard', icon: LayoutDashboard, label: 'Dashboard' }
+        { id: 'merchant_dashboard', icon: LayoutDashboard, label: t('dashboard') || 'Dashboard' }
       ]
     },
     {
-      title: 'Orders & Freight',
+      title: t('orders_freight') || 'Orders & Freight',
       items: [
-        { id: 'merchant_individual', icon: PlusCircle, label: 'Manual Orders' },
-        { id: 'merchant_batch', icon: Package, label: 'Bulk Orders & Quotes' }
+        { id: 'merchant_individual', icon: PlusCircle, label: t('individual_order') || 'Manual Orders' },
+        { id: 'merchant_batch', icon: Package, label: t('create_batch_orders') || 'Bulk Orders & Quotes' }
       ]
     },
     {
-      title: 'Warehouse',
+      title: t('warehouse') || 'Warehouse',
       items: [
-        { id: 'merchant_inventory', icon: Package, label: 'Manage Inventory' }
+        { id: 'merchant_inventory', icon: Package, label: t('manage_inventory') || 'Manage Inventory' }
       ]
     },
     {
-      title: 'Integrations',
+      title: t('integrations') || 'Integrations',
       items: [
-        { id: 'merchant_integrations', icon: Database, label: 'Ecommerce & Couriers' }
+        { id: 'merchant_integrations', icon: Database, label: t('ecommerce_couriers') || 'Ecommerce & Couriers' }
       ]
     },
     {
-      title: 'Reports',
+      title: t('reports') || 'Reports',
       items: [
-        { id: 'merchant_tracking', icon: Map, label: 'Live Tracking' },
-        { id: 'merchant_customers', icon: Users, label: 'Customers & Analytics' }
+        { id: 'merchant_tracking', icon: Map, label: t('tracking') || 'Live Tracking' },
+        { id: 'merchant_customers', icon: Users, label: t('customers') || 'Customers & Analytics' }
       ]
     },
     {
-      title: 'Finance',
+      title: t('finance') || 'Finance',
       items: [
-        { id: 'merchant_wallet', icon: Wallet, label: 'Wallet & Topups' },
-        { id: 'merchant_payments', icon: CreditCard, label: 'Invoices & Tax Reports' },
-        { id: 'merchant_settings', icon: Settings, label: 'Portal Settings' }
+        { id: 'merchant_wallet', icon: Wallet, label: t('wallet') || 'Wallet & Topups' },
+        { id: 'merchant_payments', icon: CreditCard, label: t('payments') || 'Invoices & Tax Reports' },
+        { id: 'merchant_settings', icon: Settings, label: t('settings') || 'Portal Settings' }
       ]
     }
   ];
@@ -95,7 +95,7 @@ export default function MerchantSidebar({ currentScreen, onNavigate }: SidebarPr
           </div>
           <div>
             <h1 className="text-xs font-black uppercase tracking-widest text-[#f4f4f5] leading-none">USend Portal</h1>
-            <span className="text-[9.5px] text-zinc-500 font-bold uppercase tracking-widest mt-1 block">Merchant Access</span>
+            <span className="text-[13px] text-zinc-500 font-bold uppercase tracking-widest mt-1 block">Merchant Access</span>
           </div>
         </div>
       </div>
@@ -105,7 +105,7 @@ export default function MerchantSidebar({ currentScreen, onNavigate }: SidebarPr
           {merchantGroups.map((group, idx) => (
             <div key={idx} className="space-y-1.5">
               {group.title && (
-                <h2 className={`text-[10px] font-black tracking-widest text-zinc-500 px-3.5 mb-2.5 ${isRTL ? 'text-right' : 'text-left'} uppercase opacity-90`}>
+                <h2 className={`text-[12px] font-black uppercase tracking-[0.25em] text-zinc-500 px-3.5 mb-2.5 ${isRTL ? 'text-right' : 'text-left'} opacity-90`}>
                   {group.title}
                 </h2>
               )}
@@ -126,7 +126,7 @@ export default function MerchantSidebar({ currentScreen, onNavigate }: SidebarPr
                         <item.icon className={`w-[17px] h-[17px] shrink-0 transition-transform ${
                           isActive ? 'text-white' : 'text-zinc-400 group-hover/btn:text-zinc-200 group-hover/btn:scale-105'
                         }`} />
-                        <span className="text-[11.5px] font-semibold leading-none truncate tracking-wide text-left">{item.label}</span>
+                        <span className="text-[12px] font-semibold leading-none truncate tracking-wide text-left">{item.label}</span>
                       </div>
                       {isActive ? (
                         <div className="w-1.5 h-1.5 rounded-full bg-white shrink-0 shadow-sm" />
@@ -145,14 +145,14 @@ export default function MerchantSidebar({ currentScreen, onNavigate }: SidebarPr
       <div className="p-4 border-t border-zinc-900 bg-[#050507] space-y-1.5">
         <button
           onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
-          className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 text-[10.5px] font-black uppercase tracking-widest transition-all"
+          className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 text-[12px] font-black uppercase tracking-widest transition-all"
         >
           <Globe className="w-4 h-4 text-zinc-500 group-hover:text-zinc-300" />
           <span>{language === 'en' ? 'العربية' : 'English'}</span>
         </button>
         <button
           onClick={() => handleItemClick('landing_page')}
-          className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-50/10 text-[10.5px] font-black uppercase tracking-widest transition-all"
+          className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-50/10 text-[12px] font-black uppercase tracking-widest transition-all"
         >
           <LogOut className="w-4 h-4 text-red-400" />
           <span>{t('exit_portal') || 'Exit Portal'}</span>

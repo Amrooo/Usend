@@ -27,9 +27,11 @@ interface OrderRecord {
 export default function UserOrders({ onNavigate }: UserOrdersProps) {
   const { t, isRTL } = useLanguage();
   const { activeRequests, user } = useApp();
+  const storedGuestData = JSON.parse(localStorage.getItem('guestOrders') || '[]');
+  const storedGuestIds = storedGuestData.map((g: any) => g.id);
   const myRequests = activeRequests.filter((req: any) => 
-    (user?.uid && req.userId === user.uid) || 
-    (!user?.uid && (req.applicantType === 'Individual User' || req.applicantType === 'User'))
+    (user?.uid && (req.userId === user.uid || req.phone === user.phoneNumber)) || 
+    (!user?.uid && (req.applicantType === 'Individual User' || req.applicantType === 'User' || storedGuestIds.includes(req.id)))
   );
   
   const [selectedOrder, setSelectedOrder] = useState<OrderRecord | null>(null);
@@ -80,10 +82,10 @@ export default function UserOrders({ onNavigate }: UserOrdersProps) {
               >
                 <div className="p-8 space-y-6 flex-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 bg-zinc-50 dark:bg-zinc-800 px-3 py-1.5 rounded-full">
+                    <span className="text-[12px] font-black uppercase tracking-[0.2em] text-zinc-400 bg-zinc-50 dark:bg-zinc-800 px-3 py-1.5 rounded-full">
                       {order.id}
                     </span>
-                    <span className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-blue-600 bg-blue-50 dark:bg-blue-500/10 px-3 py-1.5 rounded-full">
+                    <span className="flex items-center gap-1.5 text-[13px] font-black uppercase tracking-widest text-blue-600 bg-blue-50 dark:bg-blue-500/10 px-3 py-1.5 rounded-full">
                       Delivered
                     </span>
                   </div>
@@ -139,11 +141,11 @@ export default function UserOrders({ onNavigate }: UserOrdersProps) {
               <div className="space-y-8 p-2">
                 <div className="grid grid-cols-2 gap-8">
                   <div className="space-y-1">
-                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Order ID</p>
+                    <p className="text-[12px] font-black text-zinc-400 uppercase tracking-widest">Order ID</p>
                     <p className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{selectedOrder.id}</p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Amount Paid</p>
+                    <p className="text-[12px] font-black text-zinc-400 uppercase tracking-widest">Amount Paid</p>
                     <p className="text-lg font-bold text-brand">{selectedOrder.amount}</p>
                   </div>
                 </div>
@@ -155,7 +157,7 @@ export default function UserOrders({ onNavigate }: UserOrdersProps) {
                         <User className="w-5 h-5" />
                       </div>
                       <div>
-                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Recipient</p>
+                        <p className="text-[12px] font-black text-zinc-400 uppercase tracking-widest">Recipient</p>
                         <p className="font-bold text-zinc-900 dark:text-zinc-100">{selectedOrder.recipient}</p>
                       </div>
                     </div>
@@ -164,7 +166,7 @@ export default function UserOrders({ onNavigate }: UserOrdersProps) {
                         <MapPin className="w-5 h-5" />
                       </div>
                       <div>
-                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Address</p>
+                        <p className="text-[12px] font-black text-zinc-400 uppercase tracking-widest">Address</p>
                         <p className="font-medium text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">{selectedOrder.address}</p>
                       </div>
                     </div>
@@ -176,7 +178,7 @@ export default function UserOrders({ onNavigate }: UserOrdersProps) {
                         <Package className="w-5 h-5" />
                       </div>
                       <div>
-                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Items</p>
+                        <p className="text-[12px] font-black text-zinc-400 uppercase tracking-widest">Items</p>
                         <p className="font-bold text-zinc-900 dark:text-zinc-100">{selectedOrder.items}</p>
                       </div>
                     </div>
@@ -185,7 +187,7 @@ export default function UserOrders({ onNavigate }: UserOrdersProps) {
                         <Clock className="w-5 h-5" />
                       </div>
                       <div>
-                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Completed On</p>
+                        <p className="text-[12px] font-black text-zinc-400 uppercase tracking-widest">Completed On</p>
                         <p className="font-medium text-zinc-600 dark:text-zinc-400 text-sm">{selectedOrder.date}</p>
                       </div>
                     </div>

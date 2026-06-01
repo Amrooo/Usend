@@ -101,7 +101,7 @@ export default function DriverEarnings({ onNavigate }: DriverEarningsProps) {
                 </div>
                 <div className="text-right">
                   <h4 className="font-bold text-blue-600 dark:text-blue-400">{item.amount}</h4>
-                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400">{item.status}</p>
+                  <p className="text-[12px] text-zinc-500 dark:text-zinc-400">{item.status}</p>
                 </div>
               </motion.div>
             ))}

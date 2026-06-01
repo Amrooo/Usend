@@ -119,7 +119,7 @@ export default function DriverHome({ onNavigate }: DriverHomeProps) {
               />
             </div>
             <div className="text-left rtl:text-right">
-              <p className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase">{t('good_evening')}</p>
+              <p className="text-[12px] font-bold tracking-widest text-zinc-400 uppercase">{t('good_evening')}</p>
               <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Marcus Driver</h2>
             </div>
           </div>
@@ -194,12 +194,12 @@ export default function DriverHome({ onNavigate }: DriverHomeProps) {
                       </div>
                       <div>
                         <h4 className="font-bold text-zinc-900 dark:text-zinc-100">{job.type}</h4>
-                        <p className="text-[10px] text-zinc-500 dark:text-zinc-400">{job.items}</p>
+                        <p className="text-[12px] text-zinc-500 dark:text-zinc-400">{job.items}</p>
                       </div>
                     </div>
                     <div className="text-right">
                       <h4 className="font-bold text-lg text-blue-600 dark:text-blue-400">{job.price}</h4>
-                      <p className="text-[10px] text-zinc-500 dark:text-zinc-400">{job.distance}</p>
+                      <p className="text-[12px] text-zinc-500 dark:text-zinc-400">{job.distance}</p>
                     </div>
                   </div>
 

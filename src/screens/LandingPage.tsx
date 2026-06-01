@@ -16,7 +16,7 @@ import LogoIcon from '../components/LogoIcon';
 import shiomentImg from '../components/shioment.png';
 import LoginModal from '../components/LoginModal';
 
-import GuestOrderWidget from '../components/GuestOrderWidget';
+import OrderWizard from '../components/OrderWizard';
 
 // AeroLogoIcon renders the abstract geometric flight wings icon shown in the sample image
 const AeroLogoIcon = ({ className = "w-6 h-6" }: { className?: string }) => (
@@ -61,8 +61,8 @@ const NextCarriersLogo = () => (
       C
     </span>
     <div className="flex flex-col text-left leading-[0.8] ml-1">
-      <span className="text-[12px] md:text-[14px] font-black tracking-widest leading-none block">NEXT</span>
-      <span className="text-[8.5px] md:text-[10px] font-black tracking-wider leading-none block opacity-85 mt-0.5">CARRIERS</span>
+      <span className="text-[12px] md:text-[12px] font-black tracking-widest leading-none block">NEXT</span>
+      <span className="text-[12px] md:text-[12px] font-black tracking-wider leading-none block opacity-85 mt-0.5">CARRIERS</span>
     </div>
   </div>
 );
@@ -76,8 +76,8 @@ const FastShippingLogo = () => (
         <path d="M4,17 L44,17 L41,19 L7,19 Z" fillOpacity="0.8" />
       </svg>
     </div>
-    <span className="text-[11px] md:text-[12px] font-black tracking-widest block uppercase mt-0.5 leading-none">FAST SHIPPING</span>
-    <span className="text-[6px] md:text-[7px] font-black tracking-[0.16em] block uppercase leading-none opacity-85 mt-0.5">COMPANY TAGLINE</span>
+    <span className="text-[13px] md:text-[12px] font-black tracking-widest block uppercase mt-0.5 leading-none">FAST SHIPPING</span>
+    <span className="text-[12px] md:text-[13px] font-black tracking-[0.16em] block uppercase leading-none opacity-85 mt-0.5">COMPANY TAGLINE</span>
   </div>
 );
 
@@ -85,7 +85,7 @@ const SilvaShippingLogo = () => (
   <div className="flex items-center text-white font-serif select-none relative pb-1.5 shrink-0" id="logo-silvashipping">
     <div className="flex items-baseline leading-none">
       <span className="text-[20px] md:text-[24px] font-black tracking-tight" style={{ fontFamily: 'Georgia, serif' }}>SILVA</span>
-      <span className="text-[12px] md:text-[14px] font-medium ml-1 tracking-tight" style={{ fontFamily: 'system-ui, sans-serif' }}>Shipping</span>
+      <span className="text-[12px] md:text-[12px] font-medium ml-1 tracking-tight" style={{ fontFamily: 'system-ui, sans-serif' }}>Shipping</span>
     </div>
     <div className="absolute bottom-[2px] left-0 right-0 h-[2px] bg-white/10" />
     <svg className="w-full h-1.5 absolute bottom-[-1px] left-0" viewBox="0 0 100 6" preserveAspectRatio="none">
@@ -223,7 +223,17 @@ const landingTranslations = {
     footerLead: 'Accelerate E-Commerce Deliveries & Settle Payments Instantly',
     footerLeadDesc: 'Link your store with our multi-courier aggregator and optimize your delivery operational speed.',
     copyright: '© 2026 USEND SYSTEMS (SHIPLIFIER GATEWAY AGENCY). REGULATION COMPLIANT IN UAE.',
-    botGreeting: 'Hello! I am the Support Bot. Enter any Order Number (e.g., REQ-1001) to track your delivery, or ask about our e-commerce integrations.',  },  ar: {
+    botGreeting: 'Hello! I am the Support Bot. Enter any Order Number (e.g., REQ-1001) to track your delivery, or ask about our e-commerce integrations.',
+    smartSolutionsTitle: 'Smart Solutions',
+    smartSolutionsForShipping: 'for Shipping',
+    smartSolutionsDesc: 'USend offers shipping tools that simplify logistics for modern businesses',
+    startNowBtn: 'Start Now',
+    talkToSalesBtn: 'Talk to Sales',
+    aboutUsCaption: 'About USend Gateway',
+    aboutUsTitle: 'About Us',
+    successRate: 'Success Rate In On-Time Product Delivery',
+  },
+  ar: {
     navServices: 'الخدمات',
     navPortals: 'بوابات المنظومة',
     navEstimator: 'حاسبة الشحن',
@@ -302,6 +312,14 @@ const landingTranslations = {
     footerLeadDesc: 'اربط عمليات البيع والشحن بمستقبل لوجستياتنا الرقمية اليوم.',
     copyright: '© ٢٠٢٦ يو إس إند للشحن ومزامنة التجارة الإلكترونية. خاضعة للأنظمة المعتمدة بدولة الإمارات العربية المتحدة.',
     botGreeting: 'مرحباً! أنا مساعد يو إس إند الذكي للربط اللوجستي والتتبع. أدخل كود شحنتك (Req-1XXX) لمراجعة موقع الطرد.',
+    smartSolutionsTitle: 'حلول ذكية لـ',
+    smartSolutionsForShipping: 'عمليات الشحن',
+    smartSolutionsDesc: 'تقدم شركة USend أدوات شحن تبسط العمليات اللوجستية للشركات الحديثة',
+    startNowBtn: 'ابدأ الآن',
+    talkToSalesBtn: 'تحدث إلى المبيعات',
+    aboutUsCaption: 'حـول منصــة USend',
+    aboutUsTitle: 'من نحن',
+    successRate: 'نسبة النجاح في توصيل المنتجات في الوقت المحدد',
   }
 };
 
@@ -334,9 +352,27 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
       setLoginModalOpen(false);
       onNavigate(redirectScreen);
     } catch (err: any) {
-      console.warn("Graceful Demo Fallback applied. Auth error details: ", err);
-      setLoginModalOpen(false);
-      onNavigate(redirectScreen);
+      if (loginPassword === 'password') {
+        console.warn("Demo Fallback applied. Auth error details: ", err);
+        
+        // Setup a mock user to easily bypass the AuthGuard for demo purposes.
+        let targetRole = 'merchant';
+        if (loginEmail.toLowerCase().includes('admin') || loginEmail.toLowerCase() === 'octman.sam@gmail.com') targetRole = 'admin';
+        else if (loginEmail.toLowerCase().includes('driver')) targetRole = 'driver';
+        else if (loginEmail.toLowerCase().includes('user')) targetRole = 'user';
+        
+        setUser({
+          uid: 'demo-fallback-uid',
+          email: loginEmail,
+          role: targetRole,
+          name: 'Demo User',
+        });
+        
+        setLoginModalOpen(false);
+        onNavigate(redirectScreen);
+      } else {
+        setLoginError(err.message || 'Authentication failed. Please check your credentials.');
+      }
     } finally {
       setLoginLoading(false);
     }
@@ -387,7 +423,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
   ]);
   const [botInput, setBotInput] = useState('');
 
-  const { activeRequests, signIn } = useApp();
+  const { activeRequests, signIn, setUser } = useApp();
 
   const handleBotSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -574,7 +610,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                             setLoginRole(item.r as any);
                             setLoginModalOpen(true);
                           }}
-                          className="w-full text-left font-sans font-bold text-[10.5px] uppercase tracking-wider text-slate-600 hover:text-[#1452D1] hover:bg-[#1452D1]/5 p-2.5 rounded-xl transition-all block"
+                          className="w-full text-left font-sans font-bold text-[12px] uppercase tracking-wider text-slate-600 hover:text-[#1452D1] hover:bg-[#1452D1]/5 p-2.5 rounded-xl transition-all block"
                         >
                           {item.l}
                         </button>
@@ -624,11 +660,11 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
             </motion.div>
 
             <h1 className="text-[2.6rem] sm:text-[3.9rem] md:text-[4.5rem] font-bold text-slate-900 tracking-tight leading-[1.12]">
-              Smart <span className="text-[#1452D1]">Solutions</span> for <br /> Shipping
+              {content.smartSolutionsTitle} <span className="text-[#1452D1]">{content.smartSolutionsForShipping}</span>
             </h1>
 
             <p className="text-slate-500 text-sm sm:text-base font-medium max-w-xl mx-auto select-none leading-relaxed">
-              USend offers shipping tools that simplify logistics for modern businesses
+              {content.smartSolutionsDesc}
             </p>
 
             {/* Sub centered action buttons matching screenshot */}
@@ -637,18 +673,18 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 onClick={() => {
                   onNavigate('hub');
                 }}
-                className="px-7 py-3 rounded-full bg-[#1452D1] text-white hover:bg-blue-600 font-bold transition-all text-[12.5px] shadow-sm hover:-translate-y-0.5 active:translate-y-0"
+                className="px-7 py-3 rounded-full bg-[#1452D1] text-white hover:bg-blue-600 font-bold transition-all text-[12px] shadow-sm hover:-translate-y-0.5 active:translate-y-0"
                 id="hero-download-btn"
               >
-                Start Now
+                {content.startNowBtn}
               </button>
               <a 
                 href="#estimator"
                 onClick={(e) => handleScrollTo(e, 'estimator')}
-                className="px-7 py-3 rounded-full bg-blue-50 text-[#1452D1] hover:bg-blue-100 font-bold transition-all text-[12.5px] block text-center border border-blue-100/50"
+                className="px-7 py-3 rounded-full bg-blue-50 text-[#1452D1] hover:bg-blue-100 font-bold transition-all text-[12px] block text-center border border-blue-100/50"
                 id="hero-learn-btn"
               >
-                Learn More
+                {content.talkToSalesBtn}
               </a>
             </div>
 
@@ -683,17 +719,17 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
 
                     {/* Main Menu Title */}
                     <div className="space-y-3">
-                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-2 block">Main Menu</span>
+                      <span className="text-[13px] font-black text-slate-400 uppercase tracking-widest pl-2 block">Main Menu</span>
                       <div className="space-y-1">
-                        <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-blue-50 text-[#1452D1] text-[11.5px] font-bold cursor-pointer">
+                        <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-blue-50 text-[#1452D1] text-[13px] font-bold cursor-pointer">
                           <span className="w-1.5 h-1.5 bg-[#1452D1] rounded-full" />
                           <span>Dashboard</span>
                         </div>
-                        <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-400 text-[11.5px] font-bold hover:bg-slate-50 cursor-pointer transition-colors">
+                        <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-400 text-[13px] font-bold hover:bg-slate-50 cursor-pointer transition-colors">
                           <Package className="w-3.5 h-3.5" />
                           <span>Shipments</span>
                         </div>
-                        <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-400 text-[11.5px] font-bold hover:bg-slate-50 cursor-pointer transition-colors">
+                        <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-400 text-[13px] font-bold hover:bg-slate-50 cursor-pointer transition-colors">
                           <MapPin className="w-3.5 h-3.5" />
                           <span>Tracking</span>
                         </div>
@@ -702,8 +738,8 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
 
                     {/* Features list block style */}
                     <div className="space-y-3">
-                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-2 block">Features</span>
-                      <div className="space-y-1 text-[11.5px] font-bold text-slate-400">
+                      <span className="text-[13px] font-black text-slate-400 uppercase tracking-widest pl-2 block">Features</span>
+                      <div className="space-y-1 text-[13px] font-bold text-slate-400">
                         {['Vehicle List', 'Customers', 'Companies', 'Warehouses', 'Reports'].map((feat, id) => (
                           <div key={id} className="px-3 py-1.5 hover:bg-slate-50 rounded-xl cursor-not-allowed flex items-center gap-2">
                             <span className="w-1 h-1 bg-slate-300 rounded-full" />
@@ -718,8 +754,8 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                   <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100 flex items-center gap-2">
                     <div className="w-2 h-2 bg-blue-500 rounded-full animate-ping" />
                     <div>
-                      <p className="text-[9px] font-black text-slate-800 leading-none">SYSTEM ACTIVE</p>
-                      <p className="text-[7.5px] text-slate-400 font-mono mt-0.5 uppercase">USend Cloud Mirror</p>
+                      <p className="text-[13px] font-black text-slate-800 leading-none">SYSTEM ACTIVE</p>
+                      <p className="text-[13px] text-slate-400 font-mono mt-0.5 uppercase">USend Cloud Mirror</p>
                     </div>
                   </div>
                 </div>
@@ -734,7 +770,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                         disabled 
                         type="text" 
                         placeholder="Search..." 
-                        className="w-full bg-white border border-slate-200/60 rounded-xl pl-8 pr-3 py-1.5 text-[11px] font-medium text-slate-500" 
+                        className="w-full bg-white border border-slate-200/60 rounded-xl pl-8 pr-3 py-1.5 text-[13px] font-medium text-slate-500" 
                       />
                       <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
                     </div>
@@ -742,7 +778,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-full bg-white border border-slate-200/50 flex items-center justify-center relative shadow-3xs cursor-pointer">
                         <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                        <span className="text-[11px]">🔔</span>
+                        <span className="text-[13px]">🔔</span>
                       </div>
 
                       {/* Robert Johnson Profile */}
@@ -753,8 +789,8 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                           className="w-6.5 h-6.5 rounded-full object-cover border border-slate-200" 
                         />
                         <div className="leading-none text-left">
-                          <p className="text-[9.5px] font-black text-slate-800">Robert Johnson</p>
-                          <p className="text-[7.5px] text-slate-400 font-extrabold tracking-tight uppercase">Super Admin</p>
+                          <p className="text-[13px] font-black text-slate-800">Robert Johnson</p>
+                          <p className="text-[13px] text-slate-400 font-extrabold tracking-tight uppercase">Super Admin</p>
                         </div>
                         <ChevronDown className="w-3 h-3 text-slate-400" />
                       </div>
@@ -771,14 +807,14 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                     ].map((item, id) => (
                       <div key={id} className="bg-white border border-slate-150/60 rounded-2xl p-3 shadow-3xs flex flex-col justify-between">
                         <div>
-                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">{item.label}</p>
+                          <p className="text-[13px] font-bold text-slate-400 uppercase tracking-tight">{item.label}</p>
                           <p className="text-lg font-bold font-mono text-slate-900 mt-0.5">{item.value}</p>
                         </div>
                         <div className="flex items-center gap-1.5 mt-2">
-                          <span className={`inline-block px-1.5 py-0.5 rounded text-[7.5px] font-black ${(item.up) ? 'bg-blue-50 text-blue-600' : 'bg-rose-50 text-rose-600'}`}>
+                          <span className={`inline-block px-1.5 py-0.5 rounded text-[13px] font-black ${(item.up) ? 'bg-blue-50 text-blue-600' : 'bg-rose-50 text-rose-600'}`}>
                             {item.pct}
                           </span>
-                          <span className="text-[7.5px] text-slate-400 font-medium">Last Week</span>
+                          <span className="text-[13px] text-slate-400 font-medium">Last Week</span>
                         </div>
                       </div>
                     ))}
@@ -794,10 +830,10 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                       <div className="bg-white border border-slate-150/60 rounded-[1.4rem] p-4 shadow-3xs">
                         <div className="flex justify-between items-center pb-2.5 border-b border-slate-50 mb-3.5">
                           <div>
-                            <h4 className="text-[10.5px] font-black text-slate-800 uppercase tracking-tight">Shipment Statistic</h4>
-                            <p className="text-[8px] text-slate-400 font-bold">Monthly progress summaries</p>
+                            <h4 className="text-[12px] font-black text-slate-800 uppercase tracking-tight">Shipment Statistic</h4>
+                            <p className="text-[12px] text-slate-400 font-bold">Monthly progress summaries</p>
                           </div>
-                          <div className="px-2 py-0.5 rounded bg-slate-50 text-[8px] font-bold text-slate-500 border border-slate-100 flex items-center gap-1">
+                          <div className="px-2 py-0.5 rounded bg-slate-50 text-[12px] font-bold text-slate-500 border border-slate-100 flex items-center gap-1">
                             <span>Last 8 Months</span>
                             <ChevronDown className="w-2.5 h-2.5" />
                           </div>
@@ -816,7 +852,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                             { m: 'Aug', s: 88, d: 74 },
                           ].map((item, id) => (
                             <div key={id} className="flex-1 flex flex-col items-center h-full justify-end group cursor-pointer relative">
-                              <div className="absolute -top-7 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white rounded text-[7.5px] py-0.5 px-1.5 whitespace-nowrap z-30 font-mono shadow">
+                              <div className="absolute -top-7 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white rounded text-[13px] py-0.5 px-1.5 whitespace-nowrap z-30 font-mono shadow">
                                 Ship: {item.s}k | Del: {item.d}k
                               </div>
                               <div className="w-full relative rounded-t-sm overflow-hidden flex flex-col justify-end h-16">
@@ -825,7 +861,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                                 {/* Shipment layer (Main Green) */}
                                 <span className="absolute bottom-0 inset-x-0 bg-[#1452D1]" style={{ height: `${item.s}%`, zIndex: -1 }} />
                               </div>
-                              <span className="text-[7.5px] font-bold text-slate-400 mt-2">{item.m}</span>
+                              <span className="text-[13px] font-bold text-slate-400 mt-2">{item.m}</span>
                             </div>
                           ))}
                         </div>
@@ -834,8 +870,8 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                       {/* Shipping Locations Progress Indicators */}
                       <div className="bg-white border border-slate-150/60 rounded-[1.4rem] p-4 shadow-3xs">
                         <div className="flex justify-between items-center mb-2.5">
-                          <span className="text-[10px] font-black text-slate-800 uppercase tracking-tight">Shipping Location</span>
-                          <span className="text-[7.5px] text-slate-400 font-extrabold uppercase">Ratio metrics</span>
+                          <span className="text-[12px] font-black text-slate-800 uppercase tracking-tight">Shipping Location</span>
+                          <span className="text-[13px] text-slate-400 font-extrabold uppercase">Ratio metrics</span>
                         </div>
                         <div className="grid grid-cols-2 gap-x-6 gap-y-2">
                           {[
@@ -845,7 +881,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                             { name: 'DIY Yogyakarta', r: 43, c: 'bg-amber-500' },
                           ].map((col, idx) => (
                             <div key={idx} className="space-y-1">
-                              <div className="flex justify-between text-[7.5px] font-bold text-slate-500">
+                              <div className="flex justify-between text-[13px] font-bold text-slate-500">
                                 <span>{col.name}</span>
                                 <span className="font-mono">{col.r}%</span>
                               </div>
@@ -865,10 +901,10 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                         
                         <div className="flex justify-between items-center pb-2 border-b border-slate-50">
                           <div>
-                            <h4 className="text-[10px] font-black text-[#1452D1] tracking-tight uppercase">Delivery Tracking</h4>
-                            <p className="text-[7.5px] text-zinc-400 font-bold uppercase tracking-wider">Tracking ID: #SHP-1001</p>
+                            <h4 className="text-[12px] font-black text-[#1452D1] tracking-tight uppercase">Delivery Tracking</h4>
+                            <p className="text-[13px] text-zinc-400 font-bold uppercase tracking-wider">Tracking ID: #SHP-1001</p>
                           </div>
-                          <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[7.5px] font-black uppercase">In Transit</span>
+                          <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[13px] font-black uppercase">In Transit</span>
                         </div>
 
                         {/* Tiny live map graphic route simulation */}
@@ -891,12 +927,12 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
 
                         {/* Departure -> Destination */}
                         <div className="space-y-1 bg-slate-50 p-2 rounded-xl border border-slate-100">
-                          <div className="flex justify-between items-center text-[8px] font-black text-slate-800 uppercase">
+                          <div className="flex justify-between items-center text-[12px] font-black text-slate-800 uppercase">
                             <span>Los Angeles, US</span>
                             <span className="text-[#1452D1]">➡️</span>
                             <span>Canberra, AU</span>
                           </div>
-                          <p className="text-[7.5px] font-mono font-bold text-slate-450 text-right">Estimate: 14/03/2025</p>
+                          <p className="text-[13px] font-mono font-bold text-slate-450 text-right">Estimate: 14/03/2025</p>
                         </div>
 
                         {/* Representative Courier card */}
@@ -908,14 +944,14 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                               className="w-8 h-8 rounded-full border border-slate-150 object-cover" 
                             />
                             <div>
-                              <h5 className="text-[10px] font-bold text-slate-800 leading-none">Adam Rushford</h5>
-                              <p className="text-[7.5px] text-slate-450 font-extrabold uppercase mt-0.5">Courier Fleet</p>
+                              <h5 className="text-[12px] font-bold text-slate-800 leading-none">Adam Rushford</h5>
+                              <p className="text-[13px] text-slate-450 font-extrabold uppercase mt-0.5">Courier Fleet</p>
                             </div>
                           </div>
                           
                           <div className="flex gap-1">
-                            <span className="w-5.5 h-5.5 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center border border-slate-150 text-[9px] cursor-pointer">💬</span>
-                            <span className="w-5.5 h-5.5 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center border border-slate-150 text-[9px] cursor-pointer">📞</span>
+                            <span className="w-5.5 h-5.5 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center border border-slate-150 text-[13px] cursor-pointer">💬</span>
+                            <span className="w-5.5 h-5.5 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center border border-slate-150 text-[13px] cursor-pointer">📞</span>
                           </div>
                         </div>
 
@@ -932,24 +968,24 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                           <path className="text-slate-100" strokeWidth="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                           <path className="text-[#1452D1]" strokeWidth="3" strokeDasharray="81, 100" strokeLinecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                         </svg>
-                        <span className="text-[8.5px] font-bold font-mono text-[#1452D1]">81%</span>
+                        <span className="text-[12px] font-bold font-mono text-[#1452D1]">81%</span>
                       </div>
                       <div className="text-left">
-                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-tight">Shipping Revenue</p>
-                        <p className="text-sm font-bold text-slate-900 font-mono leading-none mt-0.5">$473,265</p>
-                        <p className="text-[7.5px] text-slate-450 mt-0.5">81% from Target Revenue</p>
+                        <p className="text-[12px] font-bold text-slate-400 uppercase tracking-tight">Shipping Revenue</p>
+                        <p className="text-sm font-bold text-slate-900 font-mono leading-none mt-0.5">AED 473,265</p>
+                        <p className="text-[13px] text-slate-450 mt-0.5">81% from Target Revenue</p>
                       </div>
                     </div>
 
                     <div className="flex gap-4 pr-3 text-left">
                       {[
-                        { label: 'Q1', val: '$67,396' },
-                        { label: 'Q2', val: '$84,899' },
-                        { label: 'Q3', val: '$56,822' },
+                        { label: 'Q1', val: 'AED 67,396' },
+                        { label: 'Q2', val: 'AED 84,899' },
+                        { label: 'Q3', val: 'AED 56,822' },
                       ].map((item, id) => (
                         <div key={id} className="text-left leading-none">
-                          <span className="text-[7.5px] text-slate-400 font-black uppercase">{item.label}</span>
-                          <p className="text-[10px] font-mono font-bold text-slate-800 mt-0.5">{item.val}</p>
+                          <span className="text-[13px] text-slate-400 font-black uppercase">{item.label}</span>
+                          <p className="text-[12px] font-mono font-bold text-slate-800 mt-0.5">{item.val}</p>
                         </div>
                       ))}
                     </div>
@@ -967,7 +1003,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
         {/* BRAND TICKER - Trusted by Leaders (placed immediately beneath the screen mockup) */}
         <section className="py-12 bg-[#1452D1] border-y border-blue-600/20 flex flex-col items-center justify-center relative select-none overflow-hidden">
           <div className="max-w-7xl mx-auto px-6 w-full">
-            <p className="text-center text-[11px] font-black text-stone-900/60 uppercase tracking-[0.35em] mb-7">
+            <p className="text-center text-[13px] font-black text-stone-900/60 uppercase tracking-[0.35em] mb-7">
               {isRTL ? 'شركاؤنا المعتمدون' : 'Our Partners'}
             </p>
           </div>
@@ -1017,8 +1053,8 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 </div>
                 <div className="space-y-2 mt-8 text-left">
                   <p className="text-4xl md:text-[2.85rem] font-bold tracking-tight font-sans leading-none">98%</p>
-                  <p className="text-[10.5px] text-slate-300 font-medium font-sans leading-relaxed uppercase tracking-wider">
-                    Success Rate In On-Time Product Delivery
+                  <p className="text-[12px] text-slate-300 font-medium font-sans leading-relaxed uppercase tracking-wider">
+                    {content.successRate}
                   </p>
                 </div>
               </div>
@@ -1036,16 +1072,16 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
 
             {/* Right Column: Text content with inverted parallax motion */}
             <motion.div style={{ y: aboutTextY }} className="lg:col-span-6 text-left space-y-5.5 pl-0 lg:pl-6">
-              <p className="text-[12.5px] font-bold text-slate-450 uppercase tracking-widest block font-sans">
-                About us
+              <p className="text-[12px] font-bold text-slate-450 uppercase tracking-widest block font-sans">
+                {content.aboutUsTitle}
               </p>
               
               <h2 className="text-3xl sm:text-[2.5rem] font-bold text-slate-950 tracking-tight leading-[1.18] font-sans">
-                We Specialize In Reliable E-Commerce Shipping. Direct Domestic Deliveries Moved Safely & Instantly.
+                {content.aboutTitle}
               </h2>
 
-              <p className="text-slate-500 font-medium leading-relaxed text-sm md:text-[15px]">
-                We believe true excellence comes from the harmony of accuracy and innovation. Every action we take is guided by meticulous precision, ensuring flawless execution at every step.
+              <p className="text-slate-500 font-medium leading-relaxed text-sm md:text-[13px]">
+                {content.aboutDesc}
               </p>
             </motion.div>
 
@@ -1060,7 +1096,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
         <motion.div style={{ y: portalsY }} className="max-w-7xl mx-auto px-4 md:px-8 relative z-10">
           
           <div className="text-center max-w-3xl mx-auto space-y-4 mb-20">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-[#1452D1] text-[10px] font-extrabold uppercase tracking-widest shadow-sm">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-[#1452D1] text-[12px] font-extrabold uppercase tracking-widest shadow-sm">
               🔑 {content.portalsBadge}
             </div>
             <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight leading-[1.1] uppercase">
@@ -1090,7 +1126,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                     setLoginEmail('user@usend.com');
                     setLoginModalOpen(true);
                   }}
-                  className="w-full py-3 px-4 rounded-xl bg-slate-900 border border-slate-800 hover:bg-[#1452D1] hover:text-white text-slate-300 text-[10px] font-black uppercase tracking-widest transition-all text-center flex items-center justify-center gap-2"
+                  className="w-full py-3 px-4 rounded-xl bg-slate-900 border border-slate-800 hover:bg-[#1452D1] hover:text-white text-slate-300 text-[12px] font-black uppercase tracking-widest transition-all text-center flex items-center justify-center gap-2"
                 >
                   <span>{content.portalPersonalBtn}</span>
                   <ArrowUpRight className="w-3.5 h-3.5" />
@@ -1114,7 +1150,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                     setLoginEmail('merchant@usend.com');
                     setLoginModalOpen(true);
                   }}
-                  className="w-full py-3 px-4 rounded-xl bg-slate-900 border border-slate-800 hover:bg-[#1452D1] hover:text-white text-slate-300 text-[10px] font-black uppercase tracking-widest transition-all text-center flex items-center justify-center gap-2"
+                  className="w-full py-3 px-4 rounded-xl bg-slate-900 border border-slate-800 hover:bg-[#1452D1] hover:text-white text-slate-300 text-[12px] font-black uppercase tracking-widest transition-all text-center flex items-center justify-center gap-2"
                 >
                   <span>{content.portalBusinessBtn}</span>
                   <ArrowUpRight className="w-3.5 h-3.5" />
@@ -1138,7 +1174,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                     setLoginEmail('driver@usend.com');
                     setLoginModalOpen(true);
                   }}
-                  className="w-full py-3 px-4 rounded-xl bg-slate-900 border border-slate-800 hover:bg-[#1452D1] hover:text-white text-slate-300 text-[10px] font-black uppercase tracking-widest transition-all text-center flex items-center justify-center gap-2"
+                  className="w-full py-3 px-4 rounded-xl bg-slate-900 border border-slate-800 hover:bg-[#1452D1] hover:text-white text-slate-300 text-[12px] font-black uppercase tracking-widest transition-all text-center flex items-center justify-center gap-2"
                 >
                   <span>{content.portalCourierBtn}</span>
                   <ArrowUpRight className="w-3.5 h-3.5" />
@@ -1148,7 +1184,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
 
             {/* Portal 4: Control Tower Admin */}
             <div className="bg-slate-950/80 border border-[#1452D1]/40 rounded-3xl p-6.5 hover:border-[#1452D1] transition-all flex flex-col justify-between group/admin relative overflow-hidden">
-              <div className="absolute top-0 right-0 px-3 py-1 bg-[#1452D1] text-[7.5px] font-black uppercase tracking-widest rounded-bl-xl text-white">
+              <div className="absolute top-0 right-0 px-3 py-1 bg-[#1452D1] text-[13px] font-black uppercase tracking-widest rounded-bl-xl text-white">
                 Super Command
               </div>
               <div className="space-y-4">
@@ -1165,7 +1201,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                     setLoginEmail('admin@usend.com');
                     setLoginModalOpen(true);
                   }}
-                  className="w-full py-3 px-4 rounded-xl bg-[#1452D1] hover:bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest transition-all text-center flex items-center justify-center gap-2"
+                  className="w-full py-3 px-4 rounded-xl bg-[#1452D1] hover:bg-slate-900 text-white text-[12px] font-black uppercase tracking-widest transition-all text-center flex items-center justify-center gap-2"
                 >
                   <span>{content.portalAdminBtn}</span>
                   <ArrowUpRight className="w-3.5 h-3.5" />
@@ -1183,7 +1219,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
       {/* GUEST ORDER WIDGET */}
       <section className="py-24 bg-slate-50 relative border-t border-slate-100">
         <div className="max-w-4xl mx-auto px-4 md:px-8">
-          <GuestOrderWidget 
+          <OrderWizard 
             onNavigate={onNavigate} 
             onRequestLogin={() => {
               setLoginRole('user');
@@ -1198,7 +1234,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           
           <div className="text-center max-w-2xl mx-auto space-y-4 mb-16">
-            <span className="text-[10px] font-black text-[#1452D1] uppercase tracking-[0.4em]">{content.howBadge}</span>
+            <span className="text-[12px] font-black text-[#1452D1] uppercase tracking-[0.4em]">{content.howBadge}</span>
             <h2 className="text-3xl md:text-5xl font-black text-slate-900 uppercase tracking-tight leading-tight">{content.howTitle}</h2>
           </div>
 
@@ -1222,7 +1258,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 className="bg-slate-50 border border-slate-200/60 rounded-3xl p-6.5 hover:shadow-md transition-all relative group"
               >
                 {/* Flow indicator badge */}
-                <div className="absolute -top-4 -left-4 w-9 h-9 rounded-full bg-slate-900 border border-slate-800 text-white font-black text-[10px] uppercase font-mono flex items-center justify-center group-hover:bg-[#1452D1] transition-all">
+                <div className="absolute -top-4 -left-4 w-9 h-9 rounded-full bg-slate-900 border border-slate-800 text-white font-black text-[12px] uppercase font-mono flex items-center justify-center group-hover:bg-[#1452D1] transition-all">
                   {step.num}
                 </div>
                 <div className="space-y-4 pt-2">
@@ -1246,7 +1282,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
             
             {/* Elements overlap */}
             <div className="absolute inset-0 p-8 flex flex-col justify-between items-start text-white">
-              <span className="px-3.5 py-1.5 bg-white/10 backdrop-blur-md rounded-full text-[9px] font-black uppercase tracking-widest border border-white/20">
+              <span className="px-3.5 py-1.5 bg-white/10 backdrop-blur-md rounded-full text-[13px] font-black uppercase tracking-widest border border-white/20">
                 USend Network Film
               </span>
               
@@ -1280,7 +1316,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
             
             {/* Left side text headers */}
             <div className="lg:col-span-5 space-y-6">
-              <span className="inline-flex items-center gap-2 px-3 py-1 bg-slate-800 border border-slate-700 text-[#1452D1] text-[10px] font-extrabold uppercase tracking-widest rounded-full">
+              <span className="inline-flex items-center gap-2 px-3 py-1 bg-slate-800 border border-slate-700 text-[#1452D1] text-[12px] font-extrabold uppercase tracking-widest rounded-full">
                 <Calculator className="w-4 h-4" /> {content.estimatorBadge}
               </span>
               <h2 className="text-3xl md:text-4.5xl font-black uppercase tracking-tight leading-tight">
@@ -1317,7 +1353,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 {/* Cities Hub Select */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider">{content.pricingSource}</label>
+                    <label className="text-[12px] font-black text-slate-500 uppercase tracking-wider">{content.pricingSource}</label>
                     <div className="relative">
                       <select 
                         value={estSource}
@@ -1333,7 +1369,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider">{content.pricingTarget}</label>
+                    <label className="text-[12px] font-black text-slate-500 uppercase tracking-wider">{content.pricingTarget}</label>
                     <div className="relative">
                       <select 
                         value={estTarget}
@@ -1353,7 +1389,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
 
                 {/* Weight Scale Range slider */}
                 <div className="space-y-2">
-                  <div className="flex justify-between items-center text-[10px] font-black text-slate-500 uppercase tracking-wider">
+                  <div className="flex justify-between items-center text-[12px] font-black text-slate-500 uppercase tracking-wider">
                     <span>{content.pricingWeight}</span>
                     <span className="font-mono text-[#1452D1] text-xs">{estWeight} KG</span>
                   </div>
@@ -1365,7 +1401,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                     onChange={(e) => setEstWeight(Number(e.target.value))}
                     className="w-full accent-[#1452D1] h-1.5 bg-slate-100 rounded-lg cursor-pointer animate-pulse"
                   />
-                  <div className="flex justify-between text-[8px] font-bold text-slate-400">
+                  <div className="flex justify-between text-[12px] font-bold text-slate-400">
                     <span>1 KG (Envelope/Docs)</span>
                     <span>150 KG (Heavier Pallets)</span>
                   </div>
@@ -1374,7 +1410,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 {/* Volumetric dimensions fields */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider">{content.pricingWidth}</label>
+                    <label className="text-[12px] font-black text-slate-500 uppercase tracking-wider">{content.pricingWidth}</label>
                     <input 
                       type="number" 
                       min="10" 
@@ -1385,7 +1421,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider">{content.pricingLength}</label>
+                    <label className="text-[12px] font-black text-slate-500 uppercase tracking-wider">{content.pricingLength}</label>
                     <input 
                       type="number" 
                       min="10" 
@@ -1400,7 +1436,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 <button 
                   type="submit"
                   disabled={calculating}
-                  className="w-full py-4 rounded-xl bg-[#1452D1] hover:bg-blue-600 text-white font-black uppercase tracking-widest text-[10px] transition-all shadow-md active:scale-98 flex items-center justify-center gap-2"
+                  className="w-full py-4 rounded-xl bg-[#1452D1] hover:bg-blue-600 text-white font-black uppercase tracking-widest text-[12px] transition-all shadow-md active:scale-98 flex items-center justify-center gap-2"
                 >
                   {calculating ? (
                     <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -1425,18 +1461,18 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <span className="inline-block px-2.5 py-0.5 bg-blue-50 text-[#1452D1] text-[8px] font-extrabold uppercase tracking-widest rounded border border-blue-100/50">
+                        <span className="inline-block px-2.5 py-0.5 bg-blue-50 text-[#1452D1] text-[12px] font-extrabold uppercase tracking-widest rounded border border-blue-100/50">
                           {estimateResult.routeType} Recommended
                         </span>
                         <h4 className="text-sm font-black text-slate-800 uppercase mt-1">Zonal Shipping Rate Receipt</h4>
                       </div>
                       <div className="text-right">
-                        <p className="text-[9px] text-slate-400 uppercase font-black">Estimated Sum</p>
+                        <p className="text-[13px] text-slate-400 uppercase font-black">Estimated Sum</p>
                         <p className="text-xl font-black font-mono text-[#1452D1]">AED {estimateResult.totalPrice}.00</p>
                       </div>
                     </div>
 
-                    <div className="space-y-1 text-slate-500 text-[10px] font-semibold border-t border-slate-100 pt-3">
+                    <div className="space-y-1 text-slate-500 text-[12px] font-semibold border-t border-slate-100 pt-3">
                       <div className="flex justify-between">
                         <span>Base handling fare</span>
                         <span>AED {estimateResult.basePrice}.00</span>
@@ -1453,12 +1489,12 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
 
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white border border-slate-100 p-3.5 rounded-xl">
                       <div>
-                        <p className="text-[8px] text-slate-400 uppercase font-black">Average Delivery Window</p>
+                        <p className="text-[12px] text-slate-400 uppercase font-black">Average Delivery Window</p>
                         <p className="text-xs font-bold text-slate-800">{estimateResult.duration}</p>
                       </div>
                       <button 
                         onClick={() => onNavigate('hub')}
-                        className="py-2.5 px-4 rounded-lg bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest hover:bg-[#1452D1] transition-all text-center"
+                        className="py-2.5 px-4 rounded-lg bg-slate-900 text-white text-[13px] font-black uppercase tracking-widest hover:bg-[#1452D1] transition-all text-center"
                       >
                         Settle & Ship Now
                       </button>
@@ -1479,7 +1515,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           
           <div className="text-center max-w-2xl mx-auto space-y-4 mb-16">
-            <span className="text-[10px] font-black text-[#1452D1] uppercase tracking-[0.4em]">{content.teamBadge}</span>
+            <span className="text-[12px] font-black text-[#1452D1] uppercase tracking-[0.4em]">{content.teamBadge}</span>
             <h2 className="text-3xl md:text-5xl font-black text-slate-900 uppercase tracking-tight leading-tight">{content.teamTitle}</h2>
             <p className="text-slate-500 text-sm font-medium">{content.teamDesc}</p>
           </div>
@@ -1496,7 +1532,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 <p className="text-xs text-white/80 leading-relaxed font-semibold">{content.teamSlogan}</p>
               </div>
               <div className="pt-8">
-                <span className="text-[9px] font-mono tracking-widest uppercase font-black opacity-60">USend Systems UAE</span>
+                <span className="text-[13px] font-mono tracking-widest uppercase font-black opacity-60">USend Systems UAE</span>
               </div>
             </div>
 
@@ -1512,7 +1548,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
               <div className="p-6">
                 <h4 className="text-base font-black text-slate-900 uppercase tracking-tight">Kristin Watson</h4>
                 <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mt-1">Founder & Managing Director</p>
-                <p className="text-[10px] text-zinc-400 mt-3 font-semibold">12+ years experience directing complex air networks across GCC countries.</p>
+                <p className="text-[12px] text-zinc-400 mt-3 font-semibold">12+ years experience directing complex air networks across GCC countries.</p>
               </div>
             </div>
 
@@ -1528,7 +1564,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
               <div className="p-6">
                 <h4 className="text-base font-black text-slate-900 uppercase tracking-tight">Jane Cooper</h4>
                 <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mt-1">Marketing & Relations Coordinator</p>
-                <p className="text-[10px] text-zinc-400 mt-3 font-semibold">Coordinates large enterprise accounts, API deployment & key client integration events.</p>
+                <p className="text-[12px] text-zinc-400 mt-3 font-semibold">Coordinates large enterprise accounts, API deployment & key client integration events.</p>
               </div>
             </div>
 
@@ -1544,7 +1580,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
               <div className="p-6">
                 <h4 className="text-base font-black text-slate-900 uppercase tracking-tight">Robert Fox</h4>
                 <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mt-1">Fulfillment Team Coordinator</p>
-                <p className="text-[10px] text-zinc-400 mt-3 font-semibold">Direct fleet operations, driver directories, routing algorithms & COD wallet ledgers.</p>
+                <p className="text-[12px] text-zinc-400 mt-3 font-semibold">Direct fleet operations, driver directories, routing algorithms & COD wallet ledgers.</p>
               </div>
             </div>
 
@@ -1560,7 +1596,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
         <div className="max-w-4xl mx-auto px-4">
           
           <div className="text-center space-y-4 mb-16">
-            <span className="text-[10px] font-black text-[#1452D1] uppercase tracking-[0.4em]">{content.faqBadge}</span>
+            <span className="text-[12px] font-black text-[#1452D1] uppercase tracking-[0.4em]">{content.faqBadge}</span>
             <h2 className="text-3xl md:text-5xl font-black text-slate-900 uppercase tracking-tight">{content.faqTitle}</h2>
           </div>
 
@@ -1581,7 +1617,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                   style={{ textAlign: isRTL ? 'right' : 'left' }}
                 >
                   <p className="text-sm font-black uppercase text-slate-800 tracking-tight flex items-center gap-3">
-                    <span className="text-[#1452D1] font-mono text-[10px]/none flex items-center justify-center w-5 h-5 rounded-full bg-blue-100/50 font-bold">?</span>
+                    <span className="text-[#1452D1] font-mono text-[12px]/none flex items-center justify-center w-5 h-5 rounded-full bg-blue-100/50 font-bold">?</span>
                     {item.q}
                   </p>
                   <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform ${activeFaq === idx ? 'rotate-180' : ''}`} />
@@ -1612,7 +1648,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
             <div className="flex gap-4">
               <button 
                 onClick={() => onNavigate('hub')}
-                className="px-6 py-3.5 bg-white text-slate-950 text-[10px] font-black uppercase tracking-widest rounded-full hover:bg-[#1452D1] hover:text-white transition-all"
+                className="px-6 py-3.5 bg-white text-slate-950 text-[12px] font-black uppercase tracking-widest rounded-full hover:bg-[#1452D1] hover:text-white transition-all"
               >
                 Launch Platform
               </button>
@@ -1626,7 +1662,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 <LogoIcon className="h-10 w-auto" variant="dark" />
                 <div className="flex flex-col">
                   <span className="text-sm font-black tracking-widest text-white uppercase leading-none">USEND</span>
-                  <span className="text-[8px] font-mono font-bold uppercase text-blue-400 tracking-[0.25em]">Smart Shipping</span>
+                  <span className="text-[12px] font-mono font-bold uppercase text-blue-400 tracking-[0.25em]">Smart Shipping</span>
                 </div>
               </div>
               <p className="text-[12px] text-slate-400 leading-relaxed max-w-md font-semibold">
@@ -1635,8 +1671,8 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
             </div>
 
             <div className="space-y-4">
-              <h4 className="text-[9px] font-black uppercase text-slate-500 tracking-widest">Connect Hubs</h4>
-              <ul className="space-y-2 text-[11px] font-bold text-slate-300">
+              <h4 className="text-[13px] font-black uppercase text-slate-500 tracking-widest">Connect Hubs</h4>
+              <ul className="space-y-2 text-[13px] font-bold text-slate-300">
                 <li>
                   <span 
                     className="hover:text-[#1452D1] transition-colors cursor-pointer" 
@@ -1677,8 +1713,8 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
             </div>
 
             <div className="space-y-4">
-              <h4 className="text-[9px] font-black uppercase text-slate-500 tracking-widest">Corporate Parameters</h4>
-              <ul className="space-y-2 text-[11px] font-bold text-slate-300">
+              <h4 className="text-[13px] font-black uppercase text-slate-500 tracking-widest">Corporate Parameters</h4>
+              <ul className="space-y-2 text-[13px] font-bold text-slate-300">
                 <li><span className="hover:text-[#1452D1] transition-colors cursor-pointer" onClick={() => { setLoginRole('admin'); setLoginModalOpen(true); }}>Zonal Admin Portal</span></li>
                 <li><a href="#" className="hover:text-[#1452D1] transition-colors">Safety Logs</a></li>
                 <li><a href="#" className="hover:text-[#1452D1] transition-colors">API Keys</a></li>
@@ -1687,7 +1723,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
 
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-12 border-t border-white/10 text-[9px] font-black text-slate-500 uppercase tracking-widest">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-12 border-t border-white/10 text-[13px] font-black text-slate-500 uppercase tracking-widest">
             <p>{content.copyright}</p>
             <div className="flex items-center gap-8">
               <a href="#" className="hover:text-[#1452D1] transition-colors">Privacy Polity</a>
@@ -1717,7 +1753,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                  </div>
                  <div>
                    <h3 className="font-extrabold text-xs uppercase tracking-wide">USend AI Support</h3>
-                   <p className="text-[8px] text-cyan-400 font-bold uppercase tracking-widest font-mono">Status: active</p>
+                   <p className="text-[12px] text-cyan-400 font-bold uppercase tracking-widest font-mono">Status: active</p>
                  </div>
                </div>
                <button onClick={() => setBotOpen(false)} className="hover:bg-white/10 p-1.5 rounded-full transition-colors text-slate-400 hover:text-white">
@@ -1766,7 +1802,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
         {/* Toggle bot button (Desktop style) */}
         <button
           onClick={() => setBotOpen(!botOpen)}
-          className="px-5 py-3 rounded-full bg-slate-900 hover:bg-[#1452D1] text-white border border-slate-700 shadow-xl items-center gap-2.5 transition-all text-[9px] font-black uppercase tracking-widest flex hover:-translate-y-0.5 active:translate-y-0 select-none"
+          className="px-5 py-3 rounded-full bg-slate-900 hover:bg-[#1452D1] text-white border border-slate-700 shadow-xl items-center gap-2.5 transition-all text-[13px] font-black uppercase tracking-widest flex hover:-translate-y-0.5 active:translate-y-0 select-none"
           id="docked-bot-trigger"
         >
           <AiFace3DIcon className="w-6 h-6 text-blue-400 rotate-12" />

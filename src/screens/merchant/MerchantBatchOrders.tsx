@@ -44,6 +44,7 @@ interface ValidationErrors {
     customer?: string;
     address?: string;
     amount?: string;
+    phone?: string;
   };
 }
 
@@ -54,7 +55,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
   
   // Tab 1: Standard Batch Rows
   const [orders, setOrders] = useState<OrderRow[]>([
-    { id: 1, customer: '', phone: '', address: '', amount: '', paymentType: 'card' }
+    { id: 1, customer: '', phone: '+971 ', address: '', amount: '', paymentType: 'card' }
   ]);
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [isSubmittingCSV, setIsSubmittingCSV] = useState(false);
@@ -102,10 +103,20 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
       for (let i = 1; i < lines.length; i++) {
         if (!lines[i].trim()) continue;
         const [customerName, phone, address, amount, paymentType] = lines[i].split(',');
+        
+        // Handle CSV phone
+        let parsedPhone = phone?.trim() || '';
+        if (parsedPhone && !parsedPhone.startsWith('+')) {
+           parsedPhone = '+971 ' + parsedPhone.replace(/^0?5/, '5').replace(/[^0-9]/g, '');
+        } else if (parsedPhone && parsedPhone.startsWith('+971')) {
+           parsedPhone = '+971 ' + parsedPhone.slice(4).replace(/[^0-9]/g, '');
+        }
+        if (!parsedPhone) parsedPhone = '+971 ';
+
         newOrders.push({
           id: Date.now() + i,
           customer: customerName?.trim() || '',
-          phone: phone?.trim() || '',
+          phone: parsedPhone,
           address: address?.trim() || '',
           amount: amount?.trim() || '',
           paymentType: (paymentType?.trim().toLowerCase() === 'cash' ? 'cash' : 'card')
@@ -125,7 +136,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
   };
 
   const addOrderRow = () => {
-    setOrders([...orders, { id: Date.now(), customer: '', phone: '', address: '', amount: '', paymentType: 'card' }]);
+    setOrders([...orders, { id: Date.now(), customer: '', phone: '+971 ', address: '', amount: '', paymentType: 'card' }]);
   };
 
   const removeOrderRow = (id: number) => {
@@ -142,12 +153,20 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
     if (errors[id]?.[field as keyof ValidationErrors[number]]) {
       setErrors({
         ...errors,
-        [id]: {
-          ...errors[id],
-          [field]: undefined
-        }
+        [id]: { ...errors[id], [field]: undefined }
       });
     }
+  };
+
+  const updatePhone = (id: number, val: string) => {
+    if (!val.startsWith('+971 ')) {
+       if (val.length < 5) val = '+971 ';
+       else val = '+971 ' + val.replace(/^\+?9?7?1?\s*/, '').replace(/[^0-9]/g, '');
+    } else {
+       val = '+971 ' + val.slice(5).replace(/[^0-9]/g, ''); 
+    }
+    if (val.length > 14) val = val.slice(0, 14);
+    updateOrder(id, 'phone', val);
   };
 
   const validateOrders = () => {
@@ -159,6 +178,10 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
       
       if (!order.customer.trim()) {
         orderErrors.customer = t('required_field') || 'Required';
+        isValid = false;
+      }
+      if (!order.phone || !/^\+971 \d{9}$/.test(order.phone)) {
+        orderErrors.phone = "Invalid UAE phone (e.g. +971 50 XXXXXXX)";
         isValid = false;
       }
       if (!order.address.trim()) {
@@ -281,7 +304,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
           {/* Section Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 pb-5">
             <div>
-              <span className="text-blue-600 font-bold text-[10px] uppercase tracking-[0.4em] block">
+              <span className="text-blue-600 font-bold text-[12px] uppercase tracking-[0.4em] block">
                 {isFreightMode || isFreightQuoteMode ? 'Container Freight & Port Services' : 'Enterprise Bulk Shipping'}
               </span>
               <h1 className="text-3xl font-display font-medium text-zinc-900 uppercase tracking-tight mt-1">
@@ -384,7 +407,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse min-w-[900px]">
                     <thead>
-                      <tr className="bg-zinc-50 border-b border-zinc-100 text-zinc-500 text-[10px] font-black uppercase tracking-widest">
+                      <tr className="bg-zinc-50 border-b border-zinc-100 text-zinc-500 text-[12px] font-black uppercase tracking-widest">
                         <th className="p-4 pl-6">Customer</th>
                         <th className="p-4">Phone</th>
                         <th className="p-4 w-1/3">Address Dropoff</th>
@@ -411,10 +434,14 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
                             <input 
                               type="tel" 
                               value={order.phone} 
-                              onChange={(e) => updateOrder(order.id, 'phone', e.target.value)}
-                              placeholder="+971 50..."
-                              className="w-full bg-transparent px-3 py-2 border border-zinc-200 rounded-lg text-xs outline-none focus:border-blue-500"
+                              onChange={(e) => updatePhone(order.id, e.target.value)}
+                              placeholder="+971 50 1234567"
+                              className={`w-full bg-transparent px-3 py-2 border rounded-lg text-xs outline-none font-mono tracking-widest ${errors[order.id]?.phone ? 'border-red-500 bg-red-50/30' : 'border-zinc-200 focus:border-blue-500'}`}
+                              dir="ltr"
                             />
+                            {errors[order.id]?.phone && (
+                              <p className="text-[10px] text-red-500 mt-1">{errors[order.id]?.phone}</p>
+                            )}
                           </td>
                           <td className="p-3">
                             <input 
@@ -496,13 +523,13 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
                     </div>
                     <div>
                       <h2 className="font-bold text-lg text-zinc-900">Commercial Carrier Booking details</h2>
-                      <span className="text-[11px] text-zinc-400">Ingest dimensions and coordinates for heavy containerized fleet dispatch</span>
+                      <span className="text-[13px] text-zinc-400">Ingest dimensions and coordinates for heavy containerized fleet dispatch</span>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-wider text-zinc-400">Origin Port Terminal</label>
+                      <label className="text-[12px] font-black uppercase tracking-wider text-zinc-400">Origin Port Terminal</label>
                       <input 
                         type="text" 
                         value={freightData.loadingPort}
@@ -511,7 +538,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-wider text-zinc-400">Destination Warehouse/Airport</label>
+                      <label className="text-[12px] font-black uppercase tracking-wider text-zinc-400">Destination Warehouse/Airport</label>
                       <input 
                         type="text" 
                         value={freightData.deliveryLocation}
@@ -523,7 +550,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-wider text-zinc-400">Container Size Class</label>
+                      <label className="text-[12px] font-black uppercase tracking-wider text-zinc-400">Container Size Class</label>
                       <select 
                         value={freightData.containerSize}
                         onChange={(e) => setFreightData({...freightData, containerSize: e.target.value})}
@@ -536,7 +563,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-wider text-zinc-400">Pallet Pallet Count</label>
+                      <label className="text-[12px] font-black uppercase tracking-wider text-zinc-400">Pallet Pallet Count</label>
                       <input 
                         type="number" 
                         value={freightData.palletQty}
@@ -545,7 +572,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-wider text-zinc-400">Gross Weight Lock (Kg)</label>
+                      <label className="text-[12px] font-black uppercase tracking-wider text-zinc-400">Gross Weight Lock (Kg)</label>
                       <input 
                         type="number" 
                         value={freightData.grossWeight}
@@ -566,7 +593,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
                       />
                       <div>
                         <label htmlFor="haz" className="font-bold text-xs text-zinc-800 cursor-pointer block">Dangerous Goods Manifest & UN classification compliance</label>
-                        <span className="text-[10px] text-zinc-400 block">Required for lithium batteries, chemicals, or materials presenting safety hazards during road transport.</span>
+                        <span className="text-[12px] text-zinc-400 block">Required for lithium batteries, chemicals, or materials presenting safety hazards during road transport.</span>
                       </div>
                     </div>
                   </div>
@@ -598,7 +625,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
                     ) : (
                       <div className="space-y-4">
                         <div className="p-5 bg-zinc-900 text-white rounded-3xl text-center">
-                          <span className="text-[10px] text-zinc-400 font-extrabold uppercase tracking-widest block">Invoiced Liner Quote</span>
+                          <span className="text-[12px] text-zinc-400 font-extrabold uppercase tracking-widest block">Invoiced Liner Quote</span>
                           <span className="text-2xl font-mono font-black mt-1 block">AED {freightQuoteResponse.grandTotal}</span>
                         </div>
 
@@ -662,14 +689,14 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
                   className={`p-5 rounded-2xl border-2 text-left transition-all ${freightData.containerSize === '20gp' ? 'border-blue-500 bg-blue-50/10' : 'border-zinc-200'}`}
                 >
                   <span className="font-black text-xs text-zinc-800 block">Class 20GP container</span>
-                  <span className="text-[10px] text-zinc-400 mt-1 block">Standard Dry cargo locker</span>
+                  <span className="text-[12px] text-zinc-400 mt-1 block">Standard Dry cargo locker</span>
                 </button>
                 <button 
                   onClick={() => setFreightData({...freightData, containerSize: '40hc'})}
                   className={`p-5 rounded-2xl border-2 text-left transition-all ${freightData.containerSize === '40hc' ? 'border-blue-500 bg-blue-50/10' : 'border-zinc-200'}`}
                 >
                   <span className="font-black text-xs text-zinc-800 block">Class 40HC container</span>
-                  <span className="text-[10px] text-zinc-400 mt-1 block">Extra high volume dry container</span>
+                  <span className="text-[12px] text-zinc-400 mt-1 block">Extra high volume dry container</span>
                 </button>
               </div>
 

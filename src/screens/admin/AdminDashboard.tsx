@@ -18,7 +18,7 @@ const createInteractiveMarker = (colorClass: string, shadowColor: string, label:
     className: 'custom-interactive-marker',
     html: `<div class="relative group w-full h-full cursor-pointer">
         <div class="w-5 h-5 ${colorClass} rounded-full border-2 border-white shadow-[0_0_15px_${shadowColor}] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 group-hover:scale-110 transition-transform"></div>
-        <div class="absolute top-full left-1/2 -translate-x-1/2 mt-3 bg-white text-zinc-900 text-[10px] font-bold px-3 py-1.5 rounded-lg shadow-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+        <div class="absolute top-full left-1/2 -translate-x-1/2 mt-3 bg-white text-zinc-900 text-[12px] font-bold px-3 py-1.5 rounded-lg shadow-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
           ${label}
         </div>
       </div>`,
@@ -34,7 +34,7 @@ import {
   ArrowUpRight, ArrowDownRight, MoreVertical,
   LogOut, LayoutDashboard, Database, MessageSquare, DollarSign, Wallet, Percent, CreditCard, ChevronDown, CheckCircle2, XCircle, Clock,
   Inbox, UserCircle2, Building2, MapPin, Code2, Repeat, X,
-  Boxes, ClipboardList, FileText, Coins, TrendingUp, Anchor, Plus
+  Boxes, ClipboardList, FileText, Coins, TrendingUp, Anchor, Plus, Check
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
@@ -55,12 +55,12 @@ const revenueData = [
 ];
 
 function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
-  const { isRTL } = useLanguage();
+  const { t, isRTL } = useLanguage();
   const stats = [
     { label: 'Today\'s Revenue', value: '42,500 AED', trend: '+12%', icon: <DollarSign className="w-5 h-5" />, color: 'text-brand' },
     { label: 'Pending Requests', value: '142', trend: '+5', icon: <Clock className="w-5 h-5" />, color: 'text-orange-500' },
     { label: 'Settlements Due', value: '1.2M AED', trend: '-2%', icon: <Wallet className="w-5 h-5" />, color: 'text-purple-600' },
-    { label: 'Active Merchants', value: '842', trend: '+18', icon: <Store className="w-5 h-5" />, color: 'text-blue-500' },
+    { label: t('active_merchants') || 'Active Merchants', value: '842', trend: '+18', icon: <Store className="w-5 h-5" />, color: 'text-blue-500' },
   ];
 
   return (
@@ -78,10 +78,10 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
               <div className={`w-12 h-12 rounded-2xl bg-zinc-50 flex items-center justify-center ${stat.color} group-hover:scale-110 transition-transform`}>
                 {stat.icon}
               </div>
-              <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest ${stat.trend.startsWith('+') ? 'text-blue-600 bg-blue-50' : 'text-red-600 bg-red-50'}`}>{stat.trend}</span>
+              <span className={`text-[12px] font-black px-3 py-1 rounded-full uppercase tracking-widest ${stat.trend.startsWith('+') ? 'text-blue-600 bg-blue-50' : 'text-red-600 bg-red-50'}`}>{stat.trend}</span>
             </div>
             <p className="text-3xl lg:text-4xl font-display font-medium mb-2 tracking-tight text-zinc-900">{stat.value}</p>
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">{stat.label}</p>
+            <p className="text-[12px] font-black uppercase tracking-[0.3em] text-zinc-400">{stat.label}</p>
           </motion.div>
         ))}
       </div>
@@ -90,17 +90,17 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
         <div className="lg:col-span-2 bg-white border border-zinc-200 rounded-[3rem] p-10 overflow-hidden relative shadow-sm">
           <div className="flex items-center justify-between mb-12">
             <div>
-              <h3 className="text-xl font-display font-medium uppercase tracking-tight text-zinc-900 mb-2">Financial Overview</h3>
-              <p className="text-xs text-zinc-500 font-medium">Revenue vs Settlements (Weekly)</p>
+              <h3 className="text-xl font-display font-medium uppercase tracking-tight text-zinc-900 mb-2">{t('financial_overview') || 'Financial Overview'}</h3>
+              <p className="text-xs text-zinc-500 font-medium">{t('revenue_settlements') || 'Revenue vs Settlements (Weekly)'}</p>
             </div>
             <div className="flex items-center gap-4">
                <div className="flex items-center gap-2">
                  <div className="w-2 h-2 rounded-full bg-brand"></div>
-                 <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Revenue</span>
+                 <span className="text-[12px] font-bold uppercase tracking-widest text-zinc-400">{t('revenue') || 'Revenue'}</span>
                </div>
                <div className="flex items-center gap-2">
                  <div className="w-2 h-2 rounded-full bg-zinc-200"></div>
-                 <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Settlements</span>
+                 <span className="text-[12px] font-bold uppercase tracking-widest text-zinc-400">{t('settlements') || 'Settlements'}</span>
                </div>
             </div>
           </div>
@@ -133,8 +133,8 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
           className="bg-white border border-zinc-200 rounded-[3rem] p-10 relative overflow-hidden shadow-sm flex flex-col cursor-pointer group/card hover:border-brand/30 hover:shadow-xl transition-all"
         >
           <div className="mb-8">
-             <h3 className="text-xl font-display font-medium uppercase tracking-tight text-zinc-900 mb-2 group-hover/card:text-brand transition-colors">UAE Operations Map</h3>
-             <p className="text-xs text-zinc-500 font-medium">Live origin of requests across Emirates</p>
+             <h3 className="text-xl font-display font-medium uppercase tracking-tight text-zinc-900 mb-2 group-hover/card:text-brand transition-colors">{t('uae_ops_map')}</h3>
+             <p className="text-xs text-zinc-500 font-medium">{t('live_origin')}</p>
           </div>
           <div className="flex-1 min-h-[250px] bg-zinc-900 rounded-[2rem] relative overflow-hidden group z-0">
              <MapContainer center={[24.2, 54.5]} zoom={6} scrollWheelZoom={false} style={{ height: '100%', width: '100%', backgroundColor: '#18181b' }} zoomControl={false} dragging={true}>
@@ -152,19 +152,19 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
           <div className="grid grid-cols-2 gap-4 mt-8 pointer-events-none">
              <div className="flex items-center gap-3">
                <div className="w-2 h-2 bg-brand rounded-full"></div>
-               <span className="text-xs font-bold text-zinc-600">Merchant API</span>
+               <span className="text-xs font-bold text-zinc-600">{t('merchant_api')}</span>
              </div>
              <div className="flex items-center gap-3">
                <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-               <span className="text-xs font-bold text-zinc-600">Mobile Apps</span>
+               <span className="text-xs font-bold text-zinc-600">{t('mobile_apps')}</span>
              </div>
              <div className="flex items-center gap-3">
                <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
-               <span className="text-xs font-bold text-zinc-600">B2B Integrations</span>
+               <span className="text-xs font-bold text-zinc-600">{t('b2b_integrations')}</span>
              </div>
              <div className="flex items-center gap-3">
                <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-               <span className="text-xs font-bold text-zinc-600">Manual Entry</span>
+               <span className="text-xs font-bold text-zinc-600">{t('manual_entry')}</span>
              </div>
           </div>
         </div>
@@ -268,7 +268,10 @@ function RequestsHub() {
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [statusFilter, setStatusFilter] = useState('All Requests');
   const [channelFilter, setChannelFilter] = useState('All Channels');
+  const [carrierFilter, setCarrierFilter] = useState('All Carriers');
   const [expressSearch, setExpressSearch] = useState('');
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const [dateRange, setDateRange] = useState({ start: '', end: '' });
   
   // Pagination State for Express requests list
   const [expressPage, setExpressPage] = useState(1);
@@ -355,15 +358,37 @@ function RequestsHub() {
 
   // Filters computed cleanly
   const filteredRequests = activeRequests.filter(req => {
-    const matchesStatus = statusFilter === 'All Requests' || req.status === statusFilter;
+    const isExceptionFilter = statusFilter === 'Exceptions';
+    const matchesStatus = statusFilter === 'All Requests' || (isExceptionFilter ? (req.status === 'Rejected' || req.status === 'Exceptions') : req.status === statusFilter);
     const matchesChannel = channelFilter === 'All Channels' || req.channel === channelFilter;
+    const matchesCarrier = carrierFilter === 'All Carriers' || req.carrier === carrierFilter;
     const matchesSearch = !expressSearch.trim() || 
       (req.id || '').toLowerCase().includes(expressSearch.toLowerCase()) ||
       (req.name || '').toLowerCase().includes(expressSearch.toLowerCase()) ||
       (req.itemType || '').toLowerCase().includes(expressSearch.toLowerCase()) ||
       (req.address || '').toLowerCase().includes(expressSearch.toLowerCase());
 
-    return matchesStatus && matchesChannel && matchesSearch;
+    let matchesDate = true;
+    if (dateRange.start || dateRange.end) {
+      const reqTime = req.createdAt ? new Date(req.createdAt).getTime() : Date.parse(req.date);
+      if (!isNaN(reqTime)) {
+         if (dateRange.start && reqTime < new Date(dateRange.start).getTime()) matchesDate = false;
+         if (dateRange.end && reqTime > new Date(dateRange.end).getTime() + 86400000) matchesDate = false;
+      }
+    }
+
+    return matchesStatus && matchesChannel && matchesCarrier && matchesSearch && matchesDate;
+  }).sort((a, b) => {
+      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : (Date.parse(a.date) || 0);
+      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : (Date.parse(b.date) || 0);
+
+      if (sortOrder === 'newest') {
+         if (timeA !== timeB) return timeB - timeA;
+         return b.id.localeCompare(a.id);
+      } else {
+         if (timeA !== timeB) return timeA - timeB;
+         return a.id.localeCompare(b.id);
+      }
   });
 
   // Paginated List
@@ -435,7 +460,7 @@ function RequestsHub() {
         <div className="flex gap-4 p-1.5 bg-zinc-200/50 border border-zinc-200 rounded-[2rem] max-w-lg shadow-sm">
           <button 
             onClick={() => setBusinessLine('express')}
-            className={`flex-1 text-center py-3 px-6 rounded-full text-[10.5px] font-black uppercase tracking-wider transition-all leading-none ${
+            className={`flex-1 text-center py-3 px-6 rounded-full text-[12px] font-black uppercase tracking-wider transition-all leading-none ${
               businessLine === 'express' ? 'bg-zinc-900 text-white shadow-md' : 'text-zinc-500 hover:text-zinc-800'
             }`}
           >
@@ -443,7 +468,7 @@ function RequestsHub() {
           </button>
           <button 
             onClick={() => setBusinessLine('freight')}
-            className={`flex-1 text-center py-3 px-6 rounded-full text-[10.5px] font-black uppercase tracking-wider transition-all leading-none ${
+            className={`flex-1 text-center py-3 px-6 rounded-full text-[12px] font-black uppercase tracking-wider transition-all leading-none ${
               businessLine === 'freight' ? 'bg-zinc-900 text-white shadow-md' : 'text-zinc-500 hover:text-zinc-800'
             }`}
           >
@@ -454,7 +479,7 @@ function RequestsHub() {
         {businessLine === 'express' && (
           <button 
             onClick={() => setIsBookingOpen(true)}
-            className="px-6 py-3 bg-brand text-white text-[10px] font-black uppercase tracking-widest rounded-full hover:scale-105 transition-all shadow-xl shadow-brand/20 flex items-center gap-2"
+            className="px-6 py-3 bg-brand text-white text-[12px] font-black uppercase tracking-widest rounded-full hover:scale-105 transition-all shadow-xl shadow-brand/20 flex items-center gap-2"
           >
             <Plus className="w-4 h-4" /> Book Delivery
           </button>
@@ -466,45 +491,45 @@ function RequestsHub() {
            {/* Freight KPI Summary widgets */}
            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="bg-white border border-zinc-200 p-6 rounded-[2rem] shadow-sm">
-                 <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Active Containers</span>
+                 <span className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block mb-1">{t('active_containers') || 'Active Containers'}</span>
                  <p className="text-2xl font-bold text-zinc-900">4 Runs</p>
-                 <span className="text-[10px] text-zinc-400 mt-2 block">Heavy logistics pipelines active</span>
+                 <span className="text-[12px] text-zinc-400 mt-2 block">{t('heavy_pipelines') || 'Heavy logistics pipelines active'}</span>
               </div>
               <div className="bg-white border border-zinc-200 p-6 rounded-[2rem] shadow-sm">
-                 <span className="text-[9px] font-black uppercase tracking-widest text-[#4f95cc] block mb-1">Total Payload Weight</span>
+                 <span className="text-[13px] font-black uppercase tracking-widest text-[#4f95cc] block mb-1">{t('total_payload_weight') || 'Total Payload Weight'}</span>
                  <p className="text-2xl font-bold text-[#4f95cc]">49,000 kg</p>
-                 <span className="text-[10px] text-zinc-400 mt-2 block">Across marine & road fleets</span>
+                 <span className="text-[12px] text-zinc-400 mt-2 block">Across marine & road fleets</span>
               </div>
               <div className="bg-white border border-zinc-200 p-6 rounded-[2rem] shadow-sm">
-                 <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Active Pallet Count</span>
+                 <span className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block mb-1">{t('active_pallet_count') || 'Active Pallet Count'}</span>
                  <p className="text-2xl font-bold text-zinc-900">62 Pallets</p>
-                 <span className="text-[10px] text-zinc-400 mt-2 block">Standard block packing size</span>
+                 <span className="text-[12px] text-zinc-400 mt-2 block">{t('standard_block_size') || 'Standard block packing size'}</span>
               </div>
               <div className="bg-white border border-zinc-200 p-6 rounded-[2rem] shadow-sm">
-                 <span className="text-[9px] font-black uppercase tracking-widest text-blue-600 block mb-1">Freight Turnovers</span>
+                 <span className="text-[13px] font-black uppercase tracking-widest text-blue-600 block mb-1">{t('freight_turnovers') || 'Freight Turnovers'}</span>
                  <p className="text-2xl font-bold text-blue-700">17,600 AED</p>
-                 <span className="text-[10px] text-blue-500 mt-2 block">Gross commercial billings</span>
+                 <span className="text-[12px] text-blue-500 mt-2 block">{t('gross_billings') || 'Gross commercial billings'}</span>
               </div>
            </div>
 
            {/* Freight Orders Table */}
            <div className="bg-white border border-zinc-200 rounded-[3rem] p-10 overflow-hidden relative shadow-sm animate-in fade-in">
               <div className="mb-8">
-                 <h3 className="text-xl font-display font-medium uppercase tracking-tight text-zinc-900">Heavy Freight Operations Center</h3>
+                 <h3 className="text-xl font-display font-medium uppercase tracking-tight text-zinc-900">{t('heavy_freight_center') || 'Heavy Freight Operations Center'}</h3>
                  <p className="text-xs text-zinc-500 font-medium">Coordinate, inspect, and approve heavy freight movements and port clearances across the UAE.</p>
               </div>
 
               <div className="overflow-x-auto">
                  <table className="w-full text-left border-collapse min-w-[900px]">
                     <thead>
-                       <tr className="bg-zinc-50 text-zinc-400 text-[10px] font-black uppercase tracking-widest border-b border-zinc-100">
-                          <th className="p-6">Shipment ID</th>
-                          <th className="p-6">Booked By</th>
-                          <th className="p-6 font-mono">Freight Class / Specs</th>
-                          <th className="p-6">Delivery Path</th>
-                          <th className="p-6">Gross Quote</th>
-                          <th className="p-6">Transit Status</th>
-                          <th className="p-6 text-center">Clearance Action</th>
+                       <tr className="bg-zinc-50 text-zinc-400 text-[12px] font-black uppercase tracking-widest border-b border-zinc-100">
+                          <th className={`p-6 ${isRTL ? 'text-right' : 'text-left'}`}>{t('shipment_id') || 'Shipment ID'}</th>
+                          <th className={`p-6 ${isRTL ? 'text-right' : 'text-left'}`}>{t('booked_by') || 'Booked By'}</th>
+                          <th className={`p-6 font-mono ${isRTL ? 'text-right' : 'text-left'}`}>{t('cargo_spec_category') || 'Freight Class / Specs'}</th>
+                          <th className={`p-6 ${isRTL ? 'text-right' : 'text-left'}`}>{t('delivery_path') || 'Delivery Path'}</th>
+                          <th className={`p-6 ${isRTL ? 'text-right' : 'text-left'}`}>{t('gross_quote') || 'Gross Quote'}</th>
+                          <th className={`p-6 ${isRTL ? 'text-right' : 'text-left'}`}>{t('transit_status') || 'Transit Status'}</th>
+                          <th className="p-6 text-center">{t('clearance_action') || 'Clearance Action'}</th>
                        </tr>
                     </thead>
                     <tbody className="text-sm font-medium">
@@ -514,12 +539,12 @@ function RequestsHub() {
                              <td className="p-6 font-bold text-zinc-800">{item.merchant}</td>
                              <td className="p-6">
                                 <span className="text-zinc-800 block text-xs font-bold font-mono">{item.containerType}</span>
-                                <span className="text-[10px] text-zinc-400 mt-0.5 block">{item.pallets} Pallets ({item.weight})</span>
+                                <span className="text-[12px] text-zinc-400 mt-0.5 block">{item.pallets} Pallets ({item.weight})</span>
                              </td>
                              <td className="p-6 text-zinc-650 text-xs">{item.route}</td>
                              <td className="p-6 text-brand font-bold">{item.charge}</td>
                              <td className="p-6">
-                                <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                                <span className={`px-2.5 py-1 rounded-full text-[13px] font-black uppercase tracking-widest ${
                                    item.status.includes('Awaiting') ? 'bg-orange-50 text-orange-600' :
                                    item.status.includes('Inspected') ? 'bg-indigo-50 text-indigo-600' :
                                    item.status.includes('Delivered') ? 'bg-blue-50 text-blue-600' :
@@ -532,21 +557,21 @@ function RequestsHub() {
                                 {item.status === 'Awaiting Port Clearance' ? (
                                    <button 
                                       onClick={() => updateFreightStatus(item.id, 'Customs Inspected')}
-                                      className="text-[9px] bg-zinc-900 hover:bg-zinc-800 text-white font-black uppercase tracking-widest px-3.5 py-2 rounded-xl transition-all"
+                                      className="text-[13px] bg-zinc-900 hover:bg-zinc-800 text-white font-black uppercase tracking-widest px-3.5 py-2 rounded-xl transition-all"
                                    >
                                       Authorize Port Release
                                    </button>
                                 ) : item.status === 'Customs Inspected' ? (
                                    <button 
                                       onClick={() => updateFreightStatus(item.id, 'En-Route Ground Carrier')}
-                                      className="text-[9px] bg-brand hover:bg-brand/90 text-white font-black uppercase tracking-widest px-3.5 py-2 rounded-xl transition-all shadow-md shadow-brand/10"
+                                      className="text-[13px] bg-brand hover:bg-brand/90 text-white font-black uppercase tracking-widest px-3.5 py-2 rounded-xl transition-all shadow-md shadow-brand/10"
                                    >
                                       Dispatch Heavy Hauler
                                    </button>
                                 ) : item.status === 'En-Route Ground Carrier' ? (
                                    <button 
                                       onClick={() => updateFreightStatus(item.id, 'Delivered & Remitted')}
-                                      className="text-[9px] bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest px-3.5 py-2 rounded-xl transition-all"
+                                      className="text-[13px] bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest px-3.5 py-2 rounded-xl transition-all"
                                    >
                                       Confirm Deliver Signoff
                                    </button>
@@ -564,39 +589,78 @@ function RequestsHub() {
       ) : (
         <>
         {/* Universal Filter UX */}
-        <div className="bg-white border border-zinc-200 rounded-[2.5rem] p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm">
-          <div className="flex gap-1.5 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-none">
-              <button onClick={() => setStatusFilter('All Requests')} className={`px-4 py-2.5 rounded-full text-[10.5px] font-bold uppercase tracking-wider shadow-sm flex items-center gap-2 transition-colors ${statusFilter === 'All Requests' ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-zinc-400"></div>All</button>
-              <button onClick={() => setStatusFilter('Pending')} className={`px-4 py-2.5 rounded-full text-[10.5px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Pending' ? 'bg-orange-50 text-orange-655 ring-1 ring-orange-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-orange-400"></div>Pending</button>
-              <button onClick={() => setStatusFilter('Reviewing')} className={`px-4 py-2.5 rounded-full text-[10.5px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Reviewing' ? 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>Reviewing</button>
-              <button onClick={() => setStatusFilter('Approved')} className={`px-4 py-2.5 rounded-full text-[10.5px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Approved' ? 'bg-blue-50 text-blue-600 ring-1 ring-emerald-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>Approved</button>
-              <button onClick={() => setStatusFilter('assigning')} className={`px-4 py-2.5 rounded-full text-[10.5px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'assigning' ? 'bg-blue-50 text-blue-600 ring-1 ring-blue-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>Assigning</button>
-              <button onClick={() => setStatusFilter('in_transit')} className={`px-4 py-2.5 rounded-full text-[10.5px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'in_transit' ? 'bg-purple-50 text-purple-600 ring-1 ring-purple-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>In Transit</button>
-              <button onClick={() => setStatusFilter('delivered')} className={`px-4 py-2.5 rounded-full text-[10.5px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'delivered' ? 'bg-blue-50 text-blue-705 ring-1 ring-green-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>Delivered</button>
+        <div className="bg-white border border-zinc-200 rounded-[2.5rem] p-5 flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 shadow-sm">
+          <div className="flex gap-1.5 overflow-x-auto w-full xl:w-auto pb-2 xl:pb-0 scrollbar-none">
+              <button onClick={() => setStatusFilter('All Requests')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider shadow-sm flex items-center gap-2 transition-colors ${statusFilter === 'All Requests' ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-zinc-400"></div>All</button>
+              <button onClick={() => setStatusFilter('Pending')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Pending' ? 'bg-orange-50 text-orange-655 ring-1 ring-orange-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-orange-400"></div>Pending</button>
+              <button onClick={() => setStatusFilter('Exceptions')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Exceptions' ? 'bg-red-50 text-red-650 ring-1 ring-red-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>{t('exceptions') || 'Exceptions'}</button>
+              <button onClick={() => setStatusFilter('Reviewing')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Reviewing' ? 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>Reviewing</button>
+              <button onClick={() => setStatusFilter('Approved')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Approved' ? 'bg-blue-50 text-blue-600 ring-1 ring-emerald-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>Approved</button>
+              <button onClick={() => setStatusFilter('assigning')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'assigning' ? 'bg-blue-50 text-blue-600 ring-1 ring-blue-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>Assigning</button>
+              <button onClick={() => setStatusFilter('in_transit')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'in_transit' ? 'bg-purple-50 text-purple-600 ring-1 ring-purple-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>In Transit</button>
+              <button onClick={() => setStatusFilter('delivered')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'delivered' ? 'bg-blue-50 text-blue-705 ring-1 ring-green-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>Delivered</button>
           </div>
           
-          <div className="flex gap-2 w-full md:w-auto items-center">
-              <div className="relative flex-1 md:w-64">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400" />
-                <input 
-                  type="text" 
-                  placeholder="Search express..."
-                  value={expressSearch}
-                  onChange={(e) => setExpressSearch(e.target.value)}
-                  className="w-full bg-zinc-50 border border-zinc-200 rounded-full py-2 pl-9 pr-4 text-xs font-semibold text-zinc-700 placeholder-zinc-400 outline-none focus:border-brand transition-all"
-                />
-              </div>
+          <div className="flex flex-col xl:flex-row flex-wrap gap-2 w-full xl:w-auto items-center xl:justify-end mt-2 xl:mt-0">
+               <div className="flex gap-2 w-full md:w-auto">
+                 <input 
+                    type="date" 
+                    value={dateRange.start} 
+                    onChange={(e) => setDateRange(p => ({...p, start: e.target.value}))}
+                    className="bg-zinc-50 border border-zinc-200 rounded-full px-3 py-2 text-xs font-semibold text-zinc-600 outline-none w-full md:w-auto"
+                 />
+                 <span className="text-zinc-400 self-center">-</span>
+                 <input 
+                    type="date" 
+                    value={dateRange.end} 
+                    onChange={(e) => setDateRange(p => ({...p, end: e.target.value}))}
+                    className="bg-zinc-50 border border-zinc-200 rounded-full px-3 py-2 text-xs font-semibold text-zinc-600 outline-none w-full md:w-auto"
+                 />
+               </div>
+               
+               <select
+                 value={sortOrder}
+                 onChange={(e) => setSortOrder(e.target.value as any)}
+                 className="bg-zinc-50 flex-1 md:flex-none border border-zinc-200 rounded-full px-4 py-2 text-xs font-bold text-zinc-650 outline-none cursor-pointer hover:bg-zinc-100 transition-colors w-full md:w-auto"
+               >
+                 <option value="newest">Newest First</option>
+                 <option value="oldest">Oldest First</option>
+               </select>
 
-              <select 
-                value={channelFilter} 
-                onChange={(e) => setChannelFilter(e.target.value)} 
-                className="bg-zinc-50 border border-zinc-200 rounded-full px-4 py-2 text-xs font-bold text-zinc-650 outline-none cursor-pointer hover:bg-zinc-100 transition-colors"
-              >
-                <option>All Channels</option>
-                <option>Merchant Portal</option>
-                <option>Mobile App</option>
-                <option>User Portal</option>
-              </select>
+               <div className="flex flex-col md:flex-row gap-2 w-full xl:w-auto">
+                 <div className="relative w-full md:w-64">
+                   <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400" />
+                   <input 
+                     type="text" 
+                     placeholder="Search express..."
+                     value={expressSearch}
+                     onChange={(e) => setExpressSearch(e.target.value)}
+                     className="w-full bg-zinc-50 border border-zinc-200 rounded-full py-2 pl-9 pr-4 text-xs font-semibold text-zinc-700 placeholder-zinc-400 outline-none focus:border-brand transition-all"
+                   />
+                 </div>
+
+                 <select 
+                   value={carrierFilter} 
+                   onChange={(e) => setCarrierFilter(e.target.value)} 
+                   className="bg-zinc-50 border border-zinc-200 rounded-full px-4 py-2 text-xs font-bold text-zinc-650 outline-none cursor-pointer hover:bg-zinc-100 transition-colors w-full md:w-auto"
+                 >
+                   <option value="All Carriers">{t('all_carriers') || 'All Carriers'}</option>
+                   <option value="aramex">Aramex</option>
+                   <option value="dhl_express">DHL Express</option>
+                   <option value="usend">USend Fleet</option>
+                 </select>
+
+                 <select 
+                   value={channelFilter} 
+                   onChange={(e) => setChannelFilter(e.target.value)} 
+                   className="bg-zinc-50 border border-zinc-200 rounded-full px-4 py-2 text-xs font-bold text-zinc-650 outline-none cursor-pointer hover:bg-zinc-100 transition-colors w-full md:w-auto"
+                 >
+                   <option>All Channels</option>
+                   <option>Merchant Portal</option>
+                   <option>Mobile App</option>
+                   <option>User Portal</option>
+                 </select>
+               </div>
           </div>
         </div>
 
@@ -643,7 +707,7 @@ function RequestsHub() {
           <div className="overflow-x-auto">
             <table className={`w-full ${isRTL ? 'text-right' : 'text-left'} border-collapse min-w-[900px]`}>
               <thead>
-                  <tr className="bg-zinc-50 text-zinc-400 text-[10px] font-black uppercase tracking-widest border-b border-zinc-100">
+                  <tr className="bg-zinc-50 text-zinc-400 text-[12px] font-black uppercase tracking-widest border-b border-zinc-100">
                     <th className="p-6">Request ID</th>
                     <th className="p-6">Applicant</th>
                     <th className="p-6">Content Spec</th>
@@ -659,18 +723,18 @@ function RequestsHub() {
                         <td className="p-6 text-zinc-900 font-black font-mono text-xs">{req.id}</td>
                         <td className="p-6">
                           <p className="font-bold text-zinc-800">{req.name}</p>
-                          <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400 block mt-0.5">{req.channel}</span>
+                          <span className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block mt-0.5">{req.channel}</span>
                         </td>
                         <td className="p-6">
                           <p className="text-zinc-700 font-semibold">{req.itemType}</p>
-                          <span className="text-[10px] text-zinc-400 font-mono italic block truncate max-w-[150px]">{req.description || 'N/A'}</span>
+                          <span className="text-[12px] text-zinc-400 font-mono italic block truncate max-w-[150px]">{req.description || 'N/A'}</span>
                         </td>
                         <td className="p-6">
                           <p className="text-zinc-650 text-xs truncate max-w-[160px]" title={req.address}>{req.address}</p>
                         </td>
                         <td className="p-6 text-brand font-black font-mono">{req.orderAmount || 'N/A'}</td>
                         <td className="p-6">
-                          <span className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${getStatusColor(req.status)}`}>
+                          <span className={`px-3 py-1.5 rounded-full text-[13px] font-black uppercase tracking-widest ${getStatusColor(req.status)}`}>
                              {req.status}
                           </span>
                         </td>
@@ -688,19 +752,19 @@ function RequestsHub() {
                               )}
 
                               {req.status === 'Approved' && (
-                                <button onClick={() => setSelectedRequest(req)} className="bg-blue-600 hover:bg-blue-700 text-white font-black text-[9px] uppercase tracking-widest px-3 py-1.5 rounded-xl transition-all">
+                                <button onClick={() => setSelectedRequest(req)} className="bg-blue-600 hover:bg-blue-700 text-white font-black text-[13px] uppercase tracking-widest px-3 py-1.5 rounded-xl transition-all">
                                   Assign Driver
                                 </button>
                               )}
 
                               {req.status === 'assigning' && (
-                                <button onClick={() => { updateRequestStatus(req.id, 'in_transit'); triggerToast(`Dispatched driver for ${req.id}`); }} className="bg-purple-600 hover:bg-purple-700 text-white font-black text-[9px] uppercase tracking-widest px-3 py-1.5 rounded-xl transition-all">
+                                <button onClick={() => { updateRequestStatus(req.id, 'in_transit'); triggerToast(`Dispatched driver for ${req.id}`); }} className="bg-purple-600 hover:bg-purple-700 text-white font-black text-[13px] uppercase tracking-widest px-3 py-1.5 rounded-xl transition-all">
                                   Pickup Dispatch
                                 </button>
                               )}
 
                               {req.status === 'in_transit' && (
-                                <button onClick={() => { updateRequestStatus(req.id, 'delivered'); triggerToast(`Order ${req.id} deliver success!`); }} className="bg-blue-600 hover:bg-blue-700 text-white font-black text-[9px] uppercase tracking-widest px-3 py-1.5 rounded-xl transition-all">
+                                <button onClick={() => { updateRequestStatus(req.id, 'delivered'); triggerToast(`Order ${req.id} deliver success!`); }} className="bg-blue-600 hover:bg-blue-700 text-white font-black text-[13px] uppercase tracking-widest px-3 py-1.5 rounded-xl transition-all">
                                   Sign Deliver
                                 </button>
                               )}
@@ -709,7 +773,7 @@ function RequestsHub() {
                                 <span className="text-zinc-400 font-bold text-xs">✓ Finalized</span>
                               )}
 
-                              <button onClick={() => setSelectedRequest(req)} className="text-[10px] font-black uppercase tracking-widest text-brand hover:underline px-2 py-1">Review</button>
+                              <button onClick={() => setSelectedRequest(req)} className="text-[12px] font-black uppercase tracking-widest text-brand hover:underline px-2 py-1">Review</button>
                           </div>
                         </td>
                     </tr>
@@ -768,7 +832,7 @@ function RequestsHub() {
             <div className="flex justify-between items-center pb-3 border-b border-zinc-100">
               <div>
                 <h3 className="text-lg font-display font-medium uppercase tracking-tight text-zinc-900">Book New Active Order</h3>
-                <p className="text-[10px] uppercase font-black tracking-widest text-[#4f95cc] mt-0.5">Instant UAE Dispatch Clearance</p>
+                <p className="text-[12px] uppercase font-black tracking-widest text-[#4f95cc] mt-0.5">Instant UAE Dispatch Clearance</p>
               </div>
               <button type="button" onClick={() => setIsBookingOpen(false)} className="text-zinc-400 hover:text-zinc-605">
                 <X className="w-5 h-5" />
@@ -777,7 +841,7 @@ function RequestsHub() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400 block mb-1.5">Merchant Booking</label>
+                <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block mb-1.5">Merchant Booking</label>
                 <input 
                   type="text" 
                   value={newOrder.merchantName} 
@@ -787,7 +851,7 @@ function RequestsHub() {
               </div>
 
               <div>
-                <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400 block mb-1.5">Cargo Spec Category</label>
+                <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block mb-1.5">Cargo Spec Category</label>
                 <input 
                   type="text" 
                   value={newOrder.itemType} 
@@ -797,7 +861,7 @@ function RequestsHub() {
               </div>
 
               <div>
-                <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400 block mb-1.5">Transit Channel</label>
+                <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block mb-1.5">Transit Channel</label>
                 <select 
                   value={newOrder.channel} 
                   onChange={e => setNewOrder({...newOrder, channel: e.target.value})}
@@ -810,7 +874,7 @@ function RequestsHub() {
               </div>
 
               <div>
-                <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400 block mb-1.5">Amount Quote (AED)</label>
+                <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block mb-1.5">Amount Quote (AED)</label>
                 <input 
                   type="text" 
                   value={newOrder.orderAmount} 
@@ -820,7 +884,7 @@ function RequestsHub() {
               </div>
 
               <div>
-                <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400 block mb-1.5">Destination State Node</label>
+                <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block mb-1.5">Destination State Node</label>
                 <select
                   value={newOrder.region}
                   onChange={e => setNewOrder({...newOrder, region: e.target.value})}
@@ -835,7 +899,7 @@ function RequestsHub() {
               </div>
 
               <div>
-                <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400 block mb-1.5">Dispatch Origin</label>
+                <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block mb-1.5">Dispatch Origin</label>
                 <input 
                   type="text" 
                   value={newOrder.fromDest} 
@@ -845,7 +909,7 @@ function RequestsHub() {
               </div>
 
               <div className="md:col-span-2">
-                <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400 block mb-1.5">Instruction Specifications</label>
+                <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block mb-1.5">Instruction Specifications</label>
                 <textarea 
                   value={newOrder.description} 
                   onChange={e => setNewOrder({...newOrder, description: e.target.value})}
@@ -882,14 +946,14 @@ function RequestsHub() {
              
              <div className="p-8 flex-1 overflow-y-auto space-y-8">
                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">{t('applicant_info') || 'Applicant Info'} ({selectedRequest.applicantType})</p>
+                  <p className="text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-2">{t('applicant_info') || 'Applicant Info'} ({selectedRequest.applicantType})</p>
                   <p className="text-lg font-bold text-zinc-900">{selectedRequest.name}</p>
                   <p className="text-sm text-zinc-500 flex items-center gap-2 mt-1"><MapPin className="w-4 h-4" /> {selectedRequest.address}</p>
                </div>
 
                {/* STEPPER STATUS TRACKING PROCESSOR */}
                <div className="bg-zinc-50 border border-zinc-150 rounded-3xl p-5 space-y-4">
-                 <p className="text-[9px] font-black uppercase tracking-widest text-[#4f95cc] mb-1">State Transition Stepper</p>
+                 <p className="text-[13px] font-black uppercase tracking-widest text-[#4f95cc] mb-1">State Transition Stepper</p>
                  <div className="flex justify-between items-center text-xs font-bold text-zinc-550">
                     <span className={selectedRequest.status === 'Pending' ? 'text-orange-600 font-extrabold' : 'text-zinc-400'}>1. Pending</span>
                     <span className="text-zinc-300">➔</span>
@@ -905,7 +969,7 @@ function RequestsHub() {
                    <div className="border-t border-zinc-200 pt-4 space-y-4">
                      {selectedRequest.status === 'Approved' && (
                        <div className="space-y-2">
-                         <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400 block">Select Available Courier</label>
+                         <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block">Select Available Courier</label>
                          <div className="flex gap-2">
                            <select 
                              value={assigningDriverId} 
@@ -920,7 +984,7 @@ function RequestsHub() {
                            <button 
                              type="button" 
                              onClick={() => handleSimulateDispatch(selectedRequest)}
-                             className="px-4 py-2.5 bg-blue-600 text-white font-black text-[9px] uppercase tracking-widest rounded-xl hover:bg-blue-700 hover:scale-102 transition-all shadow-md shadow-blue-500/10"
+                             className="px-4 py-2.5 bg-blue-600 text-white font-black text-[13px] uppercase tracking-widest rounded-xl hover:bg-blue-700 hover:scale-102 transition-all shadow-md shadow-blue-500/10"
                            >
                              Assign
                            </button>
@@ -930,11 +994,11 @@ function RequestsHub() {
 
                      {selectedRequest.status === 'assigning' && (
                        <div className="space-y-2">
-                         <p className="text-[10px] text-zinc-500 font-medium">Courier is ready at dispatch terminal. Authorize vehicle exit to set order in_transit.</p>
+                         <p className="text-[12px] text-zinc-500 font-medium">Courier is ready at dispatch terminal. Authorize vehicle exit to set order in_transit.</p>
                          <button 
                            type="button" 
                            onClick={() => handleSimulateDispatch(selectedRequest)}
-                           className="w-full py-3 bg-purple-600 text-white font-black text-[9px] uppercase tracking-widest rounded-xl hover:bg-purple-700 transition-colors"
+                           className="w-full py-3 bg-purple-600 text-white font-black text-[13px] uppercase tracking-widest rounded-xl hover:bg-purple-700 transition-colors"
                          >
                            Authorize Dispatched Vehicle Exit
                          </button>
@@ -943,11 +1007,11 @@ function RequestsHub() {
 
                      {selectedRequest.status === 'in_transit' && (
                        <div className="space-y-2">
-                         <p className="text-[10px] text-zinc-500 font-medium">Vehicle is moving. Click below to signoff on proof of physical handoff.</p>
+                         <p className="text-[12px] text-zinc-500 font-medium">Vehicle is moving. Click below to signoff on proof of physical handoff.</p>
                          <button 
                            type="button" 
                            onClick={() => handleSimulateDispatch(selectedRequest)}
-                           className="w-full py-3 bg-blue-600 text-white font-black text-[9px] uppercase tracking-widest rounded-xl hover:bg-blue-700 transition-colors"
+                           className="w-full py-3 bg-blue-600 text-white font-black text-[13px] uppercase tracking-widest rounded-xl hover:bg-blue-700 transition-colors"
                          >
                            Confirm Physical Delivery Signature
                          </button>
@@ -959,36 +1023,36 @@ function RequestsHub() {
                
                <div className="grid grid-cols-2 gap-4">
                  <div className="bg-zinc-50 p-4 rounded-2xl">
-                   <p className="text-[10px] font-black uppercase tracking-widest text-[#4f95cc] mb-1">{t('item_type') || 'Item Type'}</p>
+                   <p className="text-[12px] font-black uppercase tracking-widest text-[#4f95cc] mb-1">{t('item_type') || 'Item Type'}</p>
                    <p className="text-sm font-bold text-zinc-900">{selectedRequest.itemType}</p>
                  </div>
                  <div className="bg-zinc-50 p-4 rounded-2xl">
-                   <p className="text-[10px] font-black uppercase tracking-widest text-[#4f95cc] mb-1">{t('order_amount') || 'Order Amount'}</p>
+                   <p className="text-[12px] font-black uppercase tracking-widest text-[#4f95cc] mb-1">{t('order_amount') || 'Order Amount'}</p>
                    <p className="text-sm font-bold text-zinc-900">{selectedRequest.orderAmount}</p>
                  </div>
                  <div className="bg-zinc-50 p-4 rounded-2xl">
-                   <p className="text-[10px] font-black uppercase tracking-widest text-[#4f95cc] mb-1">{t('payment_method') || 'Payment Method'}</p>
+                   <p className="text-[12px] font-black uppercase tracking-widest text-[#4f95cc] mb-1">{t('payment_method') || 'Payment Method'}</p>
                    <p className="text-sm font-bold text-zinc-900">{selectedRequest.paymentMethod}</p>
                  </div>
                  <div className="bg-zinc-50 p-4 rounded-2xl">
-                   <p className="text-[10px] font-black uppercase tracking-widest text-[#4f95cc] mb-1">{t('eta') || 'ETA'}</p>
+                   <p className="text-[12px] font-black uppercase tracking-widest text-[#4f95cc] mb-1">{t('eta') || 'ETA'}</p>
                    <p className="text-sm font-bold text-zinc-900">{selectedRequest.etaTime}</p>
                  </div>
                  <div className="bg-zinc-50 p-4 rounded-2xl">
-                   <p className="text-[10px] font-black uppercase tracking-widest text-[#4f95cc] mb-1">{t('channel') || 'Channel'}</p>
+                   <p className="text-[12px] font-black uppercase tracking-widest text-[#4f95cc] mb-1">{t('channel') || 'Channel'}</p>
                    <p className="text-sm font-bold text-zinc-900">{selectedRequest.channel}</p>
                  </div>
                  <div className="bg-zinc-50 p-4 rounded-2xl">
-                   <p className="text-[10px] font-black uppercase tracking-widest text-[#4f95cc] mb-1">{t('date') || 'Date'}</p>
+                   <p className="text-[12px] font-black uppercase tracking-widest text-[#4f95cc] mb-1">{t('date') || 'Date'}</p>
                    <p className="text-sm font-bold text-zinc-900">{selectedRequest.date}</p>
                  </div>
                </div>
 
                <div>
                  <div className="flex items-center justify-between mb-2">
-                   <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">{t('description') || 'Description'}</p>
+                   <p className="text-[12px] font-black uppercase tracking-widest text-zinc-400">{t('description') || 'Description'}</p>
                    {selectedRequest.amountType && (
-                     <span className="px-2 py-1 bg-zinc-100 text-zinc-600 rounded text-[10px] uppercase font-bold tracking-widest">{selectedRequest.amountType}</span>
+                     <span className="px-2 py-1 bg-zinc-100 text-zinc-600 rounded text-[12px] uppercase font-bold tracking-widest">{selectedRequest.amountType}</span>
                    )}
                  </div>
                  <p className="text-sm text-zinc-700 bg-zinc-50 p-4 rounded-2xl leading-relaxed">{selectedRequest.description}</p>
@@ -996,26 +1060,51 @@ function RequestsHub() {
 
                {selectedRequest.photoUrl && (
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">{t('item_photo') || 'Item Photo'}</p>
+                    <p className="text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-2">{t('item_photo') || 'Item Photo'}</p>
                     <div className="h-40 w-full rounded-2xl overflow-hidden border border-zinc-200">
                       <img src={selectedRequest.photoUrl} alt="Item" className="w-full h-full object-cover" />
                     </div>
                   </div>
                )}
 
+               {selectedRequest.carrier === 'aramex' && (
+                 <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-4 overflow-hidden">
+                    <p className="text-[12px] font-black uppercase tracking-widest text-[#d12421] mb-3 flex items-center gap-2">
+                       <Truck className="w-3.5 h-3.5" />
+                       Aramex Integration
+                    </p>
+                    <div className="grid grid-cols-2 gap-4 mb-3">
+                       <div>
+                         <span className="text-[13px] uppercase tracking-widest text-zinc-400 font-bold">Tracking Number</span>
+                         <p className="text-sm font-black font-mono text-zinc-900">{selectedRequest.externalTrackingNumber || 'N/A'}</p>
+                       </div>
+                       <div>
+                         <span className="text-[13px] uppercase tracking-widest text-zinc-400 font-bold">Pickup Status</span>
+                         <p className="text-sm font-black font-mono text-zinc-900">{selectedRequest.aramexLogs?.pickupId || 'Not Booked'}</p>
+                       </div>
+                    </div>
+                    {selectedRequest.aramexLogs?.response?.Notifications?.length > 0 && (
+                      <div className="bg-[#d12421]/10 text-[#d12421] p-2 rounded-xl mb-3">
+                        <span className="text-[13px] font-black uppercase tracking-widest block mb-1">API Error</span>
+                        <p className="text-xs font-bold">{selectedRequest.aramexLogs.response.Notifications[0].Message}</p>
+                      </div>
+                    )}
+                 </div>
+               )}
+
                <div className="grid grid-cols-2 gap-4">
                  <div className="bg-blue-50 p-4 rounded-2xl">
-                   <p className="text-[10px] font-black uppercase tracking-widest text-blue-600/70 mb-1">{t('from') || 'From Destination'}</p>
+                   <p className="text-[12px] font-black uppercase tracking-widest text-blue-600/70 mb-1">{t('from') || 'From Destination'}</p>
                    <p className="text-sm font-bold text-blue-900 leading-snug">{selectedRequest.fromDestination}</p>
                  </div>
                  <div className="bg-orange-50 p-4 rounded-2xl">
-                   <p className="text-[10px] font-black uppercase tracking-widest text-orange-600/70 mb-1">{t('to') || 'To Destination'}</p>
+                   <p className="text-[12px] font-black uppercase tracking-widest text-orange-600/70 mb-1">{t('to') || 'To Destination'}</p>
                    <p className="text-sm font-bold text-orange-900 leading-snug">{selectedRequest.toDestination}</p>
                  </div>
                </div>
                
                <div>
-                 <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-3">{t('location_map') || 'Location on Map'}</p>
+                 <p className="text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-3">{t('location_map') || 'Location on Map'}</p>
                  <div className="h-[200px] w-full rounded-2xl overflow-hidden relative border border-zinc-200 z-0">
                     <MapContainer key={selectedRequest.id} center={selectedRequest.position} zoom={11} scrollWheelZoom={false} style={{ height: '100%', width: '100%', backgroundColor: '#f4f4f5' }} zoomControl={false} dragging={false}>
                        <TileLayer
@@ -1036,10 +1125,10 @@ function RequestsHub() {
              </div>
 
              <div className="p-8 border-t border-zinc-100 bg-zinc-50 grid grid-cols-2 gap-4">
-               <button onClick={() => { updateRequestStatus(selectedRequest.id, 'Rejected'); setSelectedRequest(null); }} className="py-4 rounded-2xl text-red-600 bg-red-100 font-bold text-[10px] uppercase tracking-widest hover:bg-red-200 transition-colors">
+               <button onClick={() => { updateRequestStatus(selectedRequest.id, 'Rejected'); setSelectedRequest(null); }} className="py-4 rounded-2xl text-red-600 bg-red-100 font-bold text-[12px] uppercase tracking-widest hover:bg-red-200 transition-colors">
                  {t('reject') || 'Reject'}
                </button>
-               <button onClick={() => { updateRequestStatus(selectedRequest.id, 'Approved'); setSelectedRequest(null); }} className="py-4 rounded-2xl text-white bg-brand font-bold text-[10px] uppercase tracking-widest hover:bg-brand/90 shadow-xl shadow-brand/20 transition-all">
+               <button onClick={() => { updateRequestStatus(selectedRequest.id, 'Approved'); setSelectedRequest(null); }} className="py-4 rounded-2xl text-white bg-brand font-bold text-[12px] uppercase tracking-widest hover:bg-brand/90 shadow-xl shadow-brand/20 transition-all">
                  {t('approve') || 'Approve'}
                </button>
              </div>
@@ -1130,7 +1219,7 @@ function UsersDirectory() {
           <h3 className="text-xl font-display font-medium text-zinc-900 mb-1 uppercase tracking-tight">Users Directory ({totalItems.toLocaleString()} Total)</h3>
           <p className="text-sm text-zinc-500">Search, monitor and configure all consumers & active dispatchers.</p>
         </div>
-        <button onClick={() => setIsAddingUser(true)} className="px-6 py-3 rounded-full bg-brand text-white font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-brand/20 self-start md:self-auto">Add User</button>
+        <button onClick={() => setIsAddingUser(true)} className="px-6 py-3 rounded-full bg-brand text-white font-black text-[12px] uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-brand/20 self-start md:self-auto">Add User</button>
       </div>
 
       {/* Advanced Control Console Header */}
@@ -1230,7 +1319,7 @@ function UsersDirectory() {
 
               <button 
                 onClick={handleAddUser}
-                className="w-full mt-4 py-4 rounded-xl bg-brand text-white font-bold text-[10px] uppercase tracking-widest hover:bg-brand/90 transition-colors shadow-lg shadow-brand/20"
+                className="w-full mt-4 py-4 rounded-xl bg-brand text-white font-bold text-[12px] uppercase tracking-widest hover:bg-brand/90 transition-colors shadow-lg shadow-brand/20"
               >
                 Create User
               </button>
@@ -1264,11 +1353,11 @@ function UsersDirectory() {
                     </div>
                     <div className="overflow-hidden">
                       <h4 className="font-bold text-base text-zinc-900 leading-tight group-hover:text-brand transition-colors truncate" title={user.name}>{user.name || 'Anonymous User'}</h4>
-                      <p className="text-[10px] text-zinc-450 mt-0.5 truncate leading-none font-mono" title={user.email}>{user.email}</p>
+                      <p className="text-[12px] text-zinc-450 mt-0.5 truncate leading-none font-mono" title={user.email}>{user.email}</p>
                     </div>
                   </div>
 
-                  <span className={`px-2.5 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest shrink-0 flex items-center gap-1 ${
+                  <span className={`px-2.5 py-1.5 rounded-full text-[13px] font-black uppercase tracking-widest shrink-0 flex items-center gap-1 ${
                     user.status === 'Active' ? 'bg-blue-50 text-blue-600' : 'bg-red-50 text-red-600'
                   }`}>
                     <span className={`w-1.5 h-1.5 rounded-full ${user.status === 'Active' ? 'bg-blue-500' : 'bg-red-500'}`}></span>
@@ -1279,7 +1368,7 @@ function UsersDirectory() {
                 {/* Bento statistics / metric displays */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-zinc-50 rounded-2xl p-3 border border-zinc-100">
-                    <span className="text-[8.5px] font-black uppercase tracking-widest text-zinc-400 block mb-0.5">Rating</span>
+                    <span className="text-[12px] font-black uppercase tracking-widest text-zinc-400 block mb-0.5">Rating</span>
                     <div className="flex items-center gap-1.5">
                       <span className="font-bold text-zinc-900 text-sm leading-none">
                         {((user.rating !== undefined && user.rating !== null) ? Number(user.rating) : 5.0).toFixed(1)}
@@ -1289,7 +1378,7 @@ function UsersDirectory() {
                   </div>
 
                   <div className="bg-zinc-50 rounded-2xl p-3 border border-zinc-100">
-                    <span className="text-[8.5px] font-black uppercase tracking-widest text-[#4f95cc] block mb-0.5">Deliveries</span>
+                    <span className="text-[12px] font-black uppercase tracking-widest text-[#4f95cc] block mb-0.5">Deliveries</span>
                     <span className="font-black text-zinc-900 text-sm leading-none">{user.deliveries ?? 0} orders</span>
                   </div>
                 </div>
@@ -1297,12 +1386,12 @@ function UsersDirectory() {
                 {/* Contact Card Details */}
                 <div className="space-y-1.5 text-xs text-zinc-500 border-t border-zinc-100 pt-4 font-medium">
                   <div className="flex justify-between items-center bg-zinc-50/50 p-2.5 rounded-xl border border-zinc-100">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Class Type</span>
-                    <span className="font-bold text-zinc-805 tracking-wide text-[10px] uppercase">{user.type || 'Customer'}</span>
+                    <span className="text-[13px] font-black uppercase tracking-widest text-zinc-400">Class Type</span>
+                    <span className="font-bold text-zinc-805 tracking-wide text-[12px] uppercase">{user.type || 'Customer'}</span>
                   </div>
                   <div className="flex justify-between items-center bg-zinc-50/50 p-2.5 rounded-xl border border-zinc-100">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Contact Node</span>
-                    <span className="font-mono text-[11px] font-bold text-zinc-800">{user.phone || 'N/A'}</span>
+                    <span className="text-[13px] font-black uppercase tracking-widest text-zinc-400">Contact Node</span>
+                    <span className="font-mono text-[13px] font-bold text-zinc-800">{user.phone || 'N/A'}</span>
                   </div>
                 </div>
               </div>
@@ -1310,13 +1399,13 @@ function UsersDirectory() {
               <div className="flex gap-2 mt-6">
                 <button 
                   onClick={() => triggerToast(`Keys and roles rebuilt for Node ID: ${user.id}`)}
-                  className="flex-1 py-3 border border-zinc-200 rounded-xl text-[9.5px] font-bold uppercase tracking-wider text-zinc-600 hover:border-brand hover:text-brand hover:bg-zinc-50 transition-all"
+                  className="flex-1 py-3 border border-zinc-200 rounded-xl text-[13px] font-bold uppercase tracking-wider text-zinc-600 hover:border-brand hover:text-brand hover:bg-zinc-50 transition-all"
                 >
                   Regen Keys
                 </button>
                 <button 
                   onClick={() => triggerToast(`Reset temporary credentials for ${user.name}`)}
-                  className="flex-1 py-3 bg-zinc-900 rounded-xl text-[9.5px] font-bold uppercase tracking-wider text-white hover:bg-zinc-850 transition-all text-center"
+                  className="flex-1 py-3 bg-zinc-900 rounded-xl text-[13px] font-bold uppercase tracking-wider text-white hover:bg-zinc-850 transition-all text-center"
                 >
                   Credentials
                 </button>
@@ -1521,7 +1610,7 @@ function CouriersDirectory() {
             {t('couriers_desc') || 'Track, monitor, and configure active drivers, vehicle types, and COD cash on hand.'}
           </p>
         </div>
-        <button onClick={() => setIsAddingCourier(true)} className="px-6 py-3 rounded-full bg-brand text-white font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-brand/20 self-start md:self-auto">
+        <button onClick={() => setIsAddingCourier(true)} className="px-6 py-3 rounded-full bg-brand text-white font-black text-[12px] uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-brand/20 self-start md:self-auto">
           {t('add_courier') || 'Add Courier'}
         </button>
       </div>
@@ -1603,10 +1692,10 @@ function CouriersDirectory() {
                         </div>
                         <div>
                           <h4 className="text-sm font-bold text-zinc-900 group-hover:text-brand transition-colors">{courier.name}</h4>
-                          <span className="text-[10px] font-mono font-extrabold text-zinc-400 block mt-0.5">{courier.id}</span>
+                          <span className="text-[12px] font-mono font-extrabold text-zinc-400 block mt-0.5">{courier.id}</span>
                         </div>
                       </div>
-                      <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 ${
+                      <span className={`px-2.5 py-1 rounded-full text-[13px] font-black uppercase tracking-widest flex items-center gap-1.5 ${
                         courier.status === 'Active' 
                           ? 'bg-blue-50 text-blue-600' 
                           : 'bg-zinc-100 text-zinc-500'
@@ -1619,16 +1708,16 @@ function CouriersDirectory() {
                     {/* Stats Grid */}
                     <div className="grid grid-cols-2 gap-3 bg-zinc-50 p-4 rounded-2xl text-left">
                       <div>
-                        <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block mb-0.5">Vehicle</span>
+                        <span className="text-[13px] font-bold text-zinc-400 uppercase tracking-wider block mb-0.5">Vehicle</span>
                         <div className="flex items-center gap-1">
-                          <span className="text-[11.5px] font-bold text-zinc-700 capitalize">
+                          <span className="text-[12px] font-bold text-zinc-700 capitalize">
                             {courier.vehicle === 'motorcycle' ? '🏍️ Motorcycle' : courier.vehicle === 'van' ? '🚐 Cargo Van' : '🚗 Sedan'}
                           </span>
                         </div>
                       </div>
                       <div>
-                        <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block mb-0.5">Rating</span>
-                        <span className="text-[11.5px] font-bold text-zinc-700 flex items-center gap-1">
+                        <span className="text-[13px] font-bold text-zinc-400 uppercase tracking-wider block mb-0.5">Rating</span>
+                        <span className="text-[12px] font-bold text-zinc-700 flex items-center gap-1">
                           ⭐ {courier.rating}
                         </span>
                       </div>
@@ -1637,11 +1726,11 @@ function CouriersDirectory() {
                     {/* COD & Deliveries Section */}
                     <div className="border-t border-zinc-100 pt-4 flex items-center justify-between">
                       <div>
-                        <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest block mb-0.5">{t('total_completed_trips') || 'Deliveries'}</span>
+                        <span className="text-[13px] font-bold text-zinc-400 uppercase tracking-widest block mb-0.5">{t('total_completed_trips') || 'Deliveries'}</span>
                         <span className="text-xs font-black text-zinc-800">{courier.deliveries} trips</span>
                       </div>
                       <div className="text-right">
-                        <span className="text-[9px] font-semibold text-[#1452D1] uppercase tracking-widest block mb-0.5">{t('cod_collected_cash') || 'COD Cash'}</span>
+                        <span className="text-[13px] font-semibold text-[#1452D1] uppercase tracking-widest block mb-0.5">{t('cod_collected_cash') || 'COD Cash'}</span>
                         <span className="text-sm font-black text-zinc-950 font-mono">AED {courier.rawCOD.toFixed(2)}</span>
                       </div>
                     </div>
@@ -1651,13 +1740,13 @@ function CouriersDirectory() {
                   <div className="mt-5 pt-4 border-t border-zinc-100 grid grid-cols-2 gap-3">
                     <button 
                       onClick={(e) => { e.stopPropagation(); handleSettleCash(courier.id); }}
-                      className="py-2 rounded-xl bg-zinc-100 text-zinc-750 font-bold text-[9px] uppercase tracking-widest hover:bg-blue-100 hover:text-blue-700 transition"
+                      className="py-2 rounded-xl bg-zinc-100 text-zinc-750 font-bold text-[13px] uppercase tracking-widest hover:bg-blue-100 hover:text-blue-700 transition"
                     >
                       {t('settle_cash') || 'Settle Cash'}
                     </button>
                     <button 
                       onClick={(e) => { e.stopPropagation(); handleToggleStatus(courier.id); }}
-                      className={`py-2 rounded-xl font-bold text-[9px] uppercase tracking-widest transition ${
+                      className={`py-2 rounded-xl font-bold text-[13px] uppercase tracking-widest transition ${
                         courier.status === 'Active' 
                           ? 'bg-red-50 text-red-600 hover:bg-red-100' 
                           : 'bg-brand/10 text-brand hover:bg-brand/20'
@@ -1703,7 +1792,7 @@ function CouriersDirectory() {
             <div className="flex justify-between items-center pb-4 border-b border-zinc-100">
               <div>
                 <h4 className="font-display font-medium uppercase text-zinc-900 tracking-tight">{t('availability_status') || 'Courier Details'}</h4>
-                <p className="text-[10px] uppercase font-bold tracking-wider text-zinc-400">Secure Live Connection</p>
+                <p className="text-[12px] uppercase font-bold tracking-wider text-zinc-400">Secure Live Connection</p>
               </div>
               <button 
                 onClick={() => setSelectedCourier(null)}
@@ -1721,18 +1810,18 @@ function CouriersDirectory() {
               <div>
                 <h3 className="text-base font-bold text-zinc-950">{selectedCourier.name}</h3>
                 <p className="text-xs text-zinc-500 font-medium">{selectedCourier.phone}</p>
-                <p className="text-[10px] text-zinc-400 font-semibold">{selectedCourier.email}</p>
+                <p className="text-[12px] text-zinc-400 font-semibold">{selectedCourier.email}</p>
               </div>
             </div>
 
             {/* Quick telemetry indicators */}
             <div className="grid grid-cols-2 gap-4 text-left">
               <div className="bg-zinc-50 p-4 rounded-2xl">
-                <span className="text-[9px] font-black uppercase text-zinc-400 block tracking-widest mb-1">Success Rate</span>
+                <span className="text-[13px] font-black uppercase text-zinc-400 block tracking-widest mb-1">Success Rate</span>
                 <span className="text-base font-black text-zinc-900">{selectedCourier.successRate}%</span>
               </div>
               <div className="bg-zinc-50 p-4 rounded-2xl">
-                <span className="text-[9px] font-black uppercase text-zinc-400 block tracking-widest mb-1">Ongoing Route</span>
+                <span className="text-[13px] font-black uppercase text-zinc-400 block tracking-widest mb-1">Ongoing Route</span>
                 <span className="text-xs font-bold text-zinc-805 line-clamp-1">{selectedCourier.currentRoute || 'Standby'}</span>
               </div>
             </div>
@@ -1741,12 +1830,12 @@ function CouriersDirectory() {
             {selectedCourier.rawCOD > 0 && (
               <div className="bg-amber-50 border border-amber-200/50 p-4 font-sans rounded-2xl flex items-center justify-between text-left">
                 <div>
-                  <span className="text-[9px] font-bold text-amber-800 uppercase block">Pending Settlement</span>
+                  <span className="text-[13px] font-bold text-amber-800 uppercase block">Pending Settlement</span>
                   <span className="text-lg font-black text-amber-950 font-mono">AED {selectedCourier.rawCOD.toFixed(2)}</span>
                 </div>
                 <button 
                   onClick={() => handleSettleCash(selectedCourier.id)}
-                  className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-[9px] uppercase tracking-widest rounded-xl transition"
+                  className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-[13px] uppercase tracking-widest rounded-xl transition"
                 >
                   {t('settle_cash') || 'Settle'}
                 </button>
@@ -1755,7 +1844,7 @@ function CouriersDirectory() {
 
             {/* Live Leaflet Map */}
             <div className="space-y-2 text-left">
-              <span className="text-[9px] font-black uppercase text-zinc-400 block tracking-widest">{t('tracking_map') || 'Live Courier Map'}</span>
+              <span className="text-[13px] font-black uppercase text-zinc-400 block tracking-widest">{t('tracking_map') || 'Live Courier Map'}</span>
               <div className="h-[240px] w-full rounded-2xl overflow-hidden relative border border-zinc-200 z-0">
                 <MapContainer key={selectedCourier.id} center={selectedCourier.position} zoom={12} scrollWheelZoom={false} style={{ height: '100%', width: '100%', backgroundColor: '#f4f4f5' }} zoomControl={false} dragging={true}>
                   <TileLayer
@@ -1765,7 +1854,7 @@ function CouriersDirectory() {
                   <Marker position={selectedCourier.position} icon={createCustomMarker('bg-brand', '#1452D1')} />
                 </MapContainer>
               </div>
-              <span className="text-[10px] text-zinc-400 flex items-center gap-1.5 mt-2 justify-center">
+              <span className="text-[12px] text-zinc-400 flex items-center gap-1.5 mt-2 justify-center">
                 <span className="w-1.5 h-1.5 rounded-full bg-brand animate-ping" />
                 Live GSM GPS Signals: Lat {selectedCourier.position[0].toFixed(4)}, Lng {selectedCourier.position[1].toFixed(4)}
               </span>
@@ -1834,7 +1923,7 @@ function CouriersDirectory() {
 
               <button 
                 onClick={handleAddCourier}
-                className="w-full mt-2 py-4 rounded-xl bg-brand text-white font-bold text-[10px] uppercase tracking-widest hover:bg-brand/90 transition shadow-lg shadow-brand/25"
+                className="w-full mt-2 py-4 rounded-xl bg-brand text-white font-bold text-[12px] uppercase tracking-widest hover:bg-brand/90 transition shadow-lg shadow-brand/25"
               >
                 Register into Fleet
               </button>
@@ -1928,7 +2017,7 @@ function MerchantDirectory() {
         </div>
         <button 
           onClick={() => triggerToast("Add Merchant form loaded into workspace.")} 
-          className="px-6 py-3 rounded-full bg-brand text-white font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-brand/20 self-start md:self-auto"
+          className="px-6 py-3 rounded-full bg-brand text-white font-black text-[12px] uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-brand/20 self-start md:self-auto"
         >
           Add Merchant
         </button>
@@ -2011,13 +2100,13 @@ function MerchantDirectory() {
                     <div className="overflow-hidden">
                       <h4 className="text-lg font-bold text-zinc-900 leading-tight truncate" title={merchant.name}>{merchant.name}</h4>
                       <div className="flex items-center gap-2 mt-1 truncate">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 shrink-0">{merchant.id}</p>
+                        <p className="text-[12px] font-bold uppercase tracking-widest text-zinc-400 shrink-0">{merchant.id}</p>
                         <span className="w-1 h-1 bg-zinc-300 rounded-full shrink-0"></span>
                         <p className="text-xs font-semibold text-zinc-500 truncate">{merchant.sector}</p>
                       </div>
                     </div>
                   </div>
-                  <span className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest shrink-0 flex items-center gap-1.5 ${merchant.status === 'Verified' ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600'}`}>
+                  <span className={`px-3 py-1.5 rounded-full text-[13px] font-black uppercase tracking-widest shrink-0 flex items-center gap-1.5 ${merchant.status === 'Verified' ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600'}`}>
                     {merchant.status === 'Verified' ? <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div> : <div className="w-1.5 h-1.5 rounded-full bg-orange-55 animate-pulse"></div>}
                     {merchant.status}
                   </span>
@@ -2025,16 +2114,16 @@ function MerchantDirectory() {
 
                 <div className="grid grid-cols-3 gap-3 mb-6">
                   <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-100">
-                    <p className="text-[8.5px] font-black uppercase tracking-widest text-zinc-400 mb-0.5">Interface</p>
-                    <p className="font-bold text-zinc-800 text-[11px] truncate">{merchant.integration}</p>
+                    <p className="text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-0.5">Interface</p>
+                    <p className="font-bold text-zinc-800 text-[13px] truncate">{merchant.integration}</p>
                   </div>
                   <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-100">
-                    <p className="text-[8.5px] font-black uppercase tracking-widest text-[#4f95cc] mb-0.5">Total Runs</p>
+                    <p className="text-[12px] font-black uppercase tracking-widest text-[#4f95cc] mb-0.5">Total Runs</p>
                     <p className="font-black text-brand text-[13px]">{merchant.orders.toLocaleString()}</p>
                   </div>
                   <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-100 overflow-hidden">
-                    <p className="text-[8.5px] font-black uppercase tracking-widest text-zinc-400 mb-0.5">Contact Root</p>
-                    <p className="font-medium text-zinc-700 text-[10px] truncate" title={merchant.contact}>{merchant.contact.split('@')[0]}</p>
+                    <p className="text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-0.5">Contact Root</p>
+                    <p className="font-medium text-zinc-700 text-[12px] truncate" title={merchant.contact}>{merchant.contact.split('@')[0]}</p>
                   </div>
                 </div>
               </div>
@@ -2042,13 +2131,13 @@ function MerchantDirectory() {
               <div className="flex gap-3">
                 <button 
                   onClick={() => handleOpenApiKeys(merchant)}
-                  className="flex-1 py-3.5 rounded-xl border border-zinc-200 text-zinc-650 font-bold text-[9.5px] uppercase tracking-widest hover:border-brand hover:text-brand bg-white hover:bg-zinc-50 transition-all shadow-sm"
+                  className="flex-1 py-3.5 rounded-xl border border-zinc-200 text-zinc-650 font-bold text-[13px] uppercase tracking-widest hover:border-brand hover:text-brand bg-white hover:bg-zinc-50 transition-all shadow-sm"
                 >
                   Manage API Keys
                 </button>
                 <button 
                   onClick={() => setSelectedProfileMerchant(merchant)}
-                  className="flex-1 py-3.5 rounded-xl bg-zinc-900 text-white font-bold text-[9.5px] uppercase tracking-widest hover:bg-zinc-800 transition-all shadow-sm text-center"
+                  className="flex-1 py-3.5 rounded-xl bg-zinc-900 text-white font-bold text-[13px] uppercase tracking-widest hover:bg-zinc-800 transition-all shadow-sm text-center"
                 >
                   Company Profile
                 </button>
@@ -2121,7 +2210,7 @@ function MerchantDirectory() {
             <div className="flex justify-between items-center pb-4 border-b border-zinc-100">
               <div>
                 <h3 className="text-lg font-display font-medium uppercase tracking-tight text-zinc-950">Manage Integration Keys</h3>
-                <p className="text-[10px] uppercase font-black tracking-widest text-zinc-450 mt-0.5">{selectedApiKeyMerchant.name}</p>
+                <p className="text-[12px] uppercase font-black tracking-widest text-zinc-450 mt-0.5">{selectedApiKeyMerchant.name}</p>
               </div>
               <button onClick={() => setSelectedApiKeyMerchant(null)} className="w-8 h-8 rounded-full bg-zinc-50 hover:bg-zinc-105 flex items-center justify-center text-zinc-400">
                 <X className="w-4 h-4" />
@@ -2130,7 +2219,7 @@ function MerchantDirectory() {
 
             <div className="space-y-4">
               <div className="bg-zinc-50 p-4.5 rounded-2xl border border-zinc-150 space-y-2">
-                <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400 block">Live Production Token</label>
+                <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block">Live Production Token</label>
                 <div className="flex items-center gap-2 select-all bg-white p-3 rounded-lg border border-zinc-200 font-mono text-xs font-bold text-zinc-800 break-all">
                   <Code2 className="w-4 h-4 text-brand shrink-0" />
                   {simulatedToken}
@@ -2141,20 +2230,20 @@ function MerchantDirectory() {
                 <div className="flex items-center gap-2 text-blue-700 text-xs font-black uppercase tracking-widest">
                   <ShieldCheck className="w-4 h-4" /> Credentials Health: Optimal
                 </div>
-                <p className="text-[11px] font-medium leading-relaxed text-zinc-600">This secret client signature provides end-point authorization for heavy bulk freight quotes and live dispatch coordinates mapping.</p>
+                <p className="text-[13px] font-medium leading-relaxed text-zinc-600">This secret client signature provides end-point authorization for heavy bulk freight quotes and live dispatch coordinates mapping.</p>
               </div>
             </div>
 
             <div className="pt-4 flex gap-3">
               <button 
                 onClick={handleRotateToken}
-                className="flex-1 py-4 bg-brand text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-brand/90 hover:scale-102 transition-all shadow-lg shadow-brand/20"
+                className="flex-1 py-4 bg-brand text-white text-[12px] font-black uppercase tracking-widest rounded-xl hover:bg-brand/90 hover:scale-102 transition-all shadow-lg shadow-brand/20"
               >
                 Rotate Token Signature
               </button>
               <button 
                 onClick={() => setSelectedApiKeyMerchant(null)}
-                className="px-6 py-4 bg-zinc-100 text-zinc-750 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-zinc-150 transition-colors"
+                className="px-6 py-4 bg-zinc-100 text-zinc-750 text-[12px] font-black uppercase tracking-widest rounded-xl hover:bg-zinc-150 transition-colors"
               >
                 Close Panel
               </button>
@@ -2189,7 +2278,7 @@ function MerchantDirectory() {
               <div className="flex justify-between items-center pb-4 border-b border-zinc-100">
                 <div>
                   <h3 className="text-lg font-display font-medium uppercase tracking-tight text-zinc-950">Company Profile Metrics</h3>
-                  <p className="text-[10px] uppercase font-black tracking-widest text-[#4f95cc] mt-0.5">Corporate Metadata Ledger</p>
+                  <p className="text-[12px] uppercase font-black tracking-widest text-[#4f95cc] mt-0.5">Corporate Metadata Ledger</p>
                 </div>
                 <button onClick={() => setSelectedProfileMerchant(null)} className="w-8 h-8 rounded-full bg-zinc-50 hover:bg-zinc-105 flex items-center justify-center text-zinc-400">
                   <X className="w-4 h-4" />
@@ -2210,15 +2299,15 @@ function MerchantDirectory() {
                 {/* Bento profile stats */}
                 <div className="grid grid-cols-2 gap-3.5">
                   <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-100">
-                    <span className="text-[8.5px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Settlement Cycle</span>
+                    <span className="text-[12px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Settlement Cycle</span>
                     <p className="text-xs font-bold text-zinc-800">Weekly net-30 auto-remit</p>
                   </div>
                   <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-100">
-                    <span className="text-[8.5px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Contract Status</span>
+                    <span className="text-[12px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Contract Status</span>
                     <p className="text-xs font-bold text-zinc-800">Premium SLA (Gold tier)</p>
                   </div>
                   <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-100 col-span-2">
-                    <span className="text-[8.5px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Verified Corporate Address</span>
+                    <span className="text-[12px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Verified Corporate Address</span>
                     <p className="text-xs font-bold text-zinc-800">Dubai Logistics District, Plot 14A, Block Delta</p>
                   </div>
                 </div>
@@ -2227,7 +2316,7 @@ function MerchantDirectory() {
                 <div className="bg-zinc-50 border border-zinc-200 p-5 rounded-3xl space-y-3.5">
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="text-[8.5px] font-black uppercase tracking-widest text-zinc-400 block mb-0.5">Performance Trend</span>
+                      <span className="text-[12px] font-black uppercase tracking-widest text-zinc-400 block mb-0.5">Performance Trend</span>
                       <h5 className="text-xs font-bold text-zinc-800 flex items-center gap-1.5 font-sans uppercase tracking-tight">
                         Weekly Delivery Success
                       </h5>
@@ -2263,7 +2352,7 @@ function MerchantDirectory() {
 
                 <div className="bg-brand/5 p-4 rounded-xl border border-brand/10 flex items-center justify-between">
                   <div>
-                    <span className="text-[8.5px] font-black uppercase tracking-widest text-brand block mb-0.5">Integration Bridge</span>
+                    <span className="text-[12px] font-black uppercase tracking-widest text-brand block mb-0.5">Integration Bridge</span>
                     <p className="text-xs font-black text-brand uppercase">{selectedProfileMerchant.integration} Pipeline</p>
                   </div>
                   <span className="text-xs font-mono font-bold text-zinc-500">Connected</span>
@@ -2276,13 +2365,13 @@ function MerchantDirectory() {
                     setSelectedProfileMerchant(null);
                     triggerToast(`Initiating SLA contract edit workflow...`);
                   }}
-                  className="flex-1 py-4 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-zinc-800 transition-colors"
+                  className="flex-1 py-4 bg-zinc-900 text-white text-[12px] font-black uppercase tracking-widest rounded-xl hover:bg-zinc-800 transition-colors"
                 >
                   Modify SLA Contract
                 </button>
                 <button 
                   onClick={() => setSelectedProfileMerchant(null)}
-                  className="flex-1 py-4 bg-zinc-100 text-zinc-600 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-zinc-150 transition-colors text-center"
+                  className="flex-1 py-4 bg-zinc-100 text-zinc-600 text-[12px] font-black uppercase tracking-widest rounded-xl hover:bg-zinc-150 transition-colors text-center"
                 >
                   Dismiss Profile
                 </button>
@@ -2323,7 +2412,7 @@ function AdminSettings() {
          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl">
             <div className="space-y-6">
                 <div>
-                  <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-3">Merchant Commission (%)</label>
+                  <label className="block text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-3">Merchant Commission (%)</label>
                   <div className="relative">
                     <Percent className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                     <input 
@@ -2335,7 +2424,7 @@ function AdminSettings() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-3">Driver Platform Fee (%)</label>
+                  <label className="block text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-3">Driver Platform Fee (%)</label>
                   <div className="relative">
                     <Percent className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                     <input 
@@ -2350,7 +2439,7 @@ function AdminSettings() {
             
             <div className="space-y-6">
                 <div>
-                  <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-3">Base Delivery Fee (AED)</label>
+                  <label className="block text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-3">Base Delivery Fee (AED)</label>
                   <div className="relative">
                     <DollarSign className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                     <input 
@@ -2362,7 +2451,7 @@ function AdminSettings() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-3">Per KM Rate (AED)</label>
+                  <label className="block text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-3">Per KM Rate (AED)</label>
                   <div className="relative">
                     <DollarSign className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                     <input 
@@ -2379,7 +2468,7 @@ function AdminSettings() {
          <div className="mt-12 flex justify-end">
             <button 
               onClick={handleSave}
-              className="px-10 py-5 rounded-full bg-brand text-white font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-brand/20"
+              className="px-10 py-5 rounded-full bg-brand text-white font-black text-[12px] uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-brand/20"
             >
                Save Configurations
             </button>
@@ -2418,15 +2507,15 @@ function AdminIntegrations() {
                </p>
                <div className="space-y-4">
                  <div className="bg-zinc-50 p-4 rounded-2xl">
-                   <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">1. Connect API Sandbox</p>
+                   <p className="text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-2">1. Connect API Sandbox</p>
                    <p className="text-xs text-zinc-700 font-mono text-xs truncate">POST https://api.usend.ae/v1/aramex-bridge</p>
                  </div>
                  <div className="bg-zinc-50 p-4 rounded-2xl">
-                   <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">2. Map Webhook Signals</p>
+                   <p className="text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-2">2. Map Webhook Signals</p>
                    <p className="text-xs text-zinc-700">Translates external status mappings directly to UAE unified tracking.</p>
                  </div>
                </div>
-               <button className="mt-8 px-6 py-3 border-2 border-zinc-200 rounded-full text-zinc-600 font-bold text-[10px] uppercase tracking-widest hover:border-zinc-900 hover:text-zinc-900 transition-colors w-full">
+               <button className="mt-8 px-6 py-3 border-2 border-zinc-200 rounded-full text-zinc-600 font-bold text-[12px] uppercase tracking-widest hover:border-zinc-900 hover:text-zinc-900 transition-colors w-full">
                   View Webhook Logs
                </button>
             </div>
@@ -2442,15 +2531,15 @@ function AdminIntegrations() {
                </p>
                <div className="space-y-4">
                  <div className="bg-zinc-50 p-4 rounded-2xl">
-                   <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">1. Carrier Credentials</p>
+                   <p className="text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-2">1. Carrier Credentials</p>
                    <p className="text-xs text-zinc-700">Manage unique <span className="font-bold bg-zinc-100 px-1.5 py-0.5 rounded">Bearer Tokens</span> for Noon & Ikea portals.</p>
                  </div>
                  <div className="bg-zinc-50 p-4 rounded-2xl">
-                   <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">2. Endpoint Address</p>
+                   <p className="text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-2">2. Endpoint Address</p>
                    <p className="text-xs text-zinc-700 font-mono text-xs truncate">POST https://api.usend.ae/v1/orders/bulk</p>
                  </div>
                </div>
-               <button className="mt-8 px-6 py-3 bg-zinc-900 text-white rounded-full font-bold text-[10px] uppercase tracking-widest hover:bg-black transition-colors w-full">
+               <button className="mt-8 px-6 py-3 bg-zinc-900 text-white rounded-full font-bold text-[12px] uppercase tracking-widest hover:bg-black transition-colors w-full">
                   Generate Sandbox Key
                </button>
             </div>
@@ -2462,7 +2551,7 @@ function AdminIntegrations() {
             <div className="overflow-x-auto">
                <table className="w-full text-left border-collapse">
                   <thead>
-                     <tr className="bg-zinc-50 text-zinc-400 text-[9px] font-black uppercase tracking-widest border-b border-zinc-100">
+                     <tr className="bg-zinc-50 text-zinc-400 text-[13px] font-black uppercase tracking-widest border-b border-zinc-100">
                         <th className="p-4">ID</th>
                         <th className="p-4">Platform Channel</th>
                         <th className="p-4">Merchant Target</th>
@@ -2480,7 +2569,7 @@ function AdminIntegrations() {
                            <td className="p-4 text-zinc-500">{log.description}</td>
                            <td className="p-4 text-zinc-400">{log.time}</td>
                            <td className="p-4 text-right">
-                              <span className={`px-2 py-0.5 rounded-full text-[8.5px] font-black uppercase tracking-widest ${
+                              <span className={`px-2 py-0.5 rounded-full text-[12px] font-black uppercase tracking-widest ${
                                  log.severity === 'Critical' ? 'bg-red-50 text-red-600' :
                                  log.severity === 'Warning' ? 'bg-orange-50 text-orange-600' :
                                  'bg-zinc-100 text-zinc-650'
@@ -2539,19 +2628,19 @@ function UnifiedInventoryDesk() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white border border-zinc-200 p-6 rounded-[2rem] shadow-sm">
-          <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Total Monitored SKUs</span>
+          <span className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Total Monitored SKUs</span>
           <p className="text-2xl font-bold text-zinc-900">4,812 SKUs</p>
-          <span className="text-[10px] text-zinc-400 mt-2 block">Across 14 merchant channels</span>
+          <span className="text-[12px] text-zinc-400 mt-2 block">Across 14 merchant channels</span>
         </div>
         <div className="bg-red-50 border border-red-105 p-6 rounded-[2rem] shadow-sm col-span-1">
-          <span className="text-[9px] font-black uppercase tracking-widest text-red-600 block mb-1">Low Stock Alerts</span>
+          <span className="text-[13px] font-black uppercase tracking-widest text-red-600 block mb-1">Low Stock Alerts</span>
           <p className="text-2xl font-bold text-red-700">12 Items</p>
-          <span className="text-[10px] text-red-500 mt-2 block">Stock level fell below safety threshold</span>
+          <span className="text-[12px] text-red-500 mt-2 block">Stock level fell below safety threshold</span>
         </div>
         <div className="bg-orange-50 border border-orange-105 p-6 rounded-[2rem] shadow-sm">
-          <span className="text-[9px] font-black uppercase tracking-widest text-orange-600 block mb-1">Pending Stock Transits</span>
+          <span className="text-[13px] font-black uppercase tracking-widest text-orange-600 block mb-1">Pending Stock Transits</span>
           <p className="text-2xl font-bold text-orange-700">3 Fleet Runs</p>
-          <span className="text-[10px] text-orange-500 mt-2 block">Moving to balance localized demands</span>
+          <span className="text-[12px] text-orange-500 mt-2 block">Moving to balance localized demands</span>
         </div>
       </div>
 
@@ -2559,7 +2648,7 @@ function UnifiedInventoryDesk() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
-              <tr className="bg-zinc-50 text-zinc-400 text-[10px] font-black uppercase tracking-widest border-b border-zinc-100">
+              <tr className="bg-zinc-50 text-zinc-400 text-[12px] font-black uppercase tracking-widest border-b border-zinc-100">
                 <th className="p-6">SKU Code</th>
                 <th className="p-6">Product Details</th>
                 <th className="p-6">Merchant Partner</th>
@@ -2574,14 +2663,14 @@ function UnifiedInventoryDesk() {
                   <td className="p-6 font-mono text-zinc-900 font-bold text-xs">{item.sku}</td>
                   <td className="p-6">
                     <span className="text-zinc-800 font-bold block">{item.name}</span>
-                    <span className="text-[10px] text-zinc-400 mt-0.5 block">Threshold: {item.threshold} units</span>
+                    <span className="text-[12px] text-zinc-400 mt-0.5 block">Threshold: {item.threshold} units</span>
                   </td>
                   <td className="p-6 text-zinc-650">{item.merchant}</td>
                   <td className="p-6 text-zinc-500 text-xs">{item.site}</td>
                   <td className="p-6">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-zinc-805">{item.stock}</span>
-                      <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest leading-none ${
+                      <span className={`px-2.5 py-1 rounded-full text-[13px] font-black uppercase tracking-widest leading-none ${
                         item.status === 'Healthy' ? 'bg-blue-50 text-blue-600' :
                         item.status === 'Critical Alert' ? 'bg-orange-50 text-orange-600 animate-pulse' :
                         'bg-red-50 text-red-600'
@@ -2594,12 +2683,12 @@ function UnifiedInventoryDesk() {
                     {(item.status !== "Healthy") ? (
                       <button 
                         onClick={() => triggerReplenish(item.sku)}
-                        className="text-[10px] bg-brand text-white font-black uppercase tracking-widest px-4 py-2.5 rounded-xl hover:bg-brand/90 hover:scale-105 transition-all shadow-md shadow-brand/10"
+                        className="text-[12px] bg-brand text-white font-black uppercase tracking-widest px-4 py-2.5 rounded-xl hover:bg-brand/90 hover:scale-105 transition-all shadow-md shadow-brand/10"
                       >
                         Auto-Replenish
                       </button>
                     ) : (
-                      <span className="text-[10px] font-bold text-blue-600 flex items-center justify-center gap-1">
+                      <span className="text-[12px] font-bold text-blue-600 flex items-center justify-center gap-1">
                         ✓ Balanced
                       </span>
                     )}
@@ -2655,7 +2744,7 @@ function CSVBatchControlDesk() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[900px]">
             <thead>
-              <tr className="bg-zinc-50 text-zinc-400 text-[10px] font-black uppercase tracking-widest border-b border-zinc-100">
+              <tr className="bg-zinc-50 text-zinc-400 text-[12px] font-black uppercase tracking-widest border-b border-zinc-100">
                 <th className="p-6">Batch ID</th>
                 <th className="p-6">Uploader</th>
                 <th className="p-6 font-mono">Manifest File</th>
@@ -2672,12 +2761,12 @@ function CSVBatchControlDesk() {
                   <td className="p-6 text-zinc-500 font-mono text-xs max-w-[200px] truncate">{rec.fileName}</td>
                   <td className="p-6">
                     <span className="font-bold text-zinc-900 block">{rec.ordersCount} consignments</span>
-                    <span className="text-[10px] text-zinc-400 mt-0.5 block">{rec.date}</span>
+                    <span className="text-[12px] text-zinc-400 mt-0.5 block">{rec.date}</span>
                   </td>
                   <td className="p-6">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-zinc-801">{rec.successRate}</span>
-                      <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest leading-none ${
+                      <span className={`px-2.5 py-1 rounded-full text-[13px] font-black uppercase tracking-widest leading-none ${
                         rec.status === 'Completed' ? 'bg-blue-50 text-blue-600' :
                         rec.status === 'Processing' ? 'bg-indigo-50 text-indigo-650 animate-pulse' :
                         'bg-red-50 text-red-650'
@@ -2690,16 +2779,16 @@ function CSVBatchControlDesk() {
                     {rec.status === "Processing" ? (
                       <button 
                         onClick={() => triggerApproveManifest(rec.id)}
-                        className="text-[10px] bg-brand text-white font-black uppercase tracking-widest px-4 py-2.5 rounded-xl hover:bg-brand/90 hover:scale-105 transition-all shadow-md shadow-brand/10"
+                        className="text-[12px] bg-brand text-white font-black uppercase tracking-widest px-4 py-2.5 rounded-xl hover:bg-brand/90 hover:scale-105 transition-all shadow-md shadow-brand/10"
                       >
                         Approve & Sync Dispatch
                       </button>
                     ) : rec.status === "Flagged Errors" ? (
                       <div className="flex items-center justify-center gap-2 font-mono">
-                        <span className="text-[10px] text-red-500 font-bold">Address mismatch</span>
+                        <span className="text-[12px] text-red-500 font-bold">Address mismatch</span>
                         <button 
                           onClick={() => triggerApproveManifest(rec.id)}
-                          className="text-[9px] bg-zinc-900 text-white font-black uppercase tracking-widest px-3 py-1.5 rounded-lg hover:bg-black"
+                          className="text-[13px] bg-zinc-900 text-white font-black uppercase tracking-widest px-3 py-1.5 rounded-lg hover:bg-black"
                         >
                           Manual Force
                         </button>
@@ -2718,12 +2807,13 @@ function CSVBatchControlDesk() {
   );
 }
 
-function SettlementLedgerDesk() {
+function WalletManagementDesk() {
+  const { t, isRTL } = useLanguage();
   const [ledger, setLedger] = useState([
-    { id: "TX-SET-4421", merchant: "Noon E-commerce", cycle: "May 15 - May 22", codCollected: "384,200 AED", feesDeducted: "9,605 AED", netRemittance: "374,595 AED", status: "Pending approval" },
-    { id: "TX-SET-4420", merchant: "IKEA UAE", cycle: "May 10 - May 17", codCollected: "128,400 AED", feesDeducted: "3,210 AED", netRemittance: "125,190 AED", status: "Settled" },
-    { id: "TX-SET-4419", merchant: "Spinneys Supermarket", cycle: "May 08 - May 15", codCollected: "42,000 AED", feesDeducted: "1,050 AED", netRemittance: "40,950 AED", status: "Settled" },
-    { id: "TX-SET-4418", merchant: "Al Futtaim Logistics", cycle: "Global Monthly Q1", codCollected: "691,000 AED", feesDeducted: "17,275 AED", netRemittance: "673,725 AED", status: "Under Review" }
+    { id: "TX-SET-4421", type: "Merchant Settlement", entity: "Noon E-commerce", cycle: "May 15 - May 22", grossAmount: "384,200 AED", feesDeducted: "9,605 AED", netRemittance: "374,595 AED", status: "Pending approval" },
+    { id: "TX-SET-4420", type: "Courier Settlement", entity: "Aramex Express", cycle: "May 10 - May 17", grossAmount: "128,400 AED", feesDeducted: "0 AED", netRemittance: "128,400 AED", status: "Settled" },
+    { id: "TX-REF-4419", type: "Refund", entity: "Customer (John Doe)", cycle: "N/A", grossAmount: "420 AED", feesDeducted: "0 AED", netRemittance: "420 AED", status: "Settled" },
+    { id: "TX-SET-4418", type: "Merchant Settlement", entity: "IKEA UAE", cycle: "Global Monthly Q1", grossAmount: "691,000 AED", feesDeducted: "17,275 AED", netRemittance: "673,725 AED", status: "Under Review" }
   ]);
 
   const [notif, setNotif] = useState("");
@@ -2735,7 +2825,7 @@ function SettlementLedgerDesk() {
       }
       return item;
     }));
-    setNotif(`WPS remittance authorized! Bank transfer payload dispatched of net remittance.`);
+    setNotif(`WPS remittance and ledger transfer authorized successfully.`);
     setTimeout(() => setNotif(""), 4000);
   };
 
@@ -2743,8 +2833,8 @@ function SettlementLedgerDesk() {
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-xl font-display font-medium text-zinc-900 mb-1 uppercase tracking-tight">financial settlement clearing room</h3>
-          <p className="text-sm text-zinc-500">Manage global Cash on Delivery (COD) payouts, platform commissions, VAT receipts (5%) and state ledgers.</p>
+          <h3 className="text-xl font-display font-medium text-zinc-900 mb-1 uppercase tracking-tight">Platform Wallet & Global Ledger</h3>
+          <p className="text-sm text-zinc-500">Manage digital wallets, deposits, withdrawals, transfers, refunds, COD and Delivery Company settlements.</p>
         </div>
       </div>
 
@@ -2757,24 +2847,24 @@ function SettlementLedgerDesk() {
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white border border-zinc-200 p-6 rounded-[2rem] shadow-sm">
-          <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Total COD Collected</span>
-          <p className="text-2xl font-bold text-zinc-900">1,245,600 AED</p>
-          <span className="text-[10px] text-zinc-400 mt-2 block">Directly processed this billing cycle</span>
+          <span className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Total Wallets Balance</span>
+          <p className="text-2xl font-bold text-zinc-900">4,245,600 AED</p>
+          <span className="text-[12px] text-zinc-400 mt-2 block">Customer, Merchant & Driver Funds</span>
         </div>
         <div className="bg-white border border-zinc-200 p-6 rounded-[2rem] shadow-sm">
-          <span className="text-[9px] font-black uppercase tracking-widest text-[#4f95cc] block mb-1">Platform Commissions</span>
-          <p className="text-2xl font-bold text-[#4f95cc]">31,140 AED</p>
-          <span className="text-[10px] text-zinc-400 mt-2 block">Net commission revenues</span>
+          <span className="text-[13px] font-black uppercase tracking-widest text-[#4f95cc] block mb-1">Pending COD Settlements</span>
+          <p className="text-2xl font-bold text-[#4f95cc]">951,140 AED</p>
+          <span className="text-[12px] text-zinc-400 mt-2 block">To be remitted to Merchants</span>
         </div>
         <div className="bg-white border border-zinc-200 p-6 rounded-[2rem] shadow-sm">
-          <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400 block mb-1">VAT Collected (5%)</span>
-          <p className="text-2xl font-bold text-zinc-900">62,280 AED</p>
-          <span className="text-[10px] text-zinc-400 mt-2 block">Ready for Federal Tax statement output</span>
+          <span className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Courier Payouts Due</span>
+          <p className="text-2xl font-bold text-zinc-900">162,280 AED</p>
+          <span className="text-[12px] text-zinc-400 mt-2 block">Carrier allocations</span>
         </div>
         <div className="bg-amber-50 border border-amber-100 p-6 rounded-[2rem] shadow-sm col-span-1">
-          <span className="text-[9px] font-black uppercase tracking-widest text-amber-700 block mb-1">Unreleased Balance</span>
-          <p className="text-2xl font-bold text-amber-800 font-sans">415,545 AED</p>
-          <span className="text-[10px] text-amber-600 mt-2 block">Awaiting operational clearance</span>
+          <span className="text-[13px] font-black uppercase tracking-widest text-amber-700 block mb-1">Pending Refunds</span>
+          <p className="text-2xl font-bold text-amber-800 font-sans">5,545 AED</p>
+          <span className="text-[12px] text-amber-600 mt-2 block">Customer wallet credit reversals</span>
         </div>
       </div>
 
@@ -2782,11 +2872,12 @@ function SettlementLedgerDesk() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[900px]">
             <thead>
-              <tr className="bg-zinc-50 text-zinc-400 text-[10px] font-black uppercase tracking-widest border-b border-zinc-100">
-                <th className="p-6">Statement Reference</th>
-                <th className="p-6">Merchant Beneficiary</th>
+              <tr className="bg-zinc-50 text-zinc-400 text-[12px] font-black uppercase tracking-widest border-b border-zinc-100">
+                <th className="p-6">Statement Ref</th>
+                <th className="p-6">Transaction Type</th>
+                <th className="p-6">Beneficiary Entity</th>
                 <th className="p-6">Billing Cycle</th>
-                <th className="p-6 font-mono">Collected COD</th>
+                <th className="p-6 font-mono">Gross Amount</th>
                 <th className="p-6 font-mono">Fees Deducted</th>
                 <th className="p-6">Net Remit Amount</th>
                 <th className="p-6 text-center">Remit Status</th>
@@ -2796,31 +2887,32 @@ function SettlementLedgerDesk() {
               {ledger.map((item, idx) => (
                 <tr key={idx} className="border-b border-zinc-50 hover:bg-zinc-50/50 transition-colors">
                   <td className="p-6 font-mono text-zinc-900 font-bold text-xs">{item.id}</td>
-                  <td className="p-6 font-bold text-zinc-800">{item.merchant}</td>
+                  <td className="p-6"><span className={`px-3 py-1 rounded-full text-[12px] font-bold ${item.type.includes('Refund') ? 'bg-amber-50 text-amber-700' : 'bg-blue-50 text-blue-700'}`}>{item.type}</span></td>
+                  <td className="p-6 font-bold text-zinc-800">{item.entity}</td>
                   <td className="p-6 text-zinc-500 font-medium">{item.cycle}</td>
-                  <td className="p-6 text-zinc-650 text-xs font-mono">{item.codCollected}</td>
+                  <td className="p-6 text-zinc-650 text-xs font-mono">{item.grossAmount}</td>
                   <td className="p-6 text-red-600 text-xs font-mono">{item.feesDeducted}</td>
                   <td className="p-6 text-blue-600 font-bold text-sm tracking-tight">{item.netRemittance}</td>
                   <td className="p-6 text-center">
                     {item.status === 'Pending approval' ? (
                       <button 
                         onClick={() => triggerRemittance(item.id)}
-                        className="text-[10px] bg-blue-600 text-white font-black uppercase tracking-widest px-4 py-2.5 rounded-xl hover:bg-blue-700 hover:scale-105 transition-all shadow-md shadow-brand/10"
+                        className="text-[12px] bg-blue-600 text-white font-black uppercase tracking-widest px-4 py-2.5 rounded-xl hover:bg-blue-700 hover:scale-105 transition-all shadow-md shadow-brand/10"
                       >
-                        Authorize WPS Remit
+                        Authorize Payment
                       </button>
                     ) : item.status === 'Under Review' ? (
                       <div className="flex gap-2 items-center justify-center font-mono text-xs">
-                        <span className="text-[10px] text-amber-600 uppercase font-black tracking-widest">Auditing...</span>
+                        <span className="text-[12px] text-amber-600 uppercase font-black tracking-widest">Auditing...</span>
                         <button 
                           onClick={() => triggerRemittance(item.id)}
-                          className="text-[9px] bg-zinc-900 text-white font-black uppercase px-3 py-1.5 rounded-lg hover:bg-black"
+                          className="text-[13px] bg-zinc-900 text-white font-black uppercase px-3 py-1.5 rounded-lg hover:bg-black"
                         >
                           Overrule
                         </button>
                       </div>
                     ) : (
-                      <span className="px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-blue-50 text-blue-600 inline-block font-mono">
+                      <span className="px-3 py-1.5 rounded-full text-[13px] font-black uppercase tracking-widest bg-blue-50 text-blue-600 inline-block font-mono">
                         ✓ remitted settled
                       </span>
                     )}
@@ -2828,6 +2920,66 @@ function SettlementLedgerDesk() {
                 </tr>
               ))}
             </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between mt-12 mb-4">
+        <div>
+          <h3 className="text-xl font-display font-medium text-zinc-900 mb-1 uppercase tracking-tight">{t('financial_reconciliation') || 'Courier Financial Reconciliation'}</h3>
+          <p className="text-sm text-zinc-500">{t('financial_reconciliation_desc') || 'Compare estimated quotes vs. actual volumetric billing invoices from couriers to detect margin leaks.'}</p>
+        </div>
+      </div>
+      
+      <div className="bg-white border border-zinc-200 rounded-[3rem] p-10 overflow-hidden relative shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[900px]">
+             <thead>
+               <tr className="bg-zinc-50 text-zinc-400 text-[12px] font-black uppercase tracking-widest border-b border-zinc-100">
+                 <th className={`p-6 ${isRTL ? 'text-right' : 'text-left'}`}>{t('tracking_awb') || 'Tracking / AWB'}</th>
+                 <th className={`p-6 ${isRTL ? 'text-right' : 'text-left'}`}>{t('courier') || 'Courier'}</th>
+                 <th className={`p-6 ${isRTL ? 'text-right' : 'text-left'}`}>{t('est_weight') || 'Est. Weight'}</th>
+                 <th className={`p-6 ${isRTL ? 'text-right' : 'text-left'}`}>{t('actual_weight') || 'Actual Volumetric Weight'}</th>
+                 <th className={`p-6 ${isRTL ? 'text-right' : 'text-left'}`}>{t('quoted_price') || 'Quoted Price'}</th>
+                 <th className={`p-6 text-red-600 ${isRTL ? 'text-right' : 'text-left'}`}>{t('billed_invoice') || 'Billed Invoice'}</th>
+                 <th className="p-6 text-center">{t('margin_leak') || 'Margin Leak'}</th>
+               </tr>
+             </thead>
+             <tbody className="text-sm font-medium">
+                <tr className="border-b border-zinc-50 hover:bg-zinc-50/50 transition-colors">
+                   <td className="p-6 font-mono text-zinc-900 font-bold text-xs">3849102931</td>
+                   <td className="p-6 font-bold text-zinc-800">Aramex</td>
+                   <td className="p-6 text-zinc-500 text-xs">1.50 Kg</td>
+                   <td className="p-6 font-bold text-amber-600 text-xs text-center">4.20 Kg</td>
+                   <td className="p-6 text-zinc-500 font-mono text-xs">AED 16.50</td>
+                   <td className="p-6 text-red-600 font-bold font-mono text-xs">AED 28.00</td>
+                   <td className="p-6 text-center">
+                     <span className="px-3 py-1 rounded bg-red-50 text-red-600 font-mono text-xs font-bold">-11.50 AED</span>
+                   </td>
+                </tr>
+                <tr className="border-b border-zinc-50 hover:bg-zinc-50/50 transition-colors">
+                   <td className="p-6 font-mono text-zinc-900 font-bold text-xs">3849102932</td>
+                   <td className="p-6 font-bold text-zinc-800">Aramex</td>
+                   <td className="p-6 text-zinc-500 text-xs">0.50 Kg</td>
+                   <td className="p-6 font-bold text-zinc-800 text-xs text-center">0.50 Kg</td>
+                   <td className="p-6 text-zinc-500 font-mono text-xs">AED 12.00</td>
+                   <td className="p-6 text-zinc-800 font-bold font-mono text-xs">AED 12.00</td>
+                   <td className="p-6 text-center">
+                     <span className="px-3 py-1 text-green-500 font-bold font-mono text-[13px] uppercase tracking-widest"><Check className="inline w-3 h-3 -mt-0.5" /> {t('matched') || 'Matched'}</span>
+                   </td>
+                </tr>
+                <tr className="border-b border-zinc-50 hover:bg-zinc-50/50 transition-colors">
+                   <td className="p-6 font-mono text-zinc-900 font-bold text-xs">7498124933</td>
+                   <td className="p-6 font-bold text-zinc-800">DHL Express</td>
+                   <td className="p-6 text-zinc-500 text-xs">3.00 Kg</td>
+                   <td className="p-6 font-bold text-amber-600 text-xs text-center">3.80 Kg</td>
+                   <td className="p-6 text-zinc-500 font-mono text-xs">AED 41.50</td>
+                   <td className="p-6 text-red-600 font-bold font-mono text-xs">AED 52.00</td>
+                   <td className="p-6 text-center">
+                     <span className="px-3 py-1 rounded bg-red-50 text-red-600 font-mono text-xs font-bold">-10.50 AED</span>
+                   </td>
+                </tr>
+             </tbody>
           </table>
         </div>
       </div>
@@ -2846,7 +2998,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
       case 'requests': return <RequestsHub />;
       case 'inventory': return <UnifiedInventoryDesk />;
       case 'batches': return <CSVBatchControlDesk />;
-      case 'finance': return <SettlementLedgerDesk />;
+      case 'finance': return <WalletManagementDesk />;
       case 'users': return <UsersDirectory />;
       case 'couriers': return <CouriersDirectory />;
       case 'merchants': return <MerchantDirectory />;
@@ -2874,7 +3026,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
               </div>
               <div>
                 <h1 className="text-xs font-black uppercase tracking-widest text-[#f4f4f5] leading-none">USend Portal</h1>
-                <span className="text-[9.5px] text-zinc-500 font-bold uppercase tracking-widest mt-1 block">Platform Admin</span>
+                <span className="text-[13px] text-zinc-500 font-bold uppercase tracking-widest mt-1 block">Platform Admin</span>
               </div>
             </div>
           </div>
@@ -2885,7 +3037,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
               { id: 'requests', icon: <Inbox className="w-[17px] h-[17px]" />, label: t('requests_freight') || 'Requests & Freight' },
               { id: 'inventory', icon: <Boxes className="w-[17px] h-[17px]" />, label: t('unified_stock_catalog') || 'Unified Stock Catalog' },
               { id: 'batches', icon: <ClipboardList className="w-[17px] h-[17px]" />, label: t('csv_batch_dispatches') || 'CSV Batch Dispatches' },
-              { id: 'finance', icon: <Coins className="w-[17px] h-[17px]" />, label: t('ledger_cod_settling') || 'Ledger & COD Settling' },
+              { id: 'finance', icon: <Coins className="w-[17px] h-[17px]" />, label: t('ledger_cod_settling') || 'Platform Wallets & Ledger' },
               { id: 'merchants', icon: <Building2 className="w-[17px] h-[17px]" />, label: t('merchant_directory') || 'Merchant Directory' },
               { id: 'users', icon: <UserCircle2 className="w-[17px] h-[17px]" />, label: t('users_directory') || 'Users Directory' },
               { id: 'couriers', icon: <Truck className="w-[17px] h-[17px]" />, label: t('couriers_directory') || 'Couriers Directory' },
@@ -2907,7 +3059,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                     <span className={`${isActive ? 'text-white' : 'text-zinc-400 group-hover/btn:text-zinc-200 group-hover/btn:scale-105 transition-transform'}`}>
                       {item.icon}
                     </span>
-                    <span className="text-[11.5px] font-semibold leading-none truncate tracking-wide text-left">{item.label}</span>
+                    <span className="text-[12px] font-semibold leading-none truncate tracking-wide text-left">{item.label}</span>
                   </div>
                   {isActive ? (
                     <div className="w-1.5 h-1.5 rounded-full bg-white shrink-0 shadow-sm" />
@@ -2923,14 +3075,14 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
           <div className="pt-4 border-t border-zinc-900 space-y-1.5">
             <button
               onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
-              className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 text-[10.5px] font-black uppercase tracking-widest transition-all"
+              className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 text-[12px] font-black uppercase tracking-widest transition-all"
             >
               <Globe className="w-4 h-4 text-zinc-500 group-hover:text-zinc-300" />
               <span>{language === 'en' ? 'العربية' : 'English'}</span>
             </button>
             <button
               onClick={() => onNavigate('landing_page')}
-              className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-500/10 text-[10.5px] font-black uppercase tracking-widest transition-all"
+              className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-500/10 text-[12px] font-black uppercase tracking-widest transition-all"
             >
               <LogOut className="w-4 h-4 text-red-500" />
               <span>{t('sign_out') || 'Sign Out'}</span>
@@ -2967,7 +3119,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                 className="w-12 h-12 rounded-2xl bg-white border border-zinc-200 flex items-center justify-center text-zinc-600 hover:border-brand hover:text-brand transition-colors cursor-pointer group"
               >
                 <div className="flex gap-1 items-center">
-                   <span className="text-[10px] font-black uppercase tracking-widest">{language === 'en' ? 'AR' : 'EN'}</span>
+                   <span className="text-[12px] font-black uppercase tracking-widest">{language === 'en' ? 'AR' : 'EN'}</span>
                 </div>
               </button>
               <div className="relative">

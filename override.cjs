@@ -1,4 +1,5 @@
-import { Screen } from '../../types';
+const fs = require('fs');
+const content = `import { Screen } from '../../types';
 import UserSidebar from '../../components/UserSidebar';
 import { useLanguage } from '../../context/LanguageContext';
 import OrderWizard from '../../components/OrderWizard';
@@ -12,7 +13,7 @@ export default function UserIndividualOrder({ onNavigate }: UserIndividualOrderP
   const { isRTL } = useLanguage();
 
   return (
-    <div className={`flex flex-col md:flex-row h-screen overflow-hidden bg-zinc-50 dark:bg-zinc-950 ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className={\`flex flex-col md:flex-row h-screen overflow-hidden bg-zinc-50 dark:bg-zinc-950 \${isRTL ? 'rtl' : 'ltr'}\`} dir={isRTL ? 'rtl' : 'ltr'}>
       <UserSidebar currentScreen="user_individual" onNavigate={onNavigate} />
       
       <main className="flex-1 p-6 lg:p-10 h-full overflow-y-auto relative">
@@ -24,3 +25,5 @@ export default function UserIndividualOrder({ onNavigate }: UserIndividualOrderP
     </div>
   );
 }
+`;
+fs.writeFileSync('./src/screens/user/UserIndividualOrder.tsx', content);

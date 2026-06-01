@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Screen } from '../../types';
 import MerchantSidebar from '../../components/MerchantSidebar';
 import { Search, MapPin, Package, Clock, X, Phone, User, FileText, Star, AlertCircle, ChevronRight, CheckCircle2, Play, Check, Terminal, Printer, RefreshCw } from 'lucide-react';
-import { useState, useEffect, ReactNode } from 'react';
+import { useState, useEffect, ReactNode, FC } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useApp, USendRequest } from '../../context/AppContext';
 import { courierIntegrationService, defaultAramexCreds } from '../../services/courierIntegration';
@@ -28,6 +28,12 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
   const { activeRequests, user, updateRequest, updateRequestStatus } = useApp();
   const [isMapReady, setIsMapReady] = useState(false);
   const [filter, setFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [carrierFilter, setCarrierFilter] = useState('all_carriers');
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
   useEffect(() => {
     const timer = setTimeout(() => setIsMapReady(true), 100);
@@ -78,6 +84,8 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
           status: 'Reviewing',
           carrier: 'aramex',
           externalTrackingNumber: res.trackingNumber,
+          awbLabelBase64: res.base64Label,
+          awbLabelUrl: res.labelUrl,
           aramexLogs: {
             request: res.requestPayload,
             response: res.responsePayload,
@@ -102,16 +110,88 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
     }
   };
 
+  const handlePickupRequest = async (req: USendRequest) => {
+    setIsDispatching(true);
+    try {
+      const todayDate = new Date().toISOString().split('T')[0];
+      const res = await courierIntegrationService.schedulePickup('aramex', {
+         credentials: defaultAramexCreds,
+         pickupDate: todayDate,
+         readyTime: "14:00:00",
+         contactName: "Warehouse Ops",
+         contactPhone: "+971501234567",
+         contactRegion: "Dubai"
+      });
+
+      if (res.success) {
+        alert(`Pickup Scheduled successfully! Pickup ID: ${res.pickupId}`);
+        await updateRequest(req.id, {
+          aramexLogs: {
+            request: res.requestPayload,
+            response: res.responsePayload,
+            timestamp: res.timestamp,
+            pickupId: res.pickupId
+          }
+        });
+      } else {
+        alert("Aramex Pickup Request Failed: " + (res.error || "Unknown error"));
+        // update request with failure payload so user can see it in SOAP view
+        await updateRequest(req.id, {
+          aramexLogs: {
+            request: res.requestPayload || {},
+            response: res.responsePayload || { error: res.error },
+            timestamp: res.timestamp,
+            pickupId: req.aramexLogs?.pickupId
+          }
+        });
+      }
+    } catch (err: any) {
+      console.error("Failed to request pickup:", err);
+      alert("System Error: " + err.message);
+    } finally {
+      setIsDispatching(false);
+    }
+  };
+
   const filteredOrders = activeOrders.filter(order => {
-    const statusMap: Record<string, string> = {
-      'in_transit': 'in_transit',
-      'assigning': 'pending',
-      'Pending': 'pending'
-    };
-    if (filter === 'all') return true;
+    // 1. Status Filter
     const orderStatus = order.status.toLowerCase().replace(' ', '_');
-    return orderStatus === filter || (filter === 'pending' && (orderStatus === 'pending' || orderStatus === 'assigning')) || (filter === 'in_transit' && orderStatus === 'in_transit');
+    const matchesStatus = filter === 'all' || orderStatus === filter || (filter === 'pending' && (orderStatus === 'pending' || orderStatus === 'assigning')) || (filter === 'in_transit' && orderStatus === 'in_transit') || (filter === 'exceptions' && (orderStatus === 'rejected' || orderStatus === 'exceptions'));
+
+    // 2. Search Filter
+    const sTerm = searchQuery.toLowerCase();
+    const searchStr = (order.id + ' ' + order.name + ' ' + (order.externalTrackingNumber || '')).toLowerCase();
+    const matchesSearch = !sTerm || searchStr.includes(sTerm);
+
+    // 3. Carrier Filter
+    const matchesCarrier = carrierFilter === 'all_carriers' || (order.carrier === carrierFilter);
+
+    // 4. Date Range Filter
+    let matchesDate = true;
+    if (dateRange.start || dateRange.end) {
+      const orderTime = order.createdAt ? new Date(order.createdAt).getTime() : Date.parse(order.date);
+      if (!isNaN(orderTime)) {
+         if (dateRange.start && orderTime < new Date(dateRange.start).getTime()) matchesDate = false;
+         if (dateRange.end && orderTime > new Date(dateRange.end).getTime() + 86400000) matchesDate = false;
+      }
+    }
+
+    return matchesStatus && matchesSearch && matchesCarrier && matchesDate;
+  }).sort((a, b) => {
+      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : (Date.parse(a.date) || 0);
+      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : (Date.parse(b.date) || 0);
+
+      if (sortOrder === 'newest') {
+         if (timeA !== timeB) return timeB - timeA;
+         return b.id.localeCompare(a.id);
+      } else {
+         if (timeA !== timeB) return timeA - timeB;
+         return a.id.localeCompare(b.id);
+      }
   });
+
+  const paginatedOrders = filteredOrders.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const totalPages = Math.ceil(filteredOrders.length / pageSize);
 
   const mapCenter: [number, number] = [25.2048, 55.2708]; // UAE
 
@@ -120,9 +200,10 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
     { id: 'pending', label: t('pending') || 'Pending' },
     { id: 'picked_up', label: t('picked_up') || 'Picked Up' },
     { id: 'in_transit', label: t('in_transit') || 'In Transit' },
+    { id: 'exceptions', label: 'Exceptions' },
   ];
 
-  const TimelinePart = ({ dot, title, desc, active, last }: { dot: ReactNode, title: string, desc: string, active?: boolean, last?: boolean }) => (
+  const TimelinePart: FC<{ dot: ReactNode, title: string, desc: string, active?: boolean, last?: boolean }> = ({ dot, title, desc, active, last }) => (
     <div className="flex gap-4 min-h-[60px]">
        <div className="flex flex-col items-center">
           <div className={`w-8 h-8 rounded-full flex items-center justify-center z-10 ${active ? 'bg-gradient-to-r from-blue-700 to-blue-500 text-white shadow-lg shadow-blue-500/30' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
@@ -171,7 +252,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                    <div className="w-8 h-8 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-500">
                       <Package className="w-4 h-4" />
                    </div>
-                   <span className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">{t('total') || 'Total'}</span>
+                   <span className="text-[12px] font-black text-zinc-400 uppercase tracking-wider">{t('total') || 'Total'}</span>
                 </div>
                 <div className="text-2xl font-black text-zinc-900 dark:text-zinc-100">{activeOrders.length}</div>
              </div>
@@ -180,7 +261,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                    <div className="w-8 h-8 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
                       <Clock className="w-4 h-4" />
                    </div>
-                   <span className="text-[10px] font-black text-blue-500/60 uppercase tracking-wider">{t('in_transit')}</span>
+                   <span className="text-[12px] font-black text-blue-500/60 uppercase tracking-wider">{t('in_transit')}</span>
                 </div>
                 <div className="text-2xl font-black text-zinc-900 dark:text-zinc-100">1</div>
              </div>
@@ -189,7 +270,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                    <div className="w-8 h-8 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500">
                       <CheckCircle2 className="w-4 h-4" />
                    </div>
-                   <span className="text-[10px] font-black text-purple-500/60 uppercase tracking-wider">{t('picked_up')}</span>
+                   <span className="text-[12px] font-black text-purple-500/60 uppercase tracking-wider">{t('picked_up')}</span>
                 </div>
                 <div className="text-2xl font-black text-zinc-900 dark:text-zinc-100">1</div>
              </div>
@@ -198,14 +279,65 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                    <div className="w-8 h-8 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500">
                       <AlertCircle className="w-4 h-4" />
                    </div>
-                   <span className="text-[10px] font-black text-orange-500/60 uppercase tracking-wider">{t('pending')}</span>
+                   <span className="text-[12px] font-black text-orange-500/60 uppercase tracking-wider">{t('pending')}</span>
                 </div>
                 <div className="text-2xl font-black text-zinc-900 dark:text-zinc-100">1</div>
              </div>
           </div>
 
-          {/* Filters */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 hide-scrollbar">
+          {/* Search and Filter Row */}
+          <div className="flex flex-col md:flex-row flex-wrap gap-3 mt-4">
+             <div className="relative flex-1 min-w-[200px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                <input 
+                  type="text" 
+                  placeholder="Search by Tracking ID, Name..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl pl-10 pr-4 py-2.5 outline-none text-zinc-900 dark:text-zinc-100 text-sm font-medium focus:border-blue-500 transition-colors"
+                />
+             </div>
+             
+             <div className="flex flex-1 md:flex-none gap-2">
+                <input 
+                   type="date" 
+                   value={dateRange.start} 
+                   onChange={(e) => setDateRange(p => ({...p, start: e.target.value}))}
+                   className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-sm text-zinc-600 outline-none font-medium"
+                />
+                <span className="text-zinc-400 self-center">-</span>
+                <input 
+                   type="date" 
+                   value={dateRange.end} 
+                   onChange={(e) => setDateRange(p => ({...p, end: e.target.value}))}
+                   className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-sm text-zinc-600 outline-none font-medium"
+                />
+             </div>
+
+             <div className="flex gap-2">
+               <select 
+                 value={carrierFilter}
+                 onChange={(e) => setCarrierFilter(e.target.value)}
+                 className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2.5 outline-none text-zinc-900 dark:text-zinc-100 text-sm font-bold min-w-[130px] appearance-none"
+               >
+                 <option value="all_carriers">All Carriers</option>
+                 <option value="aramex">Aramex</option>
+                 <option value="dhl_express">DHL</option>
+                 <option value="usend">USend Fleet</option>
+               </select>
+               <select
+                 value={sortOrder}
+                 onChange={(e) => setSortOrder(e.target.value as any)}
+                 className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2.5 outline-none text-zinc-900 dark:text-zinc-100 text-sm font-bold min-w-[130px] appearance-none"
+               >
+                 <option value="newest">Newest First</option>
+                 <option value="oldest">Oldest First</option>
+               </select>
+             </div>
+          </div>
+
+          {/* Status Tabs */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 hide-scrollbar mt-4">
              {statusTabs.map(tab => (
                <button
                  key={tab.id}
@@ -264,7 +396,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                 </h2>
               </div>
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {filteredOrders.length > 0 ? filteredOrders.map((order) => {
+                  {paginatedOrders.length > 0 ? paginatedOrders.map((order) => {
                     const isRejected = order.status === 'Rejected' || order.status === 'Cancelled';
                     return (
                   <button 
@@ -283,26 +415,29 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                     <div className={`flex flex-col gap-3 ${isRTL ? 'pr-4' : 'pl-4'}`}>
                       <div className="flex justify-between items-start">
                         <div className="flex flex-col">
-                           <div className="flex items-center gap-2">
+                           <div className="flex flex-wrap items-center gap-2">
                              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{order.name}</h3>
-                             <span className="px-1.5 py-0.5 rounded-md bg-zinc-200/50 dark:bg-zinc-700/50 text-[10px] font-black text-zinc-500 dark:text-zinc-400">
+                             {order.carrier === 'aramex' && <span className="bg-[#d12421] text-white px-1.5 py-0.5 rounded-md text-[13px] font-black uppercase">Aramex</span>}
+                             {order.carrier === 'dhl_express' && <span className="bg-yellow-400 text-red-600 px-1.5 py-0.5 rounded-md text-[13px] font-black uppercase">DHL</span>}
+                             {order.carrier === 'usend' && <span className="bg-zinc-900 text-white px-1.5 py-0.5 rounded-md text-[13px] font-black uppercase">USend</span>}
+                             <span className="px-1.5 py-0.5 rounded-md bg-zinc-200/50 dark:bg-zinc-700/50 text-[12px] font-black text-zinc-500 dark:text-zinc-400">
                                {order.id}
                              </span>
                            </div>
-                           <div className="flex items-center gap-1 mt-1 text-[11px] font-medium text-zinc-500">
+                           <div className="flex items-center gap-1 mt-1 text-[13px] font-medium text-zinc-500">
                              <MapPin className="w-3 h-3 text-zinc-400 shrink-0" />
                              <span className="truncate max-w-[140px] leading-tight">{order.address}</span>
                            </div>
                         </div>
                         <div className="flex flex-col items-end gap-1">
-                           <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black tracking-wider uppercase ${
+                           <span className={`px-2 py-0.5 rounded-lg text-[13px] font-black tracking-wider uppercase ${
                              order.status === 'in_transit' ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400' :
                              order.status === 'Approved' ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400' :
                              'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400'
                            }`}>
                              {order.status}
                            </span>
-                           <span className="text-[10px] font-bold text-zinc-400">{order.date}</span>
+                           <span className="text-[12px] font-bold text-zinc-400">{order.date}</span>
                         </div>
                       </div>
                       
@@ -314,7 +449,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                         
                         <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-md">
                           <Clock className="w-3 h-3 text-blue-500" />
-                          <span className="text-[10px] font-black text-zinc-700 dark:text-zinc-300">ETA: {order.etaTime}</span>
+                          <span className="text-[12px] font-black text-zinc-700 dark:text-zinc-300">ETA: {order.etaTime}</span>
                         </div>
                       </div>
                     </div>
@@ -326,6 +461,26 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                    </div>
                 )}
               </div>
+              
+              {totalPages > 1 && (
+                <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/20 flex items-center justify-between rounded-b-3xl">
+                  <button 
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm font-bold text-zinc-700 dark:text-zinc-300 disabled:opacity-50 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
+                  >
+                    Prev
+                  </button>
+                  <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Page {currentPage} of {totalPages}</span>
+                  <button 
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm font-bold text-zinc-700 dark:text-zinc-300 disabled:opacity-50 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </motion.div>
@@ -353,7 +508,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                     <h2 className="text-xl font-black text-zinc-900 dark:text-zinc-100 uppercase tracking-tight">{t('order_details')}</h2>
                     <div className="flex items-center gap-2 mt-1">
                        <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{liveSelectedOrder.id}</p>
-                       <span className="text-[10px] font-bold bg-zinc-100 dark:bg-zinc-855 text-zinc-650 dark:text-zinc-400 px-2 py-0.5 rounded-md">REF-4421</span>
+                       <span className="text-[12px] font-bold bg-zinc-100 dark:bg-zinc-855 text-zinc-650 dark:text-zinc-400 px-2 py-0.5 rounded-md">REF-4421</span>
                     </div>
                   </div>
                   <button 
@@ -374,15 +529,15 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-base font-extrabold tracking-tight text-[#d12421] lowercase font-sans select-none">aramex</span>
-                        <span className="text-[9px] bg-[#d12421]/15 text-[#d12421] px-2 py-0.5 rounded font-black uppercase tracking-wider">Sandbox API Ready</span>
+                        <span className="text-[13px] bg-[#d12421]/15 text-[#d12421] px-2 py-0.5 rounded font-black uppercase tracking-wider">Sandbox API Ready</span>
                       </div>
-                      <p className="text-[10px] text-zinc-500 leading-normal">
+                      <p className="text-[12px] text-zinc-500 leading-normal">
                         This order hasn&apos;t been connected to an active delivery agent carrier yet. Send dispatch signal to verify Aramex SOAP Web Service integrations.
                       </p>
                       <button 
                         onClick={() => handleAramexDispatch(liveSelectedOrder)}
                         disabled={isDispatching}
-                        className="w-full bg-[#d12421] hover:bg-zinc-950 text-white font-black text-[10.5px] uppercase tracking-widest py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5 disabled:opacity-50 select-none cursor-pointer"
+                        className="w-full bg-[#d12421] hover:bg-zinc-950 text-white font-black text-[12px] uppercase tracking-widest py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5 disabled:opacity-50 select-none cursor-pointer"
                       >
                         {isDispatching ? (
                           <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -401,14 +556,37 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                       animate={{ opacity: 1, y: 0 }}
                       className="space-y-4"
                     >
-                      <div className="flex items-center justify-between">
-                         <div className="flex items-center gap-2">
-                            <div className="w-1.5 h-4 bg-[#d12421] rounded-full" />
-                            <h3 className="text-xs font-black uppercase tracking-wider text-zinc-400">Aramex Waybill Signal</h3>
-                         </div>
-                         <span className="text-[10px] text-blue-600 dark:text-blue-400 font-extrabold flex items-center gap-1 bg-blue-500/10 px-2 py-0.5 rounded-md">
-                           <Check className="w-3 h-3" /> API REGISTERED
-                         </span>
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center justify-between">
+                           <div className="flex items-center gap-2">
+                              <div className="w-1.5 h-4 bg-[#d12421] rounded-full" />
+                              <h3 className="text-xs font-black uppercase tracking-wider text-zinc-400">Aramex Waybill Signal</h3>
+                           </div>
+                           <span className="text-[12px] text-blue-600 dark:text-blue-400 font-extrabold flex items-center gap-1 bg-blue-500/10 px-2 py-0.5 rounded-md">
+                             <Check className="w-3 h-3" /> API REGISTERED
+                           </span>
+                        </div>
+                        
+                        {!liveSelectedOrder.aramexLogs?.pickupId && (
+                           <button 
+                              onClick={() => handlePickupRequest(liveSelectedOrder)}
+                              disabled={isDispatching}
+                              className="w-full bg-[#d12421]/10 text-[#d12421] border border-[#d12421]/30 hover:bg-[#d12421] hover:text-white font-black text-[12px] uppercase tracking-widest py-3 rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 disabled:opacity-50 select-none cursor-pointer"
+                           >
+                              {isDispatching ? (
+                                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <Clock className="w-3.5 h-3.5" />
+                              )}
+                              <span>Schedule Courier Pickup</span>
+                           </button>
+                        )}
+                        {liveSelectedOrder.aramexLogs?.pickupId && (
+                           <div className="bg-green-500/10 border border-green-500/20 text-green-600 dark:text-green-500 p-3 rounded-xl flex items-center justify-between px-4">
+                              <span className="text-[12px] font-black uppercase tracking-widest">Pickup Booked</span>
+                              <span className="text-xs font-mono font-bold">{liveSelectedOrder.aramexLogs.pickupId}</span>
+                           </div>
+                        )}
                       </div>
 
                       {/* Printable Waybill design */}
@@ -416,32 +594,32 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                         <div className="border-b-2 border-zinc-950 pb-2 flex justify-between items-start">
                           <span className="text-sm font-black uppercase tracking-tight italic text-[#d12421]">aramex</span>
                           <div className="text-right">
-                            <span className="text-[7px] font-black uppercase text-zinc-400 block">Delivery Protocol</span>
-                            <span className="text-[8px] font-bold bg-zinc-950 text-white px-1.5 py-0.5 rounded tracking-wide uppercase">COD Parcel</span>
+                            <span className="text-[13px] font-black uppercase text-zinc-400 block">Delivery Protocol</span>
+                            <span className="text-[12px] font-bold bg-zinc-950 text-white px-1.5 py-0.5 rounded tracking-wide uppercase">COD Parcel</span>
                           </div>
                         </div>
 
-                        <div className="py-2.5 border-b border-zinc-200 grid grid-cols-2 gap-2 text-[9px] font-medium">
+                        <div className="py-2.5 border-b border-zinc-200 grid grid-cols-2 gap-2 text-[13px] font-medium">
                           <div>
-                            <span className="font-bold text-zinc-400 block uppercase text-[7px] tracking-wider">Sender</span>
+                            <span className="font-bold text-zinc-400 block uppercase text-[13px] tracking-wider">Sender</span>
                             <p className="font-extrabold leading-tight">USend Central Depot</p>
-                            <p className="text-zinc-500 text-[8px] truncate leading-tight mt-0.5">Jebel Ali Area Node A</p>
+                            <p className="text-zinc-500 text-[12px] truncate leading-tight mt-0.5">Jebel Ali Area Node A</p>
                           </div>
                           <div>
-                            <span className="font-bold text-zinc-400 block uppercase text-[7px] tracking-wider">Recipient (Buyer)</span>
+                            <span className="font-bold text-zinc-400 block uppercase text-[13px] tracking-wider">Recipient (Buyer)</span>
                             <p className="font-extrabold leading-tight text-zinc-950">{liveSelectedOrder.name}</p>
-                            <p className="text-zinc-550 text-[8px] truncate leading-tight mt-0.5">{liveSelectedOrder.address}</p>
+                            <p className="text-zinc-550 text-[12px] truncate leading-tight mt-0.5">{liveSelectedOrder.address}</p>
                           </div>
                         </div>
 
                         {/* Cargo dimensions audit */}
-                        <div className="py-2 border-b border-zinc-200 grid grid-cols-2 gap-2 text-[8px] font-semibold text-zinc-500">
+                        <div className="py-2 border-b border-zinc-200 grid grid-cols-2 gap-2 text-[12px] font-semibold text-zinc-500">
                           <div>
-                            <span className="text-[7px] uppercase block text-zinc-400">Cargo Contents</span>
+                            <span className="text-[13px] uppercase block text-zinc-400">Cargo Contents</span>
                             <p className="font-bold text-zinc-800 truncate">{liveSelectedOrder.itemType}</p>
                           </div>
                           <div>
-                            <span className="text-[7px] uppercase block text-zinc-400">Declared Value</span>
+                            <span className="text-[13px] uppercase block text-zinc-400">Declared Value</span>
                             <p className="font-extrabold text-[#d12421]">{liveSelectedOrder.orderAmount}</p>
                           </div>
                         </div>
@@ -453,14 +631,50 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                               <div key={i} className="bg-zinc-950" style={{ width: `${width}px` }} />
                             ))}
                           </div>
-                          <span className="font-mono text-[9px] font-black tracking-widest text-zinc-800">{liveSelectedOrder.externalTrackingNumber}</span>
+                          <span className="font-mono text-[13px] font-black tracking-widest text-zinc-800">{liveSelectedOrder.externalTrackingNumber}</span>
                         </div>
 
-                        <div className="flex justify-between items-center text-[8px] pt-1.5 text-zinc-400 font-bold">
+                        <div className="flex justify-between items-center text-[12px] pt-1.5 text-zinc-400 font-bold">
                           <span>Payment Method: {liveSelectedOrder.paymentMethod}</span>
-                          <span className="text-zinc-900 text-[9px] font-black">{liveSelectedOrder.orderAmount}</span>
+                          <span className="text-zinc-900 text-[13px] font-black">{liveSelectedOrder.orderAmount}</span>
                         </div>
                       </div>
+
+                      {/* Download label options */}
+                      {(liveSelectedOrder.awbLabelUrl || liveSelectedOrder.awbLabelBase64) && (
+                         <div className="flex items-center gap-2">
+                           {liveSelectedOrder.awbLabelUrl ? (
+                             <a 
+                               href={liveSelectedOrder.awbLabelUrl} 
+                               target="_blank" 
+                               rel="noopener noreferrer"
+                               className="flex-1 bg-zinc-900 text-white hover:bg-zinc-800 text-[12px] font-black uppercase tracking-wider py-2.5 rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5"
+                             >
+                               <FileText className="w-3.5 h-3.5" />
+                               {t('view_pdf') || 'View PDF Label'}
+                             </a>
+                           ) : liveSelectedOrder.awbLabelBase64 ? (
+                             <button 
+                               onClick={() => {
+                                 const isZpl = liveSelectedOrder.awbLabelBase64?.startsWith('Xl') || liveSelectedOrder.awbLabelBase64?.includes('^XA'); // Mock ZPL check
+                                 const link = document.createElement('a');
+                                 if (isZpl) {
+                                  link.href = `data:text/plain;charset=utf-8,${encodeURIComponent(liveSelectedOrder.awbLabelBase64 || '')}`;
+                                  link.download = `Waybill-${liveSelectedOrder.externalTrackingNumber}.zpl`;
+                                 } else {
+                                  link.href = `data:application/pdf;base64,${liveSelectedOrder.awbLabelBase64}`;
+                                  link.download = `Waybill-${liveSelectedOrder.externalTrackingNumber}.pdf`;
+                                 }
+                                 link.click();
+                               }}
+                               className="flex-1 bg-zinc-900 text-white hover:bg-zinc-800 text-[12px] font-black uppercase tracking-wider py-2.5 rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+                             >
+                               <FileText className="w-3.5 h-3.5" />
+                               {t('download_label') || 'Download Label'}
+                             </button>
+                           ) : null}
+                         </div>
+                      )}
 
                       {/* SOAP XML logs expander */}
                       {liveSelectedOrder.aramexLogs && (
@@ -468,27 +682,27 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                           <button 
                             type="button"
                             onClick={() => setShowSoapLogs(!showSoapLogs)}
-                            className="w-full p-3.5 font-extrabold text-[10px] text-zinc-500 dark:text-zinc-400 flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-800/50 outline-hidden"
+                            className="w-full p-3.5 font-extrabold text-[12px] text-zinc-500 dark:text-zinc-400 flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-800/50 outline-hidden"
                           >
                             <span className="flex items-center gap-1.5 uppercase font-black">
                               <Terminal className="w-3.5 h-3.5 text-blue-500" />
                               SOAP Web Service Traces
                             </span>
-                            <span className="text-[9px] font-bold text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded">{showSoapLogs ? 'Hide' : 'WSDL XML'}</span>
+                            <span className="text-[13px] font-bold text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded">{showSoapLogs ? 'Hide' : 'WSDL XML'}</span>
                           </button>
                           
                           {showSoapLogs && (
-                            <div className="p-3 border-t border-zinc-200 dark:border-zinc-800 space-y-3 font-mono text-[8.5px] max-h-[220px] overflow-y-auto bg-black text-zinc-300">
+                            <div className="p-3 border-t border-zinc-200 dark:border-zinc-800 space-y-3 font-mono text-[12px] max-h-[220px] overflow-y-auto bg-black text-zinc-300">
                               <div className="space-y-1">
-                                <span className="text-[#1452D1] font-black block uppercase tracking-wider text-[7px]">WSDL ENDPOINT: https://ws.sbx.aramex.net/ShippingAPI.v1</span>
-                                <span className="text-zinc-500 italic block text-[7.5px]">SOAPEnvelope XML Request (ClientInfo Header Authorization)</span>
+                                <span className="text-[#1452D1] font-black block uppercase tracking-wider text-[13px]">WSDL ENDPOINT: https://ws.aramex.net/ShippingAPI.v1</span>
+                                <span className="text-zinc-500 italic block text-[13px]">SOAPEnvelope XML Request (ClientInfo Header Authorization)</span>
                                 <pre className="bg-zinc-950/80 p-2 rounded text-zinc-400 overflow-x-auto select-all leading-normal">
                                   {JSON.stringify(liveSelectedOrder.aramexLogs.request, null, 2)}
                                 </pre>
                               </div>
                               <div className="space-y-1 pt-2 border-t border-zinc-900">
-                                <span className="text-blue-400 font-black block uppercase tracking-wider text-[7px]">SOAP ACTION: 'CreateShipmentsResponse'</span>
-                                <span className="text-zinc-500 italic block text-[7.5px]">API Response Body (JSON/XML structure)</span>
+                                <span className="text-blue-400 font-black block uppercase tracking-wider text-[13px]">SOAP ACTION: 'CreateShipmentsResponse'</span>
+                                <span className="text-zinc-500 italic block text-[13px]">API Response Body (JSON/XML structure)</span>
                                 <pre className="bg-zinc-950/80 p-2 rounded text-blue-400 overflow-x-auto select-all leading-normal">
                                   {JSON.stringify(liveSelectedOrder.aramexLogs.response, null, 2)}
                                 </pre>

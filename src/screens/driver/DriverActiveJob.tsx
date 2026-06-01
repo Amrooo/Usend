@@ -14,7 +14,8 @@ import { useApp } from '../../context/AppContext';
 export default function DriverActiveJob({ onNavigate }: DriverActiveJobProps) {
   const { t, isRTL } = useLanguage();
   const { currentRequest, updateRequestStatus } = useApp();
-  const [status, setStatus] = useState<'heading_to_pickup' | 'arrived' | 'in_transit' | 'delivered'>('heading_to_pickup');
+  const [status, setStatus] = useState<'heading_to_pickup' | 'arrived' | 'in_transit' | 'pod' | 'delivered'>('heading_to_pickup');
+  const [podPhoto, setPodPhoto] = useState(false);
 
   const handleNextStatus = () => {
     if (status === 'heading_to_pickup') setStatus('arrived');
@@ -23,6 +24,10 @@ export default function DriverActiveJob({ onNavigate }: DriverActiveJobProps) {
        if (currentRequest) updateRequestStatus(currentRequest.id, 'En-route');
     }
     else if (status === 'in_transit') {
+       setStatus('pod');
+    }
+    else if (status === 'pod') {
+       if (!podPhoto) return; // Must upload photo
        setStatus('delivered');
        if (currentRequest) updateRequestStatus(currentRequest.id, 'delivered');
     }
@@ -123,7 +128,6 @@ export default function DriverActiveJob({ onNavigate }: DriverActiveJobProps) {
             </div>
           </div>
 
-          {/* Integrated package value and payment options */}
           <div className="p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl mb-5 space-y-2">
             <div className="flex justify-between items-center text-xs">
               <span className="text-zinc-500 dark:text-zinc-400 font-medium">Declared Items:</span>
@@ -137,19 +141,36 @@ export default function DriverActiveJob({ onNavigate }: DriverActiveJobProps) {
             </div>
             <div className="flex justify-between items-center text-xs">
               <span className="text-zinc-500 dark:text-zinc-400 font-medium">Payment Type:</span>
-              <span className="font-extrabold text-[10px] uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+              <span className="font-extrabold text-[12px] uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
                 {currentRequest?.paymentMethod === 'card' ? 'Prepaid (Card)' : 'Cash on Delivery (COD)'}
               </span>
             </div>
           </div>
 
+          {status === 'pod' && (
+            <div className="mb-6 p-4 border border-zinc-200 dark:border-zinc-800 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border-dashed space-y-3 relative">
+              <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Proof of Delivery (POD)</h4>
+              <p className="text-xs text-zinc-500">Capture photo of the delivered package and recipient confirmation.</p>
+              
+              <button 
+                onClick={() => setPodPhoto(true)}
+                className={`w-full py-3 rounded-xl border-2 flex items-center justify-center gap-2 transition-all ${podPhoto ? 'border-green-500 bg-green-50 text-green-700 dark:bg-green-500/10' : 'border-zinc-300 dark:border-zinc-700 border-dashed text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
+              >
+                <CheckCircle className={`w-5 h-5 ${podPhoto ? 'text-green-500' : ''}`} />
+                {podPhoto ? 'Photo Uploaded Successfully' : 'Take Package Photo'}
+              </button>
+            </div>
+          )}
+
           <button 
             onClick={handleNextStatus}
-            className="w-full py-4 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-2xl font-bold text-sm active:scale-[0.98] transition-all duration-300 shadow-xl shadow-zinc-900/10 dark:shadow-none flex items-center justify-center gap-2"
+            disabled={status === 'pod' && !podPhoto}
+            className="w-full py-4 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-2xl font-bold text-sm active:scale-[0.98] transition-all duration-300 shadow-xl shadow-zinc-900/10 dark:shadow-none flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {status === 'heading_to_pickup' && 'I have arrived at Pickup'}
             {status === 'arrived' && 'Start Transit'}
-            {status === 'in_transit' && 'Complete Delivery'}
+            {status === 'in_transit' && 'Record Proof of Delivery'}
+            {status === 'pod' && 'Complete Delivery'}
             {status === 'delivered' && 'Back to Dashboard'}
             {status !== 'delivered' && <ChevronRight className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />}
           </button>

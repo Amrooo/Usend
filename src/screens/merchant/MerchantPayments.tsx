@@ -119,7 +119,7 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
           {/* Page Headers */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 pb-5">
             <div>
-              <span className="text-blue-600 font-bold text-[10px] uppercase tracking-[0.4em] block">
+              <span className="text-blue-600 font-bold text-[12px] uppercase tracking-[0.4em] block">
                 Financial Operations Ledger
               </span>
               <h1 className="text-3xl font-display font-medium text-zinc-900 uppercase tracking-tight mt-1">
@@ -169,7 +169,7 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="bg-zinc-50 border-b border-zinc-100 text-zinc-400 text-[10px] font-black uppercase tracking-widest">
+                      <tr className="bg-zinc-50 border-b border-zinc-100 text-zinc-400 text-[12px] font-black uppercase tracking-widest">
                         <th className="p-4 pl-6">Statement Reference</th>
                         <th className="p-4">Date Range</th>
                         <th className="p-4">Deliveries volume</th>
@@ -183,7 +183,7 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
                         <tr key={idx} className="hover:bg-zinc-50/10">
                           <td className="p-4 pl-6">
                             <span className="font-bold text-zinc-805 block">{stm.id}</span>
-                            <span className="text-[9px] uppercase tracking-wider bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-md mt-1 inline-block">Audit Locked</span>
+                            <span className="text-[13px] uppercase tracking-wider bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-md mt-1 inline-block">Audit Locked</span>
                           </td>
                           <td className="p-4 text-zinc-500">{stm.period}</td>
                           <td className="p-4 font-mono font-bold text-zinc-800">{stm.totalOrders} Dispatches</td>
@@ -223,10 +223,10 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
                       </div>
                       <div>
                         <span className="font-black text-xs text-zinc-805 block">Emirates NBD Business account</span>
-                        <span className="text-[10px] text-zinc-400 font-mono">IBAN: AE24 0220 0000 1234 5678 901</span>
+                        <span className="text-[12px] text-zinc-400 font-mono">IBAN: AE24 0220 0000 1234 5678 901</span>
                       </div>
                     </div>
-                    <span className="text-[10px] bg-blue-50 text-blue-600 font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full">Primary</span>
+                    <span className="text-[12px] bg-blue-50 text-blue-600 font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full">Primary</span>
                   </div>
                 </div>
               </div>
@@ -241,7 +241,7 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
                     </h3>
 
                     <div className="p-5 bg-gradient-to-tr from-amber-500 to-orange-500 text-white rounded-3xl text-center space-y-1 shadow-md">
-                      <span className="text-[10px] text-amber-100 font-extrabold uppercase tracking-widest">Direct COD Withdrawal balance</span>
+                      <span className="text-[12px] text-amber-100 font-extrabold uppercase tracking-widest">Direct COD Withdrawal balance</span>
                       <h4 className="text-3xl font-black font-mono">
                         AED {codPending.toFixed(2)}
                       </h4>
@@ -328,7 +328,7 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="bg-zinc-50 border-b border-zinc-100 text-zinc-400 text-[10px] font-black uppercase tracking-widest">
+                      <tr className="bg-zinc-50 border-b border-zinc-100 text-zinc-400 text-[12px] font-black uppercase tracking-widest">
                         <th className="p-4 pl-6">Invoice ID</th>
                         <th className="p-4">Cargo Carrier</th>
                         <th className="p-4">Origin / Dest</th>
@@ -342,7 +342,7 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
                         <tr key={idx} className="hover:bg-zinc-50/10">
                           <td className="p-4 pl-6">
                             <span className="font-bold text-zinc-805 block">{inv.id}</span>
-                            <span className="text-[10px] text-zinc-400">{inv.date}</span>
+                            <span className="text-[12px] text-zinc-400">{inv.date}</span>
                           </td>
                           <td className="p-4 font-bold text-zinc-800">{inv.carrier}</td>
                           <td className="p-4 text-zinc-500">{inv.from} &rarr; {inv.to}</td>
@@ -350,7 +350,7 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
                           <td className="p-4 font-bold font-mono text-zinc-900">AED {inv.amount.toFixed(2)}</td>
                           <td className="p-4">
                             <div className="flex justify-center">
-                              <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                              <span className={`px-2.5 py-1 rounded-full text-[13px] font-black uppercase tracking-widest ${
                                 inv.status === 'Invoice Cleared' ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600 animate-pulse'
                               }`}>
                                 {inv.status}
@@ -429,19 +429,19 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
                 </div>
                 <div className="space-y-1">
                   <h4 className="font-bold text-sm text-zinc-800">Processing Stripe UAE Gateway Settle...</h4>
-                  <p className="text-[11px] text-zinc-400">Verifying 3D secure and registering order at ae.stripe.com...</p>
+                  <p className="text-[13px] text-zinc-400">Verifying 3D secure and registering order at ae.stripe.com...</p>
                 </div>
               </div>
             ) : (
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-black text-zinc-900">Top-up Wallet Portal</h3>
-                  <span className="px-2 py-0.5 rounded-full text-[8.5px] font-black uppercase bg-blue-50 text-blue-600 border border-blue-100 font-mono">stripe.com</span>
+                  <span className="px-2 py-0.5 rounded-full text-[12px] font-black uppercase bg-blue-50 text-blue-600 border border-blue-100 font-mono">stripe.com</span>
                 </div>
 
                 <form onSubmit={handleTopupSubmit} className="space-y-4 text-left">
                   <div className="space-y-1">
-                     <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 pl-0.5">Settle top-up Amount (AED)</label>
+                     <label className="text-[12px] font-bold uppercase tracking-wider text-zinc-400 pl-0.5">Settle top-up Amount (AED)</label>
                      <input 
                        required
                        type="number" 
@@ -454,7 +454,7 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
 
                   {/* Payment Channel Selection */}
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 pl-0.5 block">Select Acceptance Gateway</label>
+                    <label className="text-[12px] font-bold uppercase tracking-wider text-zinc-400 pl-0.5 block">Select Acceptance Gateway</label>
                     <div className="grid grid-cols-2 gap-2 text-xs">
                       <button
                         type="button"
@@ -486,14 +486,14 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
 
                   {stripeMethod !== 'standard' && (
                     <div className="bg-blue-50/40 p-4 rounded-2xl border border-blue-100 space-y-3 animate-in fade-in duration-100 text-xs">
-                      <div className="flex items-center justify-between text-[9px] text-blue-700 font-black tracking-widest uppercase">
+                      <div className="flex items-center justify-between text-[13px] text-blue-700 font-black tracking-widest uppercase">
                         <span>Stripe UAE sandbox card</span>
                         <span>Active</span>
                       </div>
                       
                       <div className="space-y-1.5">
                         <div className="space-y-1">
-                          <label className="text-[9px] font-bold text-blue-800 uppercase pl-0.5">Card number</label>
+                          <label className="text-[13px] font-bold text-blue-800 uppercase pl-0.5">Card number</label>
                           <input 
                             required
                             type="text" 
@@ -505,7 +505,7 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
 
                         <div className="grid grid-cols-2 gap-2">
                           <div className="space-y-1">
-                            <label className="text-[9px] font-bold text-blue-800 uppercase pl-0.5">Expiry</label>
+                            <label className="text-[13px] font-bold text-blue-800 uppercase pl-0.5">Expiry</label>
                             <input 
                               required
                               type="text" 
@@ -515,7 +515,7 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-[9px] font-bold text-blue-800 uppercase pl-0.5">CVV</label>
+                            <label className="text-[13px] font-bold text-blue-800 uppercase pl-0.5">CVV</label>
                             <input 
                               required
                               type="password" 

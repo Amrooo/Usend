@@ -87,7 +87,7 @@ export default function CustomDatePicker({ onSelect, initialDate }: CustomDatePi
 
       <div className="grid grid-cols-7 gap-1">
         {weekDays.map(day => (
-          <div key={day} className="h-10 flex items-center justify-center text-[10px] font-black uppercase tracking-widest text-zinc-400">
+          <div key={day} className="h-10 flex items-center justify-center text-[12px] font-black uppercase tracking-widest text-zinc-400">
             {day}
           </div>
         ))}
@@ -118,7 +118,7 @@ export default function CustomDatePicker({ onSelect, initialDate }: CustomDatePi
         <h4 className="text-xs font-black text-zinc-400 uppercase tracking-widest mb-4">Select Time</h4>
         <div className="flex gap-4">
           <div className="flex-1 space-y-2">
-            <p className="text-[10px] font-bold text-zinc-500 uppercase text-center">Hour</p>
+            <p className="text-[12px] font-bold text-zinc-500 uppercase text-center">Hour</p>
             <div className="flex items-center gap-1 bg-zinc-50 dark:bg-zinc-800 p-1 rounded-2xl">
               <select 
                 value={selectedHour}
@@ -133,7 +133,7 @@ export default function CustomDatePicker({ onSelect, initialDate }: CustomDatePi
           </div>
           <div className="text-2xl font-black text-zinc-300 dark:text-zinc-700 flex items-center pt-5">:</div>
           <div className="flex-1 space-y-2">
-            <p className="text-[10px] font-bold text-zinc-500 uppercase text-center">Minute</p>
+            <p className="text-[12px] font-bold text-zinc-500 uppercase text-center">Minute</p>
             <div className="flex items-center gap-1 bg-zinc-50 dark:bg-zinc-800 p-1 rounded-2xl">
               <select 
                 value={selectedMinute}

@@ -17,9 +17,11 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
   const { activeRequests, user } = useApp();
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
 
+  const storedGuestData = JSON.parse(localStorage.getItem('guestOrders') || '[]');
+  const storedGuestIds = storedGuestData.map((g: any) => g.id);
   const myRequests = activeRequests.filter(req => 
-    (user?.uid && req.userId === user.uid) || 
-    (!user?.uid && (req.applicantType === 'Individual User' || req.applicantType === 'User'))
+    (user?.uid && (req.userId === user.uid || req.phone === user.phoneNumber)) || 
+    (!user?.uid && (req.applicantType === 'Individual User' || req.applicantType === 'User' || storedGuestIds.includes(req.id)))
   );
 
   const totalSpent = myRequests.reduce((sum, req) => sum + parseFloat(req.orderAmount?.replace(/[^0-9.]/g, '') || '0'), 0);
@@ -47,7 +49,7 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
           {/* Header */}
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
             <div>
-              <p className="text-brand font-black text-[9px] uppercase tracking-[0.5em] mb-3">User Portal</p>
+              <p className="text-brand font-black text-[12px] uppercase tracking-[0.5em] mb-3">User Portal</p>
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-medium tracking-tight uppercase leading-tight text-zinc-900">
                 {t('dashboard') || 'Dashboard'}
               </h1>
@@ -56,7 +58,7 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
             <div className="flex items-center gap-4">
               <button 
                 onClick={() => onNavigate('user_individual')}
-                className="h-14 px-8 rounded-2xl bg-brand text-white font-black text-[10px] uppercase tracking-widest shadow-xl shadow-brand/20 transition-all active:scale-95 flex items-center justify-center gap-2"
+                className="h-14 px-8 rounded-2xl bg-brand text-white font-black text-[12px] uppercase tracking-widest shadow-xl shadow-brand/20 transition-all active:scale-95 flex items-center justify-center gap-2"
               >
                 <PlusCircle className="w-4 h-4" />
                 {t('new_order') || 'New Order'}
@@ -78,13 +80,13 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
                   <div className="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center text-brand group-hover:scale-110 transition-transform">
                     <stat.icon className="w-6 h-6" />
                   </div>
-                  <div className={`flex items-center gap-1 text-[10px] font-black uppercase tracking-widest ${stat.isPositive ? 'text-blue-600 bg-blue-50' : 'text-red-500 bg-red-50'} px-3 py-1 rounded-full`}>
+                  <div className={`flex items-center gap-1 text-[12px] font-black uppercase tracking-widest ${stat.isPositive ? 'text-blue-600 bg-blue-50' : 'text-red-500 bg-red-50'} px-3 py-1 rounded-full`}>
                     {stat.isPositive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                     <span dir="ltr">{stat.change}</span>
                   </div>
                 </div>
                 <h3 className="text-3xl lg:text-4xl font-display font-medium mb-2 tracking-tight text-zinc-900" dir="ltr">{stat.value}</h3>
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">{stat.label}</p>
+                <p className="text-[12px] font-black uppercase tracking-[0.3em] text-zinc-400">{stat.label}</p>
               </motion.div>
             ))}
           </div>
@@ -98,7 +100,7 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
               </h2>
               <button 
                 onClick={() => onNavigate('user_orders')}
-                className="text-brand font-black text-[10px] uppercase tracking-widest hover:opacity-70 transition-opacity"
+                className="text-brand font-black text-[12px] uppercase tracking-widest hover:opacity-70 transition-opacity"
               >
                 View History
               </button>
@@ -108,17 +110,17 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
               {previousOrders.length > 0 ? previousOrders.map((order: any, i) => (
                 <div key={order.id} className="bg-white border border-zinc-200 rounded-[2rem] p-6 space-y-4 hover:shadow-lg transition-all group border-b-4 border-b-zinc-100">
                   <div className="flex justify-between items-start">
-                    <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">{order.id}</span>
-                    <span className="bg-blue-50 text-blue-600 text-[8px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest">Delivered</span>
+                    <span className="text-[13px] font-black text-zinc-400 uppercase tracking-widest">{order.id}</span>
+                    <span className="bg-blue-50 text-blue-600 text-[12px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest">Delivered</span>
                   </div>
                   <div>
                     <p className="font-bold text-zinc-900 truncate">To: {order.recipient || order.toDestination || 'N/A'}</p>
-                    <p className="text-[10px] text-zinc-500 mt-0.5">{order.date}</p>
+                    <p className="text-[12px] text-zinc-500 mt-0.5">{order.date}</p>
                   </div>
                   <div className="flex gap-2 pt-2">
                     <button 
                       onClick={() => setSelectedOrder(order)}
-                      className="flex-1 h-10 rounded-xl bg-zinc-50 text-zinc-600 text-[10px] font-black uppercase tracking-widest hover:bg-zinc-100 transition-colors flex items-center justify-center gap-2"
+                      className="flex-1 h-10 rounded-xl bg-zinc-50 text-zinc-600 text-[12px] font-black uppercase tracking-widest hover:bg-zinc-100 transition-colors flex items-center justify-center gap-2"
                     >
                       <Info className="w-3.5 h-3.5" />
                       Details
@@ -144,7 +146,7 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
               <h2 className="text-xl font-display font-medium uppercase tracking-tight text-zinc-900">{t('recent_orders') || 'Recent Orders'}</h2>
               <button 
                 onClick={() => onNavigate('user_tracking')}
-                className="text-brand font-black text-[10px] uppercase tracking-widest hover:opacity-70 transition-opacity"
+                className="text-brand font-black text-[12px] uppercase tracking-widest hover:opacity-70 transition-opacity"
               >
                 {t('view_all_orders') || 'View All Orders'}
               </button>
@@ -152,7 +154,7 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
             <div className="overflow-x-auto">
               <table className={`w-full ${isRTL ? 'text-right' : 'text-left'} border-collapse min-w-[800px]`}>
                 <thead>
-                  <tr className="bg-zinc-50 text-zinc-400 text-[10px] font-black uppercase tracking-widest border-b border-zinc-100">
+                  <tr className="bg-zinc-50 text-zinc-400 text-[12px] font-black uppercase tracking-widest border-b border-zinc-100">
                     <th className="p-8 font-black">{t('order_id') || 'Order ID'}</th>
                     <th className="p-8 font-black">{t('recipient') || 'Recipient'}</th>
                     <th className="p-8 font-black">{t('status') || 'Status'}</th>
@@ -166,7 +168,7 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
                       <td className="p-8 text-zinc-900 font-bold">{order.id}</td>
                       <td className="p-8 text-zinc-500">{order.name}</td>
                       <td className="p-8">
-                        <span className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                        <span className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[12px] font-black uppercase tracking-widest ${
                           order.status === 'delivered' ? 'bg-blue-50 text-blue-600' :
                           order.status === 'in_transit' || order.status === 'En-route' ? 'bg-blue-50 text-brand' :
                           'bg-orange-50 text-orange-600'
@@ -202,11 +204,11 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
           <div className="space-y-6 p-2">
             <div className="flex justify-between items-center bg-zinc-50 dark:bg-zinc-800/50 p-4 rounded-2xl">
               <div>
-                <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest leading-none mb-1">Status</p>
+                <p className="text-[12px] font-black text-zinc-400 uppercase tracking-widest leading-none mb-1">Status</p>
                 <p className="text-blue-600 font-black uppercase text-xs tracking-widest">Delivered Successfully</p>
               </div>
               <div className="text-right">
-                <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest leading-none mb-1">Amount</p>
+                <p className="text-[12px] font-black text-zinc-400 uppercase tracking-widest leading-none mb-1">Amount</p>
                 <p className="text-brand font-black text-sm">{selectedOrder.amount}</p>
               </div>
             </div>
@@ -214,11 +216,11 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 rounded-2xl border border-zinc-100 bg-white">
-                  <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Order ID</p>
+                  <p className="text-[13px] font-black text-zinc-400 uppercase tracking-widest mb-1">Order ID</p>
                   <p className="text-sm font-bold text-zinc-900">{selectedOrder.id}</p>
                 </div>
                 <div className="p-4 rounded-2xl border border-zinc-100 bg-white">
-                  <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Date</p>
+                  <p className="text-[13px] font-black text-zinc-400 uppercase tracking-widest mb-1">Date</p>
                   <p className="text-sm font-bold text-zinc-900">{selectedOrder.date}</p>
                 </div>
               </div>
@@ -229,7 +231,7 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
                     <Package className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Items</p>
+                    <p className="text-[13px] font-black text-zinc-400 uppercase tracking-widest">Items</p>
                     <p className="text-sm font-bold text-zinc-900">{selectedOrder.items}</p>
                   </div>
                 </div>
@@ -238,7 +240,7 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
                     <MapPin className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Delivery Address</p>
+                    <p className="text-[13px] font-black text-zinc-400 uppercase tracking-widest">Delivery Address</p>
                     <p className="text-sm font-medium text-zinc-600">{selectedOrder.address}</p>
                   </div>
                 </div>
@@ -250,7 +252,7 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
                  onNavigate('user_individual');
                  setSelectedOrder(null);
                }}
-               className="w-full h-14 bg-brand text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-brand/20 hover:bg-brand/90 transition-all flex items-center justify-center gap-2"
+               className="w-full h-14 bg-brand text-white rounded-2xl font-black uppercase tracking-widest text-[12px] shadow-lg shadow-brand/20 hover:bg-brand/90 transition-all flex items-center justify-center gap-2"
             >
               <Redo2 className="w-5 h-5" />
               Re-order Now

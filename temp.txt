@@ -1,0 +1,168 @@
+93:>Financial Overview<
+99:>Revenue<
+103:>Settlements<
+136:>UAE Operations Map<
+137:>Live origin of requests across Emirates<
+155:>Merchant API<
+159:>Mobile Apps<
+163:>B2B Integrations<
+167:>Manual Entry<
+472:>Active Containers<
+474:>Heavy logistics pipelines active<
+477:>Total Payload Weight<
+482:>Active Pallet Count<
+484:>Standard block packing size<
+487:>Freight Turnovers<
+489:>Gross commercial billings<
+496:>Heavy Freight Operations Center<
+504:>Shipment ID<
+505:>Booked By<
+507:>Delivery Path<
+508:>Gross Quote<
+509:>Transit Status<
+510:>Clearance Action<
+572:>All<
+573:>Pending<
+575:>Reviewing<
+576:>Approved<
+577:>Assigning<
+578:>In Transit<
+579:>Delivered<
+600:>Aramex<
+601:>DHL Express<
+602:>USend Fleet<
+610:>All Channels<
+611:>Merchant Portal<
+612:>Mobile App<
+613:>User Portal<
+654:>No Express Orders Found<
+662:>Request ID<
+663:>Applicant<
+664:>Content Spec<
+665:>Location Node<
+666:>Amount<
+667:>Status State<
+668:>Control Action<
+727:>Review<
+785:>Book New Active Order<
+786:>Instant UAE Dispatch Clearance<
+795:>Merchant Booking<
+805:>Cargo Spec Category<
+815:>Transit Channel<
+821:>Merchant Portal<
+822:>Mobile App<
+823:>User Portal<
+838:>Destination State Node<
+844:>Dubai Marina<
+845:>Abu Dhabi<
+846:>Sharjah<
+847:>Al Ain<
+848:>Fujairah<
+853:>Dispatch Origin<
+863:>Instruction Specifications<
+873:>Book Express Dispatch<
+874:>Dismiss<
+907:>State Transition Stepper<
+923:>Select Available Courier<
+1029:>Tracking Number<
+1033:>Pickup Status<
+1039:>API Error<
+1173:>Add User<
+1207:>All Statuses<
+1230:>Add New User<
+1238:>Full Name<
+1249:>Phone Number<
+1260:>Role<
+1266:>Customer<
+1267:>Driver<
+1285:>No Users Found<
+1322:>Rating<
+1332:>Deliveries<
+1340:>Class Type<
+1344:>Contact Node<
+1601:>All Statuses<
+1603:>Inactive<
+1626:>No Couriers Registered<
+1662:>Vehicle<
+1670:>Rating<
+1746:>Secure Live Connection<
+1771:>Success Rate<
+1775:>Ongoing Route<
+1784:>Pending Settlement<
+1802:>OpenStreetMap<
+1830:>Courier Full Name<
+1841:>Active Phone Number<
+1852:>Internal Email Address<
+1996:>All Industries<
+1998:>Furniture Node<
+1999:>Grocery<
+2001:>Logistics Fleet<
+2012:>All Verification<
+2013:>Verified Only<
+2014:>Pending Clearance<
+2024:>All Integrations<
+2025:>API Gateway<
+2026:>Web Portal<
+2027:>Webhook Feed<
+2036:>No Merchants Match Your Criteria<
+2068:>Interface<
+2072:>Total Runs<
+2076:>Contact Root<
+2163:>Manage Integration Keys<
+2173:>Live Production Token<
+2231:>Company Profile Metrics<
+2232:>Corporate Metadata Ledger<
+2253:>Settlement Cycle<
+2257:>Contract Status<
+2261:>Verified Corporate Address<
+2270:>Performance Trend<
+2306:>Integration Bridge<
+2309:>Connected<
+2479:>Bearer Token Configurations<
+2486:>Manage unique <
+2486:>Bearer Tokens<
+2501:> Integration Exception Log<
+2507:>Platform Channel<
+2508:>Merchant Target<
+2509:>Exception Description<
+2510:>Occurred<
+2511:>Failure Severity<
+2568:>UAE Unified Stock Catalog<
+2582:>Total Monitored SKUs<
+2584:>Across 14 merchant channels<
+2587:>Low Stock Alerts<
+2589:>Stock level fell below safety threshold<
+2592:>Pending Stock Transits<
+2594:>Moving to balance localized demands<
+2603:>SKU Code<
+2604:>Product Details<
+2605:>Merchant Partner<
+2606:>Fulfillment Location<
+2608:>Operational Action<
+2682:>CSV Batch Dispatches Control<
+2699:>Batch ID<
+2700:>Uploader<
+2701:>Manifest File<
+2702:>Import Details<
+2703:>Validation Health<
+2739:>Address mismatch<
+2786:>financial settlement clearing room<
+2800:>Total COD Collected<
+2802:>Directly processed this billing cycle<
+2805:>Platform Commissions<
+2807:>Net commission revenues<
+2812:>Ready for Federal Tax statement output<
+2815:>Unreleased Balance<
+2817:>Awaiting operational clearance<
+2826:>Statement Reference<
+2827:>Merchant Beneficiary<
+2828:>Billing Cycle<
+2829:>Collected COD<
+2830:>Fees Deducted<
+2831:>Net Remit Amount<
+2832:>Remit Status<
+2899:>Aramex<
+2910:>Aramex<
+2921:>DHL Express<
+2976:>USend Portal<
+2977:>Platform Admin<

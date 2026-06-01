@@ -16,7 +16,7 @@ const Register: React.FC<RegisterProps> = ({ onNavigate }) => {
   const { t, isRTL } = useLanguage();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState('+971 ');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -79,7 +79,7 @@ const Register: React.FC<RegisterProps> = ({ onNavigate }) => {
             className="space-y-8"
           >
             <div className="text-center mb-8">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand/10 border border-brand/20 text-[10px] font-black uppercase tracking-widest text-brand mb-6">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand/10 border border-brand/20 text-[12px] font-black uppercase tracking-widest text-brand mb-6">
                 Registration Phase
               </div>
               <h2 className="text-3xl font-display font-medium uppercase tracking-tight">Initialize Profile</h2>
@@ -87,7 +87,7 @@ const Register: React.FC<RegisterProps> = ({ onNavigate }) => {
 
             <form onSubmit={handleRegister} className="space-y-4">
               <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 px-6">
+                <label className="text-[12px] font-black uppercase tracking-[0.2em] text-white/30 px-6">
                   Full Name
                 </label>
                 <div className="relative">
@@ -104,7 +104,7 @@ const Register: React.FC<RegisterProps> = ({ onNavigate }) => {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 px-6">
+                <label className="text-[12px] font-black uppercase tracking-[0.2em] text-white/30 px-6">
                   Email Address
                 </label>
                 <div className="relative">
@@ -121,7 +121,7 @@ const Register: React.FC<RegisterProps> = ({ onNavigate }) => {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 px-6">
+                <label className="text-[12px] font-black uppercase tracking-[0.2em] text-white/30 px-6">
                   Phone Number
                 </label>
                 <div className="relative">
@@ -129,16 +129,27 @@ const Register: React.FC<RegisterProps> = ({ onNavigate }) => {
                   <input
                     type="tel"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e) => {
+                      let val = e.target.value;
+                      if (!val.startsWith('+971 ')) {
+                         if (val.length < 5) val = '+971 ';
+                         else val = '+971 ' + val.replace(/^\+?9?7?1?\s*/, '').replace(/[^0-9]/g, '');
+                      } else {
+                         val = '+971 ' + val.slice(5).replace(/[^0-9]/g, ''); 
+                      }
+                      if (val.length > 14) val = val.slice(0, 14);
+                      setPhone(val);
+                    }}
                     required
-                    className={`w-full h-14 bg-white/5 border border-white/5 focus:border-brand/40 focus:bg-white/10 outline-none rounded-2xl ${isRTL ? 'pr-14 pl-6' : 'pl-14 pr-6'} text-white placeholder:text-white/10 transition-all text-sm`}
-                    placeholder="+966 ••• ••• •••"
+                    className={`w-full h-14 bg-white/5 border border-white/5 focus:border-brand/40 focus:bg-white/10 outline-none rounded-2xl ${isRTL ? 'pr-14 pl-6' : 'pl-14 pr-6'} text-white placeholder:text-white/10 transition-all text-sm font-mono tracking-widest`}
+                    placeholder="+971 50 1234567"
+                    dir="ltr"
                   />
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 px-6">
+                <label className="text-[12px] font-black uppercase tracking-[0.2em] text-white/30 px-6">
                   Cipher Key
                 </label>
                 <div className="relative">
@@ -196,7 +207,7 @@ const Register: React.FC<RegisterProps> = ({ onNavigate }) => {
       </main>
 
       <footer className="relative z-10 p-8 text-center border-t border-white/5">
-        <p className="text-[10px] font-black text-white/10 uppercase tracking-[0.5em]">USend Infrastructure • 2024</p>
+        <p className="text-[12px] font-black text-white/10 uppercase tracking-[0.5em]">USend Infrastructure • 2024</p>
       </footer>
     </div>
   );

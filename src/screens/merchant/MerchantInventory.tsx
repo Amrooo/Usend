@@ -211,7 +211,7 @@ export default function MerchantInventory({ onNavigate }: MerchantInventoryProps
           {/* Main Title Headers */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 pb-5">
             <div>
-              <span className="text-blue-600 font-bold text-[10px] uppercase tracking-[0.4em] block">
+              <span className="text-blue-600 font-bold text-[12px] uppercase tracking-[0.4em] block">
                 {isManageStockMode ? 'Replenishment & Warehousing' : 'Internal SKU Register'}
               </span>
               <h1 className="text-3xl font-display font-medium text-zinc-900 uppercase tracking-tight mt-1">
@@ -260,15 +260,15 @@ export default function MerchantInventory({ onNavigate }: MerchantInventoryProps
               {/* Quick statistics widgets */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                  <div className="bg-white p-6 rounded-3xl border border-zinc-200 shadow-sm">
-                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Total SKU Catalog</span>
+                    <span className="text-[12px] font-bold text-zinc-400 uppercase tracking-wider">Total SKU Catalog</span>
                     <div className="text-3xl font-black text-zinc-900 mt-1">{inventory.length}</div>
                  </div>
                  <div className="bg-white p-6 rounded-3xl border border-zinc-200 shadow-sm">
-                    <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Critical Low Stock</span>
+                    <span className="text-[12px] font-bold text-orange-500 uppercase tracking-wider">Critical Low Stock</span>
                     <div className="text-3xl font-black text-orange-600 mt-1">{inventory.filter(i => i.status === 'Low Stock').length}</div>
                  </div>
                  <div className="bg-white p-6 rounded-3xl border border-zinc-200 shadow-sm">
-                    <span className="text-[10px] font-bold text-red-500 uppercase tracking-wider">Out of Stock SKU</span>
+                    <span className="text-[12px] font-bold text-red-500 uppercase tracking-wider">Out of Stock SKU</span>
                     <div className="text-3xl font-black text-red-600 mt-1">{inventory.filter(i => i.status === 'Out of Stock').length}</div>
                  </div>
               </div>
@@ -278,7 +278,7 @@ export default function MerchantInventory({ onNavigate }: MerchantInventoryProps
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="bg-zinc-50 text-zinc-400 text-[10px] font-black uppercase tracking-widest border-b border-zinc-100">
+                      <tr className="bg-zinc-50 text-zinc-400 text-[12px] font-black uppercase tracking-widest border-b border-zinc-100">
                         <th className="p-4 pl-6">Product Item</th>
                         <th className="p-4">SKU Code</th>
                         <th className="p-4">Direct retail price</th>
@@ -295,7 +295,7 @@ export default function MerchantInventory({ onNavigate }: MerchantInventoryProps
                               <img src={item.image} alt="PRD" className="w-12 h-12 rounded-xl object-cover border border-zinc-200 bg-zinc-50 shrink-0" />
                               <div>
                                 <h3 className="font-bold text-sm text-zinc-900 leading-tight">{item.name}</h3>
-                                <span className="text-[10px] uppercase font-black tracking-widest text-[#4f95cc] mt-1 block">{item.category}</span>
+                                <span className="text-[12px] uppercase font-black tracking-widest text-[#4f95cc] mt-1 block">{item.category}</span>
                               </div>
                             </div>
                           </td>
@@ -305,7 +305,7 @@ export default function MerchantInventory({ onNavigate }: MerchantInventoryProps
                           <td className="p-4">
                             <div className="flex items-center gap-2">
                                <span className="font-bold text-sm text-zinc-900">{item.stock}</span>
-                               <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                               <span className={`px-2.5 py-1 rounded-full text-[13px] font-black uppercase tracking-widest ${
                                   item.status === 'In Stock' ? 'bg-blue-50 text-blue-600' :
                                   item.status === 'Low Stock' ? 'bg-orange-50 text-orange-600' :
                                   'bg-red-50 text-red-650'
@@ -348,12 +348,12 @@ export default function MerchantInventory({ onNavigate }: MerchantInventoryProps
                           <img src={depleted.image} className="w-9 h-9 rounded-lg object-cover" />
                           <div>
                             <span className="font-black text-xs text-zinc-805 block">{depleted.name}</span>
-                            <span className="text-[10px] text-zinc-400">Current Qty: <b>{depleted.stock} available</b></span>
+                            <span className="text-[12px] text-zinc-400">Current Qty: <b>{depleted.stock} available</b></span>
                           </div>
                         </div>
                         <button
                           onClick={() => setReplenishData({...replenishData, productId: depleted.id})}
-                          className="bg-orange-500 hover:bg-orange-600 text-white font-bold text-[10px] uppercase tracking-wider px-3 py-2 rounded-lg"
+                          className="bg-orange-500 hover:bg-orange-600 text-white font-bold text-[12px] uppercase tracking-wider px-3 py-2 rounded-lg"
                         >
                           Select Replenish
                         </button>
@@ -370,9 +370,9 @@ export default function MerchantInventory({ onNavigate }: MerchantInventoryProps
                       <div key={log.id} className="p-4 border border-zinc-100 rounded-2xl flex items-center justify-between bg-zinc-50/40 hover:bg-zinc-50">
                         <div>
                           <span className="font-bold text-xs text-zinc-800 block">{log.product}</span>
-                          <span className="text-[10px] text-zinc-400 mt-0.5 block">{log.date} • Transfer lock: <b>{log.qty} Units</b> to {log.target}</span>
+                          <span className="text-[12px] text-zinc-400 mt-0.5 block">{log.date} • Transfer lock: <b>{log.qty} Units</b> to {log.target}</span>
                         </div>
-                        <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                        <span className={`px-2.5 py-1 rounded-full text-[13px] font-black uppercase tracking-widest ${
                           log.status === 'Completed' ? 'bg-blue-50 text-blue-600' : 'bg-blue-50 text-blue-600 animate-pulse'
                         }`}>
                           {log.status}
@@ -392,7 +392,7 @@ export default function MerchantInventory({ onNavigate }: MerchantInventoryProps
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Pick Target Product</label>
+                    <label className="text-[12px] font-black uppercase tracking-wider text-zinc-500">Pick Target Product</label>
                     <select
                       value={replenishData.productId}
                       onChange={(e) => setReplenishData({...replenishData, productId: e.target.value})}
@@ -405,7 +405,7 @@ export default function MerchantInventory({ onNavigate }: MerchantInventoryProps
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Quantity to Transfer</label>
+                    <label className="text-[12px] font-black uppercase tracking-wider text-zinc-500">Quantity to Transfer</label>
                     <input 
                       type="number" 
                       value={replenishData.qty}
@@ -416,7 +416,7 @@ export default function MerchantInventory({ onNavigate }: MerchantInventoryProps
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Target Freezone Unit</label>
+                    <label className="text-[12px] font-black uppercase tracking-wider text-zinc-500">Target Freezone Unit</label>
                     <select
                       value={replenishData.warehouse}
                       onChange={(e) => setReplenishData({...replenishData, warehouse: e.target.value})}
@@ -557,7 +557,7 @@ export default function MerchantInventory({ onNavigate }: MerchantInventoryProps
                         ) : (
                           <>
                             <Upload className="w-6 h-6 text-zinc-400 mb-1" />
-                            <span className="text-[10px] font-bold text-zinc-500">Upload</span>
+                            <span className="text-[12px] font-bold text-zinc-500">Upload</span>
                           </>
                         )}
                       </div>

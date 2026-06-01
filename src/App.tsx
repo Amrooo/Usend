@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Screen } from './types';
 import { LanguageProvider } from './context/LanguageContext';
@@ -35,10 +35,125 @@ import UserIndividualOrder from './screens/user/UserIndividualOrder';
 import UserTracking from './screens/user/UserTracking';
 import UserPayments from './screens/user/UserPayments';
 import UserOrders from './screens/user/UserOrders';
+import { AlertCircle, Bell, CheckCircle2, Info, X, ShieldAlert } from 'lucide-react';
 
-import { AppProvider } from './context/AppContext';
+import { AppProvider, useApp } from './context/AppContext';
 
 import PortalRegister from './screens/PortalRegister';
+
+function AuthGuard({ children, requiredRole }: { children: React.ReactNode, requiredRole?: 'merchant' | 'user' }) {
+  const { user, handleLogout } = useApp();
+  
+  if (requiredRole === 'merchant' && user?.role !== 'merchant' && user?.role !== 'admin') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950 p-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white dark:bg-zinc-900 shadow-xl border border-red-100 dark:border-red-900/30 rounded-3xl max-w-md w-full p-8 text-center"
+        >
+          <div className="w-16 h-16 bg-red-50 dark:bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <ShieldAlert className="w-8 h-8" />
+          </div>
+          <h2 className="text-2xl font-black text-zinc-900 dark:text-zinc-100 mb-3 tracking-tight">Access Denied</h2>
+          <p className="text-zinc-500 dark:text-zinc-400 mb-8 leading-relaxed">
+            This module requires <strong className="text-zinc-700 dark:text-zinc-300">Merchant</strong> account privileges. Please sign in with an authorized account to continue.
+          </p>
+          <button 
+            onClick={handleLogout}
+            className="w-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-bold py-3.5 rounded-xl hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-colors"
+          >
+            Switch Account
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
+  if (requiredRole === 'user' && user?.role !== 'user' && user?.role !== 'admin') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950 p-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white dark:bg-zinc-900 shadow-xl border border-red-100 dark:border-red-900/30 rounded-3xl max-w-md w-full p-8 text-center"
+        >
+          <div className="w-16 h-16 bg-red-50 dark:bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <ShieldAlert className="w-8 h-8" />
+          </div>
+          <h2 className="text-2xl font-black text-zinc-900 dark:text-zinc-100 mb-3 tracking-tight">Access Restricted</h2>
+          <p className="text-zinc-500 dark:text-zinc-400 mb-8 leading-relaxed">
+            This module is reserved for <strong className="text-zinc-700 dark:text-zinc-300">User</strong> accounts.
+          </p>
+          <button 
+            onClick={handleLogout}
+            className="w-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-bold py-3.5 rounded-xl hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-colors"
+          >
+            Back to Sign In
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+}
+
+export type ToastMessage = { title: string; message: string; type?: 'success' | 'error' | 'info' | 'warning' };
+
+function GlobalToast() {
+  const [toast, setToast] = useState<ToastMessage | null>(null);
+
+  useEffect(() => {
+    const handleToast = (e: any) => {
+      setToast(e.detail);
+      setTimeout(() => setToast(null), 5000);
+    };
+    window.addEventListener('app_toast', handleToast);
+    return () => window.removeEventListener('app_toast', handleToast);
+  }, []);
+
+  if (!toast) return null;
+
+  const type = toast.type || 'info';
+
+  const icons = {
+    success: <CheckCircle2 className="w-5 h-5" />,
+    error: <AlertCircle className="w-5 h-5" />,
+    warning: <AlertCircle className="w-5 h-5" />,
+    info: <Info className="w-5 h-5" />
+  };
+
+  const colors = {
+    success: 'bg-green-50 text-green-600 dark:bg-green-500/10 dark:text-green-400 border-green-200 dark:border-green-900/50',
+    error: 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400 border-red-200 dark:border-red-900/50',
+    warning: 'bg-orange-50 text-orange-600 dark:bg-orange-500/10 dark:text-orange-400 border-orange-200 dark:border-orange-900/50',
+    info: 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 border-blue-200 dark:border-blue-900/50'
+  };
+
+  return (
+    <AnimatePresence>
+      <motion.div 
+        initial={{ opacity: 0, y: -50, scale: 0.95 }}
+        animate={{ opacity: 1, y: 24, scale: 1 }}
+        exit={{ opacity: 0, y: -20, scale: 0.95 }}
+        className={`fixed top-0 left-1/2 -translate-x-1/2 z-[9999] shadow-lg rounded-2xl p-4 flex items-start gap-4 border w-[90%] max-w-md pointer-events-auto cursor-pointer backdrop-blur-xl ${colors[type]}`}
+        onClick={() => setToast(null)}
+      >
+        <div className="shrink-0 mt-0.5">
+           {icons[type]}
+        </div>
+        <div className="flex-1">
+          <h4 className="text-sm font-bold tracking-tight">{toast.title}</h4>
+          <p className="text-xs mt-1 font-medium opacity-80 leading-relaxed">{toast.message}</p>
+        </div>
+        <button className="shrink-0 opacity-50 hover:opacity-100 transition-opacity p-1">
+          <X className="w-4 h-4" />
+        </button>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('landing_page');
@@ -58,6 +173,7 @@ export default function App() {
   return (
     <AppProvider>
       <LanguageProvider>
+        <GlobalToast />
       {isLandingPage || isHub || isPortalRegister ? (
         <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans transition-colors duration-300 w-full">
            <AnimatePresence mode="wait">
@@ -67,30 +183,34 @@ export default function App() {
            </AnimatePresence>
         </div>
       ) : isMerchantScreen ? (
-        <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans transition-colors duration-300 w-full">
-          <AnimatePresence mode="wait">
-            {currentScreen === 'merchant_dashboard' && <MerchantDashboard key="merchant_dashboard" onNavigate={navigate} />}
-            {currentScreen === 'merchant_individual' && <MerchantIndividualOrder key="merchant_individual" onNavigate={navigate} />}
-            {currentScreen === 'merchant_batch' && <MerchantBatchOrders key="merchant_batch" onNavigate={navigate} />}
-            {currentScreen === 'merchant_tracking' && <MerchantTracking key="merchant_tracking" onNavigate={navigate} />}
-            {currentScreen === 'merchant_payments' && <MerchantPayments key="merchant_payments" onNavigate={navigate} />}
-            {currentScreen === 'merchant_customers' && <MerchantCustomers key="merchant_customers" onNavigate={navigate} />}
-            {currentScreen === 'merchant_settings' && <MerchantSettings key="merchant_settings" onNavigate={navigate} />}
-            {currentScreen === 'merchant_inventory' && <MerchantInventory key="merchant_inventory" onNavigate={navigate} />}
-            {currentScreen === 'merchant_integrations' && <MerchantIntegrations key="merchant_integrations" onNavigate={navigate} />}
-            {currentScreen === 'merchant_wallet' && <MerchantWallet key="merchant_wallet" onNavigate={navigate} />}
-          </AnimatePresence>
-        </div>
+        <AuthGuard requiredRole="merchant">
+          <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans transition-colors duration-300 w-full">
+            <AnimatePresence mode="wait">
+              {currentScreen === 'merchant_dashboard' && <MerchantDashboard key="merchant_dashboard" onNavigate={navigate} />}
+              {currentScreen === 'merchant_individual' && <MerchantIndividualOrder key="merchant_individual" onNavigate={navigate} />}
+              {currentScreen === 'merchant_batch' && <MerchantBatchOrders key="merchant_batch" onNavigate={navigate} />}
+              {currentScreen === 'merchant_tracking' && <MerchantTracking key="merchant_tracking" onNavigate={navigate} />}
+              {currentScreen === 'merchant_payments' && <MerchantPayments key="merchant_payments" onNavigate={navigate} />}
+              {currentScreen === 'merchant_customers' && <MerchantCustomers key="merchant_customers" onNavigate={navigate} />}
+              {currentScreen === 'merchant_settings' && <MerchantSettings key="merchant_settings" onNavigate={navigate} />}
+              {currentScreen === 'merchant_inventory' && <MerchantInventory key="merchant_inventory" onNavigate={navigate} />}
+              {currentScreen === 'merchant_integrations' && <MerchantIntegrations key="merchant_integrations" onNavigate={navigate} />}
+              {currentScreen === 'merchant_wallet' && <MerchantWallet key="merchant_wallet" onNavigate={navigate} />}
+            </AnimatePresence>
+          </div>
+        </AuthGuard>
       ) : isUserScreen ? (
-        <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans transition-colors duration-300 w-full">
-          <AnimatePresence mode="wait">
-            {currentScreen === 'user_dashboard' && <UserDashboard key="user_dashboard" onNavigate={navigate} />}
-            {currentScreen === 'user_individual' && <UserIndividualOrder key="user_individual" onNavigate={navigate} />}
-            {currentScreen === 'user_tracking' && <UserTracking key="user_tracking" onNavigate={navigate} />}
-            {currentScreen === 'user_payments' && <UserPayments key="user_payments" onNavigate={navigate} />}
-            {currentScreen === 'user_orders' && <UserOrders key="user_orders" onNavigate={navigate} />}
-          </AnimatePresence>
-        </div>
+        <AuthGuard requiredRole="user">
+          <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans transition-colors duration-300 w-full">
+            <AnimatePresence mode="wait">
+              {currentScreen === 'user_dashboard' && <UserDashboard key="user_dashboard" onNavigate={navigate} />}
+              {currentScreen === 'user_individual' && <UserIndividualOrder key="user_individual" onNavigate={navigate} />}
+              {currentScreen === 'user_tracking' && <UserTracking key="user_tracking" onNavigate={navigate} />}
+              {currentScreen === 'user_payments' && <UserPayments key="user_payments" onNavigate={navigate} />}
+              {currentScreen === 'user_orders' && <UserOrders key="user_orders" onNavigate={navigate} />}
+            </AnimatePresence>
+          </div>
+        </AuthGuard>
       ) : isAdminScreen ? (
         <AdminDashboard onNavigate={navigate} />
       ) : (
