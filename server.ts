@@ -1,12 +1,11 @@
+import "./env";
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import Stripe from "stripe";
-import dotenv from "dotenv";
 import admin from 'firebase-admin';
 
-dotenv.config();
 
 // Initialize Firebase Admin for secure backend operations
 if (!admin.apps.length) {
@@ -218,16 +217,16 @@ app.post("/api/aramex/:serviceType", async (req, res) => {
 
     const baseUrl = process.env.ARAMEX_BASE_URL || "https://ws.dev.aramex.net";
 
-    let path = "";
+    let aramexServicePath = "";
     if (serviceType === "rate") {
-      path =
+      aramexServicePath =
         "/ShippingAPI.V2/RateCalculator/Service_1_0.svc/json/CalculateRate";
     } else if (serviceType === "shipping") {
-      path = "/ShippingAPI.V2/Shipping/Service_1_0.svc/json/CreateShipments";
+      aramexServicePath = "/ShippingAPI.V2/Shipping/Service_1_0.svc/json/CreateShipments";
     } else if (serviceType === "tracking") {
-      path = "/ShippingAPI.V2/Tracking/Service_1_0.svc/json/TrackShipments";
+      aramexServicePath = "/ShippingAPI.V2/Tracking/Service_1_0.svc/json/TrackShipments";
     } else if (serviceType === "pickup") {
-      path = "/ShippingAPI.V2/Shipping/Service_1_0.svc/json/CreatePickup";
+      aramexServicePath = "/ShippingAPI.V2/Shipping/Service_1_0.svc/json/CreatePickup";
     } else {
       return res.status(200).json({ 
         HasErrors: true, 
@@ -237,7 +236,7 @@ app.post("/api/aramex/:serviceType", async (req, res) => {
 
     let aramexRes;
     try {
-      aramexRes = await fetch(`${baseUrl}${path}`, {
+      aramexRes = await fetch(`${baseUrl}${aramexServicePath}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -353,6 +352,24 @@ app.post("/api/gemini/analyze-item", async (req, res) => {
       contents: { parts },
       config: {
         responseMimeType: "application/json",
+        safetySettings: [
+          {
+            category: "HARM_CATEGORY_HARASSMENT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE",
+          },
+          {
+            category: "HARM_CATEGORY_HATE_SPEECH",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE",
+          },
+          {
+            category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE",
+          },
+          {
+            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE",
+          },
+        ],
         responseSchema: {
           type: Type.OBJECT,
           properties: {

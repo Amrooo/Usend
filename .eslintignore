@@ -1,0 +1,7 @@
+# Exclude node_modules and output directories from ESLint scanning
+node_modules/
+dist/
+build/
+coverage/
+.git/
+*.log

@@ -1,0 +1,7 @@
+# Exclude third-party and built directories from Semgrep analysis
+node_modules/
+dist/
+build/
+coverage/
+.git/
+*.log
