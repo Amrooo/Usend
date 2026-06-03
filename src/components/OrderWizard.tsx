@@ -7,6 +7,7 @@ import { aramexService } from '../services/aramexIntegration';
 import MapPicker from './MapPicker';
 import Modal from './Modal';
 import { countriesAndCities } from '../data';
+import { loadStripe } from '@stripe/stripe-js';
 
 interface OrderWizardProps {
   onNavigate: (s: Screen) => void;
@@ -46,6 +47,10 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
 
   // Payment details
   const [paymentMethod, setPaymentMethod] = useState('cod');
+  const [stripeCardNum, setStripeCardNum] = useState('4242 4242 4242 4242');
+  const [stripeCardExp, setStripeCardExp] = useState('12/28');
+  const [stripeCardCvv, setStripeCardCvv] = useState('883');
+  const [stripeIsProcessing, setStripeIsProcessing] = useState(false);
   
   // Maps
   const [isMapOpen, setIsMapOpen] = useState(false);
@@ -137,6 +142,106 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
       const submitOrder = async () => {
         const newOrderId = `REQ-${Math.floor(1000 + Math.random() * 9000)}`;
         const totalAmount = calculateTotal();
+
+        if (paymentMethod === 'card') {
+          try {
+            const pubKey = (import.meta as any).env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_REMOVED';
+
+            // 1. Create Payment Intent
+            const response = await fetch('/api/payments/create-intent', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                amountAED: totalAmount,
+                orderId: newOrderId,
+                customerId: user?.uid || 'guest-customer',
+                metadata: {
+                  type: 'order_checkout',
+                  orderId: newOrderId,
+                  email: shipperData.email
+                }
+              }),
+            });
+
+            if (!response.ok) {
+              const errData = await response.json();
+              throw new Error(errData.error || 'Failed to create payment intent');
+            }
+
+            const { clientSecret } = await response.json();
+
+            // 2. Initialize Stripe
+            const stripe = await loadStripe(pubKey);
+            if (!stripe) {
+              throw new Error('Failed to load Stripe SDK.');
+            }
+
+            // 3. Parse card expiry date (MM/YY)
+            const expiryParts = stripeCardExp.trim().split('/');
+            if (expiryParts.length !== 2) {
+              throw new Error('Invalid Expiry Date format. Use MM/YY.');
+            }
+            const expMonth = parseInt(expiryParts[0], 10);
+            const rawYear = expiryParts[1].trim();
+            const expYear = rawYear.length === 2 ? 2000 + parseInt(rawYear, 10) : parseInt(rawYear, 10);
+
+            if (isNaN(expMonth) || expMonth < 1 || expMonth > 12 || isNaN(expYear)) {
+              throw new Error('Invalid Expiry Month or Year.');
+            }
+
+            // 4. Tokenize the card details
+            const tokenResponse = await fetch('https://api.stripe.com/v1/tokens', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${pubKey}`,
+                'Content-Type': 'application/x-www-form-urlencoded',
+              },
+              body: new URLSearchParams({
+                'card[number]': stripeCardNum.replace(/\s/g, ''),
+                'card[exp_month]': expMonth.toString(),
+                'card[exp_year]': expYear.toString(),
+                'card[cvc]': stripeCardCvv.trim(),
+              }).toString(),
+            });
+
+            if (!tokenResponse.ok) {
+              const tokenErr = await tokenResponse.json();
+              throw new Error(tokenErr.error?.message || 'Failed to tokenize card');
+            }
+
+            const tokenData = await tokenResponse.json();
+
+            // 5. Confirm Card Payment using the generated token
+            const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+              payment_method: {
+                card: {
+                  token: tokenData.id,
+                },
+                billing_details: {
+                  name: shipperData.name || 'USend Customer Partner',
+                  email: shipperData.email,
+                  phone: shipperData.phone
+                },
+              },
+            });
+
+            if (error) {
+              throw new Error(error.message || 'Payment confirmation failed');
+            }
+
+            if (!paymentIntent || paymentIntent.status !== 'succeeded') {
+              throw new Error(`Unexpected Stripe status: ${paymentIntent?.status}`);
+            }
+
+          } catch (err: any) {
+            console.error("Stripe Order Checkout Error:", err);
+            alert(err.message || "An unexpected error occurred during payment.");
+            setLoading(false);
+            return;
+          }
+        }
         
         const reqPayload = {
           id: newOrderId,
@@ -420,7 +525,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
                <div className="text-right"><p className="text-[10px] uppercase font-bold text-zinc-500">To</p><p className="font-bold text-sm">{receiverData.city}</p></div>
              </div>
              <div className="flex justify-between items-center text-sm font-semibold mb-2"><span>Base Rate</span><span>{shipmentType === 'international' ? '120' : '30'} AED</span></div>
-             <div className="flex justify-between items-center text-xl font-black text-brand pt-4 border-t border-slate-200 dark:border-zinc-800"><span>Total</span><span>{calculateTotal()} AED</span></div>
+          <div className="flex justify-between items-center text-xl font-black text-brand pt-4 border-t border-slate-200 dark:border-zinc-800"><span>Total</span><span>{calculateTotal()} AED</span></div>
           </div>
           
           {isGuest && (
@@ -431,15 +536,60 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
           )}
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-             <label className="flex items-center gap-4 p-5 border-2 border-brand bg-brand/5 rounded-2xl cursor-pointer">
+             <label className={`flex items-center gap-4 p-5 border-2 rounded-2xl cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-brand bg-brand/5' : 'border-zinc-200 dark:border-zinc-800'}`}>
                <input type="radio" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} className="w-5 h-5 accent-brand" />
                <div><span className="font-bold uppercase text-sm block">Cash on Delivery</span><span className="text-xs text-zinc-500">Pay on pickup or dropoff</span></div>
              </label>
-             <label className="flex items-center gap-4 p-5 border-2 border-zinc-200 dark:border-zinc-800 rounded-2xl cursor-pointer">
+             <label className={`flex items-center gap-4 p-5 border-2 rounded-2xl cursor-pointer transition-all ${paymentMethod === 'card' ? 'border-brand bg-brand/5' : 'border-zinc-200 dark:border-zinc-800'}`}>
                <input type="radio" checked={paymentMethod === 'card'} onChange={() => setPaymentMethod('card')} className="w-5 h-5 accent-brand" />
                <div><span className="font-bold uppercase text-sm block">Card Payment</span><span className="text-xs text-zinc-500">Visa / Mastercard</span></div>
              </label>
           </div>
+
+          {paymentMethod === 'card' && (
+            <div className="bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 p-5 rounded-2xl space-y-3 mt-4 text-left animate-in fade-in duration-100 text-xs">
+              <div className="flex items-center justify-between text-[13px] text-brand font-black tracking-widest uppercase">
+                <span>Stripe Secure Gateway</span>
+                <span>Active</span>
+              </div>
+              
+              <div className="space-y-1.5">
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase pl-0.5">Card number</label>
+                  <input 
+                    required
+                    type="text" 
+                    className="w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 px-3 py-2 rounded-xl font-mono font-bold text-zinc-900 dark:text-white text-xs outline-none focus:border-brand"
+                    value={stripeCardNum}
+                    onChange={(e) => setStripeCardNum(e.target.value)}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase pl-0.5">Expiry</label>
+                    <input 
+                      required
+                      type="text" 
+                      className="w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 px-3 py-2 rounded-xl font-mono font-bold text-zinc-900 dark:text-white text-xs outline-none focus:border-brand"
+                      value={stripeCardExp}
+                      onChange={(e) => setStripeCardExp(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase pl-0.5">CVV</label>
+                    <input 
+                      required
+                      type="password" 
+                      className="w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 px-3 py-2 rounded-xl font-mono font-bold text-zinc-900 dark:text-white text-xs outline-none focus:border-brand"
+                      value={stripeCardCvv}
+                      onChange={(e) => setStripeCardCvv(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="flex gap-4 pt-6"><button type="button" onClick={handlePrevStep} className="px-8 py-3.5 rounded-xl border border-zinc-300 text-zinc-600 dark:text-zinc-400 font-bold uppercase tracking-widest text-xs">Back</button><button type="submit" disabled={loading} className="flex-1 py-3.5 rounded-xl bg-zinc-900 dark:bg-brand text-white font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2">{loading ? 'Processing...' : 'Confirm Order'}</button></div>
         </form>

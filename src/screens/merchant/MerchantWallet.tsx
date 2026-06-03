@@ -32,13 +32,13 @@ export default function MerchantWallet({ onNavigate }: MerchantWalletProps) {
   const [stripeIsProcessing, setStripeIsProcessing] = useState(false);
   const [stripeShowReceipt, setStripeShowReceipt] = useState(false);
 
-  const transactions = [
+  const [transactions, setTransactions] = useState([
     { id: 'TXN-001', date: 'Today, 14:30', type: 'Platform Fee', amount: -5.00, method: 'Wallet Deduction', status: 'Completed', ref: 'ORD-9921' },
     { id: 'TXN-002', date: 'Today, 12:15', type: 'Funds Added', amount: 500.00, method: 'Credit Card', status: 'Completed', ref: 'Top-up' },
     { id: 'TXN-003', date: 'Yesterday, 18:45', type: 'Platform Fee', amount: -5.00, method: 'Wallet Deduction', status: 'Completed', ref: 'ORD-9920' },
     { id: 'TXN-004', date: 'Yesterday, 15:20', type: 'Withdrawal', amount: -1200.00, method: 'Bank Transfer', status: 'Processing', ref: 'Bank Ending 1234' },
     { id: 'TXN-005', date: '12 Mar, 09:10', type: 'COD Collection', amount: 350.00, method: 'Driver Deposit', status: 'Completed', ref: 'Batch #44' },
-  ];
+  ]);
 
   const handleTopupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -134,6 +134,18 @@ export default function MerchantWallet({ onNavigate }: MerchantWalletProps) {
         if (paymentIntent && paymentIntent.status === 'succeeded') {
           // Success! Update UI balance and show success screen
           setWalletBalance(prev => prev + parsed);
+          setTransactions(prev => [
+            {
+              id: `TXN-PMB-TOP-${Math.floor(10000 + Math.random() * 90000)}`,
+              date: 'Today, ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              type: 'Funds Added',
+              amount: parsed,
+              method: stripeMethod === 'stripe_card' ? 'Credit Card (Stripe)' : 'Apple Pay (Stripe)',
+              status: 'Completed',
+              ref: 'Top-up'
+            },
+            ...prev
+          ]);
           setStripeShowReceipt(true);
         } else {
           throw new Error(`Unexpected Stripe payment status: ${paymentIntent?.status}`);
@@ -147,6 +159,18 @@ export default function MerchantWallet({ onNavigate }: MerchantWalletProps) {
     } else {
       // Standard Card simulated flow
       setWalletBalance(prev => prev + parsed);
+      setTransactions(prev => [
+        {
+          id: `TXN-PMB-TOP-${Math.floor(10000 + Math.random() * 90000)}`,
+          date: 'Today, ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          type: 'Funds Added',
+          amount: parsed,
+          method: 'Credit Card',
+          status: 'Completed',
+          ref: 'Top-up'
+        },
+        ...prev
+      ]);
       setFundsAmount('');
       setShowAddFunds(false);
     }
