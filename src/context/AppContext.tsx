@@ -175,6 +175,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
           }
           setUser({ ...u, role: finalRole });
         }
+
+        // Sync guest orders from localStorage to this user account
+        try {
+          const storedGuest = JSON.parse(localStorage.getItem('guestOrders') || '[]');
+          if (storedGuest.length > 0) {
+            for (const item of storedGuest) {
+              await updateDocument('requests', item.id, {
+                userId: u.uid,
+                applicantType: 'User'
+              });
+            }
+            localStorage.removeItem('guestOrders');
+          }
+        } catch (err) {
+          console.warn("Failed to sync guest orders to account:", err);
+        }
       } else {
         setUser(null);
       }
