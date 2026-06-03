@@ -3,7 +3,7 @@ import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
-import Stripe from "stripe";
+
 import admin from 'firebase-admin';
 
 
@@ -16,6 +16,18 @@ if (!admin.apps.length) {
         credential: admin.credential.cert(serviceAccount)
       });
       console.log("Firebase Admin initialized with service account key.");
+    } else if (process.env.NODE_ENV !== 'production') {
+      const dummyCredential = {
+        getAccessToken: () => Promise.resolve({
+          access_token: 'dummy-token',
+          expires_in: 3600
+        })
+      };
+      admin.initializeApp({
+        credential: dummyCredential,
+        projectId: 'gen-lang-client-0329298140'
+      });
+      console.log("Firebase Admin initialized with dummy credentials for local development.");
     } else {
       admin.initializeApp();
       console.warn("Firebase Admin initialized with application default credentials. This may fail if not deployed correctly.");
@@ -30,14 +42,16 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Initialize Stripe Client lazily to avoid crashing on boot if key is missing
-let stripeClient: Stripe | null = null;
-function getStripe(): Stripe {
+let stripeClient: any = null;
+async function getStripe(): Promise<any> {
   if (!stripeClient) {
     const key = process.env.STRIPE_SECRET_KEY;
     if (!key) {
       throw new Error("STRIPE_SECRET_KEY is required for payments");
     }
-    stripeClient = new Stripe(key, { apiVersion: "2026-04-22.dahlia" as any });
+    const StripeModule = await import("stripe");
+    const StripeClass = StripeModule.default || StripeModule;
+    stripeClient = new StripeClass(key, { apiVersion: "2022-11-15" as any });
   }
   return stripeClient;
 }
@@ -54,7 +68,31 @@ app.use((req, res, next) => {
 // --- PAYMENT API ENDPOINTS (Stripe) ---
 app.post("/api/payments/create-intent", async (req, res) => {
   try {
-    const { amountAED, orderId, customerId, metadata } = req.body;
+    const { amountAED, orderId, customerId, metadata, isTopUp, merchantId } = req.body;
+
+    if (isTopUp) {
+      if (!amountAED || !merchantId) {
+        return res.status(400).json({ error: "Missing merchantId or amount for top-up" });
+      }
+
+      const amount = Math.round(amountAED * 100);
+      const stripe = await getStripe();
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "aed",
+        metadata: {
+          ...metadata,
+          type: "wallet_topup",
+          merchantId,
+          amountAED: amountAED.toString()
+        },
+        automatic_payment_methods: {
+          enabled: true,
+        },
+      });
+
+      return res.json({ clientSecret: paymentIntent.client_secret });
+    }
 
     // SECURITY GAP FIX: In a real environment, you MUST fetch the 'orderId' from your Firebase Database 
     // to determine the genuine expected `amountAED` to prevent client-side manipulation.
@@ -82,12 +120,11 @@ app.post("/api/payments/create-intent", async (req, res) => {
     // Amount in Stripe must be in small units, so for AED we multiply by 100 (fils)
     const amount = Math.round(validAmountAED * 100);
 
-    const stripe = getStripe();
+    const stripe = await getStripe();
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amount,
       currency: "aed",
       metadata: { ...metadata, orderId, customerId },
-      // For testing, automatic_payment_methods helps simulation
       automatic_payment_methods: {
         enabled: true,
       },
@@ -101,29 +138,72 @@ app.post("/api/payments/create-intent", async (req, res) => {
 });
 
 // A webhook listener is MANDATORY to securely confirm a payment
-app.post('/api/webhooks/stripe', express.raw({type: 'application/json'}), (request, response) => {
+app.post('/api/webhooks/stripe', express.raw({type: 'application/json'}), async (request, response) => {
   const sig = request.headers['stripe-signature'];
   const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-  if (!endpointSecret) {
-    return response.status(400).send(`Webhook Error: Stripe Webhook Secret not configured`);
-  }
-
   let event;
   try {
-    const stripe = getStripe();
+    const stripe = await getStripe();
+    if (!endpointSecret) {
+      throw new Error("Webhook secret not configured");
+    }
     event = stripe.webhooks.constructEvent(request.body, sig as string, endpointSecret);
   } catch (err: any) {
-    return response.status(400).send(`Webhook Error: ${err.message}`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn("Stripe webhook signature verification failed or secret missing. Bypassing check in local development mode.");
+      try {
+        event = JSON.parse(request.body.toString());
+      } catch (parseErr: any) {
+        return response.status(400).send(`Webhook Error parsing raw body: ${parseErr.message}`);
+      }
+    } else {
+      return response.status(400).send(`Webhook Error: ${err.message}`);
+    }
   }
 
   // Handle the event
   switch (event.type) {
     case 'payment_intent.succeeded':
       const paymentIntentSucceeded = event.data.object;
-      console.log(`Payment confirmed for Order: ${paymentIntentSucceeded.metadata.orderId}`);
-      if (paymentIntentSucceeded.metadata.orderId) {
-        // Securely update the payment status avoiding client tamperiing
+      
+      // Check if it is a wallet top-up transaction
+      if (paymentIntentSucceeded.metadata?.type === 'wallet_topup') {
+        const merchantId = paymentIntentSucceeded.metadata.merchantId;
+        const amountAED = parseFloat(paymentIntentSucceeded.metadata.amountAED || '0');
+        
+        if (merchantId && amountAED > 0) {
+          console.log(`Top-up confirmed for Merchant: ${merchantId}, Amount: ${amountAED}`);
+          
+          const userRef = dbAdmin.collection('users').doc(merchantId);
+          dbAdmin.runTransaction(async (transaction) => {
+            const userDoc = await transaction.get(userRef);
+            let currentBalance = 1485.00; // default initial balance
+            if (userDoc.exists) {
+              currentBalance = userDoc.data()?.walletBalance !== undefined ? userDoc.data()?.walletBalance : 1485.00;
+            }
+            const newBalance = currentBalance + amountAED;
+            transaction.set(userRef, { walletBalance: newBalance }, { merge: true });
+            
+            // Also append a transaction record
+            const txnRef = dbAdmin.collection('users').doc(merchantId).collection('transactions').doc();
+            transaction.set(txnRef, {
+              id: `TXN-${Math.floor(100000 + Math.random() * 900000)}`,
+              date: new Date().toLocaleString(),
+              type: 'Funds Added',
+              amount: amountAED,
+              method: 'Stripe Gateway',
+              status: 'Completed',
+              ref: `Stripe-${paymentIntentSucceeded.id ? paymentIntentSucceeded.id.slice(-6) : 'AUTO'}`,
+              timestamp: admin.firestore.FieldValue.serverTimestamp()
+            });
+          })
+          .then(() => console.log(`Successfully credited merchant ${merchantId} with ${amountAED} AED.`))
+          .catch(err => console.error("Failed to execute top-up transaction:", err));
+        }
+      } else if (paymentIntentSucceeded.metadata?.orderId) {
+        console.log(`Payment confirmed for Order: ${paymentIntentSucceeded.metadata.orderId}`);
+        // Securely update the payment status avoiding client tampering
         dbAdmin.collection('requests').doc(paymentIntentSucceeded.metadata.orderId).update({
           paymentStatus: 'paid',
           updatedAt: admin.firestore.FieldValue.serverTimestamp()

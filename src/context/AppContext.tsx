@@ -99,6 +99,10 @@ interface AppContextType {
   merchantActiveTab: string;
   setMerchantActiveTab: (tab: string) => void;
   setUser: (user: any) => void;
+  walletBalance: number;
+  setWalletBalance: React.Dispatch<React.SetStateAction<number>>;
+  transactions: any[];
+  setTransactions: React.Dispatch<React.SetStateAction<any[]>>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -142,6 +146,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<any>(null);
   const [merchantActiveTab, setMerchantActiveTab] = useState<string>('dashboard');
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [walletBalance, setWalletBalance] = useState(1485.00);
+  const [transactions, setTransactions] = useState<any[]>([
+    { id: 'TXN-001', date: 'Today, 14:30', type: 'Platform Fee', amount: -5.00, method: 'Wallet Deduction', status: 'Completed', ref: 'ORD-9921' },
+    { id: 'TXN-002', date: 'Today, 12:15', type: 'Funds Added', amount: 500.00, method: 'Credit Card', status: 'Completed', ref: 'Top-up' },
+    { id: 'TXN-003', date: 'Yesterday, 18:45', type: 'Platform Fee', amount: -5.00, method: 'Wallet Deduction', status: 'Completed', ref: 'ORD-9920' },
+    { id: 'TXN-004', date: 'Yesterday, 15:20', type: 'Withdrawal', amount: -1200.00, method: 'Bank Transfer', status: 'Processing', ref: 'Bank Ending 1234' },
+    { id: 'TXN-005', date: '12 Mar, 09:10', type: 'COD Collection', amount: 350.00, method: 'Driver Deposit', status: 'Completed', ref: 'Batch #44' },
+  ]);
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, async (u) => {
@@ -167,7 +179,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
               photoUrl: u.photoURL,
               role: finalRole,
               status: 'Active',
-              createdAt: new Date().toISOString()
+              createdAt: new Date().toISOString(),
+              walletBalance: 1485.00
             });
           } else {
             const data = userDoc.data();
@@ -251,11 +264,38 @@ export function AppProvider({ children }: { children: ReactNode }) {
       console.warn('Settings Firestore sync skipped (will use fallback mock data):', error.message);
     });
 
+    // Subscribe to user doc for walletBalance updates in real-time
+    const unsubscribeUserDoc = onSnapshot(doc(db, 'users', user.uid), (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        if (data && data.walletBalance !== undefined) {
+          setWalletBalance(data.walletBalance);
+        }
+      }
+    }, (error) => {
+      console.warn("User doc subscription skipped:", error.message);
+    });
+
+    // Subscribe to user's transactions subcollection
+    const unsubscribeTransactions = subscribeToCollection<any>(
+      `users/${user.uid}/transactions`,
+      (data) => {
+        if (data && data.length > 0) {
+          setTransactions(data.sort((a, b) => b.date.localeCompare(a.date)));
+        }
+      },
+      (error) => {
+        console.warn("Transactions subcollection sync skipped:", error.message);
+      }
+    );
+
     return () => {
       unsubscribeRequests();
       unsubscribeMerchants();
       unsubscribeUsers();
       unsubscribeSettings();
+      unsubscribeUserDoc();
+      unsubscribeTransactions();
     };
   }, [user]);
 
@@ -403,7 +443,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       notifications,
       addNotification,
       markNotificationRead,
-      markAllNotificationsRead
+      markAllNotificationsRead,
+      walletBalance,
+      setWalletBalance,
+      transactions,
+      setTransactions
     }}>
       {children}
     </AppContext.Provider>

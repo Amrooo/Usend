@@ -8,6 +8,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
+import { useApp } from '../../context/AppContext';
 
 interface MerchantWalletProps {
   key?: string;
@@ -16,43 +17,137 @@ interface MerchantWalletProps {
 
 export default function MerchantWallet({ onNavigate }: MerchantWalletProps) {
   const { isRTL } = useLanguage();
+  const { walletBalance, setWalletBalance, transactions, user } = useApp();
   
   const [showAddFunds, setShowAddFunds] = useState(false);
   const [showWithdraw, setShowWithdraw] = useState(false);
-  const [walletBalance, setWalletBalance] = useState(1485.00);
   const [codPending, setCodPending] = useState(850.00);
   const [fundsAmount, setFundsAmount] = useState('');
   
   // Stripe top-up state variables
   const [stripeMethod, setStripeMethod] = useState<'standard' | 'stripe_card' | 'stripe_applepay'>('stripe_card');
-  const [stripeCardNum, setStripeCardNum] = useState('4111 2222 3333 4444');
+  const [stripeCardNum, setStripeCardNum] = useState('4242 4242 4242 4242');
   const [stripeCardExp, setStripeCardExp] = useState('12/28');
-  const [stripeCardCvv, setStripeCardCvv] = useState('883');
+  const [stripeCardCvv, setStripeCardCvv] = useState('123');
   const [stripeIsProcessing, setStripeIsProcessing] = useState(false);
   const [stripeShowReceipt, setStripeShowReceipt] = useState(false);
 
-  const transactions = [
-    { id: 'TXN-001', date: 'Today, 14:30', type: 'Platform Fee', amount: -5.00, method: 'Wallet Deduction', status: 'Completed', ref: 'ORD-9921' },
-    { id: 'TXN-002', date: 'Today, 12:15', type: 'Funds Added', amount: 500.00, method: 'Credit Card', status: 'Completed', ref: 'Top-up' },
-    { id: 'TXN-003', date: 'Yesterday, 18:45', type: 'Platform Fee', amount: -5.00, method: 'Wallet Deduction', status: 'Completed', ref: 'ORD-9920' },
-    { id: 'TXN-004', date: 'Yesterday, 15:20', type: 'Withdrawal', amount: -1200.00, method: 'Bank Transfer', status: 'Processing', ref: 'Bank Ending 1234' },
-    { id: 'TXN-005', date: '12 Mar, 09:10', type: 'COD Collection', amount: 350.00, method: 'Driver Deposit', status: 'Completed', ref: 'Batch #44' },
-  ];
-
-  const handleTopupSubmit = (e: React.FormEvent) => {
+  const handleTopupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const parsed = parseFloat(fundsAmount);
     if (isNaN(parsed) || parsed <= 0) return;
 
     if (stripeMethod !== 'standard') {
       setStripeIsProcessing(true);
-      setTimeout(() => {
+      try {
+        // 1. Create Stripe PaymentIntent on the backend
+        const response = await fetch('/api/payments/create-intent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amountAED: parsed,
+            isTopUp: true,
+            merchantId: user?.uid || 'anonymous_merchant'
+          })
+        });
+
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData.error || 'Failed to create payment intent');
+        }
+
+        const { clientSecret } = await response.json();
+
+        // 2. Dynamically load Stripe.js SDK
+        const { loadStripe } = await import('@stripe/stripe-js');
+        const publishableKey = "pk_test_REMOVED";
+        const stripe = await loadStripe(publishableKey);
+
+        if (!stripe) {
+          throw new Error('Failed to load Stripe SDK');
+        }
+
+        // 3. Extract expiry components
+        const [expMonthStr, expYearStr] = stripeCardExp.split('/');
+        const expMonth = parseInt(expMonthStr, 10);
+        const expYear = parseInt('20' + expYearStr, 10);
+
+        // 4. Confirm card payment securely directly using card details in sandbox mode
+        const confirmResult = await stripe.confirmCardPayment(clientSecret, {
+          payment_method: {
+            card: {
+              number: stripeCardNum.replace(/\s+/g, ''),
+              exp_month: expMonth,
+              exp_year: expYear,
+              cvc: stripeCardCvv
+            },
+            billing_details: {
+              name: user?.name || 'USend Merchant Partner'
+            }
+          }
+        });
+
+        if (confirmResult.error) {
+          throw new Error(confirmResult.error.message || 'Payment confirmation failed');
+        }
+
+        if (confirmResult.paymentIntent && confirmResult.paymentIntent.status === 'succeeded') {
+          // 5. Trigger webhook locally to update merchant balance and append to transaction history
+          // This serves as an instant fallback when running locally without live webhook relays.
+          await fetch('/api/webhooks/stripe', {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'stripe-signature': 'mock_signature' // Bypassed in dev mode
+            },
+            body: JSON.stringify({
+              type: 'payment_intent.succeeded',
+              data: {
+                object: {
+                  id: confirmResult.paymentIntent.id,
+                  metadata: {
+                    type: 'wallet_topup',
+                    merchantId: user?.uid || 'anonymous_merchant',
+                    amountAED: parsed.toString()
+                  }
+                }
+              }
+            })
+          });
+
+          setStripeIsProcessing(false);
+          setStripeShowReceipt(true);
+        } else {
+          throw new Error('Transaction pending or failed.');
+        }
+      } catch (err: any) {
+        console.error('Payment Error:', err);
+        alert(err.message || 'An error occurred during Stripe payment');
         setStripeIsProcessing(false);
-        setWalletBalance(prev => prev + parsed);
-        setStripeShowReceipt(true);
-      }, 1500);
+      }
     } else {
-      setWalletBalance(prev => prev + parsed);
+      // Standard Card (fallback simulated/mocked payment)
+      const newBal = walletBalance + parsed;
+      setWalletBalance(newBal);
+      
+      if (user?.uid) {
+        import('../../lib/firebaseUtils').then(({ updateDocument, createDocument }) => {
+          updateDocument('users', user.uid, { walletBalance: newBal }).catch(err => console.error(err));
+          // Append a dummy transaction log
+          const txnId = `TXN-${Math.floor(100000 + Math.random() * 900000)}`;
+          createDocument(`users/${user.uid}/transactions`, txnId, {
+            id: txnId,
+            date: new Date().toLocaleString(),
+            type: 'Funds Added',
+            amount: parsed,
+            method: 'Standard Card',
+            status: 'Completed',
+            ref: 'Mock-Topup',
+            timestamp: new Date().toISOString()
+          }).catch(err => console.error(err));
+        });
+      }
+
       setFundsAmount('');
       setShowAddFunds(false);
     }

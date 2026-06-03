@@ -100,9 +100,9 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
   const [webhookSaved, setWebhookSaved] = useState(false);
 
   // STRIPE GATEWAY STATES
-  const [stripeSecretKey, setStripeSecretKey] = useState('sk_test_... (Sandbox default)');
-  const [stripePublishableKey, setStripePublishableKey] = useState('pk_test_...');
-  const [stripeWebhookSecret, setStripeWebhookSecret] = useState('whsec_...');
+  const [stripeSecretKey, setStripeSecretKey] = useState('sk_test_REMOVED');
+  const [stripePublishableKey, setStripePublishableKey] = useState('pk_test_REMOVED');
+  const [stripeWebhookSecret, setStripeWebhookSecret] = useState('whsec_test_secret');
   const [stripeIsConnected, setStripeIsConnected] = useState(true);
   const [stripeSandboxMode, setStripeSandboxMode] = useState(true);
   const [stripeMethods, setStripeMethods] = useState({
