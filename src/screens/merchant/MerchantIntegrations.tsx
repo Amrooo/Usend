@@ -547,23 +547,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                       </div>
                       <div className="flex justify-between items-center text-xs">
                         <span className="font-bold text-zinc-500 uppercase tracking-widest text-[13px]">Environment</span>
-                        <div className="flex items-center gap-3">
-                          <span className="font-mono text-zinc-700 dark:text-zinc-300 font-bold">
-                            {stripeSandboxMode ? 'Sandbox Testing' : 'Production Active'}
-                          </span>
-                          <button
-                            onClick={() => setStripeSandboxMode(!stripeSandboxMode)}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                              stripeSandboxMode ? 'bg-blue-600' : 'bg-emerald-600'
-                            }`}
-                          >
-                            <span
-                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                stripeSandboxMode ? 'translate-x-6' : 'translate-x-1'
-                              }`}
-                            />
-                          </button>
-                        </div>
+                        <span className="font-mono text-zinc-700 dark:text-zinc-300 font-bold">{stripeSandboxMode ? 'Sandbox Testing' : 'Production Active'}</span>
                       </div>
                     </div>
                   </div>

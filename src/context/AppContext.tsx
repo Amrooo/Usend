@@ -67,24 +67,11 @@ export interface USendUser {
   role: string;
 }
 
-export interface AppNotification {
-  id: string;
-  title: string;
-  message: string;
-  date: string;
-  read: boolean;
-  type: 'info' | 'success' | 'warning' | 'error';
-}
-
 interface AppContextType {
   activeRequests: USendRequest[];
   merchants: Merchant[];
   users: USendUser[];
   settings: PlatformSettings | null;
-  notifications: AppNotification[];
-  addNotification: (n: Omit<AppNotification, 'id' | 'date' | 'read'>) => void;
-  markNotificationRead: (id: string) => void;
-  markAllNotificationsRead: () => void;
   addRequest: (req: USendRequest) => void;
   updateRequest: (id: string, data: Partial<USendRequest>) => void;
   updateRequestStatus: (id: string, status: RequestStatus, eta?: string) => void;
@@ -110,7 +97,7 @@ const INITIAL_MERCHANTS: Merchant[] = [];
 const INITIAL_USERS: USendUser[] = [];
 
 const INITIAL_SETTINGS: PlatformSettings = {
-  merchantCommission: 5,
+  merchantCommission: 2.5,
   driverPlatformFee: 15,
   baseDeliveryFee: 12,
   perKmRate: 2.5
@@ -141,7 +128,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [merchantActiveTab, setMerchantActiveTab] = useState<string>('dashboard');
-  const [notifications, setNotifications] = useState<AppNotification[]>([]);
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, async (u) => {
@@ -297,22 +283,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const signOutUser = async () => {
     await logout();
   };
-  const addNotification = (n: Omit<AppNotification, 'id' | 'date' | 'read'>) => {
-    const newNotif: AppNotification = {
-      ...n,
-      id: Math.random().toString(36).substring(7),
-      date: new Date().toISOString(),
-      read: false
-    };
-    setNotifications(prev => [newNotif, ...prev]);
-  };
-
-  const markNotificationRead = (id: string) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-  };
-  const markAllNotificationsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-  };
 
   const addRequest = async (req: USendRequest) => {
     const isMerchant = req.applicantType === 'Merchant';
@@ -399,11 +369,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setCurrentRequest,
       isLoading,
       merchantActiveTab,
-      setMerchantActiveTab,
-      notifications,
-      addNotification,
-      markNotificationRead,
-      markAllNotificationsRead
+      setMerchantActiveTab
     }}>
       {children}
     </AppContext.Provider>

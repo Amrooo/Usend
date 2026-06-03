@@ -27,8 +27,6 @@ import {
 import { useApp } from '../../context/AppContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { aramexService } from '../../services/aramexIntegration';
-import { fedexService } from '../../services/fedexService';
-import { notificationService } from '../../services/notificationService';
 
 export const UAE_ADDRESS_SUGGESTIONS = [
   { name: "Dubai Mall, Financial Center Road, Downtown Dubai", position: [25.1972, 55.2797] },
@@ -78,7 +76,7 @@ interface MerchantIndividualOrderProps {
 
 export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividualOrderProps) {
   const { t, isRTL } = useLanguage();
-  const { addRequest, merchantActiveTab, setMerchantActiveTab, user, addNotification } = useApp();
+  const { addRequest, merchantActiveTab, setMerchantActiveTab } = useApp();
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [isMapOpenQuoteTarget, setIsMapOpenQuoteTarget] = useState<'pickup' | 'dropoff' | 'manual_pickup' | 'manual_dropoff' | null>(null);
   const [isDateOpen, setIsDateOpen] = useState(false);
@@ -273,14 +271,6 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
           eta: quoteData.serviceLevel === 'express' ? '1.5 Hours' : quoteData.serviceLevel === 'standard' ? 'Same Day' : 'Next Day'
         },
         {
-          courier: 'fedex',
-          baseFee: (rateRes.breakdown?.base || 12) * 1.1,
-          insuranceFee: quoteData.insurance ? 5 : 0,
-          discount: 0,
-          total: Number(((rateRes.rateAED || 12) * 1.1 + (quoteData.insurance ? 5 : 0)).toFixed(2)),
-          eta: 'FedEx Test Env'
-        },
-        {
           courier: 'usend_fleet',
           baseFee: (rateRes.breakdown?.base || 12) * 0.8,
           insuranceFee: quoteData.insurance ? 3 : 0,
@@ -314,8 +304,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
       setCalculatedQuotes({
         distanceKm: dist,
         options: [
-          { courier: 'fedex', baseFee: base + 10, insuranceFee: ins, discount, total: totalNum + 10, eta: 'Test API' },
-          { courier: 'aramex', baseFee: base, insuranceFee: ins, discount, total: totalNum, eta: 'Same Day' },
+          { courier: 'aramex', baseFee: base, insuranceFee: ins, discount, total: totalNum, eta: 'Same Day' }
         ]
       });
     } finally {
@@ -387,52 +376,16 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
              throw new Error(aramexRes.error || "Aramex API failed to create shipment.");
           }
         } catch (err: any) {
-          console.error("Aramex Dispatch failed", err);
+          console.error("Aramex Sandbox Dispatch failed", err);
           setIsSubmitting(false);
           window.dispatchEvent(new CustomEvent('app_toast', { detail: { title: 'Aramex Integration Error', message: err.message, type: 'error' } }));
           return;
         }
-      } else if (formData.carrier === 'fedex') {
-        try {
-          const fedexRes = await fedexService.createFedexJob(payload);
-          if (!fedexRes.success) throw new Error("FedEx API failed");
-        } catch (err: any) {
-           console.error("FedEx Dispatch failed", err);
-           setIsSubmitting(false);
-           return;
-        }
       }
 
-        // Dispatch Email and SMS Notifications
-        try {
-          const notificationData = {
-            orderId: reqId,
-            amount: `${formData.amount || '150'} AED`,
-            items: formData.items || 'General Goods',
-            courier: formData.carrier
-          };
-          
-          await Promise.all([
-            notificationService.sendOrderConfirmationEmail(user?.email || 'merchant@usend.ae', notificationData),
-            notificationService.sendInvoiceEmail(user?.email || 'merchant@usend.ae', notificationData, formData.paymentType === 'card' ? 'Credit Card' : 'Cash on Delivery'),
-            notificationService.sendOrderSMS(user?.phoneNumber || '+971500000000', notificationData, 'sender'),
-            notificationService.sendOrderSMS(formData.phone, notificationData, 'receiver')
-          ]);
-        } catch (err) {
-          console.error("Failed to send some notifications:", err);
-        }
-
-        setIsSubmitting(false);
-        onNavigate('merchant_tracking');
-        
-        addNotification({
-          title: `Order Dispatched (${formData.carrier})`,
-          message: `Order ${reqId} created. Notifications sent to your email and customer's phone.`,
-          type: 'success'
-        });
-
-        window.dispatchEvent(new CustomEvent('app_toast', { detail: { title: 'Order Dispatched', message: `Order ${reqId} created. Notifications sent to your email and customer's phone.` } }));
-      };
+      setIsSubmitting(false);
+      onNavigate('merchant_tracking');
+    };
     
     submitOrder();
   };
@@ -936,11 +889,6 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                           key: 'aramex', 
                           label: 'Aramex Sandbox Service', 
                           desc: 'Dispatches packages directly into Aramex\'s sandbox courier channels. Generates automated sandbox API Waybills, WSDL XML logs, and external tracking.' 
-                        },
-                        { 
-                          key: 'fedex', 
-                          label: 'FedEx Test Sandbox', 
-                          desc: 'Simulated integration with FedEx sandbox APIs for testing.' 
                         }
                       ].map((carrier) => (
                         <div key={carrier.key} className="space-y-2">

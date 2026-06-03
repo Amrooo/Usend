@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import { ArrowRight, Globe } from 'lucide-react';
 import { Screen } from '../types';
+import Logo from '../components/Logo';
 import LogoIcon from '../components/LogoIcon';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -27,7 +28,7 @@ export default function Splash({ onNavigate }: SplashProps) {
       {/* Navigation - Contained and Rounded */}
       <div className="absolute top-8 md:top-10 inset-x-0 z-[100] px-4 w-full flex items-center justify-center">
         <div className="cursor-pointer text-zinc-900 dark:text-white" onClick={() => onNavigate('landing_page')}>
-          <LogoIcon className="w-auto h-32 md:h-40" />
+          <LogoIcon className="w-auto h-20" />
         </div>
       </div>
 

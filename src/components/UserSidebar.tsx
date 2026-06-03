@@ -14,7 +14,6 @@ import {
   Settings,
   Database
 } from 'lucide-react';
-import LogoIcon from './LogoIcon';
 import { Screen } from '../types';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -49,8 +48,8 @@ export default function UserSidebar({ currentScreen, onNavigate }: SidebarProps)
     <div className="flex flex-col h-full bg-[#09090b] text-[#e4e4e7] select-none border-r border-zinc-900/80">
       <div className="p-6 pb-5 border-b border-zinc-900 flex items-center justify-between">
         <div className="flex items-center gap-3 cursor-pointer" onClick={() => handleItemClick('user_dashboard')}>
-          <div className="w-10 h-10 flex items-center justify-center shrink-0">
-            <LogoIcon className="w-8 h-8 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" variant="light" />
+          <div className="w-10 h-10 rounded-2xl bg-brand/10 border border-brand/20 flex items-center justify-center text-brand leading-none shrink-0 shadow-inner">
+            <Anchor className="w-5 h-5" />
           </div>
           <div>
             <h1 className="text-xs font-black uppercase tracking-widest text-[#f4f4f5] leading-none">USend Portal</h1>
@@ -118,8 +117,8 @@ export default function UserSidebar({ currentScreen, onNavigate }: SidebarProps)
     <>
       <div className={`md:hidden flex items-center justify-between p-4 bg-[#09090b] text-[#f4f4f5] sticky top-0 z-40 border-b border-zinc-900 shadow-sm`}>
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => handleItemClick('user_dashboard')}>
-          <div className="w-8 h-8 flex items-center justify-center">
-            <LogoIcon className="w-6 h-6 text-white drop-shadow-md" variant="light" />
+          <div className="w-8 h-8 rounded-xl bg-brand/10 border border-brand/20 flex items-center justify-center text-brand">
+            <Anchor className="w-4 h-4" />
           </div>
           <span className="font-black text-xs tracking-widest uppercase text-zinc-100">USend Consumer</span>
         </div>

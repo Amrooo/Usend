@@ -16,7 +16,6 @@
   html {
     --primary-font: "Inter", "DM Sans";
     --display-font: "Space Grotesk";
-    scroll-behavior: smooth;
   }
 
   html:lang(ar) {

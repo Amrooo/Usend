@@ -7,8 +7,6 @@ import { aramexService } from '../services/aramexIntegration';
 import MapPicker from './MapPicker';
 import Modal from './Modal';
 import { countriesAndCities } from '../data';
-import { notificationService } from '../services/notificationService';
-import { fedexService } from '../services/fedexService';
 
 interface OrderWizardProps {
   onNavigate: (s: Screen) => void;
@@ -17,8 +15,8 @@ interface OrderWizardProps {
 }
 
 export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true }: OrderWizardProps) {
-  const { isRTL, t, language } = useLanguage();
-  const { addRequest, user, addNotification } = useApp();
+  const { isRTL, t } = useLanguage();
+  const { addRequest, user } = useApp();
 
   const [wizardStep, setWizardStep] = useState<0 | 1 | 2 | 3 | 4 | 5>(0);
   const [shipmentType, setShipmentType] = useState<'domestic' | 'international' | null>(null);
@@ -43,7 +41,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
 
   // Shipment details
   const [shipmentData, setShipmentData] = useState({
-    weight: '1', description: '', quantity: '1', photo: null as string | null, courier: 'usend' as 'usend' | 'aramex' | 'fedex', declaredValue: ''
+    weight: '1', description: '', quantity: '1', photo: null as string | null, courier: 'usend' as 'usend' | 'aramex', declaredValue: ''
   });
 
   // Payment details
@@ -82,10 +80,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
     setShipmentType(type);
     setWizardStep(1);
     if (type === 'international') {
-      setReceiverData(p => ({ ...p, country: 'Saudi Arabia', city: 'Riyadh' }));
-    } else {
-      setReceiverData(p => ({ ...p, country: 'United Arab Emirates', city: 'Dubai' }));
-      setShipperData(p => ({ ...p, country: 'United Arab Emirates', city: 'Dubai' }));
+      setReceiverData(p => ({ ...p, country: 'Saudi Arabia' }));
     }
   };
 
@@ -122,8 +117,8 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
         alert(isRTL ? "يرجى إدخال رقم هاتف صحيح للمرسل" : "Please enter a valid phone number for the shipper.");
         return;
       }
-      if (!validateEmail(shipperData.email)) {
-        alert(isRTL ? "يرجى إدخال بريد إلكتروني صحيح" : "Please enter a valid email address.");
+      if (isGuest && !validateEmail(shipperData.email)) {
+        alert(isRTL ? "يرجى إدخال بريد إلكتروني صحيح لإرسال الفاتورة" : "Please enter a valid email to receive your invoice.");
         return;
       }
     }
@@ -162,7 +157,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
           orderAmount: `${totalAmount} AED`,
           applicantType: isGuest ? 'Guest' as const : 'User' as const,
           etaTime: 'Pending',
-          courier: shipmentData.courier === 'aramex' ? 'Aramex' : shipmentData.courier === 'fedex' ? 'FedEx' : 'USend Fleet',
+          courier: shipmentData.courier === 'aramex' ? 'Aramex' : 'USend Fleet',
         };
         
         await addRequest(reqPayload);
@@ -181,57 +176,25 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
                throw new Error(aramexRes.error || "Aramex API failed to create shipment.");
             }
           } catch (err: any) {
-            console.error("Aramex Dispatch failed", err);
+            console.error("Aramex Sandbox Dispatch failed", err);
             setLoading(false);
             window.dispatchEvent(new CustomEvent('app_toast', { detail: { title: 'Aramex Integration Error', message: err.message, type: 'error' } }));
             return;
           }
-        } else if (shipmentData.courier === 'fedex') {
-          try {
-            const fedexRes = await fedexService.createFedexJob(reqPayload);
-            if (!fedexRes.success) throw new Error("FedEx API failed");
-          } catch (err: any) {
-             console.error("FedEx Dispatch failed", err);
-             setLoading(false);
-             return;
-          }
         }
         
-        // Dispatch Email and SMS Notifications
-        try {
-          const notificationData = {
-            orderId: newOrderId,
-            amount: `${totalAmount} AED`,
-            items: `${shipmentData.quantity}x ${shipmentData.description}`,
-            courier: shipmentData.courier === 'aramex' ? 'Aramex' : shipmentData.courier === 'fedex' ? 'FedEx' : 'USend Fleet'
-          };
-          
-          await Promise.all([
-            notificationService.sendOrderConfirmationEmail(shipperData.email, notificationData),
-            notificationService.sendInvoiceEmail(shipperData.email, notificationData, paymentMethod === 'cod' ? 'Cash on Delivery' : 'Credit Card'),
-            notificationService.sendOrderSMS(shipperData.phone, notificationData, 'sender'),
-            notificationService.sendOrderSMS(receiverData.phone, notificationData, 'receiver')
-          ]);
-        } catch (err) {
-          console.error("Failed to send some notifications:", err);
-        }
-
         setCreatedOrderId(newOrderId);
         setLoading(false);
         setWizardStep(5);
         
-        addNotification({
-          title: `Order Created (${shipmentData.courier === 'aramex' ? 'Aramex' : shipmentData.courier === 'fedex' ? 'FedEx' : 'USend Fleet'})`,
-          message: `Your shipment ${newOrderId} has been confirmed successfully.`,
-          type: 'success'
-        });
-        
-        window.dispatchEvent(new CustomEvent('app_toast', {
-          detail: {
-            title: "Order Confirmed",
-            message: `Your invoice and tracking details (${newOrderId}) have been sent to ${shipperData.email} and via SMS.`
-          }
-        }));
+        if (isGuest) {
+          window.dispatchEvent(new CustomEvent('app_toast', {
+            detail: {
+              title: "Invoice Sent",
+              message: `Your payment invoice and tracking number (${newOrderId}) has been sent to ${shipperData.email}.`
+            }
+          }));
+        }
       };
       
       submitOrder();
@@ -303,7 +266,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
             <button onClick={() => handleSelectType('domestic')} className="bg-white dark:bg-zinc-900 border-[3px] border-zinc-100 dark:border-zinc-800 hover:border-brand active:bg-zinc-50 rounded-3xl p-10 flex flex-col items-center justify-center gap-6 shadow-sm transition-all group">
               <Truck className="w-16 h-16 text-zinc-400 group-hover:text-brand transition-colors stroke-[1.5]" />
               <div className="text-center">
-                <h3 className="text-lg font-bold text-zinc-600 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-zinc-100">{isRTL ? "شحنة محلية" : "Internal (inside UAE)"}</h3>
+                <h3 className="text-lg font-bold text-zinc-600 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-zinc-100">{isRTL ? "شحنة محلية" : "Domestic"}</h3>
               </div>
             </button>
             <button onClick={() => handleSelectType('international')} className="bg-white dark:bg-zinc-900 border-[3px] border-zinc-100 dark:border-zinc-800 hover:border-brand active:bg-zinc-50 rounded-3xl p-10 flex flex-col items-center justify-center gap-6 shadow-sm transition-all group">
@@ -322,14 +285,16 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
         <form onSubmit={handleNextStep} className="space-y-8 animate-in fade-in mt-16 pb-4">
           <h3 className="text-xl font-bold dark:text-zinc-100 mb-2 uppercase tracking-tight">{isRTL ? "بيانات المرسل" : "Shipper Details"}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
-            <div className={`space-y-2 md:col-span-2`}>
+            <div className={`space-y-2 ${isGuest ? '' : 'md:col-span-2'}`}>
               <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Name *</label>
               <input required type="text" value={shipperData.name} onChange={e => setShipperData(p => ({...p, name: e.target.value}))} className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:border-brand rounded-xl px-4 py-3 outline-none transition-colors" />
             </div>
-            <div className="space-y-2 md:col-span-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Email (Notifications & Invoice) *</label>
-              <input required type="email" value={shipperData.email} onChange={e => setShipperData(p => ({...p, email: e.target.value}))} className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:border-brand rounded-xl px-4 py-3 outline-none transition-colors" />
-            </div>
+            {isGuest && (
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Email (Invoice) *</label>
+                <input required type="email" value={shipperData.email} onChange={e => setShipperData(p => ({...p, email: e.target.value}))} className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:border-brand rounded-xl px-4 py-3 outline-none transition-colors" />
+              </div>
+            )}
             <div className="space-y-2">
               <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Phone *</label>
               <input required type="tel" value={shipperData.phone} onChange={handlePhoneChange(setShipperData, 'phone')} placeholder="+971 50 1234567" className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:border-brand rounded-xl px-4 py-3 outline-none font-mono tracking-widest transition-colors" dir="ltr" />
@@ -432,15 +397,9 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
                     <input type="radio" value="usend" checked={shipmentData.courier === 'usend'} onChange={() => setShipmentData(p =>({...p, courier: 'usend'}))} className="hidden"/>
                     <h4 className="font-bold text-sm">USend Fleet Delivery</h4>
                   </label>
-                  <label className={`cursor-pointer rounded-2xl p-4 border-2 transition-all ${shipmentData.courier === 'aramex' ? 'border-brand bg-brand/5' : 'border-zinc-200 hover:border-brand/30'}`}>
+                  <label className={`p-4 rounded-xl border-2 cursor-pointer ${shipmentData.courier === 'aramex' ? 'border-red-600 bg-red-600/5' : 'border-zinc-200 dark:border-zinc-800'}`}>
                     <input type="radio" value="aramex" checked={shipmentData.courier === 'aramex'} onChange={() => setShipmentData(p =>({...p, courier: 'aramex'}))} className="hidden"/>
-                    <div className="font-bold text-zinc-900 mb-1">Aramex Express</div>
-                    <div className="text-xs text-zinc-500">Premium courier service.</div>
-                  </label>
-                  <label className={`cursor-pointer rounded-2xl p-4 border-2 transition-all ${shipmentData.courier === 'fedex' ? 'border-brand bg-brand/5' : 'border-zinc-200 hover:border-brand/30'}`}>
-                    <input type="radio" value="fedex" checked={shipmentData.courier === 'fedex'} onChange={() => setShipmentData(p =>({...p, courier: 'fedex'}))} className="hidden"/>
-                    <div className="font-bold text-zinc-900 mb-1">FedEx (Test Sandbox)</div>
-                    <div className="text-xs text-zinc-500">Simulated integration for testing.</div>
+                    <h4 className="font-bold text-sm">Aramex B2B Gateway</h4>
                   </label>
                 </div>
               </div>

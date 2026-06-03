@@ -1,11 +1,12 @@
-import "./env";
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import Stripe from "stripe";
+import dotenv from "dotenv";
 import admin from 'firebase-admin';
 
+dotenv.config();
 
 // Initialize Firebase Admin for secure backend operations
 if (!admin.apps.length) {
@@ -27,7 +28,7 @@ if (!admin.apps.length) {
 const dbAdmin = admin.firestore();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = 3000;
 
 // Initialize Stripe Client lazily to avoid crashing on boot if key is missing
 let stripeClient: Stripe | null = null;
@@ -217,16 +218,16 @@ app.post("/api/aramex/:serviceType", async (req, res) => {
 
     const baseUrl = process.env.ARAMEX_BASE_URL || "https://ws.dev.aramex.net";
 
-    let aramexServicePath = "";
+    let path = "";
     if (serviceType === "rate") {
-      aramexServicePath =
+      path =
         "/ShippingAPI.V2/RateCalculator/Service_1_0.svc/json/CalculateRate";
     } else if (serviceType === "shipping") {
-      aramexServicePath = "/ShippingAPI.V2/Shipping/Service_1_0.svc/json/CreateShipments";
+      path = "/ShippingAPI.V2/Shipping/Service_1_0.svc/json/CreateShipments";
     } else if (serviceType === "tracking") {
-      aramexServicePath = "/ShippingAPI.V2/Tracking/Service_1_0.svc/json/TrackShipments";
+      path = "/ShippingAPI.V2/Tracking/Service_1_0.svc/json/TrackShipments";
     } else if (serviceType === "pickup") {
-      aramexServicePath = "/ShippingAPI.V2/Shipping/Service_1_0.svc/json/CreatePickup";
+      path = "/ShippingAPI.V2/Shipping/Service_1_0.svc/json/CreatePickup";
     } else {
       return res.status(200).json({ 
         HasErrors: true, 
@@ -236,7 +237,7 @@ app.post("/api/aramex/:serviceType", async (req, res) => {
 
     let aramexRes;
     try {
-      aramexRes = await fetch(`${baseUrl}${aramexServicePath}`, {
+      aramexRes = await fetch(`${baseUrl}${path}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -352,24 +353,6 @@ app.post("/api/gemini/analyze-item", async (req, res) => {
       contents: { parts },
       config: {
         responseMimeType: "application/json",
-        safetySettings: [
-          {
-            category: "HARM_CATEGORY_HARASSMENT",
-            threshold: "BLOCK_MEDIUM_AND_ABOVE",
-          },
-          {
-            category: "HARM_CATEGORY_HATE_SPEECH",
-            threshold: "BLOCK_MEDIUM_AND_ABOVE",
-          },
-          {
-            category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-            threshold: "BLOCK_MEDIUM_AND_ABOVE",
-          },
-          {
-            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-            threshold: "BLOCK_MEDIUM_AND_ABOVE",
-          },
-        ],
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -470,7 +453,7 @@ async function startServer() {
     });
   }
 
-  app.listen(Number(PORT), "0.0.0.0", () => {
+  app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on port ${PORT}`);
   });
 }
