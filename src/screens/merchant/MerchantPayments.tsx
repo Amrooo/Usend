@@ -42,7 +42,7 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
   
   // Stripe top-up state variables
   const [stripeMethod, setStripeMethod] = useState<'standard' | 'stripe_card' | 'stripe_applepay'>('stripe_card');
-  const [stripeCardNum, setStripeCardNum] = useState('4111 2222 3333 4444');
+  const [stripeCardNum, setStripeCardNum] = useState('4242 4242 4242 4242');
   const [stripeCardExp, setStripeCardExp] = useState('12/28');
   const [stripeCardCvv, setStripeCardCvv] = useState('883');
   const [stripeCardName, setStripeCardName] = useState('USend Merchant Partner');
@@ -88,7 +88,7 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
     if (stripeMethod !== 'standard') {
       setStripeIsProcessing(true);
       try {
-        const pubKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_REMOVED';
+        const pubKey = (import.meta as any).env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_REMOVED';
         
         // 1. Create Payment Intent on our backend Express server
         const response = await fetch('/api/payments/create-intent', {
