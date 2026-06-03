@@ -176,7 +176,7 @@ export default function App() {
         <GlobalToast />
       {isLandingPage || isHub || isPortalRegister ? (
         <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans transition-colors duration-300 w-full">
-           <AnimatePresence mode="wait">
+           <AnimatePresence mode="wait" initial={false}>
              {currentScreen === 'landing_page' && <LandingPage onNavigate={navigate} />}
              {currentScreen === 'hub' && <Hub onNavigate={navigate} />}
              {currentScreen === 'portal_register' && <PortalRegister onNavigate={navigate} />}
@@ -185,7 +185,7 @@ export default function App() {
       ) : isMerchantScreen ? (
         <AuthGuard requiredRole="merchant">
           <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans transition-colors duration-300 w-full">
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="wait" initial={false}>
               {currentScreen === 'merchant_dashboard' && <MerchantDashboard key="merchant_dashboard" onNavigate={navigate} />}
               {currentScreen === 'merchant_individual' && <MerchantIndividualOrder key="merchant_individual" onNavigate={navigate} />}
               {currentScreen === 'merchant_batch' && <MerchantBatchOrders key="merchant_batch" onNavigate={navigate} />}
@@ -202,7 +202,7 @@ export default function App() {
       ) : isUserScreen ? (
         <AuthGuard requiredRole="user">
           <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans transition-colors duration-300 w-full">
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="wait" initial={false}>
               {currentScreen === 'user_dashboard' && <UserDashboard key="user_dashboard" onNavigate={navigate} />}
               {currentScreen === 'user_individual' && <UserIndividualOrder key="user_individual" onNavigate={navigate} />}
               {currentScreen === 'user_tracking' && <UserTracking key="user_tracking" onNavigate={navigate} />}
@@ -234,7 +234,7 @@ export default function App() {
 
             {/* Screen Content */}
             <div className="flex-1 relative overflow-hidden bg-white dark:bg-zinc-950 transition-colors duration-300">
-              <AnimatePresence mode="wait">
+              <AnimatePresence mode="wait" initial={false}>
                 {currentScreen === 'splash' && <Splash key="splash" onNavigate={navigate} />}
                 {currentScreen === 'onboarding' && <Onboarding key="onboarding" onNavigate={navigate} />}
                 {currentScreen === 'phone_auth' && <PhoneAuth onNavigate={navigate} />}

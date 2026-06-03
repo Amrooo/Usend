@@ -8,6 +8,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
+import { loadStripe } from '@stripe/stripe-js';
 
 interface MerchantWalletProps {
   key?: string;
@@ -39,19 +40,112 @@ export default function MerchantWallet({ onNavigate }: MerchantWalletProps) {
     { id: 'TXN-005', date: '12 Mar, 09:10', type: 'COD Collection', amount: 350.00, method: 'Driver Deposit', status: 'Completed', ref: 'Batch #44' },
   ];
 
-  const handleTopupSubmit = (e: React.FormEvent) => {
+  const handleTopupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const parsed = parseFloat(fundsAmount);
     if (isNaN(parsed) || parsed <= 0) return;
 
     if (stripeMethod !== 'standard') {
       setStripeIsProcessing(true);
-      setTimeout(() => {
+      try {
+        const pubKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_REMOVED';
+        
+        // 1. Create Payment Intent on our backend Express server
+        const response = await fetch('/api/payments/create-intent', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            amountAED: parsed,
+            orderId: `TOPUP-${Date.now()}`,
+            customerId: 'merchant-partner',
+            metadata: {
+              type: 'wallet_topup',
+              merchantId: 'merchant-partner'
+            }
+          }),
+        });
+
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData.error || 'Failed to create payment intent');
+        }
+
+        const { clientSecret } = await response.json();
+
+        // 2. Initialize Stripe
+        const stripe = await loadStripe(pubKey);
+        if (!stripe) {
+          throw new Error('Failed to load Stripe SDK. Check your network or publishable key.');
+        }
+
+        // 3. Parse expiry date input (MM/YY)
+        const expiryParts = stripeCardExp.trim().split('/');
+        if (expiryParts.length !== 2) {
+          throw new Error('Invalid Expiry Date format. Use MM/YY.');
+        }
+        const expMonth = parseInt(expiryParts[0], 10);
+        const rawYear = expiryParts[1].trim();
+        const expYear = rawYear.length === 2 ? 2000 + parseInt(rawYear, 10) : parseInt(rawYear, 10);
+
+        if (isNaN(expMonth) || expMonth < 1 || expMonth > 12 || isNaN(expYear)) {
+          throw new Error('Invalid Expiry Month or Year.');
+        }
+
+        // 4. Tokenize the card details first via Stripe's REST API
+        const tokenResponse = await fetch('https://api.stripe.com/v1/tokens', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${pubKey}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: new URLSearchParams({
+            'card[number]': stripeCardNum.replace(/\s/g, ''),
+            'card[exp_month]': expMonth.toString(),
+            'card[exp_year]': expYear.toString(),
+            'card[cvc]': stripeCardCvv.trim(),
+          }).toString(),
+        });
+
+        if (!tokenResponse.ok) {
+          const tokenErr = await tokenResponse.json();
+          throw new Error(tokenErr.error?.message || 'Failed to tokenize card');
+        }
+
+        const tokenData = await tokenResponse.json();
+
+        // 5. Confirm Card Payment using the generated token
+        const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+          payment_method: {
+            card: {
+              token: tokenData.id,
+            },
+            billing_details: {
+              name: 'USend Merchant Partner',
+            },
+          },
+        });
+
+        if (error) {
+          throw new Error(error.message || 'Payment confirmation failed');
+        }
+
+        if (paymentIntent && paymentIntent.status === 'succeeded') {
+          // Success! Update UI balance and show success screen
+          setWalletBalance(prev => prev + parsed);
+          setStripeShowReceipt(true);
+        } else {
+          throw new Error(`Unexpected Stripe payment status: ${paymentIntent?.status}`);
+        }
+      } catch (err: any) {
+        console.error("Stripe Checkout Error:", err);
+        alert(err.message || "An unexpected error occurred during Stripe payment.");
+      } finally {
         setStripeIsProcessing(false);
-        setWalletBalance(prev => prev + parsed);
-        setStripeShowReceipt(true);
-      }, 1500);
+      }
     } else {
+      // Standard Card simulated flow
       setWalletBalance(prev => prev + parsed);
       setFundsAmount('');
       setShowAddFunds(false);
