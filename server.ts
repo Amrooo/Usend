@@ -1,42 +1,51 @@
 import "./env";
 import express from "express";
 import path from "path";
-import { createServer as createViteServer } from "vite";
-import { GoogleGenAI, Type } from "@google/genai";
-
-import admin from 'firebase-admin';
 
 
-// Initialize Firebase Admin for secure backend operations
-if (!admin.apps.length) {
-  try {
-    if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount)
-      });
-      console.log("Firebase Admin initialized with service account key.");
-    } else if (process.env.NODE_ENV !== 'production') {
-      const dummyCredential = {
-        getAccessToken: () => Promise.resolve({
-          access_token: 'dummy-token',
-          expires_in: 3600
-        })
-      };
-      admin.initializeApp({
-        credential: dummyCredential,
-        projectId: 'gen-lang-client-0329298140'
-      });
-      console.log("Firebase Admin initialized with dummy credentials for local development.");
-    } else {
-      admin.initializeApp();
-      console.warn("Firebase Admin initialized with application default credentials. This may fail if not deployed correctly.");
+// Lazy-load firebase-admin on first DB use to avoid slow startup from disk
+let _admin: any = null;
+let _db: any = null;
+
+async function getAdmin(): Promise<any> {
+  if (!_admin) {
+    const adminModule = await import('firebase-admin');
+    _admin = adminModule.default || adminModule;
+    if (!_admin.apps.length) {
+      try {
+        if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+          const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+          _admin.initializeApp({ credential: _admin.credential.cert(serviceAccount) });
+          console.log("Firebase Admin initialized with service account key.");
+        } else if (process.env.NODE_ENV !== 'production') {
+          const dummyCert = {
+            type: 'service_account',
+            project_id: 'gen-lang-client-0329298140',
+            private_key: '-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEAySE61MBcwz76FDzpIrErdcfXZZjYdJDQ0JBHLncIvpyXv9Xk\n/PMhjVIpFJHcLPnNzocSnkdmVX4I2m0gIxjSKvgpJ/XpR98QkitOIhFbnNLq4UdQ\nGv/EkbKpzn02hoDdQ2CrEI0ljCGtkaTZ+NDVjALQoMc3sH3ho9LdUCj8937zWHSF\nUW7vD7PBO4bi+KP+tSXkF98EHs13RbCXw+Wl9LSybTVhLR9q1TdBF4FvkhipnhyA\n9NuL7B6ebNp27uKkQ3dyyHI7xTh6DgzPAIpAQdnAuz9wNtOq2yu8NAN+ClkUERD+\nM5KZImlMd2I7EU7GcHHi2iHXhU471aaUD3fPuwIDAQABAoIBADWa+K4Zct/K2iYo\nsc5AQCANGjiGyzIOIsljmsUkjp0W6U8EuBo+xrN+sVo9IdyO265uy6SJzRl+FOf6\na7VO+TzglT+ESB+SsTzz88garjsW7+kI862ue3qFjsJtFuo0UEST8CPiKp61nygR\nMtMg/blqSqZ/UjVk542dNsUVl45yuyEPkBkzF2XwdsN6qRrWRHnJpZgC5GG/v3s6\nNb5bBi+RuYDbUuofygCRIC6VQ1qZciUGN7GjRZv4liVUIW69HuR1qyegWF69y5Pi\nWE/dOjmHXwTGLNj2ymhHLAaE+C+9l1V/DLT/7oSQ2BsNWmELjclxq5ljjCOZdeAV\ndIp2rWECgYEA9TR74rG8/AcOiYW2G/jvkfnsaEXM4H5dpemvZIJuMGm3zmQzwFSm\nE51G7bARCIU25/ufWt+FvqH7ioigLFM8nWdQI9c5RteYWYOX7NV5Z2bz4yUqz1x2\nBqjFvurR132i69X6wYIyg3xF9BB4imQVKTilReqCU/n/ByAQpGPB49ECgYEA0fwC\nHZBGJOiM4MU6R2FEBY0DAD6UC8lL4J3rDhvNt7i+8Bp25V8YediN5fwtrHqSZZJ6\nngvpZqYLEbG/ZxKAleklN9q7h2pvcvyZqu0IZ2AoeFMKTR66RyEB9NGzsw4/Ewlh\nzTAN4ozWDaRnURzCgW4JArj3y4xIVv8y8GPc2csCgYEA1/gZIasA1E523GO76VlR\n0RX6xkCsWhKS8z4nMHS9DsEelpelCULFYENHpLRN3F5Q5PS3/7ceOrC7N+JsiX3q\nxoynhlnbZe0gj78bAgtoOc3xA+DJmwhKIEVonmZ+2rka1XOLwAKn8S11A6m6MdJC\n3SK6VyFdFw/7MtBoOBJxRPECgYBvIFoSQTcN81AS5+2Wtv/jnCO5bmS09BvGzGwH\n9GjjUM8jjC3d53yxhwxZaSLWw6tUO7fOimlD3J3BCHtN1fnc3BzJOWXDHW3Lwail\nT3oCE153hyLNe3SDjhFV+eCK4wA4V9+9UjAW9AeYAqh2wayiCJSWL0NcImpqN/ZC\nR+cqDwKBgQDh34mJIO6VUZGVBbFZKB+wASE5OOlJih0sbVzkrUujmhon63OA16Oa\neJ9m8nW+su4nj+MpKnFUzqvfdT3jcAD1ucCcES05gofAj/2umyJbt06Rir0Ji8vk\nsyQlhGR8HkdMFWiN/9IilwZHU0GM1i4V4sfJFsmc7RIB8I69HAIvzw==\n-----END RSA PRIVATE KEY-----',
+            client_email: 'dummy@gen-lang-client-0329298140.iam.gserviceaccount.com'
+          };
+          _admin.initializeApp({ credential: _admin.credential.cert(dummyCert) });
+          console.log("Firebase Admin initialized with dummy credentials for local development.");
+        } else {
+          _admin.initializeApp();
+          console.warn("Firebase Admin initialized with application default credentials.");
+        }
+      } catch (error) {
+        console.error("Failed to initialize Firebase Admin:", error);
+      }
     }
-  } catch (error) {
-    console.error("Failed to initialize Firebase Admin:", error);
   }
+  return _admin;
 }
-const dbAdmin = admin.firestore();
+
+async function getDb(): Promise<any> {
+  if (!_db) {
+    const admin = await getAdmin();
+    _db = admin.firestore();
+  }
+  return _db;
+}
+
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -104,6 +113,7 @@ app.post("/api/payments/create-intent", async (req, res) => {
 
     if (orderId) {
       try {
+        const dbAdmin = await getDb();
         const orderSnap = await dbAdmin.collection('requests').doc(orderId).get();
         if (orderSnap.exists) {
           const expectedAmount = orderSnap.data()?.totalAmountAED;
@@ -175,39 +185,47 @@ app.post('/api/webhooks/stripe', express.raw({type: 'application/json'}), async 
         if (merchantId && amountAED > 0) {
           console.log(`Top-up confirmed for Merchant: ${merchantId}, Amount: ${amountAED}`);
           
-          const userRef = dbAdmin.collection('users').doc(merchantId);
-          dbAdmin.runTransaction(async (transaction) => {
-            const userDoc = await transaction.get(userRef);
-            let currentBalance = 1485.00; // default initial balance
-            if (userDoc.exists) {
-              currentBalance = userDoc.data()?.walletBalance !== undefined ? userDoc.data()?.walletBalance : 1485.00;
-            }
-            const newBalance = currentBalance + amountAED;
-            transaction.set(userRef, { walletBalance: newBalance }, { merge: true });
-            
-            // Also append a transaction record
-            const txnRef = dbAdmin.collection('users').doc(merchantId).collection('transactions').doc();
-            transaction.set(txnRef, {
-              id: `TXN-${Math.floor(100000 + Math.random() * 900000)}`,
-              date: new Date().toLocaleString(),
-              type: 'Funds Added',
-              amount: amountAED,
-              method: 'Stripe Gateway',
-              status: 'Completed',
-              ref: `Stripe-${paymentIntentSucceeded.id ? paymentIntentSucceeded.id.slice(-6) : 'AUTO'}`,
-              timestamp: admin.firestore.FieldValue.serverTimestamp()
+          getDb().then((dbAdmin) => {
+            getAdmin().then((admin) => {
+              const userRef = dbAdmin.collection('users').doc(merchantId);
+              dbAdmin.runTransaction(async (transaction: any) => {
+                const userDoc = await transaction.get(userRef);
+                let currentBalance = 1485.00; // default initial balance
+                if (userDoc.exists) {
+                  currentBalance = userDoc.data()?.walletBalance !== undefined ? userDoc.data()?.walletBalance : 1485.00;
+                }
+                const newBalance = currentBalance + amountAED;
+                transaction.set(userRef, { walletBalance: newBalance }, { merge: true });
+                
+                // Also append a transaction record
+                const txnRef = dbAdmin.collection('users').doc(merchantId).collection('transactions').doc();
+                transaction.set(txnRef, {
+                  id: `TXN-${Math.floor(100000 + Math.random() * 900000)}`,
+                  date: new Date().toLocaleString(),
+                  type: 'Funds Added',
+                  amount: amountAED,
+                  method: 'Stripe Gateway',
+                  status: 'Completed',
+                  ref: `Stripe-${paymentIntentSucceeded.id ? paymentIntentSucceeded.id.slice(-6) : 'AUTO'}`,
+                  timestamp: admin.firestore.FieldValue.serverTimestamp()
+                });
+              })
+              .then(() => console.log(`Successfully credited merchant ${merchantId} with ${amountAED} AED.`))
+              .catch((err: any) => console.error("Failed to execute top-up transaction:", err));
             });
-          })
-          .then(() => console.log(`Successfully credited merchant ${merchantId} with ${amountAED} AED.`))
-          .catch(err => console.error("Failed to execute top-up transaction:", err));
+          });
         }
       } else if (paymentIntentSucceeded.metadata?.orderId) {
         console.log(`Payment confirmed for Order: ${paymentIntentSucceeded.metadata.orderId}`);
         // Securely update the payment status avoiding client tampering
-        dbAdmin.collection('requests').doc(paymentIntentSucceeded.metadata.orderId).update({
-          paymentStatus: 'paid',
-          updatedAt: admin.firestore.FieldValue.serverTimestamp()
-        }).catch(err => console.error("Failed to update order payment status:", err));
+        getDb().then((dbAdmin) => {
+          getAdmin().then((admin) => {
+            dbAdmin.collection('requests').doc(paymentIntentSucceeded.metadata.orderId).update({
+              paymentStatus: 'paid',
+              updatedAt: admin.firestore.FieldValue.serverTimestamp()
+            }).catch((err: any) => console.error("Failed to update order payment status:", err));
+          });
+        });
       }
       break;
     default:
@@ -256,19 +274,23 @@ app.post("/api/webhooks/aramex", express.json(), async (req, res) => {
      });
 
      // 2. Write this update securely to Firestore Database so the history is preserved
-     dbAdmin.collection('requests').doc(data.WaybillNumber).collection('tracking_history').add({
-         updateCode: data.UpdateCode,
-         updateDescription: data.UpdateDescription,
-         location: data.UpdateLocation || 'Hub',
-         timestamp: admin.firestore.FieldValue.serverTimestamp(),
-         rawPayload: data
-     }).catch(err => console.error("Failed to append tracking history:", err));
+     getDb().then((dbAdmin) => {
+       getAdmin().then((admin) => {
+         dbAdmin.collection('requests').doc(data.WaybillNumber).collection('tracking_history').add({
+             updateCode: data.UpdateCode,
+             updateDescription: data.UpdateDescription,
+             location: data.UpdateLocation || 'Hub',
+             timestamp: admin.firestore.FieldValue.serverTimestamp(),
+             rawPayload: data
+         }).catch((err: any) => console.error("Failed to append tracking history:", err));
 
-     // Also update the main shipment status
-     dbAdmin.collection('requests').doc(data.WaybillNumber).update({
-         status: data.UpdateDescription,
-         updatedAt: admin.firestore.FieldValue.serverTimestamp()
-     }).catch(err => console.error("Failed to update tracking status:", err));
+         // Also update the main shipment status
+         dbAdmin.collection('requests').doc(data.WaybillNumber).update({
+             status: data.UpdateDescription,
+             updatedAt: admin.firestore.FieldValue.serverTimestamp()
+         }).catch((err: any) => console.error("Failed to update tracking status:", err));
+       });
+     });
   }
   res.status(200).json({ status: "acknowledged" });
 });
@@ -357,16 +379,19 @@ app.post("/api/aramex/:serviceType", async (req, res) => {
   }
 });
 
-// Initialize the Google GenAI SDK (only once)
+// Initialize the Google GenAI SDK lazily
 const apiKey = process.env.GEMINI_API_KEY;
-const ai = new GoogleGenAI({
-  apiKey: apiKey,
-  httpOptions: {
-    headers: {
-      "User-Agent": "aistudio-build",
-    },
-  },
-});
+let _ai: any = null;
+async function getAI(): Promise<any> {
+  if (!_ai) {
+    const { GoogleGenAI } = await import('@google/genai');
+    _ai = new GoogleGenAI({
+      apiKey: apiKey,
+      httpOptions: { headers: { "User-Agent": "aistudio-build" } },
+    });
+  }
+  return _ai;
+}
 
 // API endpoint for smart AI item recognition
 app.post("/api/gemini/analyze-item", async (req, res) => {
@@ -427,6 +452,8 @@ app.post("/api/gemini/analyze-item", async (req, res) => {
     parts.push({ text: promptText });
 
     // Call the gemini-3.5-flash model
+    const { Type } = await import('@google/genai');
+    const ai = await getAI();
     const response = await ai.models.generateContent({
       model: "gemini-3.5-flash",
       contents: { parts },
@@ -537,6 +564,7 @@ const isProd = process.env.NODE_ENV === "production";
 
 async function startServer() {
   if (!isProd) {
+    const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
