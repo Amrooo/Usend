@@ -563,24 +563,33 @@ app.post("/api/gemini/analyze-item", async (req, res) => {
 const isProd = process.env.NODE_ENV === "production";
 
 async function startServer() {
+  // Start listening immediately so API endpoints respond right away
+  app.listen(Number(PORT), "0.0.0.0", () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+
   if (!isProd) {
-    const { createServer: createViteServer } = await import('vite');
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
+    // Load Vite asynchronously AFTER server is listening
+    console.log("Loading Vite dev server (this may take a moment)...");
+    try {
+      const { createServer: createViteServer } = await import('vite');
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: "spa",
+      });
+      app.use(vite.middlewares);
+      console.log("Vite dev server middleware mounted.");
+    } catch (err) {
+      console.error("Failed to start Vite dev server:", err);
+    }
   } else {
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
     app.get("*", (req, res) => {
       res.sendFile(path.join(distPath, "index.html"));
     });
+    console.log(`Serving static files from ${distPath}`);
   }
-
-  app.listen(Number(PORT), "0.0.0.0", () => {
-    console.log(`Server running on port ${PORT}`);
-  });
 }
 
 startServer();
