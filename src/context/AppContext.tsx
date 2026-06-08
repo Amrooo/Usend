@@ -130,7 +130,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [merchantActiveTab, setMerchantActiveTab] = useState<string>('dashboard');
 
   useEffect(() => {
+    let unsubscribeUserDoc: () => void = () => {};
+
     const unsubscribeAuth = onAuthStateChanged(auth, async (u) => {
+      unsubscribeUserDoc();
       
       if (u) {
         let finalRole = 'user';
@@ -166,7 +169,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
             finalRole = 'admin';
           }
           
-          setUser({ ...u, ...userDoc.data(), role: finalRole });
+          const currentDoc = await getDoc(userDocRef);
+          const docData = currentDoc.data() || {};
+          setUser({ ...u, ...docData, role: finalRole });
+
+          // real-time onSnapshot tracking of authenticated user doc (wallet balance / transactions etc)
+          unsubscribeUserDoc = onSnapshot(userDocRef, (snapshot) => {
+            if (snapshot.exists()) {
+              const data = snapshot.data();
+              setUser((prev: any) => {
+                if (!prev) return null;
+                if (
+                  prev.walletBalance === data.walletBalance &&
+                  prev.codPending === data.codPending &&
+                  JSON.stringify(prev.transactions) === JSON.stringify(data.transactions) &&
+                  prev.role === data.role &&
+                  prev.name === data.name
+                ) {
+                  return prev;
+                }
+                return { ...prev, ...data, role: data.role || finalRole };
+              });
+            }
+          }, (error) => {
+            console.warn('Real-time profile sync skipped:', error.message);
+          });
+
         } catch (error) {
           console.warn('Profile DB sync skipped (offline or missing permission):', error);
           
@@ -195,7 +223,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setUser(null);
       }
     });
-    return () => unsubscribeAuth();
+    return () => {
+      unsubscribeAuth();
+      unsubscribeUserDoc();
+    };
   }, []);
 
   useEffect(() => {
@@ -259,7 +290,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       unsubscribeUsers();
       unsubscribeSettings();
     };
-  }, [user]);
+  }, [user?.uid]);
 
   useEffect(() => {
     // SSE Event Source for live Aramex webhook notifications

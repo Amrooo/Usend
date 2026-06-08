@@ -246,13 +246,13 @@ export default function Details({ onNavigate }: DetailsProps) {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: isRTL ? 100 : -100 }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      className="absolute inset-0 bg-zinc-50 dark:bg-zinc-950 flex flex-col transition-colors duration-300 overflow-hidden"
+      className="absolute inset-0 bg-zinc-50 flex flex-col transition-colors duration-300 overflow-hidden"
     >
       {/* Header - Adjusted for notch */}
-      <div className="px-6 pt-12 pb-4 flex items-center justify-between bg-zinc-50/80 dark:bg-zinc-950/80 backdrop-blur-md z-10 transition-colors duration-300">
+      <div className="px-6 pt-12 pb-4 flex items-center justify-between bg-zinc-50/80 backdrop-blur-md z-10 transition-colors duration-300">
         <button 
           onClick={() => onNavigate('home')}
-          className="w-10 h-10 rounded-full bg-white dark:bg-zinc-900 shadow-sm flex items-center justify-center text-zinc-900 dark:text-white active:scale-95 transition-all duration-300"
+          className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-zinc-900 active:scale-95 transition-all duration-300"
         >
           <ChevronLeft className={`w-5 h-5 ${isRTL ? 'rotate-180' : ''}`} />
         </button>
@@ -523,7 +523,7 @@ export default function Details({ onNavigate }: DetailsProps) {
       </div>
 
       {/* Fixed Bottom Action */}
-      <div className="absolute bottom-0 inset-x-0 p-6 bg-gradient-to-t from-zinc-50 via-zinc-50 dark:from-zinc-950 dark:via-zinc-950 to-transparent pt-12 pointer-events-none transition-colors duration-300 z-20">
+      <div className="absolute bottom-0 inset-x-0 p-6 bg-gradient-to-t from-zinc-50 via-zinc-50 to-transparent pt-12 pointer-events-none transition-colors duration-300 z-20">
         <button
           onClick={() => onNavigate('confirm')}
           className="pointer-events-auto w-full h-16 bg-[#f5502c] rounded-2xl flex items-center justify-center gap-2 text-white font-semibold text-lg shadow-[0_8px_30px_rgb(245,80,44,0.4)] dark:shadow-none transition-transform active:scale-95"

@@ -198,7 +198,7 @@ export default function MerchantInventory({ onNavigate }: MerchantInventoryProps
   const isManageStockMode = merchantActiveTab === 'manage_stock';
 
   return (
-    <div className={`flex flex-col md:flex-row h-screen overflow-hidden bg-zinc-50 dark:bg-zinc-950 w-full ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className={`flex flex-col md:flex-row h-screen overflow-hidden bg-zinc-50 w-full ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
       <MerchantSidebar currentScreen="merchant_inventory" onNavigate={onNavigate} />
       
       <main className="flex-1 p-6 lg:p-10 h-full overflow-y-auto">
@@ -448,11 +448,11 @@ export default function MerchantInventory({ onNavigate }: MerchantInventoryProps
           <motion.div 
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            className={`relative w-full max-w-2xl bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden ${isRTL ? 'text-right' : 'text-left'} flex flex-col max-h-[85vh]`}
+            className={`relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden ${isRTL ? 'text-right' : 'text-left'} flex flex-col max-h-[85vh]`}
           >
             <div className="p-6 md:p-8 flex-1 overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-black text-zinc-900 dark:text-zinc-100">{t('add_product') || 'Add New Product'}</h2>
+                <h2 className="text-2xl font-black text-zinc-900">{t('add_product') || 'Add New Product'}</h2>
                 <button
                   onClick={handleAutofillWithAI}
                   disabled={isGenerating || (!newProduct.image && !newProduct.name)}
@@ -471,7 +471,7 @@ export default function MerchantInventory({ onNavigate }: MerchantInventoryProps
                          type="text" 
                          value={newProduct.name}
                          onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
-                         className="w-full bg-zinc-50 dark:bg-zinc-800 border-2 border-transparent focus:border-blue-500 rounded-xl px-4 py-3 outline-none text-zinc-900 dark:text-zinc-100 transition-colors"
+                         className="w-full bg-zinc-50 border-2 border-transparent focus:border-blue-500 rounded-xl px-4 py-3 outline-none text-zinc-900 transition-colors"
                        />
                     </div>
                     
@@ -480,7 +480,7 @@ export default function MerchantInventory({ onNavigate }: MerchantInventoryProps
                        <select 
                          value={newProduct.category}
                          onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}
-                         className="w-full bg-zinc-50 dark:bg-zinc-800 border-2 border-transparent focus:border-blue-500 rounded-xl px-4 py-3 outline-none text-zinc-900 dark:text-zinc-100 transition-colors appearance-none"
+                         className="w-full bg-zinc-50 border-2 border-transparent focus:border-blue-500 rounded-xl px-4 py-3 outline-none text-zinc-900 transition-colors appearance-none"
                        >
                          <option value="Electronics">Electronics</option>
                          <option value="Furniture">Furniture</option>
@@ -498,7 +498,7 @@ export default function MerchantInventory({ onNavigate }: MerchantInventoryProps
                       onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
                       placeholder="Enter product description..."
                       rows={3}
-                      className="w-full bg-zinc-50 dark:bg-zinc-805 border-2 border-transparent focus:border-blue-500 rounded-xl px-4 py-3 outline-none text-zinc-900 dark:text-zinc-100 transition-colors resize-none"
+                      className="w-full bg-zinc-50 border-2 border-transparent focus:border-blue-500 rounded-xl px-4 py-3 outline-none text-zinc-900 transition-colors resize-none"
                     />
                  </div>
 
@@ -510,7 +510,7 @@ export default function MerchantInventory({ onNavigate }: MerchantInventoryProps
                          value={newProduct.price}
                          onChange={(e) => setNewProduct({...newProduct, price: e.target.value})}
                          placeholder="0.00"
-                         className="w-full bg-zinc-50 dark:bg-zinc-800 border-2 border-transparent focus:border-blue-500 rounded-xl px-4 py-3 outline-none text-zinc-900 dark:text-zinc-100 transition-colors font-mono"
+                         className="w-full bg-zinc-50 border-2 border-transparent focus:border-blue-500 rounded-xl px-4 py-3 outline-none text-zinc-900 transition-colors font-mono"
                        />
                     </div>
                     <div>
@@ -520,7 +520,7 @@ export default function MerchantInventory({ onNavigate }: MerchantInventoryProps
                          value={newProduct.costPrice}
                          onChange={(e) => setNewProduct({...newProduct, costPrice: e.target.value})}
                          placeholder="0.00"
-                         className="w-full bg-zinc-50 dark:bg-zinc-800 border-2 border-transparent focus:border-blue-500 rounded-xl px-4 py-3 outline-none text-zinc-900 dark:text-zinc-100 transition-colors font-mono"
+                         className="w-full bg-zinc-50 border-2 border-transparent focus:border-blue-500 rounded-xl px-4 py-3 outline-none text-zinc-900 transition-colors font-mono"
                        />
                     </div>
                     <div>
@@ -530,7 +530,7 @@ export default function MerchantInventory({ onNavigate }: MerchantInventoryProps
                          value={newProduct.weight}
                          onChange={(e) => setNewProduct({...newProduct, weight: e.target.value})}
                          placeholder="e.g. 1.5 kg"
-                         className="w-full bg-zinc-50 dark:bg-zinc-800 border-2 border-transparent focus:border-blue-500 rounded-xl px-4 py-3 outline-none text-zinc-900 dark:text-zinc-100 transition-colors"
+                         className="w-full bg-zinc-50 border-2 border-transparent focus:border-blue-500 rounded-xl px-4 py-3 outline-none text-zinc-900 transition-colors"
                        />
                     </div>
                     <div>
@@ -540,7 +540,7 @@ export default function MerchantInventory({ onNavigate }: MerchantInventoryProps
                          value={newProduct.stock}
                          onChange={(e) => setNewProduct({...newProduct, stock: e.target.value})}
                          placeholder="0"
-                         className="w-full bg-zinc-50 dark:bg-zinc-800 border-2 border-transparent focus:border-blue-500 rounded-xl px-4 py-3 outline-none text-zinc-900 dark:text-zinc-100 transition-colors font-mono"
+                         className="w-full bg-zinc-50 border-2 border-transparent focus:border-blue-500 rounded-xl px-4 py-3 outline-none text-zinc-900 transition-colors font-mono"
                        />
                     </div>
                  </div>
@@ -550,7 +550,7 @@ export default function MerchantInventory({ onNavigate }: MerchantInventoryProps
                     <div className="flex items-center gap-4">
                       <div 
                         onClick={() => fileInputRef.current?.click()}
-                        className={`w-24 h-24 rounded-2xl flex-shrink-0 flex flex-col justify-center items-center cursor-pointer overflow-hidden border-2 border-dashed ${newProduct.image ? 'border-transparent' : 'border-zinc-300 dark:border-zinc-700 hover:border-blue-500 dark:hover:border-blue-500'} bg-zinc-50 dark:bg-zinc-800 transition-colors`}
+                        className={`w-24 h-24 rounded-2xl flex-shrink-0 flex flex-col justify-center items-center cursor-pointer overflow-hidden border-2 border-dashed ${newProduct.image ? 'border-transparent' : 'border-zinc-300 hover:border-blue-500'} bg-zinc-50 transition-colors`}
                       >
                         {newProduct.image ? (
                           <img src={newProduct.image} alt="Product" className="w-full h-full object-cover" />
@@ -568,17 +568,17 @@ export default function MerchantInventory({ onNavigate }: MerchantInventoryProps
                           value={newProduct.image.startsWith('data:image') ? '' : newProduct.image}
                           onChange={(e) => setNewProduct({...newProduct, image: e.target.value})}
                           placeholder="Or paste image URL..."
-                          className="w-full bg-zinc-50 dark:bg-zinc-800 border-2 border-transparent focus:border-blue-500 rounded-xl px-4 py-3 outline-none text-zinc-900 dark:text-zinc-100 transition-colors"
+                          className="w-full bg-zinc-50 border-2 border-transparent focus:border-blue-500 rounded-xl px-4 py-3 outline-none text-zinc-900 transition-colors"
                         />
                       </div>
                     </div>
                  </div>
               </div>
 
-              <div className="mt-8 flex gap-3 pt-6 border-t border-zinc-200 dark:border-zinc-800">
+              <div className="mt-8 flex gap-3 pt-6 border-t border-zinc-200">
                 <button 
                   onClick={() => setShowAddModal(false)}
-                  className="flex-[1] py-4 font-bold text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-2xl transition-all"
+                  className="flex-[1] py-4 font-bold text-zinc-500 hover:bg-zinc-100 rounded-2xl transition-all"
                 >
                   Cancel
                 </button>

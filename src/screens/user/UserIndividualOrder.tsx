@@ -12,7 +12,7 @@ export default function UserIndividualOrder({ onNavigate }: UserIndividualOrderP
   const { isRTL } = useLanguage();
 
   return (
-    <div className={`flex flex-col md:flex-row h-screen overflow-hidden bg-zinc-50 dark:bg-zinc-950 ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className={`flex flex-col md:flex-row h-screen overflow-hidden bg-zinc-50 ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
       <UserSidebar currentScreen="user_individual" onNavigate={onNavigate} />
       
       <main className="flex-1 p-6 lg:p-10 h-full overflow-y-auto relative">

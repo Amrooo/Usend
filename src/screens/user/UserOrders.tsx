@@ -30,7 +30,7 @@ export default function UserOrders({ onNavigate }: UserOrdersProps) {
   const storedGuestData = JSON.parse(localStorage.getItem('guestOrders') || '[]');
   const storedGuestIds = storedGuestData.map((g: any) => g.id);
   const myRequests = activeRequests.filter((req: any) => 
-    (user?.uid && (req.userId === user.uid || req.phone === user.phoneNumber)) || 
+    (user?.uid && (req.userId === user.uid || req.phone === user.phoneNumber || storedGuestIds.includes(req.id))) || 
     (!user?.uid && (req.applicantType === 'Individual User' || req.applicantType === 'User' || storedGuestIds.includes(req.id)))
   );
   

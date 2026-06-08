@@ -44,7 +44,7 @@ export default function Home({ onNavigate }: HomeProps) {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: isRTL ? 100 : -100 }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      className="absolute inset-0 bg-white dark:bg-zinc-950 flex flex-col transition-colors duration-300"
+      className="absolute inset-0 bg-white flex flex-col transition-colors duration-300"
     >
       <div className="flex-1 overflow-y-auto hide-scrollbar pt-20 pb-32 px-6 space-y-8">
         {/* Header */}
@@ -60,29 +60,29 @@ export default function Home({ onNavigate }: HomeProps) {
             </div>
             <div className="text-left rtl:text-right">
               <p className="text-[12px] font-bold tracking-widest text-zinc-400 uppercase">{t('good_evening')}</p>
-              <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Alex Rivera</h2>
+              <h2 className="text-lg font-bold text-zinc-900">Alex Rivera</h2>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <button 
               onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
-              className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white flex items-center justify-center transition-colors duration-300"
+              className="w-10 h-10 rounded-full bg-zinc-100 text-zinc-900 flex items-center justify-center transition-colors duration-300"
               title="Toggle Language"
             >
               <Languages className="w-4 h-4" />
             </button>
             <button 
               onClick={toggle}
-              className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white flex items-center justify-center transition-colors duration-300"
+              className="w-10 h-10 rounded-full bg-zinc-100 text-zinc-900 flex items-center justify-center transition-colors duration-300"
             >
-              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              <Sun className="w-4 h-4" />
             </button>
             <button 
               onClick={() => setShowNotifications(true)}
-              className="w-10 h-10 rounded-full bg-zinc-900 dark:bg-zinc-800 text-white flex items-center justify-center relative transition-colors duration-300"
+              className="w-10 h-10 rounded-full bg-zinc-900 text-white flex items-center justify-center relative transition-colors duration-300"
             >
               <Bell className="w-4 h-4" />
-              <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-blue-500 rounded-full border-2 border-zinc-900 dark:border-zinc-800"></span>
+              <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-blue-500 rounded-full border-2 border-zinc-900"></span>
             </button>
           </div>
         </div>

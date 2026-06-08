@@ -24,18 +24,18 @@ export default function Orders({ onNavigate }: OrdersProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="absolute inset-0 bg-zinc-50 dark:bg-zinc-950 flex flex-col transition-colors duration-300"
+      className="absolute inset-0 bg-zinc-50 flex flex-col transition-colors duration-300"
     >
       <div className="flex-1 overflow-y-auto pb-32">
-        <div className="bg-white dark:bg-zinc-900 pt-20 pb-6 px-6 rounded-b-[2.5rem] shadow-sm mb-6">
+        <div className="bg-white pt-20 pb-6 px-6 rounded-b-[2.5rem] shadow-sm mb-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-black text-zinc-900 dark:text-zinc-100 tracking-tight transition-colors duration-300">
+              <h1 className="text-3xl font-black text-zinc-900 tracking-tight transition-colors duration-300">
                 {t('my_orders') || 'Order History'}
               </h1>
-              <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">Track and manage your deliveries</p>
+              <p className="text-zinc-500 text-sm mt-1">Track and manage your deliveries</p>
             </div>
-            <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400">
+            <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600">
               <Package className="w-6 h-6" />
             </div>
           </div>
@@ -46,10 +46,10 @@ export default function Orders({ onNavigate }: OrdersProps) {
               <input 
                 type="text" 
                 placeholder="Search orders..." 
-                className={`w-full bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl py-3.5 ${isRTL ? 'pr-12 pl-4' : 'pl-12 pr-4'} text-sm focus:ring-2 focus:ring-blue-500 outline-none text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400`}
+                className={`w-full bg-zinc-50 border-none rounded-2xl py-3.5 ${isRTL ? 'pr-12 pl-4' : 'pl-12 pr-4'} text-sm focus:ring-2 focus:ring-blue-500 outline-none text-zinc-900 placeholder:text-zinc-400`}
               />
             </div>
-            <button className="w-12 h-12 bg-zinc-50 dark:bg-zinc-800 rounded-2xl flex items-center justify-center text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors">
+            <button className="w-12 h-12 bg-zinc-50 rounded-2xl flex items-center justify-center text-zinc-600 hover:bg-zinc-100 transition-colors">
               <Filter className="w-5 h-5" />
             </button>
           </div>
@@ -60,36 +60,36 @@ export default function Orders({ onNavigate }: OrdersProps) {
             <button
               key={order.id}
               onClick={() => order.active && onNavigate('tracking')}
-              className={`w-full bg-white dark:bg-zinc-900 rounded-3xl p-5 shadow-sm transition-all active:scale-[0.98] text-left rtl:text-right group ${
+              className={`w-full bg-white rounded-3xl p-5 shadow-sm transition-all active:scale-[0.98] text-left rtl:text-right group ${
                 order.active 
                   ? 'border-2 border-blue-500 shadow-md shadow-green-500/10' 
-                  : 'border border-zinc-100 dark:border-zinc-800 hover:border-blue-500/30'
+                  : 'border border-zinc-100 hover:border-blue-500/30'
               }`}
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex gap-4 items-center">
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${order.active ? 'bg-blue-500 text-white shadow-lg shadow-green-500/20' : 'bg-zinc-50 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 group-hover:bg-zinc-100 dark:group-hover:bg-zinc-700 transition-colors'}`}>
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${order.active ? 'bg-blue-500 text-white shadow-lg shadow-green-500/20' : 'bg-zinc-50 text-zinc-500 group-hover:bg-zinc-100 transition-colors'}`}>
                     <Package className="w-6 h-6" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-base text-zinc-900 dark:text-zinc-100">{order.items}</h4>
+                    <h4 className="font-bold text-base text-zinc-900">{order.items}</h4>
                   </div>
                 </div>
                 <div className={`px-3 py-1.5 rounded-full text-[12px] font-bold tracking-wider uppercase flex items-center gap-1.5 shrink-0 ${
                   order.active 
-                    ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400' 
-                    : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400'
+                    ? 'bg-blue-100 text-blue-700' 
+                    : 'bg-zinc-100 text-zinc-500'
                 }`}>
                   {order.active ? <Clock className="w-3.5 h-3.5" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
                   {order.active ? t('in_transit') || 'In Transit' : t('delivered') || 'Delivered'}
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-4 border-t border-zinc-100 dark:border-zinc-800">
-                <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400">{order.date}</span>
+              <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
+                <span className="text-sm font-medium text-zinc-500">{order.date}</span>
                 <div className="flex items-center gap-2">
-                  <span className="font-black text-lg text-zinc-900 dark:text-zinc-100">{order.price}</span>
-                  <ChevronRight className={`w-5 h-5 text-zinc-300 dark:text-zinc-600 group-hover:text-blue-500 transition-colors ${isRTL ? 'rotate-180' : ''}`} />
+                  <span className="font-black text-lg text-zinc-900">{order.price}</span>
+                  <ChevronRight className={`w-5 h-5 text-zinc-300 group-hover:text-blue-500 transition-colors ${isRTL ? 'rotate-180' : ''}`} />
                 </div>
               </div>
             </button>

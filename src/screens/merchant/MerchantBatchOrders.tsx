@@ -291,7 +291,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
   const isFreightQuoteMode = merchantActiveTab === 'request_quote';
 
   return (
-    <div className={`flex flex-col md:flex-row h-screen overflow-hidden bg-zinc-50 dark:bg-zinc-950 ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className={`flex flex-col md:flex-row h-screen overflow-hidden bg-zinc-50 ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
       <MerchantSidebar currentScreen="merchant_batch" onNavigate={onNavigate} />
       
       <main className="flex-1 p-6 lg:p-10 h-full overflow-y-auto">
@@ -320,7 +320,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
             </div>
 
             {/* Selector tabs */}
-            <div className="bg-zinc-200/50 dark:bg-zinc-900 p-1.5 rounded-2xl flex items-center gap-1 self-start sm:self-center">
+            <div className="bg-zinc-200/50 p-1.5 rounded-2xl flex items-center gap-1 self-start sm:self-center">
               <button 
                 onClick={() => setMerchantActiveTab('batch_orders')}
                 className={`px-4 py-2 rounded-xl font-bold text-xs uppercase tracking-wider transition-all ${

@@ -67,13 +67,13 @@ export default function Confirm({ onNavigate }: ConfirmProps) {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: isRTL ? 100 : -100 }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      className="absolute inset-0 bg-zinc-50 dark:bg-zinc-950 flex flex-col transition-colors duration-300"
+      className="absolute inset-0 bg-zinc-50 flex flex-col transition-colors duration-300"
     >
       {/* Header */}
-      <div className="px-6 pt-12 pb-4 flex items-center justify-between bg-zinc-50/80 dark:bg-zinc-950/80 backdrop-blur-md z-10 transition-colors duration-300">
+      <div className="px-6 pt-12 pb-4 flex items-center justify-between bg-zinc-50/80 backdrop-blur-md z-10 transition-colors duration-300">
         <button 
           onClick={() => onNavigate('details')}
-          className="w-10 h-10 rounded-full bg-white dark:bg-zinc-900 shadow-sm flex items-center justify-center text-zinc-900 dark:text-white active:scale-95 transition-all duration-300"
+          className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-zinc-900 active:scale-95 transition-all duration-300"
         >
           <ChevronLeft className={`w-5 h-5 ${isRTL ? 'rotate-180' : ''}`} />
         </button>
@@ -191,7 +191,7 @@ export default function Confirm({ onNavigate }: ConfirmProps) {
       </div>
 
       {/* Fixed Bottom Action */}
-      <div className="absolute bottom-0 inset-x-0 p-6 bg-white dark:bg-zinc-950 border-t border-zinc-100 dark:border-zinc-800 z-20 transition-colors duration-300">
+      <div className="absolute bottom-0 inset-x-0 p-6 bg-white border-t border-zinc-100 z-20 transition-colors duration-300">
         <div className="flex items-end justify-between mb-4">
           <div className="text-left rtl:text-right">
             <p className="text-[12px] font-bold tracking-widest text-zinc-400 dark:text-zinc-500 uppercase mb-1">{t('total_fare')}</p>

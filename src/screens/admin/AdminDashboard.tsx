@@ -64,42 +64,103 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
   ];
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-            className="bg-white border border-zinc-200 p-8 rounded-[2.5rem] hover:shadow-xl hover:border-brand/20 transition-all group"
-          >
-            <div className="flex items-center justify-between mb-8">
-              <div className={`w-12 h-12 rounded-2xl bg-zinc-50 flex items-center justify-center ${stat.color} group-hover:scale-110 transition-transform`}>
-                {stat.icon}
+    <div className="space-y-12 animate-in fade-in duration-500">
+      {/* Stunning Template Hero Banner Card */}
+      <div className="bg-gradient-to-br from-[#7AA08A] via-[#94B8A4] to-[#B1CFBE] rounded-[2.5rem] p-8 lg:p-10 relative overflow-hidden shadow-[0_12px_45px_rgba(110,125,105,0.12)] text-zinc-950 flex flex-col xl:flex-row gap-8 justify-between items-stretch">
+        {/* Soft decorative visual wave graphic overlays simulating high-end architecture design */}
+        <div className="absolute inset-0 opacity-20 overflow-hidden z-0 pointer-events-none">
+          <svg className="w-full h-full" viewBox="0 0 1000 400" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M 0,150 C 300,100 400,300 700,200 C 900,150 1000,250 1000,250 L 1000,400 L 0,400 Z" fill="#3D523A" />
+            <path d="M 0,220 C 200,180 500,280 800,210 C 950,180 1000,300 1000,300 L 1000,400 L 0,400 Z" fill="#2E3C2D" />
+            <circle cx="800" cy="80" r="120" fill="#EBF1E9" opacity="0.3" />
+          </svg>
+        </div>
+
+        {/* Banner Main Column */}
+        <div className="flex-1 space-y-8 relative z-10 flex flex-col justify-between">
+          <div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-[#243B20] bg-[#D5E2D2]/90 border border-white/20 px-3.5 py-1.5 rounded-full inline-block mb-3.5 shadow-xs">
+              Platform Headquarters
+            </span>
+            <h1 className="text-4xl md:text-5xl font-display font-black text-[#1C2C1E] tracking-tight leading-none uppercase">
+              USend Control Center
+            </h1>
+            <p className="text-[#364935] text-xs font-bold uppercase tracking-wider mt-2.5">
+              Platform administration, national logistics mesh, ledger tracking and settlement audits.
+            </p>
+          </div>
+
+          {/* Stats - floating on top of the wavy architecture gradient banner! */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+            {stats.map((stat, i) => (
+              <div key={i} className="bg-white/95 backdrop-blur-md rounded-[2rem] p-5 flex flex-col justify-between shadow-xs border border-white/40 h-[125px] group hover:scale-[1.02] hover:bg-white transition-all">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-[#344633]/15 text-[#344633] flex items-center justify-center pointer-events-none">
+                      {stat.icon}
+                    </div>
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#5D6B5A]">
+                      {stat.label}
+                    </span>
+                  </div>
+                  <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest ${stat.trend.startsWith('+') ? 'text-emerald-700 bg-emerald-50' : 'text-red-600 bg-red-50'}`}>{stat.trend}</span>
+                </div>
+                
+                <div className="flex justify-between items-end mt-2">
+                  <h3 className="text-lg lg:text-xl font-black text-[#1C2C1E] tracking-tight">{stat.value}</h3>
+                  <div className="w-7 h-7 rounded-full bg-white shadow-xs border border-zinc-100 flex items-center justify-center text-[#344633]">
+                    <ArrowUpRight className="w-4 h-4" />
+                  </div>
+                </div>
               </div>
-              <span className={`text-[12px] font-black px-3 py-1 rounded-full uppercase tracking-widest ${stat.trend.startsWith('+') ? 'text-blue-600 bg-blue-50' : 'text-red-600 bg-red-50'}`}>{stat.trend}</span>
-            </div>
-            <p className="text-3xl lg:text-4xl font-display font-medium mb-2 tracking-tight text-zinc-900">{stat.value}</p>
-            <p className="text-[12px] font-black uppercase tracking-[0.3em] text-zinc-400">{stat.label}</p>
-          </motion.div>
-        ))}
+            ))}
+          </div>
+        </div>
+
+        {/* Banner Right Column: Pastel Yellow Action Banner (floating) */}
+        <div className="xl:w-[325px] bg-[#EFF2CD]/95 backdrop-blur-md rounded-[2.2rem] p-7 flex flex-col justify-between shadow-md border border-[#E1E7B9] relative z-10 overflow-hidden min-h-[220px]">
+          <div>
+            <h3 className="text-base font-black text-[#384318] tracking-tight uppercase">
+              Admin Actions
+            </h3>
+            <p className="text-[#5B6D2D] text-[11px] font-semibold mt-1.5 leading-relaxed">
+              Expedite network operations, audit ledger logs, or register new merchants.
+            </p>
+          </div>
+
+          <div className="space-y-2 mt-6">
+            <button 
+              onClick={() => onTabChange('merchants')}
+              className="w-full h-11 bg-white hover:bg-zinc-50 text-[#384318] border border-[#CBD7C9] font-bold text-xs uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+            >
+              <Building2 className="w-4 h-4 text-[#384318]" />
+              + New Merchant
+            </button>
+            <button 
+              onClick={() => onTabChange('finance')}
+              className="w-full h-11 bg-[#384318] hover:bg-[#252D10] text-[#EFF2CD] font-bold text-xs uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer active:scale-95"
+            >
+              <Coins className="w-4 h-4" />
+              + Settlement Hub
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-white border border-zinc-200 rounded-[3rem] p-10 overflow-hidden relative shadow-sm">
+        <div className="lg:col-span-2 bg-white border border-[#E9EFF6] rounded-[2.5rem] p-10 overflow-hidden relative shadow-[0_8px_30px_rgb(220,225,235,0.45)]">
           <div className="flex items-center justify-between mb-12">
             <div>
-              <h3 className="text-xl font-display font-medium uppercase tracking-tight text-zinc-900 mb-2">{t('financial_overview') || 'Financial Overview'}</h3>
-              <p className="text-xs text-zinc-500 font-medium">{t('revenue_settlements') || 'Revenue vs Settlements (Weekly)'}</p>
+              <h3 className="text-xl font-display font-semibold uppercase tracking-tight text-slate-900 mb-2">{t('financial_overview') || 'Financial Overview'}</h3>
+              <p className="text-xs text-zinc-400 font-medium">{t('revenue_settlements') || 'Revenue vs Settlements (Weekly)'}</p>
             </div>
             <div className="flex items-center gap-4">
                <div className="flex items-center gap-2">
-                 <div className="w-2 h-2 rounded-full bg-brand"></div>
-                 <span className="text-[12px] font-bold uppercase tracking-widest text-zinc-400">{t('revenue') || 'Revenue'}</span>
+                 <div className="w-2 h-2 rounded-full bg-[#2D74FF]"></div>
+                 <span className="text-[12px] font-bold uppercase tracking-widest text-[#2D74FF]">{t('revenue') || 'Revenue'}</span>
                </div>
                <div className="flex items-center gap-2">
-                 <div className="w-2 h-2 rounded-full bg-zinc-200"></div>
+                 <div className="w-2 h-2 rounded-full bg-slate-350"></div>
                  <span className="text-[12px] font-bold uppercase tracking-widest text-zinc-400">{t('settlements') || 'Settlements'}</span>
                </div>
             </div>
@@ -110,19 +171,19 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
               <AreaChart data={revenueData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#1452D1" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="#1452D1" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#2D74FF" stopOpacity={0.15}/>
+                    <stop offset="95%" stopColor="#2D74FF" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E4E4E7" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#A1A1AA', fontWeight: 700 }} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#A1A1AA', fontWeight: 700 }} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#EFF4FC" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748B', fontWeight: 600 }} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748B', fontWeight: 600 }} />
                 <Tooltip 
                   contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)' }}
                   itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
                 />
-                <Area type="monotone" dataKey="revenue" stroke="#1452D1" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
-                <Area type="monotone" dataKey="settlements" stroke="#E4E4E7" strokeWidth={2} fill="transparent" strokeDasharray="5 5" />
+                <Area type="monotone" dataKey="revenue" stroke="#2D74FF" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
+                <Area type="monotone" dataKey="settlements" stroke="#E2E8F0" strokeWidth={2} fill="transparent" strokeDasharray="5 5" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -130,20 +191,20 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
 
         <div 
           onClick={() => onTabChange('requests')}
-          className="bg-white border border-zinc-200 rounded-[3rem] p-10 relative overflow-hidden shadow-sm flex flex-col cursor-pointer group/card hover:border-brand/30 hover:shadow-xl transition-all"
+          className="bg-white border border-[#E9EFF6] rounded-[2.5rem] p-10 relative overflow-hidden shadow-[0_8px_30px_rgb(220,225,235,0.45)] flex flex-col cursor-pointer group/card hover:shadow-xl transition-all"
         >
           <div className="mb-8">
-             <h3 className="text-xl font-display font-medium uppercase tracking-tight text-zinc-900 mb-2 group-hover/card:text-brand transition-colors">{t('uae_ops_map')}</h3>
-             <p className="text-xs text-zinc-500 font-medium">{t('live_origin')}</p>
+             <h3 className="text-xl font-display font-semibold uppercase tracking-tight text-slate-900 mb-2 group-hover/card:text-[#2D74FF] transition-colors">{t('uae_ops_map')}</h3>
+             <p className="text-xs text-zinc-400 font-medium">{t('live_origin')}</p>
           </div>
           <div className="flex-1 min-h-[250px] bg-zinc-900 rounded-[2rem] relative overflow-hidden group z-0">
              <MapContainer center={[24.2, 54.5]} zoom={6} scrollWheelZoom={false} style={{ height: '100%', width: '100%', backgroundColor: '#18181b' }} zoomControl={false} dragging={true}>
                <TileLayer
                  url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
                />
-               <Marker position={[25.2048, 55.2708]} icon={createCustomMarker('bg-brand', '#1452D1', '0s')} />
+               <Marker position={[25.2048, 55.2708]} icon={createCustomMarker('bg-[#2D74FF]', '#2D74FF', '0s')} />
                <Marker position={[24.4539, 54.3773]} icon={createCustomMarker('bg-blue-400', '#34d399', '0.5s')} />
-               <Marker position={[25.3463, 55.4209]} icon={createCustomMarker('bg-brand', '#1452D1', '1s')} />
+               <Marker position={[25.3463, 55.4209]} icon={createCustomMarker('bg-[#2D74FF]', '#2D74FF', '1s')} />
                <Marker position={[25.7895, 55.9432]} icon={createCustomMarker('bg-orange-400', '#fb923c', '1.5s')} />
              </MapContainer>
              <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-transparent to-transparent pointer-events-none z-10"></div>
@@ -151,7 +212,7 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
           
           <div className="grid grid-cols-2 gap-4 mt-8 pointer-events-none">
              <div className="flex items-center gap-3">
-               <div className="w-2 h-2 bg-brand rounded-full"></div>
+               <div className="w-2 h-2 bg-[#2D74FF] rounded-full"></div>
                <span className="text-xs font-bold text-zinc-600">{t('merchant_api')}</span>
              </div>
              <div className="flex items-center gap-3">
@@ -3009,24 +3070,24 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
   };
 
   return (
-    <div className={`min-h-screen bg-zinc-50 text-zinc-900 font-sans ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className={`min-h-screen bg-[#EFF3EE] text-zinc-900 font-sans ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Background Style */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className={`absolute top-0 ${isRTL ? 'left-0' : 'right-0'} w-[500px] h-[500px] bg-brand/5 rounded-full blur-[120px] -translate-y-1/2`}></div>
+        <div className={`absolute top-0 ${isRTL ? 'left-0' : 'right-0'} w-[500px] h-[500px] bg-emerald-100/20 rounded-full blur-[120px] -translate-y-1/2`}></div>
       </div>
 
       <div className="flex relative z-10 w-full min-h-screen">
-        {/* Modern Sidebar (Redesigned with the same exquisite dark theme as the merchant portal) */}
-        <aside className={`w-[290px] lg:w-[330px] h-screen sticky top-0 bg-[#09090b] text-[#e4e4e7] border-${isRTL ? 'l' : 'r'} border-zinc-900/80 p-6 flex flex-col shrink-0 shadow-xl overflow-hidden select-none`} dir={isRTL ? 'rtl' : 'ltr'}>
+        {/* Modern Sidebar (Redesigned with the same exquisite light theme as the other portals) */}
+        <aside className={`w-[290px] lg:w-[330px] h-screen sticky top-0 bg-[#EFF3EE]/95 text-zinc-800 border-${isRTL ? 'l' : 'r'} border-[#E2ECE0] p-6 flex flex-col shrink-0 shadow-sm overflow-hidden select-none`} dir={isRTL ? 'rtl' : 'ltr'}>
           {/* Brand Logo Header */}
-          <div className="p-4 pb-5 border-b border-zinc-900 flex items-center justify-between mb-8">
+          <div className="p-4 pb-5 flex items-center justify-between mb-8">
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => onNavigate('landing_page')}>
-              <div className="w-10 h-10 rounded-2xl bg-brand/10 border border-brand/20 flex items-center justify-center text-brand leading-none shrink-0 shadow-inner">
-                <Anchor className="w-5 h-5" />
+              <div className="w-10 h-10 rounded-2xl bg-[#D5E2D2] border border-[#CBD7C9] flex items-center justify-center text-[#344633] leading-none shrink-0 shadow-sm">
+                <Anchor className="w-5 h-5 animate-pulse" />
               </div>
               <div>
-                <h1 className="text-xs font-black uppercase tracking-widest text-[#f4f4f5] leading-none">USend Portal</h1>
-                <span className="text-[13px] text-zinc-500 font-bold uppercase tracking-widest mt-1 block">Platform Admin</span>
+                <h1 className="text-[13px] font-black uppercase tracking-wider text-[#344633] leading-none">USend Portal</h1>
+                <span className="text-[11px] text-[#6D7D6A] font-bold uppercase tracking-widest mt-1 block">Platform Admin</span>
               </div>
             </div>
           </div>
@@ -3049,22 +3110,22 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id as any)}
-                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl transition-all duration-200 group/btn relative ${isActive ? 'text-right' : ''} ${
+                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl transition-all duration-200 group/btn relative ${isActive ? 'text-right' : ''} ${
                     isActive 
-                      ? 'bg-brand text-white font-bold shadow-lg shadow-brand/25' 
-                      : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/45'
+                      ? 'bg-[#D5E2D2] text-[#344633] font-bold shadow-sm' 
+                      : 'text-[#5D6B5A] hover:text-[#344633] hover:bg-[#D5E2D2]/40'
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <span className={`${isActive ? 'text-white' : 'text-zinc-400 group-hover/btn:text-zinc-200 group-hover/btn:scale-105 transition-transform'}`}>
+                    <span className={`transition-transform duration-200 ${isActive ? 'text-[#344633] scale-105' : 'text-[#6D7D6A] group-hover/btn:text-[#344633] group-hover/btn:scale-105'}`}>
                       {item.icon}
                     </span>
                     <span className="text-[12px] font-semibold leading-none truncate tracking-wide text-left">{item.label}</span>
                   </div>
                   {isActive ? (
-                    <div className="w-1.5 h-1.5 rounded-full bg-white shrink-0 shadow-sm" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#344633] shrink-0 shadow-xs" />
                   ) : (
-                    <div className="w-1 h-1 rounded-full bg-transparent group-hover/btn:bg-zinc-600 transition-colors shrink-0" />
+                    <div className="w-1 h-1 rounded-full bg-transparent group-hover/btn:bg-[#344633]/30 transition-colors shrink-0" />
                   )}
                 </button>
               );
@@ -3072,19 +3133,19 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
           </nav>
 
           {/* Bottom Actions */}
-          <div className="pt-4 border-t border-zinc-900 space-y-1.5">
+          <div className="pt-4 space-y-1.5 bg-transparent p-4">
             <button
               onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
-              className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 text-[12px] font-black uppercase tracking-widest transition-all"
+              className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-[#5D6B5A] hover:text-[#344633] hover:bg-[#D5E2D2]/40 text-[11px] font-bold uppercase tracking-widest transition-all"
             >
-              <Globe className="w-4 h-4 text-zinc-500 group-hover:text-zinc-300" />
+              <Globe className="w-4 h-4 text-[#6D7D6A] group-hover:text-[#344633]" />
               <span>{language === 'en' ? 'العربية' : 'English'}</span>
             </button>
             <button
               onClick={() => onNavigate('landing_page')}
-              className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-500/10 text-[12px] font-black uppercase tracking-widest transition-all"
+              className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-rose-600 hover:text-rose-700 hover:bg-rose-50/50 text-[11px] font-bold uppercase tracking-widest transition-all"
             >
-              <LogOut className="w-4 h-4 text-red-500" />
+              <LogOut className="w-4 h-4" />
               <span>{t('sign_out') || 'Sign Out'}</span>
             </button>
           </div>
@@ -3095,10 +3156,10 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
           {/* Top Bar */}
           <header className={`flex flex-col md:flex-row md:items-center justify-between gap-8 mb-16 ${isRTL ? 'text-right' : ''}`}>
             <div>
-              <p className={`text-zinc-500 font-bold text-xs uppercase tracking-widest mb-1 flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <p className={`text-[#2D74FF] font-bold text-xs uppercase tracking-widest mb-1 flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <MapPin className="w-4 h-4" /> {t('uae_network_control') || 'UAE Network Control'}
               </p>
-              <h1 className="text-3xl lg:text-4xl font-display font-medium uppercase tracking-tight text-zinc-900">
+              <h1 className="text-3xl lg:text-4xl font-display font-semibold uppercase tracking-tight text-slate-900">
                 {t('admin_dashboard_center') || 'Admin Dashboard Center'}
               </h1>
             </div>
@@ -3111,25 +3172,25 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                    placeholder={t('query_records') || 'Query records...'}
                    value={searchQuery}
                    onChange={(e) => setSearchQuery(e.target.value)}
-                   className={`bg-white border border-zinc-200 focus:border-brand/50 focus:bg-white outline-none rounded-full py-4 ${isRTL ? 'pr-14 pl-8' : 'pl-14 pr-8'} text-sm text-zinc-900 placeholder:text-zinc-300 w-[240px] lg:w-[320px] transition-all shadow-sm`}
+                   className={`bg-white border border-[#E9EFF6] focus:border-[#2D74FF]/55 focus:bg-white outline-none rounded-full py-4 ${isRTL ? 'pr-14 pl-8' : 'pl-14 pr-8'} text-sm text-zinc-900 placeholder:text-zinc-300 w-[240px] lg:w-[320px] transition-all shadow-sm`}
                 />
               </div>
               <button 
                 onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
-                className="w-12 h-12 rounded-2xl bg-white border border-zinc-200 flex items-center justify-center text-zinc-600 hover:border-brand hover:text-brand transition-colors cursor-pointer group"
+                className="w-12 h-12 rounded-2xl bg-white border border-[#E9EFF6] flex items-center justify-center text-[#2D74FF] hover:border-[#2D74FF] transition-colors cursor-pointer group"
               >
                 <div className="flex gap-1 items-center">
                    <span className="text-[12px] font-black uppercase tracking-widest">{language === 'en' ? 'AR' : 'EN'}</span>
                 </div>
               </button>
               <div className="relative">
-                <div className="w-12 h-12 rounded-2xl bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 hover:bg-zinc-50 transition-colors cursor-pointer relative group">
-                  <Bell className="w-5 h-5" />
-                  <span className="absolute top-2 right-2 w-2 h-2 bg-brand rounded-full shadow-[0_0_8px_#1452D1]"></span>
+                <div className="w-12 h-12 rounded-2xl bg-white border border-[#E9EFF6] flex items-center justify-center text-zinc-450 hover:bg-zinc-50 transition-colors cursor-pointer relative group">
+                  <Bell className="w-5 h-5 text-zinc-500" />
+                  <span className="absolute top-2 right-2 w-2 h-2 bg-[#2D74FF] rounded-full shadow-[0_0_8px_#2D74FF]"></span>
                 </div>
               </div>
               <div className={`flex items-center gap-4 ${isRTL ? 'pr-4 border-r' : 'pl-4 border-l'} border-zinc-200`}>
-                <div className="w-12 h-12 rounded-full border-2 border-brand p-0.5">
+                <div className="w-12 h-12 rounded-full border-2 border-[#2D74FF] p-0.5">
                   <div className="w-full h-full rounded-full bg-zinc-200 overflow-hidden">
                     <img alt="User" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200" className="w-full h-full object-cover" />
                   </div>

@@ -49,12 +49,12 @@ export default function Tracking({ onNavigate }: TrackingProps) {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: isRTL ? 100 : -100 }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      className="absolute inset-0 bg-zinc-50 dark:bg-zinc-950 transition-colors duration-300 overflow-hidden"
+      className="absolute inset-0 bg-zinc-50 transition-colors duration-300 overflow-hidden"
     >
       {/* Map Area */}
-      <div className="absolute inset-0 bg-[#e5e3df] dark:bg-[#1a1a1a]">
+      <div className="absolute inset-0 bg-[#e5e3df]">
         {/* Decorative Map Background */}
-        <div className="absolute inset-0 opacity-30 dark:opacity-10" style={{
+        <div className="absolute inset-0 opacity-30" style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
         }}></div>
         

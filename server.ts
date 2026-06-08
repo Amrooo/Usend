@@ -5,30 +5,64 @@ import { GoogleGenAI, Type } from "@google/genai";
 import Stripe from "stripe";
 import dotenv from "dotenv";
 import admin from 'firebase-admin';
+import { getFirestore, FieldValue } from "firebase-admin/firestore";
+import fs from "fs";
 
 dotenv.config();
 
+// Read firebase-applet-config.json for target project and database info
+let firebaseConfig: { projectId?: string; firestoreDatabaseId?: string } = {};
+try {
+  const configPath = path.resolve(process.cwd(), "firebase-applet-config.json");
+  if (fs.existsSync(configPath)) {
+    firebaseConfig = JSON.parse(fs.readFileSync(configPath, "utf8"));
+  }
+} catch (e) {
+  console.error("Failed to read firebase-applet-config.json:", e);
+}
+
 // Initialize Firebase Admin for secure backend operations
+if (firebaseConfig.projectId) {
+  process.env.GOOGLE_CLOUD_PROJECT = firebaseConfig.projectId;
+}
+
 if (!admin.apps.length) {
   try {
+    const options: admin.AppOptions = {
+        projectId: firebaseConfig.projectId
+    };
+    
     if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
       const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount)
-      });
-      console.log("Firebase Admin initialized with service account key.");
+      options.credential = admin.credential.cert(serviceAccount);
+      console.log("Firebase Admin: Initializing with provided service account key.");
     } else {
-      admin.initializeApp();
-      console.warn("Firebase Admin initialized with application default credentials. This may fail if not deployed correctly.");
+      console.warn("Firebase Admin: No service account key found, using default credentials.");
     }
+    
+    admin.initializeApp(options);
   } catch (error) {
-    console.error("Failed to initialize Firebase Admin:", error);
+    console.error("Firebase Admin: Initialization failed:", error);
   }
 }
-const dbAdmin = admin.firestore();
+
+const appInstance = admin.app();
+// Use the specific firestore database ID if provided, otherwise default
+const dbAdmin = firebaseConfig.firestoreDatabaseId 
+  ? getFirestore(appInstance, firebaseConfig.firestoreDatabaseId)
+  : getFirestore(appInstance);
 
 const app = express();
 const PORT = 3000;
+
+app.get("/api/health", (req, res) => {
+  res.json({ 
+    status: "ok", 
+    timestamp: new Date().toISOString(),
+    project: firebaseConfig.projectId || 'unknown',
+    database: firebaseConfig.firestoreDatabaseId || 'default'
+  });
+});
 
 // Initialize Stripe Client lazily to avoid crashing on boot if key is missing
 let stripeClient: Stripe | null = null;
@@ -38,7 +72,8 @@ function getStripe(): Stripe {
     if (!key) {
       throw new Error("STRIPE_SECRET_KEY is required for payments");
     }
-    stripeClient = new Stripe(key, { apiVersion: "2026-04-22.dahlia" as any });
+    // Updated API version to a stable one
+    stripeClient = new Stripe(key, { apiVersion: "2023-10-16" as any });
   }
   return stripeClient;
 }
@@ -53,30 +88,59 @@ app.use((req, res, next) => {
 });
 
 // --- PAYMENT API ENDPOINTS (Stripe) ---
+app.get("/api/payments/config", (req, res) => {
+  res.json({ publishableKey: process.env.STRIPE_PUBLISHABLE_KEY || process.env.VITE_STRIPE_PUBLISHABLE_KEY });
+});
+
+app.get("/api/payments/status", async (req, res) => {
+  const secretKey = process.env.STRIPE_SECRET_KEY;
+  if (!secretKey) {
+    return res.json({ connected: false, error: "STRIPE_SECRET_KEY is missing from environment secrets." });
+  }
+  try {
+    const stripe = getStripe();
+    const balance = await stripe.balance.retrieve();
+    res.json({
+      connected: true,
+      mode: secretKey.startsWith("sk_test_") ? "test" : "live",
+      available: balance.available,
+      pending: balance.pending
+    });
+  } catch (error: any) {
+    console.error("Stripe verify connection failed:", error);
+    res.json({
+      connected: false,
+      error: error?.message || "Verification failed with Stripe API."
+    });
+  }
+});
+
 app.post("/api/payments/create-intent", async (req, res) => {
   try {
-    const { amountAED, orderId, customerId, metadata } = req.body;
+    const { amountAED, orderId, topup, customerId, metadata } = req.body;
 
-    // SECURITY GAP FIX: In a real environment, you MUST fetch the 'orderId' from your Firebase Database 
-    // to determine the genuine expected `amountAED` to prevent client-side manipulation.
-    if (!orderId || !amountAED) {
-      return res.status(400).json({ error: "Missing orderId or amount" });
+    if (!amountAED) {
+      return res.status(400).json({ error: "Missing amount" });
     }
 
     let validAmountAED = amountAED;
 
-    if (orderId) {
+    if (orderId && !topup) {
       try {
         const orderSnap = await dbAdmin.collection('requests').doc(orderId).get();
         if (orderSnap.exists) {
-          const expectedAmount = orderSnap.data()?.totalAmountAED;
-          if (expectedAmount && expectedAmount !== amountAED) {
-             console.warn(`Amount mismatch for order ${orderId}: expected ${expectedAmount}, got ${amountAED}`);
-             validAmountAED = expectedAmount;
+          const data = orderSnap.data();
+          // Extract numeric value from amount string like "30 AED"
+          const dbAmountStr = data?.orderAmount || '';
+          const dbAmount = parseFloat(dbAmountStr.replace(/[^0-9.]/g, ''));
+          
+          if (!isNaN(dbAmount) && Math.abs(dbAmount - amountAED) > 0.01) {
+             console.warn(`Amount mismatch for order ${orderId}: expected ${dbAmount}, got ${amountAED}`);
+             validAmountAED = dbAmount;
           }
         }
       } catch (err) {
-        console.error("DB check failed:", err);
+        console.error("DB check failed (non-blocking for intent creation):", err);
       }
     }
 
@@ -87,8 +151,7 @@ app.post("/api/payments/create-intent", async (req, res) => {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amount,
       currency: "aed",
-      metadata: { ...metadata, orderId, customerId },
-      // For testing, automatic_payment_methods helps simulation
+      metadata: { ...metadata, orderId: orderId || 'topup', isTopup: topup ? 'true' : 'false', customerId },
       automatic_payment_methods: {
         enabled: true,
       },
@@ -96,7 +159,7 @@ app.post("/api/payments/create-intent", async (req, res) => {
 
     res.json({ clientSecret: paymentIntent.client_secret });
   } catch (error: any) {
-    console.error("Stripe Error:", error);
+    console.error("Stripe Intent Error:", error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -127,7 +190,7 @@ app.post('/api/webhooks/stripe', express.raw({type: 'application/json'}), (reque
         // Securely update the payment status avoiding client tamperiing
         dbAdmin.collection('requests').doc(paymentIntentSucceeded.metadata.orderId).update({
           paymentStatus: 'paid',
-          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+          updatedAt: FieldValue.serverTimestamp()
         }).catch(err => console.error("Failed to update order payment status:", err));
       }
       break;
@@ -181,14 +244,14 @@ app.post("/api/webhooks/aramex", express.json(), async (req, res) => {
          updateCode: data.UpdateCode,
          updateDescription: data.UpdateDescription,
          location: data.UpdateLocation || 'Hub',
-         timestamp: admin.firestore.FieldValue.serverTimestamp(),
+         timestamp: FieldValue.serverTimestamp(),
          rawPayload: data
      }).catch(err => console.error("Failed to append tracking history:", err));
 
      // Also update the main shipment status
      dbAdmin.collection('requests').doc(data.WaybillNumber).update({
          status: data.UpdateDescription,
-         updatedAt: admin.firestore.FieldValue.serverTimestamp()
+         updatedAt: FieldValue.serverTimestamp()
      }).catch(err => console.error("Failed to update tracking status:", err));
   }
   res.status(200).json({ status: "acknowledged" });
@@ -455,6 +518,29 @@ async function startServer() {
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on port ${PORT}`);
+    
+    // Non-blocking Stripe live-connection check for instant console logging
+    const secretKey = process.env.STRIPE_SECRET_KEY;
+    if (secretKey) {
+      const masked = secretKey.substring(0, 7) + "..." + secretKey.substring(secretKey.length - 4);
+      console.log(`[Stripe Console] Found STRIPE_SECRET_KEY (${masked}). Validating connection with stripe.com API...`);
+      try {
+        const stripe = getStripe();
+        stripe.balance.retrieve()
+          .then((bal) => {
+            const mode = secretKey.startsWith("sk_test_") ? "TEST (sandbox)" : "LIVE (production)";
+            console.log(`[Stripe Console] SUCCESS! Successfully authenticated & connected with Stripe API in ${mode} mode.`);
+            console.log(`[Stripe Console] Available Balance: ${bal.available.map(a => `${(a.amount / 100).toFixed(2)} ${a.currency.toUpperCase()}`).join(', ') || 'N/A'}`);
+          })
+          .catch((err) => {
+            console.error(`[Stripe Console] ERROR: Stripe secret key verification failed: ${err.message}`);
+          });
+      } catch (err: any) {
+        console.error(`[Stripe Console] ERROR: Failed to instantiate Stripe: ${err.message}`);
+      }
+    } else {
+      console.warn(`[Stripe Console] WARNING: STRIPE_SECRET_KEY environment variable is not defined.`);
+    }
   });
 }
 
