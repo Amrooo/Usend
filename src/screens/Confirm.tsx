@@ -107,7 +107,7 @@ export default function Confirm({ onNavigate }: ConfirmProps) {
 
             <div className="space-y-2">
               <div className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0"></div>
+                <div className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0"></div>
                 <p className="text-xs font-medium text-zinc-700 dark:text-zinc-300 truncate">241 Tech Plaza, San Francisco</p>
               </div>
               <div className="flex items-center gap-3">

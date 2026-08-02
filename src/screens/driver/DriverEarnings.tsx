@@ -38,13 +38,13 @@ export default function DriverEarnings({ onNavigate }: DriverEarningsProps) {
 
         {/* Balance Card */}
         <div className="bg-zinc-900 dark:bg-zinc-800 rounded-3xl p-6 text-white shadow-xl shadow-zinc-900/10 dark:shadow-none relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl -mr-20 -mt-20"></div>
-          <div className="absolute bottom-0 left-0 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl -ml-20 -mb-20"></div>
+          <div className="absolute top-0 right-0 w-40 h-40 bg-emerald-500/20 rounded-full blur-3xl -mr-20 -mt-20"></div>
+          <div className="absolute bottom-0 left-0 w-40 h-40 bg-emerald-500/20 rounded-full blur-3xl -ml-20 -mb-20"></div>
           
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm text-zinc-400">Available Balance</p>
-              <div className="flex items-center gap-1 text-blue-400 text-xs font-bold bg-blue-500/10 px-2 py-1 rounded-full">
+              <div className="flex items-center gap-1 text-emerald-400 text-xs font-bold bg-emerald-500/10 px-2 py-1 rounded-full">
                 <TrendingUp className="w-3 h-3" />
                 <span>+12.5%</span>
               </div>
@@ -52,7 +52,7 @@ export default function DriverEarnings({ onNavigate }: DriverEarningsProps) {
             <h1 className="text-4xl font-bold mb-6">AED 845.50</h1>
             
             <div className="flex gap-3">
-              <button className="flex-1 py-3 bg-blue-500 text-white rounded-xl font-bold text-sm transition-colors hover:bg-gradient-to-r from-blue-700 to-blue-500 shadow-lg shadow-green-500/20">
+              <button className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-bold text-sm transition-colors hover:bg-gradient-to-r from-emerald-700 to-emerald-500 shadow-lg shadow-green-500/20">
                 Cash Out
               </button>
               <button className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center text-white hover:bg-white/20 transition-colors">
@@ -78,7 +78,7 @@ export default function DriverEarnings({ onNavigate }: DriverEarningsProps) {
         <div>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 transition-colors duration-300">Recent Transactions</h3>
-            <button className="text-xs font-bold text-blue-600 dark:text-blue-500 tracking-wider uppercase">See All</button>
+            <button className="text-xs font-bold text-emerald-600 dark:text-emerald-500 tracking-wider uppercase">See All</button>
           </div>
           
           <div className="space-y-3">
@@ -91,7 +91,7 @@ export default function DriverEarnings({ onNavigate }: DriverEarningsProps) {
                 className="bg-white dark:bg-zinc-900 rounded-2xl p-4 border border-zinc-100 dark:border-zinc-800 flex items-center justify-between shadow-sm"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-500">
+                  <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-500">
                     <Wallet className="w-5 h-5" />
                   </div>
                   <div>
@@ -100,7 +100,7 @@ export default function DriverEarnings({ onNavigate }: DriverEarningsProps) {
                   </div>
                 </div>
                 <div className="text-right">
-                  <h4 className="font-bold text-blue-600 dark:text-blue-400">{item.amount}</h4>
+                  <h4 className="font-bold text-emerald-600 dark:text-emerald-400">{item.amount}</h4>
                   <p className="text-[12px] text-zinc-500 dark:text-zinc-400">{item.status}</p>
                 </div>
               </motion.div>

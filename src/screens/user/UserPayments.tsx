@@ -396,7 +396,7 @@ export default function UserPayments({ onNavigate }: UserPaymentsProps) {
               <div key={card.id} className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 relative overflow-hidden group shadow-sm hover:shadow-md transition-shadow">
                 {card.isDefault && (
                   <div className={`absolute top-4 ${isRTL ? 'left-4' : 'right-4'}`}>
-                    <span className="bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 px-3 py-1 text-[11px] font-black uppercase tracking-wider rounded-full flex items-center gap-1.5 border border-blue-100 dark:border-blue-900/30">
+                    <span className="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 px-3 py-1 text-[11px] font-black uppercase tracking-wider rounded-full flex items-center gap-1.5 border border-emerald-100 dark:border-emerald-900/30">
                       <CheckCircle2 className="w-3" />
                       Primary Card
                     </span>

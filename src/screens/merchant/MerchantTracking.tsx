@@ -206,10 +206,10 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
   const TimelinePart: FC<{ dot: ReactNode, title: string, desc: string, active?: boolean, last?: boolean }> = ({ dot, title, desc, active, last }) => (
     <div className="flex gap-4 min-h-[60px]">
        <div className="flex flex-col items-center">
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center z-10 ${active ? 'bg-gradient-to-r from-blue-700 to-blue-500 text-white shadow-lg shadow-blue-500/30' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center z-10 ${active ? 'bg-gradient-to-r from-emerald-700 to-emerald-500 text-white shadow-lg shadow-emerald-500/30' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
              {dot}
           </div>
-          {!last && <div className={`w-0.5 flex-1 ${active ? 'bg-gradient-to-r from-blue-700 to-blue-500' : 'bg-zinc-200 dark:bg-zinc-800'}`}></div>}
+          {!last && <div className={`w-0.5 flex-1 ${active ? 'bg-gradient-to-r from-emerald-700 to-emerald-500' : 'bg-zinc-200 dark:bg-zinc-800'}`}></div>}
        </div>
        <div className="pb-6">
           <h4 className={`font-bold text-sm ${active ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-400'}`}>{title}</h4>
@@ -239,7 +239,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                 <input 
                   type="text" 
                   placeholder={t('search_orders')} 
-                  className={`bg-white border border-zinc-200 rounded-xl ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none text-zinc-900 w-full md:w-64`}
+                  className={`bg-white border border-zinc-200 rounded-xl ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-zinc-900 w-full md:w-64`}
                 />
               </div>
             </div>
@@ -258,10 +258,10 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
              </div>
              <div className="bg-white p-5 rounded-3xl border border-zinc-200 shadow-sm overflow-hidden relative group">
                 <div className="flex items-center justify-between mb-2">
-                   <div className="w-8 h-8 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
+                   <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
                       <Clock className="w-4 h-4" />
                    </div>
-                   <span className="text-[12px] font-black text-blue-500/60 uppercase tracking-wider">{t('in_transit')}</span>
+                   <span className="text-[12px] font-black text-emerald-500/60 uppercase tracking-wider">{t('in_transit')}</span>
                 </div>
                 <div className="text-2xl font-black text-zinc-900">1</div>
              </div>
@@ -294,7 +294,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                   placeholder="Search by Tracking ID, Name..." 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-white border border-zinc-200 rounded-xl pl-10 pr-4 py-2.5 outline-none text-zinc-900 text-sm font-medium focus:border-blue-500 transition-colors"
+                  className="w-full bg-white border border-zinc-200 rounded-xl pl-10 pr-4 py-2.5 outline-none text-zinc-900 text-sm font-medium focus:border-emerald-500 transition-colors"
                 />
              </div>
              
@@ -344,7 +344,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                   onClick={() => setFilter(tab.id)}
                   className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${
                     filter === tab.id 
-                      ? 'bg-gradient-to-r from-blue-700 to-blue-500 text-white shadow-lg shadow-blue-500/20' 
+                      ? 'bg-gradient-to-r from-emerald-700 to-emerald-500 text-white shadow-lg shadow-emerald-500/20' 
                       : 'bg-white text-zinc-500 border border-zinc-200 hover:bg-zinc-50'
                   }`}
                 >
@@ -382,7 +382,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                 </MapContainer>
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
                 </div>
               )}
             </div>
@@ -391,7 +391,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
             <div className="bg-white rounded-3xl shadow-sm border border-zinc-200 flex flex-col min-h-[400px] lg:h-[600px] transition-colors">
               <div className="p-6 border-b border-zinc-200">
                 <h2 className="text-xl font-bold text-zinc-900 flex items-center gap-3">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
                   {t('active_orders')} ({filteredOrders.length})
                 </h2>
               </div>
@@ -402,12 +402,12 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                   <button 
                     key={order.id} 
                     onClick={() => setSelectedOrder(order)}
-                    className={`w-full text-left bg-zinc-50 hover:bg-zinc-100 rounded-2xl p-4 border transition-all relative overflow-hidden group ${selectedOrder?.id === order.id ? 'border-blue-500 ring-4 ring-blue-500/10 translate-x-1 shadow-md' : 'border-zinc-200 hover:border-zinc-300'} ${isRTL ? 'text-right' : 'text-left'} ${isRejected ? 'opacity-50 grayscale' : ''}`}
+                    className={`w-full text-left bg-zinc-50 hover:bg-zinc-100 rounded-2xl p-4 border transition-all relative overflow-hidden group ${selectedOrder?.id === order.id ? 'border-emerald-500 ring-4 ring-emerald-500/10 translate-x-1 shadow-md' : 'border-zinc-200 hover:border-zinc-300'} ${isRTL ? 'text-right' : 'text-left'} ${isRejected ? 'opacity-50 grayscale' : ''}`}
                   >
                     {/* Status accent bar indicator */}
                     <div className={`absolute top-0 bottom-0 ${isRTL ? 'right-0' : 'left-0'} w-1.5 ${
                       isRejected ? 'bg-red-500' :
-                      order.status === 'in_transit' ? 'bg-blue-500' :
+                      order.status === 'in_transit' ? 'bg-emerald-500' :
                       order.status === 'Approved' ? 'bg-purple-500' :
                       'bg-orange-500'
                     }`} />
@@ -431,7 +431,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                         </div>
                         <div className="flex flex-col items-end gap-1">
                            <span className={`px-2 py-0.5 rounded-lg text-[13px] font-black tracking-wider uppercase ${
-                             order.status === 'in_transit' ? 'bg-blue-50 text-blue-600' :
+                             order.status === 'in_transit' ? 'bg-emerald-50 text-emerald-600' :
                              order.status === 'Approved' ? 'bg-purple-50 text-purple-600' :
                              'bg-orange-50 text-orange-600'
                            }`}>
@@ -448,7 +448,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                         </div>
                         
                         <div className="flex items-center gap-1.5 bg-zinc-100 px-2 py-1 rounded-md">
-                          <Clock className="w-3 h-3 text-blue-500" />
+                          <Clock className="w-3 h-3 text-emerald-500" />
                           <span className="text-[12px] font-black text-zinc-700">ETA: {order.etaTime}</span>
                         </div>
                       </div>
@@ -562,7 +562,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                               <div className="w-1.5 h-4 bg-[#d12421] rounded-full" />
                               <h3 className="text-xs font-black uppercase tracking-wider text-zinc-400">Aramex Waybill Signal</h3>
                            </div>
-                           <span className="text-[12px] text-blue-600 font-extrabold flex items-center gap-1 bg-blue-500/10 px-2 py-0.5 rounded-md">
+                           <span className="text-[12px] text-emerald-600 font-extrabold flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded-md">
                              <Check className="w-3 h-3" /> API REGISTERED
                            </span>
                         </div>
@@ -685,25 +685,25 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                             className="w-full p-3.5 font-extrabold text-[12px] text-zinc-500 flex items-center justify-between hover:bg-zinc-100 outline-hidden"
                           >
                             <span className="flex items-center gap-1.5 uppercase font-black">
-                              <Terminal className="w-3.5 h-3.5 text-blue-500" />
+                              <Terminal className="w-3.5 h-3.5 text-emerald-500" />
                               SOAP Web Service Traces
                             </span>
-                            <span className="text-[13px] font-bold text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded">{showSoapLogs ? 'Hide' : 'WSDL XML'}</span>
+                            <span className="text-[13px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded">{showSoapLogs ? 'Hide' : 'WSDL XML'}</span>
                           </button>
                           
                           {showSoapLogs && (
                             <div className="p-3 border-t border-zinc-200 space-y-3 font-mono text-[12px] max-h-[220px] overflow-y-auto bg-black text-zinc-300">
                               <div className="space-y-1">
-                                <span className="text-[#1452D1] font-black block uppercase tracking-wider text-[13px]">WSDL ENDPOINT: https://ws.aramex.net/ShippingAPI.v1</span>
+                                <span className="text-[#047857] font-black block uppercase tracking-wider text-[13px]">WSDL ENDPOINT: https://ws.aramex.net/ShippingAPI.v1</span>
                                 <span className="text-zinc-500 italic block text-[13px]">SOAPEnvelope XML Request (ClientInfo Header Authorization)</span>
                                 <pre className="bg-zinc-950/80 p-2 rounded text-zinc-400 overflow-x-auto select-all leading-normal">
                                   {JSON.stringify(liveSelectedOrder.aramexLogs.request, null, 2)}
                                 </pre>
                               </div>
                               <div className="space-y-1 pt-2 border-t border-zinc-900">
-                                <span className="text-blue-400 font-black block uppercase tracking-wider text-[13px]">SOAP ACTION: 'CreateShipmentsResponse'</span>
+                                <span className="text-emerald-400 font-black block uppercase tracking-wider text-[13px]">SOAP ACTION: 'CreateShipmentsResponse'</span>
                                 <span className="text-zinc-500 italic block text-[13px]">API Response Body (JSON/XML structure)</span>
-                                <pre className="bg-zinc-950/80 p-2 rounded text-blue-400 overflow-x-auto select-all leading-normal">
+                                <pre className="bg-zinc-950/80 p-2 rounded text-emerald-400 overflow-x-auto select-all leading-normal">
                                   {JSON.stringify(liveSelectedOrder.aramexLogs.response, null, 2)}
                                 </pre>
                               </div>
@@ -718,10 +718,10 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
                        <div className="flex items-center gap-2">
-                          <div className="w-1.5 h-4 bg-blue-500 rounded-full" />
+                          <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
                           <h3 className="text-sm font-bold text-zinc-900">{t('current_status')}</h3>
                        </div>
-                       <button className="flex items-center gap-1.5 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors">
+                       <button className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors">
                           <FileText className="w-3.5 h-3.5" />
                           Download AWB
                        </button>
@@ -758,7 +758,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                   <div className="space-y-8">
                     <div className="space-y-4">
                       <div className="flex items-center gap-2">
-                         <div className="w-1.5 h-4 bg-blue-500 rounded-full" />
+                         <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
                          <h3 className="text-sm font-bold text-zinc-900">{t('customer_info')}</h3>
                       </div>
                       <div className="flex items-center gap-4 bg-zinc-50 p-4 rounded-2xl border border-zinc-100">

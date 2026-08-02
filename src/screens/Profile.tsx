@@ -15,15 +15,15 @@ export default function Profile({ onNavigate }: ProfileProps) {
   const { isDark, toggle } = useDarkMode();
 
   const stats = [
-    { label: t('total_orders'), value: '24', icon: Package, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-500/10' },
+    { label: t('total_orders'), value: '24', icon: Package, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
     { label: t('active'), value: '2', icon: Clock, color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-500/10' },
-    { label: t('total_spent'), value: 'AED 1,240', icon: TrendingUp, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-500/10' },
+    { label: t('total_spent'), value: 'AED 1,240', icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
     { label: t('points'), value: '850', icon: Star, color: 'text-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-500/10' },
   ];
 
   const recentActivities = [
-    { id: 1, title: 'Order Delivered', desc: 'King Size Bed', time: '2 hours ago', icon: CheckCircle2, color: 'text-blue-500', bg: 'bg-blue-100 dark:bg-blue-500/20' },
-    { id: 2, title: 'Payment Successful', desc: 'AED 120.00 via Visa', time: 'Yesterday', icon: CreditCard, color: 'text-blue-500', bg: 'bg-blue-100 dark:bg-blue-500/20' },
+    { id: 1, title: 'Order Delivered', desc: 'King Size Bed', time: '2 hours ago', icon: CheckCircle2, color: 'text-emerald-500', bg: 'bg-emerald-100 dark:bg-emerald-500/20' },
+    { id: 2, title: 'Payment Successful', desc: 'AED 120.00 via Visa', time: 'Yesterday', icon: CreditCard, color: 'text-emerald-500', bg: 'bg-emerald-100 dark:bg-emerald-500/20' },
     { id: 3, title: 'New Address Added', desc: 'Home - 123 Main St', time: '3 days ago', icon: MapPin, color: 'text-purple-500', bg: 'bg-purple-100 dark:bg-purple-500/20' },
   ];
 
@@ -57,7 +57,7 @@ export default function Profile({ onNavigate }: ProfileProps) {
           <div className="px-6 pb-8 -mt-12 relative z-10">
             <div className="flex justify-between items-end mb-4">
               <div className="relative">
-                <div className="w-24 h-24 rounded-full border-4 border-white dark:border-zinc-900 shadow-lg bg-blue-500 p-0.5">
+                <div className="w-24 h-24 rounded-full border-4 border-white dark:border-zinc-900 shadow-lg bg-emerald-500 p-0.5">
                   <img 
                     src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=250&h=250&auto=format&fit=crop" 
                     alt="Profile" 
@@ -65,7 +65,7 @@ export default function Profile({ onNavigate }: ProfileProps) {
                     referrerPolicy="no-referrer"
                   />
                 </div>
-                <button className="absolute bottom-0 right-0 w-8 h-8 bg-blue-500 rounded-full border-2 border-white dark:border-zinc-900 flex items-center justify-center text-white hover:bg-gradient-to-r from-blue-700 to-blue-500 transition-colors shadow-md">
+                <button className="absolute bottom-0 right-0 w-8 h-8 bg-emerald-500 rounded-full border-2 border-white dark:border-zinc-900 flex items-center justify-center text-white hover:bg-gradient-to-r from-emerald-700 to-emerald-500 transition-colors shadow-md">
                   <Settings className="w-4 h-4" />
                 </button>
               </div>
@@ -85,7 +85,7 @@ export default function Profile({ onNavigate }: ProfileProps) {
           {/* Stats Grid */}
           <div className="grid grid-cols-2 gap-4">
             {stats.map((stat, i) => (
-              <div key={i} className="bg-white dark:bg-zinc-900 p-5 rounded-3xl shadow-sm border border-zinc-100 dark:border-zinc-800 hover:border-blue-500/30 transition-colors group">
+              <div key={i} className="bg-white dark:bg-zinc-900 p-5 rounded-3xl shadow-sm border border-zinc-100 dark:border-zinc-800 hover:border-emerald-500/30 transition-colors group">
                 <div className="flex items-center justify-between mb-4">
                   <div className={`w-10 h-10 rounded-2xl ${stat.bg} ${stat.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
                     <stat.icon className="w-5 h-5" />
@@ -127,7 +127,7 @@ export default function Profile({ onNavigate }: ProfileProps) {
               </h3>
               <button 
                 onClick={() => onNavigate('orders')}
-                className="text-sm font-bold text-blue-600 dark:text-blue-500 hover:text-blue-700 transition-colors"
+                className="text-sm font-bold text-emerald-600 dark:text-emerald-500 hover:text-emerald-700 transition-colors"
               >
                 View All
               </button>
@@ -177,7 +177,7 @@ export default function Profile({ onNavigate }: ProfileProps) {
                   </div>
                   <span className="font-bold text-sm text-zinc-900 dark:text-zinc-100">{isDark ? 'Light Mode' : 'Dark Mode'}</span>
                 </div>
-                <div className={`w-12 h-6 rounded-full p-1 transition-colors ${isDark ? 'bg-blue-500' : 'bg-zinc-200 dark:bg-zinc-700'}`}>
+                <div className={`w-12 h-6 rounded-full p-1 transition-colors ${isDark ? 'bg-emerald-500' : 'bg-zinc-200 dark:bg-zinc-700'}`}>
                   <div className={`w-4 h-4 bg-white rounded-full transition-transform ${isDark ? (isRTL ? '-translate-x-6' : 'translate-x-6') : 'translate-x-0'}`}></div>
                 </div>
               </button>

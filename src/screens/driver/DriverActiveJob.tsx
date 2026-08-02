@@ -66,7 +66,7 @@ export default function DriverActiveJob({ onNavigate }: DriverActiveJobProps) {
             <ChevronLeft className={`w-5 h-5 ${isRTL ? 'rotate-180' : ''}`} />
           </button>
           <div className="bg-white dark:bg-zinc-900 px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
             <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
               {status === 'heading_to_pickup' ? 'Heading to Pickup' : 
                status === 'arrived' ? 'Arrived at Pickup' : 
@@ -98,7 +98,7 @@ export default function DriverActiveJob({ onNavigate }: DriverActiveJobProps) {
               <button className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-900 dark:text-white transition-colors hover:bg-zinc-200 dark:hover:bg-zinc-700">
                 <MessageSquare className="w-4 h-4" />
               </button>
-              <button className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-500 transition-colors hover:bg-blue-500/20">
+              <button className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-500 transition-colors hover:bg-emerald-500/20">
                 <Phone className="w-4 h-4" />
               </button>
             </div>
@@ -109,7 +109,7 @@ export default function DriverActiveJob({ onNavigate }: DriverActiveJobProps) {
           <div className="space-y-4 mb-6 relative">
             <div className={`absolute ${isRTL ? 'right-[11px]' : 'left-[11px]'} top-4 bottom-4 w-0.5 bg-zinc-200 dark:bg-zinc-800`}></div>
             <div className="flex items-center gap-4 relative z-10">
-              <div className={`w-6 h-6 rounded-full border-2 border-white dark:border-zinc-900 flex items-center justify-center ${status === 'heading_to_pickup' ? 'bg-blue-500' : 'bg-zinc-100 dark:bg-zinc-800'}`}>
+              <div className={`w-6 h-6 rounded-full border-2 border-white dark:border-zinc-900 flex items-center justify-center ${status === 'heading_to_pickup' ? 'bg-emerald-500' : 'bg-zinc-100 dark:bg-zinc-800'}`}>
                 <div className={`w-2 h-2 rounded-full ${status === 'heading_to_pickup' ? 'bg-white' : 'bg-zinc-400'}`}></div>
               </div>
               <div className="flex-1">
@@ -118,7 +118,7 @@ export default function DriverActiveJob({ onNavigate }: DriverActiveJobProps) {
               </div>
             </div>
             <div className="flex items-center gap-4 relative z-10">
-              <div className={`w-6 h-6 rounded-full border-2 border-white dark:border-zinc-900 flex items-center justify-center ${status === 'in_transit' ? 'bg-blue-500' : 'bg-zinc-100 dark:bg-zinc-800'}`}>
+              <div className={`w-6 h-6 rounded-full border-2 border-white dark:border-zinc-900 flex items-center justify-center ${status === 'in_transit' ? 'bg-emerald-500' : 'bg-zinc-100 dark:bg-zinc-800'}`}>
                 <MapPin className={`w-3 h-3 ${status === 'in_transit' ? 'text-white' : 'text-zinc-400'}`} />
               </div>
               <div className="flex-1">
@@ -135,7 +135,7 @@ export default function DriverActiveJob({ onNavigate }: DriverActiveJobProps) {
             </div>
             <div className="flex justify-between items-center text-xs">
               <span className="text-zinc-500 dark:text-zinc-400 font-medium">Collect from Receiver:</span>
-              <span className="font-bold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded">
+              <span className="font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">
                 AED {currentRequest?.value || currentRequest?.orderAmount || '45.00'}
               </span>
             </div>

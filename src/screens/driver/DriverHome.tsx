@@ -92,7 +92,7 @@ export default function DriverHome({ onNavigate }: DriverHomeProps) {
               <h4 className="font-bold text-sm mb-1">New Request: {notification.type}</h4>
               <p className="text-xs text-zinc-400 dark:text-zinc-500 mb-2">{notification.pickup}</p>
               <div className="flex items-center gap-2">
-                <span className="text-blue-400 dark:text-blue-600 font-bold">{notification.price}</span>
+                <span className="text-emerald-400 dark:text-emerald-600 font-bold">{notification.price}</span>
                 <span className="text-xs text-zinc-500">• {notification.distance}</span>
               </div>
             </div>
@@ -125,11 +125,11 @@ export default function DriverHome({ onNavigate }: DriverHomeProps) {
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-900 rounded-full px-3 py-1.5">
-              <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-blue-500' : 'bg-zinc-400'}`}></span>
+              <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-500' : 'bg-zinc-400'}`}></span>
               <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100">{isOnline ? 'Online' : 'Offline'}</span>
               <button 
                 onClick={() => setIsOnline(!isOnline)}
-                className={`w-8 h-4 rounded-full p-0.5 transition-colors ${isOnline ? 'bg-blue-500' : 'bg-zinc-300 dark:bg-zinc-700'}`}
+                className={`w-8 h-4 rounded-full p-0.5 transition-colors ${isOnline ? 'bg-emerald-500' : 'bg-zinc-300 dark:bg-zinc-700'}`}
               >
                 <div className={`w-3 h-3 bg-white rounded-full transition-transform ${isOnline ? (isRTL ? '-translate-x-4' : 'translate-x-4') : 'translate-x-0'}`}></div>
               </button>
@@ -141,9 +141,9 @@ export default function DriverHome({ onNavigate }: DriverHomeProps) {
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-zinc-900 dark:bg-zinc-800 rounded-3xl p-5 text-white shadow-xl shadow-zinc-900/10 dark:shadow-none">
             <p className="text-xs text-zinc-400 mb-1">Today's Earnings</p>
-            <h3 className="text-2xl font-bold text-blue-400">AED 142.50</h3>
+            <h3 className="text-2xl font-bold text-emerald-400">AED 142.50</h3>
             <div className="mt-4 flex items-center gap-2 text-xs text-zinc-300">
-              <CheckCircle className="w-3 h-3 text-blue-500" />
+              <CheckCircle className="w-3 h-3 text-emerald-500" />
               <span>4 Jobs Completed</span>
             </div>
           </div>
@@ -163,8 +163,8 @@ export default function DriverHome({ onNavigate }: DriverHomeProps) {
             <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 transition-colors duration-300">Available Requests</h3>
             {isOnline && (
               <span className="flex h-3 w-3 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
               </span>
             )}
           </div>
@@ -198,7 +198,7 @@ export default function DriverHome({ onNavigate }: DriverHomeProps) {
                       </div>
                     </div>
                     <div className="text-right">
-                      <h4 className="font-bold text-lg text-blue-600 dark:text-blue-400">{job.price}</h4>
+                      <h4 className="font-bold text-lg text-emerald-600 dark:text-emerald-400">{job.price}</h4>
                       <p className="text-[12px] text-zinc-500 dark:text-zinc-400">{job.distance}</p>
                     </div>
                   </div>
@@ -215,8 +215,8 @@ export default function DriverHome({ onNavigate }: DriverHomeProps) {
                       </div>
                     </div>
                     <div className="flex items-center gap-4 relative z-10">
-                      <div className="w-6 h-6 rounded-full bg-blue-500/20 border-2 border-white dark:border-zinc-900 flex items-center justify-center">
-                        <MapPin className="w-3 h-3 text-blue-600 dark:text-blue-500" />
+                      <div className="w-6 h-6 rounded-full bg-emerald-500/20 border-2 border-white dark:border-zinc-900 flex items-center justify-center">
+                        <MapPin className="w-3 h-3 text-emerald-600 dark:text-emerald-500" />
                       </div>
                       <div className="flex-1">
                         <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-0.5">Dropoff</p>

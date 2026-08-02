@@ -25,7 +25,7 @@ export default function Success({ onNavigate }: SuccessProps) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.4 }}
-      className="absolute inset-0 bg-gradient-to-r from-blue-700 to-blue-500 flex flex-col items-center justify-center p-8 text-white"
+      className="absolute inset-0 bg-gradient-to-r from-emerald-700 to-emerald-500 flex flex-col items-center justify-center p-8 text-white"
     >
       <motion.div
         initial={{ scale: 0.5, opacity: 0 }}
@@ -38,12 +38,12 @@ export default function Success({ onNavigate }: SuccessProps) {
         }}
         className="w-32 h-32 bg-white rounded-full flex items-center justify-center mb-8 relative"
       >
-        <CheckCircle2 className="w-16 h-16 text-blue-600" />
+        <CheckCircle2 className="w-16 h-16 text-emerald-600" />
         <motion.div 
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.6, type: "spring" }}
-          className={`absolute -bottom-2 ${isRTL ? '-left-2' : '-right-2'} w-12 h-12 bg-zinc-900 rounded-full flex items-center justify-center border-4 border-blue-600`}
+          className={`absolute -bottom-2 ${isRTL ? '-left-2' : '-right-2'} w-12 h-12 bg-zinc-900 rounded-full flex items-center justify-center border-4 border-emerald-600`}
         >
           <Package className="w-5 h-5 text-white" />
         </motion.div>
@@ -56,7 +56,7 @@ export default function Success({ onNavigate }: SuccessProps) {
         className="text-center space-y-3"
       >
         <h2 className="text-3xl font-black tracking-tight">{t('order_confirmed')}</h2>
-        <p className="text-blue-100 font-medium max-w-[250px] mx-auto">
+        <p className="text-emerald-100 font-medium max-w-[250px] mx-auto">
           {t('driver_on_way_notify')}
         </p>
       </motion.div>

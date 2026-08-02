@@ -32,7 +32,7 @@ export default function DriverProfile({ onNavigate }: DriverProfileProps) {
       <div className="flex-1 overflow-y-auto pt-20 pb-32 px-6">
         <div className="flex flex-col items-center mb-10">
           <div className="relative mb-4">
-            <div className="w-24 h-24 rounded-full border-4 border-blue-500 p-1">
+            <div className="w-24 h-24 rounded-full border-4 border-emerald-500 p-1">
               <img 
                 src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=250&h=250&auto=format&fit=crop" 
                 alt="Profile" 
@@ -40,13 +40,13 @@ export default function DriverProfile({ onNavigate }: DriverProfileProps) {
                 referrerPolicy="no-referrer"
               />
             </div>
-            <button className="absolute bottom-0 right-0 w-8 h-8 bg-blue-500 rounded-full border-4 border-white dark:border-zinc-950 flex items-center justify-center text-white">
+            <button className="absolute bottom-0 right-0 w-8 h-8 bg-emerald-500 rounded-full border-4 border-white dark:border-zinc-950 flex items-center justify-center text-white">
               <Settings className="w-4 h-4" />
             </button>
           </div>
           <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">Marcus Driver</h2>
           <p className="text-zinc-500 dark:text-zinc-400 text-sm">marcus.driver@example.com</p>
-          <div className="mt-3 px-3 py-1 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-full text-xs font-bold uppercase tracking-wider">
+          <div className="mt-3 px-3 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full text-xs font-bold uppercase tracking-wider">
             Pro Driver
           </div>
         </div>
@@ -55,15 +55,15 @@ export default function DriverProfile({ onNavigate }: DriverProfileProps) {
           {/* Switch to User Mode */}
           <button
             onClick={() => onNavigate('home')}
-            className="w-full flex items-center justify-between p-4 rounded-2xl bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors group mb-4"
+            className="w-full flex items-center justify-between p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-colors group mb-4"
           >
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
+              <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                 <User className="w-5 h-5" />
               </div>
-              <span className="font-bold text-blue-700 dark:text-blue-400">Switch to User Account</span>
+              <span className="font-bold text-emerald-700 dark:text-emerald-400">Switch to User Account</span>
             </div>
-            <ChevronRight className={`w-5 h-5 text-blue-600 dark:text-blue-500 ${isRTL ? 'rotate-180' : ''}`} />
+            <ChevronRight className={`w-5 h-5 text-emerald-600 dark:text-emerald-500 ${isRTL ? 'rotate-180' : ''}`} />
           </button>
 
           {menuItems.map((item, i) => (
@@ -72,7 +72,7 @@ export default function DriverProfile({ onNavigate }: DriverProfileProps) {
               className="w-full flex items-center justify-between p-4 rounded-2xl hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors group"
             >
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-500 dark:text-zinc-400 group-hover:text-blue-500 transition-colors">
+                <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-500 dark:text-zinc-400 group-hover:text-emerald-500 transition-colors">
                   <item.icon className="w-5 h-5" />
                 </div>
                 <span className="font-bold text-zinc-900 dark:text-zinc-100">{item.label}</span>
@@ -86,12 +86,12 @@ export default function DriverProfile({ onNavigate }: DriverProfileProps) {
             className="w-full flex items-center justify-between p-4 rounded-2xl hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors group"
           >
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-500 dark:text-zinc-400 group-hover:text-blue-500 transition-colors">
+              <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-500 dark:text-zinc-400 group-hover:text-emerald-500 transition-colors">
                 {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </div>
               <span className="font-bold text-zinc-900 dark:text-zinc-100">{isDark ? 'Light Mode' : 'Dark Mode'}</span>
             </div>
-            <div className={`w-12 h-6 rounded-full p-1 transition-colors ${isDark ? 'bg-blue-500' : 'bg-zinc-200 dark:bg-zinc-800'}`}>
+            <div className={`w-12 h-6 rounded-full p-1 transition-colors ${isDark ? 'bg-emerald-500' : 'bg-zinc-200 dark:bg-zinc-800'}`}>
               <div className={`w-4 h-4 bg-white rounded-full transition-transform ${isDark ? (isRTL ? '-translate-x-6' : 'translate-x-6') : 'translate-x-0'}`}></div>
             </div>
           </button>
