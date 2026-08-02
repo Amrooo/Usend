@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, Camera, MapPin, Calendar, Clock, ArrowRight, Mic, Home, Briefcase, Package, Plus, CheckCircle2, Sparkles, Loader2 } from 'lucide-react';
 import { Screen } from '../types';
 import { useLanguage } from '../context/LanguageContext';
-import { GoogleGenAI } from "@google/genai";
+
 
 const PACKAGE_IMAGES: Record<string, string> = {
   'Furniture': 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=400&auto=format&fit=crop',
@@ -188,38 +188,18 @@ export default function Details({ onNavigate }: DetailsProps) {
   const analyzeImage = async (base64Data: string) => {
     setIsAnalyzing(true);
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: [
-          {
-            parts: [
-              { text: "Analyze this image and identify the object. Suggest the most appropriate package type from this list: Furniture, Electronics, Documents, Custom Load. Also provide a brief description of the item, an estimated weight in kg, and dimensions (length, width, height) in cm. Return the result in JSON format: { \"suggestion\": \"Type\", \"description\": \"Brief description\", \"weight\": number, \"length\": number, \"width\": number, \"height\": number }" },
-              {
-                inlineData: {
-                  mimeType: "image/jpeg",
-                  data: base64Data.split(',')[1]
-                }
-              }
-            ]
-          }
-        ],
-        config: {
-          responseMimeType: "application/json"
-        }
+      const res = await fetch('/api/gemini/analyze-item', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ photoBase64: base64Data }),
       });
-
-      const result = JSON.parse(response.text || '{}');
-      if (result.suggestion) {
-        setPackageType(result.suggestion);
-      }
-      if (result.description) {
-        setDescription(result.description);
-      }
-      if (result.weight) setWeight(result.weight.toString());
-      if (result.length) setLength(result.length.toString());
-      if (result.width) setWidth(result.width.toString());
-      if (result.height) setHeight(result.height.toString());
+      const result = await res.json();
+      if (result.category) setPackageType(result.category);
+      if (result.notes) setDescription(result.notes);
+      if (result.estimatedWeightKg) setWeight(result.estimatedWeightKg.toString());
+      if (result.lengthCm) setLength(result.lengthCm.toString());
+      if (result.widthCm) setWidth(result.widthCm.toString());
+      if (result.heightCm) setHeight(result.heightCm.toString());
     } catch (e) {
       console.error('AI Analysis failed', e);
     } finally {

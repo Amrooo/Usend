@@ -20,7 +20,7 @@ import { useState, useRef } from 'react';
 import React from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useApp } from '../../context/AppContext';
-import { GoogleGenAI, Type } from "@google/genai";
+
 
 interface MerchantInventoryProps {
   key?: string;
@@ -69,61 +69,24 @@ export default function MerchantInventory({ onNavigate }: MerchantInventoryProps
     if (!newProduct.image && !newProduct.name) return;
     setIsGenerating(true);
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      const contents: any[] = [];
-      
-      let promptText = "Analyze this product and provide realistic inventory details. ";
-      
-      if (newProduct.image.startsWith('data:image')) {
-        const mimeType = newProduct.image.substring(newProduct.image.indexOf(':') + 1, newProduct.image.indexOf(';'));
-        const data = newProduct.image.substring(newProduct.image.indexOf(',') + 1);
-        contents.push({
-          inlineData: { mimeType, data }
-        });
-        promptText += "Use the provided image to determine the product details. ";
-      } else if (newProduct.image) {
-        promptText += `The product image is at this URL: ${newProduct.image}. `;
-      }
-
-      if (newProduct.name) {
-        promptText += `The name or partial name of the product is "${newProduct.name}". `;
-      } else {
-        promptText += `Determine a catchy and accurate product name based on the image. `;
-      }
-      
-      contents.push({ text: promptText });
-      
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: { parts: contents },
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              name: { type: Type.STRING, description: "A catchy product name" },
-              description: { type: Type.STRING, description: "A detailed product description" },
-              category: { type: Type.STRING, description: "One of: Electronics, Furniture, Accessories, Clothing, Food" },
-              price: { type: Type.STRING, description: "Retail price (numbers only), e.g. 19.99" },
-              costPrice: { type: Type.STRING, description: "Estimated wholesale cost (numbers only), e.g. 8.50" },
-              weight: { type: Type.STRING, description: "Estimated weight, e.g. 1.2 kg" }
-            },
-            required: ["name", "description", "category", "price", "costPrice", "weight"]
-          }
-        }
+      const res = await fetch('/api/gemini/analyze-item', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          itemName: newProduct.name,
+          photoBase64: newProduct.image?.startsWith('data:image') ? newProduct.image : undefined,
+        }),
       });
-
-      if (response.text) {
-        const result = JSON.parse(response.text);
+      const result = await res.json();
+      if (result) {
         setNewProduct(prev => ({
           ...prev,
-          name: result.name || prev.name,
-          description: result.description || prev.description,
+          name: result.itemName || prev.name,
+          description: result.notes || prev.description,
           category: result.category || prev.category,
-          price: result.price ? result.price.replace(/[^0-9.]/g, '') : prev.price,
-          costPrice: result.costPrice ? result.costPrice.replace(/[^0-9.]/g, '') : prev.costPrice,
-          weight: result.weight || prev.weight,
-          image: prev.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(result.name || 'Product')}&background=random`
+          price: prev.price,
+          weight: result.estimatedWeightKg ? `${result.estimatedWeightKg} kg` : prev.weight,
+          image: prev.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(result.itemName || 'Product')}&background=random`
         }));
       }
     } catch (error) {
