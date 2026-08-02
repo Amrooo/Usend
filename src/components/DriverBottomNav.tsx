@@ -19,7 +19,7 @@ export default function DriverBottomNav({ currentScreen, onNavigate }: DriverBot
   ];
 
   return (
-    <div className="absolute bottom-6 left-4 right-4 h-16 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-zinc-200/50 dark:border-zinc-800/50 rounded-full shadow-2xl flex items-center justify-between px-2 z-50 transition-colors duration-300">
+    <div className="absolute bottom-6 left-4 right-4 h-16 bg-white/90 backdrop-blur-xl border border-zinc-200/50 rounded-full shadow-2xl flex items-center justify-between px-2 z-50 transition-colors duration-300">
       {navItems.map((item) => {
         const isActive = currentScreen === item.id;
         return (
@@ -29,7 +29,7 @@ export default function DriverBottomNav({ currentScreen, onNavigate }: DriverBot
             className={`relative flex items-center justify-center h-10 px-4 rounded-full transition-all duration-300 ${
               isActive 
                 ? 'bg-[#f5502c]/10 text-[#f5502c]' 
-                : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'
+                : 'text-zinc-400 hover:text-zinc-600'
             }`}
           >
             <div className="flex items-center gap-2">

@@ -1,8 +1,8 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { Bell, Mic, Sofa, Monitor, FileText, Package, MapPin, Sun, Moon, Languages, X, CheckCircle, Clock, AlertCircle, Search } from 'lucide-react';
+import { Bell, Mic, Sofa, Monitor, FileText, Package, MapPin, Sun, Moon, Languages, X, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 import { Screen } from '../types';
 import BottomNav from '../components/BottomNav';
-import LogoIcon from '../components/LogoIcon';
+import Logo from '../components/Logo';
 import { useDarkMode } from '../hooks/useDarkMode';
 import { useLanguage } from '../context/LanguageContext';
 import { useState } from 'react';
@@ -44,7 +44,7 @@ export default function Home({ onNavigate }: HomeProps) {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: isRTL ? 100 : -100 }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      className="absolute inset-0 bg-white dark:bg-zinc-950 flex flex-col transition-colors duration-300"
+      className="absolute inset-0 bg-white flex flex-col transition-colors duration-300"
     >
       <div className="flex-1 overflow-y-auto hide-scrollbar pt-20 pb-32 px-6 space-y-8">
         {/* Header */}
@@ -60,36 +60,36 @@ export default function Home({ onNavigate }: HomeProps) {
             </div>
             <div className="text-left rtl:text-right">
               <p className="text-[12px] font-bold tracking-widest text-zinc-400 uppercase">{t('good_evening')}</p>
-              <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Alex Rivera</h2>
+              <h2 className="text-lg font-bold text-zinc-900">Alex Rivera</h2>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <button 
               onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
-              className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white flex items-center justify-center transition-colors duration-300"
+              className="w-10 h-10 rounded-full bg-zinc-100 text-zinc-900 flex items-center justify-center transition-colors duration-300"
               title="Toggle Language"
             >
               <Languages className="w-4 h-4" />
             </button>
             <button 
               onClick={toggle}
-              className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white flex items-center justify-center transition-colors duration-300"
+              className="w-10 h-10 rounded-full bg-zinc-100 text-zinc-900 flex items-center justify-center transition-colors duration-300"
             >
-              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              <Sun className="w-4 h-4" />
             </button>
             <button 
               onClick={() => setShowNotifications(true)}
-              className="w-10 h-10 rounded-full bg-zinc-900 dark:bg-zinc-800 text-white flex items-center justify-center relative transition-colors duration-300"
+              className="w-10 h-10 rounded-full bg-zinc-900 text-white flex items-center justify-center relative transition-colors duration-300"
             >
               <Bell className="w-4 h-4" />
-              <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-blue-500 rounded-full border-2 border-zinc-900 dark:border-zinc-800"></span>
+              <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-blue-500 rounded-full border-2 border-zinc-900"></span>
             </button>
           </div>
         </div>
 
         {/* Logo & Greeting */}
         <div className="flex flex-col items-center text-center space-y-4">
-          <LogoIcon className="h-10 w-auto origin-center" variant="dark" />
+          <Logo className="origin-center" />
           <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 leading-tight px-4 transition-colors duration-300">
             {t('what_moving')}
           </h1>
@@ -109,25 +109,6 @@ export default function Home({ onNavigate }: HomeProps) {
           <span className="flex-1 text-left rtl:text-right text-zinc-500 dark:text-zinc-400 text-sm">e.g. 'I need to move a king size bed'</span>
           <Mic className="w-5 h-5 text-zinc-400 dark:text-zinc-500" />
         </button>
-
-        {/* Tracking Input */}
-        <div className="relative flex items-center w-full h-16 rounded-2xl bg-white dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-800 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10 transition-all overflow-hidden group shadow-sm dark:shadow-none">
-          <div className="pl-4 pr-3 flex items-center justify-center text-zinc-400 group-focus-within:text-blue-500 transition-colors">
-            <Package className="w-5 h-5" />
-          </div>
-          <input
-            type="text"
-            placeholder="Enter Tracking Number (e.g. AWB-123456)"
-            className="w-full h-full bg-transparent outline-none text-zinc-800 dark:text-zinc-100 font-bold placeholder:text-zinc-400 placeholder:font-normal text-sm px-2"
-          />
-          <button
-            onClick={() => onNavigate('tracking')}
-            className="h-[calc(100%-16px)] mr-2 px-5 rounded-xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-500 transition-all flex items-center gap-2 active:scale-95 shadow-sm"
-          >
-            <Search className="w-4 h-4" />
-            <span className="hidden sm:inline">Track</span>
-          </button>
-        </div>
 
         {/* Quick Actions */}
         <div>

@@ -1,66 +1,79 @@
-import "./env";
 import express from "express";
 import path from "path";
+import { createServer as createViteServer } from "vite";
+import { GoogleGenAI, Type } from "@google/genai";
+import Stripe from "stripe";
+import dotenv from "dotenv";
+import admin from 'firebase-admin';
+import { getFirestore, FieldValue } from "firebase-admin/firestore";
+import fs from "fs";
 
+dotenv.config();
 
-// Lazy-load firebase-admin on first DB use to avoid slow startup from disk
-let _admin: any = null;
-let _db: any = null;
+// Read firebase-applet-config.json for target project and database info
+let firebaseConfig: { projectId?: string; firestoreDatabaseId?: string } = {};
+try {
+  const configPath = path.resolve(process.cwd(), "firebase-applet-config.json");
+  if (fs.existsSync(configPath)) {
+    firebaseConfig = JSON.parse(fs.readFileSync(configPath, "utf8"));
+  }
+} catch (e) {
+  console.error("Failed to read firebase-applet-config.json:", e);
+}
 
-async function getAdmin(): Promise<any> {
-  if (!_admin) {
-    const adminModule = await import('firebase-admin');
-    _admin = adminModule.default || adminModule;
-    if (!_admin.apps.length) {
-      try {
-        if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-          const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-          _admin.initializeApp({ credential: _admin.credential.cert(serviceAccount) });
-          console.log("Firebase Admin initialized with service account key.");
-        } else if (process.env.NODE_ENV !== 'production') {
-          const dummyCert = {
-            type: 'service_account',
-            project_id: 'gen-lang-client-0329298140',
-            private_key: '-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEAySE61MBcwz76FDzpIrErdcfXZZjYdJDQ0JBHLncIvpyXv9Xk\n/PMhjVIpFJHcLPnNzocSnkdmVX4I2m0gIxjSKvgpJ/XpR98QkitOIhFbnNLq4UdQ\nGv/EkbKpzn02hoDdQ2CrEI0ljCGtkaTZ+NDVjALQoMc3sH3ho9LdUCj8937zWHSF\nUW7vD7PBO4bi+KP+tSXkF98EHs13RbCXw+Wl9LSybTVhLR9q1TdBF4FvkhipnhyA\n9NuL7B6ebNp27uKkQ3dyyHI7xTh6DgzPAIpAQdnAuz9wNtOq2yu8NAN+ClkUERD+\nM5KZImlMd2I7EU7GcHHi2iHXhU471aaUD3fPuwIDAQABAoIBADWa+K4Zct/K2iYo\nsc5AQCANGjiGyzIOIsljmsUkjp0W6U8EuBo+xrN+sVo9IdyO265uy6SJzRl+FOf6\na7VO+TzglT+ESB+SsTzz88garjsW7+kI862ue3qFjsJtFuo0UEST8CPiKp61nygR\nMtMg/blqSqZ/UjVk542dNsUVl45yuyEPkBkzF2XwdsN6qRrWRHnJpZgC5GG/v3s6\nNb5bBi+RuYDbUuofygCRIC6VQ1qZciUGN7GjRZv4liVUIW69HuR1qyegWF69y5Pi\nWE/dOjmHXwTGLNj2ymhHLAaE+C+9l1V/DLT/7oSQ2BsNWmELjclxq5ljjCOZdeAV\ndIp2rWECgYEA9TR74rG8/AcOiYW2G/jvkfnsaEXM4H5dpemvZIJuMGm3zmQzwFSm\nE51G7bARCIU25/ufWt+FvqH7ioigLFM8nWdQI9c5RteYWYOX7NV5Z2bz4yUqz1x2\nBqjFvurR132i69X6wYIyg3xF9BB4imQVKTilReqCU/n/ByAQpGPB49ECgYEA0fwC\nHZBGJOiM4MU6R2FEBY0DAD6UC8lL4J3rDhvNt7i+8Bp25V8YediN5fwtrHqSZZJ6\nngvpZqYLEbG/ZxKAleklN9q7h2pvcvyZqu0IZ2AoeFMKTR66RyEB9NGzsw4/Ewlh\nzTAN4ozWDaRnURzCgW4JArj3y4xIVv8y8GPc2csCgYEA1/gZIasA1E523GO76VlR\n0RX6xkCsWhKS8z4nMHS9DsEelpelCULFYENHpLRN3F5Q5PS3/7ceOrC7N+JsiX3q\nxoynhlnbZe0gj78bAgtoOc3xA+DJmwhKIEVonmZ+2rka1XOLwAKn8S11A6m6MdJC\n3SK6VyFdFw/7MtBoOBJxRPECgYBvIFoSQTcN81AS5+2Wtv/jnCO5bmS09BvGzGwH\n9GjjUM8jjC3d53yxhwxZaSLWw6tUO7fOimlD3J3BCHtN1fnc3BzJOWXDHW3Lwail\nT3oCE153hyLNe3SDjhFV+eCK4wA4V9+9UjAW9AeYAqh2wayiCJSWL0NcImpqN/ZC\nR+cqDwKBgQDh34mJIO6VUZGVBbFZKB+wASE5OOlJih0sbVzkrUujmhon63OA16Oa\neJ9m8nW+su4nj+MpKnFUzqvfdT3jcAD1ucCcES05gofAj/2umyJbt06Rir0Ji8vk\nsyQlhGR8HkdMFWiN/9IilwZHU0GM1i4V4sfJFsmc7RIB8I69HAIvzw==\n-----END RSA PRIVATE KEY-----',
-            client_email: 'dummy@gen-lang-client-0329298140.iam.gserviceaccount.com'
-          };
-          _admin.initializeApp({ credential: _admin.credential.cert(dummyCert) });
-          console.log("Firebase Admin initialized with dummy credentials for local development.");
-        } else {
-          _admin.initializeApp();
-          console.warn("Firebase Admin initialized with application default credentials.");
-        }
-      } catch (error) {
-        console.error("Failed to initialize Firebase Admin:", error);
-      }
+// Initialize Firebase Admin for secure backend operations
+if (firebaseConfig.projectId) {
+  process.env.GOOGLE_CLOUD_PROJECT = firebaseConfig.projectId;
+}
+
+if (!admin.apps.length) {
+  try {
+    const options: admin.AppOptions = {
+        projectId: firebaseConfig.projectId
+    };
+    
+    if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+      options.credential = admin.credential.cert(serviceAccount);
+      console.log("Firebase Admin: Initializing with provided service account key.");
+    } else {
+      console.warn("Firebase Admin: No service account key found, using default credentials.");
     }
+    
+    admin.initializeApp(options);
+  } catch (error) {
+    console.error("Firebase Admin: Initialization failed:", error);
   }
-  return _admin;
 }
 
-async function getDb(): Promise<any> {
-  if (!_db) {
-    const admin = await getAdmin();
-    _db = admin.firestore();
-  }
-  return _db;
-}
-
+const appInstance = admin.app();
+// Use the specific firestore database ID if provided, otherwise default
+const dbAdmin = firebaseConfig.firestoreDatabaseId 
+  ? getFirestore(appInstance, firebaseConfig.firestoreDatabaseId)
+  : getFirestore(appInstance);
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = 3000;
+
+app.get("/api/health", (req, res) => {
+  res.json({ 
+    status: "ok", 
+    timestamp: new Date().toISOString(),
+    project: firebaseConfig.projectId || 'unknown',
+    database: firebaseConfig.firestoreDatabaseId || 'default'
+  });
+});
 
 // Initialize Stripe Client lazily to avoid crashing on boot if key is missing
-let stripeClient: any = null;
-async function getStripe(): Promise<any> {
+let stripeClient: Stripe | null = null;
+function getStripe(): Stripe {
   if (!stripeClient) {
     const key = process.env.STRIPE_SECRET_KEY;
     if (!key) {
       throw new Error("STRIPE_SECRET_KEY is required for payments");
     }
-    const StripeModule = await import("stripe");
-    const StripeClass = StripeModule.default || StripeModule;
-    stripeClient = new StripeClass(key, { apiVersion: "2022-11-15" as any });
+    // Updated API version to a stable one
+    stripeClient = new Stripe(key, { apiVersion: "2023-10-16" as any });
   }
   return stripeClient;
 }
@@ -75,66 +88,70 @@ app.use((req, res, next) => {
 });
 
 // --- PAYMENT API ENDPOINTS (Stripe) ---
+app.get("/api/payments/config", (req, res) => {
+  res.json({ publishableKey: process.env.STRIPE_PUBLISHABLE_KEY || process.env.VITE_STRIPE_PUBLISHABLE_KEY });
+});
+
+app.get("/api/payments/status", async (req, res) => {
+  const secretKey = process.env.STRIPE_SECRET_KEY;
+  if (!secretKey) {
+    return res.json({ connected: false, error: "STRIPE_SECRET_KEY is missing from environment secrets." });
+  }
+  try {
+    const stripe = getStripe();
+    const balance = await stripe.balance.retrieve();
+    res.json({
+      connected: true,
+      mode: secretKey.startsWith("sk_test_") ? "test" : "live",
+      available: balance.available,
+      pending: balance.pending
+    });
+  } catch (error: any) {
+    console.error("Stripe verify connection failed:", error);
+    res.json({
+      connected: false,
+      error: error?.message || "Verification failed with Stripe API."
+    });
+  }
+});
+
 app.post("/api/payments/create-intent", async (req, res) => {
   try {
-    const { amountAED, orderId, customerId, metadata, isTopUp, merchantId } = req.body;
+    const { amountAED, orderId, topup, customerId, metadata } = req.body;
 
-    if (isTopUp) {
-      if (!amountAED || !merchantId) {
-        return res.status(400).json({ error: "Missing merchantId or amount for top-up" });
-      }
-
-      const amount = Math.round(amountAED * 100);
-      const stripe = await getStripe();
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: amount,
-        currency: "aed",
-        metadata: {
-          ...metadata,
-          type: "wallet_topup",
-          merchantId,
-          amountAED: amountAED.toString()
-        },
-        automatic_payment_methods: {
-          enabled: true,
-        },
-      });
-
-      return res.json({ clientSecret: paymentIntent.client_secret });
-    }
-
-    // SECURITY GAP FIX: In a real environment, you MUST fetch the 'orderId' from your Firebase Database 
-    // to determine the genuine expected `amountAED` to prevent client-side manipulation.
-    if (!orderId || !amountAED) {
-      return res.status(400).json({ error: "Missing orderId or amount" });
+    if (!amountAED) {
+      return res.status(400).json({ error: "Missing amount" });
     }
 
     let validAmountAED = amountAED;
 
-    if (orderId) {
+    if (orderId && !topup) {
       try {
-        const dbAdmin = await getDb();
         const orderSnap = await dbAdmin.collection('requests').doc(orderId).get();
         if (orderSnap.exists) {
-          const expectedAmount = orderSnap.data()?.totalAmountAED;
-          if (expectedAmount && expectedAmount !== amountAED) {
-             console.warn(`Amount mismatch for order ${orderId}: expected ${expectedAmount}, got ${amountAED}`);
-             validAmountAED = expectedAmount;
+          const data = orderSnap.data();
+          // Extract numeric value from amount string like "30 AED"
+          const dbAmountStr = data?.orderAmount || '';
+          const dbAmount = parseFloat(dbAmountStr.replace(/[^0-9.]/g, ''));
+          
+          if (!isNaN(dbAmount) && Math.abs(dbAmount - amountAED) > 0.01) {
+             console.warn(`Amount mismatch for order ${orderId}: expected ${dbAmount}, got ${amountAED}`);
+             validAmountAED = dbAmount;
           }
         }
       } catch (err) {
-        console.error("DB check failed:", err);
+        console.error("DB check failed (non-blocking for intent creation):", err);
       }
     }
 
     // Amount in Stripe must be in small units, so for AED we multiply by 100 (fils)
     const amount = Math.round(validAmountAED * 100);
 
-    const stripe = await getStripe();
+    const stripe = getStripe();
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amount,
       currency: "aed",
-      metadata: { ...metadata, orderId, customerId },
+      metadata: { ...metadata, orderId: orderId || 'topup', isTopup: topup ? 'true' : 'false', customerId },
       automatic_payment_methods: {
         enabled: true,
       },
@@ -142,90 +159,39 @@ app.post("/api/payments/create-intent", async (req, res) => {
 
     res.json({ clientSecret: paymentIntent.client_secret });
   } catch (error: any) {
-    console.error("Stripe Error:", error);
+    console.error("Stripe Intent Error:", error);
     res.status(500).json({ error: error.message });
   }
 });
 
 // A webhook listener is MANDATORY to securely confirm a payment
-app.post('/api/webhooks/stripe', express.raw({type: 'application/json'}), async (request, response) => {
+app.post('/api/webhooks/stripe', express.raw({type: 'application/json'}), (request, response) => {
   const sig = request.headers['stripe-signature'];
   const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
+  if (!endpointSecret) {
+    return response.status(400).send(`Webhook Error: Stripe Webhook Secret not configured`);
+  }
+
   let event;
   try {
-    const stripe = await getStripe();
-    if (!endpointSecret) {
-      throw new Error("Webhook secret not configured");
-    }
+    const stripe = getStripe();
     event = stripe.webhooks.constructEvent(request.body, sig as string, endpointSecret);
   } catch (err: any) {
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn("Stripe webhook signature verification failed or secret missing. Bypassing check in local development mode.");
-      try {
-        event = JSON.parse(request.body.toString());
-      } catch (parseErr: any) {
-        return response.status(400).send(`Webhook Error parsing raw body: ${parseErr.message}`);
-      }
-    } else {
-      return response.status(400).send(`Webhook Error: ${err.message}`);
-    }
+    return response.status(400).send(`Webhook Error: ${err.message}`);
   }
 
   // Handle the event
   switch (event.type) {
     case 'payment_intent.succeeded':
       const paymentIntentSucceeded = event.data.object;
-      
-      // Check if it is a wallet top-up transaction
-      if (paymentIntentSucceeded.metadata?.type === 'wallet_topup') {
-        const merchantId = paymentIntentSucceeded.metadata.merchantId;
-        const amountAED = parseFloat(paymentIntentSucceeded.metadata.amountAED || '0');
-        
-        if (merchantId && amountAED > 0) {
-          console.log(`Top-up confirmed for Merchant: ${merchantId}, Amount: ${amountAED}`);
-          
-          getDb().then((dbAdmin) => {
-            getAdmin().then((admin) => {
-              const userRef = dbAdmin.collection('users').doc(merchantId);
-              dbAdmin.runTransaction(async (transaction: any) => {
-                const userDoc = await transaction.get(userRef);
-                let currentBalance = 1485.00; // default initial balance
-                if (userDoc.exists) {
-                  currentBalance = userDoc.data()?.walletBalance !== undefined ? userDoc.data()?.walletBalance : 1485.00;
-                }
-                const newBalance = currentBalance + amountAED;
-                transaction.set(userRef, { walletBalance: newBalance }, { merge: true });
-                
-                // Also append a transaction record
-                const txnRef = dbAdmin.collection('users').doc(merchantId).collection('transactions').doc();
-                transaction.set(txnRef, {
-                  id: `TXN-${Math.floor(100000 + Math.random() * 900000)}`,
-                  date: new Date().toLocaleString(),
-                  type: 'Funds Added',
-                  amount: amountAED,
-                  method: 'Stripe Gateway',
-                  status: 'Completed',
-                  ref: `Stripe-${paymentIntentSucceeded.id ? paymentIntentSucceeded.id.slice(-6) : 'AUTO'}`,
-                  timestamp: admin.firestore.FieldValue.serverTimestamp()
-                });
-              })
-              .then(() => console.log(`Successfully credited merchant ${merchantId} with ${amountAED} AED.`))
-              .catch((err: any) => console.error("Failed to execute top-up transaction:", err));
-            });
-          });
-        }
-      } else if (paymentIntentSucceeded.metadata?.orderId) {
-        console.log(`Payment confirmed for Order: ${paymentIntentSucceeded.metadata.orderId}`);
-        // Securely update the payment status avoiding client tampering
-        getDb().then((dbAdmin) => {
-          getAdmin().then((admin) => {
-            dbAdmin.collection('requests').doc(paymentIntentSucceeded.metadata.orderId).update({
-              paymentStatus: 'paid',
-              updatedAt: admin.firestore.FieldValue.serverTimestamp()
-            }).catch((err: any) => console.error("Failed to update order payment status:", err));
-          });
-        });
+      console.log(`Payment confirmed for Order: ${paymentIntentSucceeded.metadata.orderId}`);
+      if (paymentIntentSucceeded.metadata.orderId) {
+        // Securely update the payment status avoiding client tamperiing
+        dbAdmin.collection('requests').doc(paymentIntentSucceeded.metadata.orderId).update({
+          paymentStatus: 'paid',
+          updatedAt: FieldValue.serverTimestamp()
+        }).catch(err => console.error("Failed to update order payment status:", err));
       }
       break;
     default:
@@ -274,23 +240,19 @@ app.post("/api/webhooks/aramex", express.json(), async (req, res) => {
      });
 
      // 2. Write this update securely to Firestore Database so the history is preserved
-     getDb().then((dbAdmin) => {
-       getAdmin().then((admin) => {
-         dbAdmin.collection('requests').doc(data.WaybillNumber).collection('tracking_history').add({
-             updateCode: data.UpdateCode,
-             updateDescription: data.UpdateDescription,
-             location: data.UpdateLocation || 'Hub',
-             timestamp: admin.firestore.FieldValue.serverTimestamp(),
-             rawPayload: data
-         }).catch((err: any) => console.error("Failed to append tracking history:", err));
+     dbAdmin.collection('requests').doc(data.WaybillNumber).collection('tracking_history').add({
+         updateCode: data.UpdateCode,
+         updateDescription: data.UpdateDescription,
+         location: data.UpdateLocation || 'Hub',
+         timestamp: FieldValue.serverTimestamp(),
+         rawPayload: data
+     }).catch(err => console.error("Failed to append tracking history:", err));
 
-         // Also update the main shipment status
-         dbAdmin.collection('requests').doc(data.WaybillNumber).update({
-             status: data.UpdateDescription,
-             updatedAt: admin.firestore.FieldValue.serverTimestamp()
-         }).catch((err: any) => console.error("Failed to update tracking status:", err));
-       });
-     });
+     // Also update the main shipment status
+     dbAdmin.collection('requests').doc(data.WaybillNumber).update({
+         status: data.UpdateDescription,
+         updatedAt: FieldValue.serverTimestamp()
+     }).catch(err => console.error("Failed to update tracking status:", err));
   }
   res.status(200).json({ status: "acknowledged" });
 });
@@ -308,27 +270,28 @@ app.post("/api/aramex/:serviceType", async (req, res) => {
       ClientInfo: {
         UserName: aramexUser ? aramexUser.replace(/,$/, '') : "testingapi@aramex.com",
         Password: process.env.ARAMEX_PASSWORD || "R123456789$r",
-        Version: process.env.ARAMEX_VERSION || "v1",
+        Version: process.env.ARAMEX_VERSION || "v1.0",
         AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER || "45796",
         AccountPin: process.env.ARAMEX_ACCOUNT_PIN || "116216",
         AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY || "DXB",
         AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY_CODE || "AE",
-        Source: process.env.ARAMEX_SOURCE || "24",
+        Source: process.env.ARAMEX_SOURCE !== undefined ? Number(process.env.ARAMEX_SOURCE) : 0,
+        PreferredLanguageCode: process.env.ARAMEX_PREFERRED_LANGUAGE || null
       },
     };
 
     const baseUrl = process.env.ARAMEX_BASE_URL || "https://ws.dev.aramex.net";
 
-    let aramexServicePath = "";
+    let path = "";
     if (serviceType === "rate") {
-      aramexServicePath =
+      path =
         "/ShippingAPI.V2/RateCalculator/Service_1_0.svc/json/CalculateRate";
     } else if (serviceType === "shipping") {
-      aramexServicePath = "/ShippingAPI.V2/Shipping/Service_1_0.svc/json/CreateShipments";
+      path = "/ShippingAPI.V2/Shipping/Service_1_0.svc/json/CreateShipments";
     } else if (serviceType === "tracking") {
-      aramexServicePath = "/ShippingAPI.V2/Tracking/Service_1_0.svc/json/TrackShipments";
+      path = "/ShippingAPI.V2/Tracking/Service_1_0.svc/json/TrackShipments";
     } else if (serviceType === "pickup") {
-      aramexServicePath = "/ShippingAPI.V2/Shipping/Service_1_0.svc/json/CreatePickup";
+      path = "/ShippingAPI.V2/Shipping/Service_1_0.svc/json/CreatePickup";
     } else {
       return res.status(200).json({ 
         HasErrors: true, 
@@ -338,7 +301,7 @@ app.post("/api/aramex/:serviceType", async (req, res) => {
 
     let aramexRes;
     try {
-      aramexRes = await fetch(`${baseUrl}${aramexServicePath}`, {
+      aramexRes = await fetch(`${baseUrl}${path}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -379,19 +342,16 @@ app.post("/api/aramex/:serviceType", async (req, res) => {
   }
 });
 
-// Initialize the Google GenAI SDK lazily
+// Initialize the Google GenAI SDK (only once)
 const apiKey = process.env.GEMINI_API_KEY;
-let _ai: any = null;
-async function getAI(): Promise<any> {
-  if (!_ai) {
-    const { GoogleGenAI } = await import('@google/genai');
-    _ai = new GoogleGenAI({
-      apiKey: apiKey,
-      httpOptions: { headers: { "User-Agent": "aistudio-build" } },
-    });
-  }
-  return _ai;
-}
+const ai = new GoogleGenAI({
+  apiKey: apiKey,
+  httpOptions: {
+    headers: {
+      "User-Agent": "aistudio-build",
+    },
+  },
+});
 
 // API endpoint for smart AI item recognition
 app.post("/api/gemini/analyze-item", async (req, res) => {
@@ -452,31 +412,11 @@ app.post("/api/gemini/analyze-item", async (req, res) => {
     parts.push({ text: promptText });
 
     // Call the gemini-3.5-flash model
-    const { Type } = await import('@google/genai');
-    const ai = await getAI();
     const response = await ai.models.generateContent({
       model: "gemini-3.5-flash",
       contents: { parts },
       config: {
         responseMimeType: "application/json",
-        safetySettings: [
-          {
-            category: "HARM_CATEGORY_HARASSMENT",
-            threshold: "BLOCK_MEDIUM_AND_ABOVE",
-          },
-          {
-            category: "HARM_CATEGORY_HATE_SPEECH",
-            threshold: "BLOCK_MEDIUM_AND_ABOVE",
-          },
-          {
-            category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-            threshold: "BLOCK_MEDIUM_AND_ABOVE",
-          },
-          {
-            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-            threshold: "BLOCK_MEDIUM_AND_ABOVE",
-          },
-        ],
         responseSchema: {
           type: Type.OBJECT,
           properties: {
@@ -563,33 +503,46 @@ app.post("/api/gemini/analyze-item", async (req, res) => {
 const isProd = process.env.NODE_ENV === "production";
 
 async function startServer() {
-  // Start listening immediately so API endpoints respond right away
-  app.listen(Number(PORT), "0.0.0.0", () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-
   if (!isProd) {
-    // Load Vite asynchronously AFTER server is listening
-    console.log("Loading Vite dev server (this may take a moment)...");
-    try {
-      const { createServer: createViteServer } = await import('vite');
-      const vite = await createViteServer({
-        server: { middlewareMode: true },
-        appType: "spa",
-      });
-      app.use(vite.middlewares);
-      console.log("Vite dev server middleware mounted.");
-    } catch (err) {
-      console.error("Failed to start Vite dev server:", err);
-    }
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: "spa",
+    });
+    app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
     app.get("*", (req, res) => {
       res.sendFile(path.join(distPath, "index.html"));
     });
-    console.log(`Serving static files from ${distPath}`);
   }
+
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Server running on port ${PORT}`);
+    
+    // Non-blocking Stripe live-connection check for instant console logging
+    const secretKey = process.env.STRIPE_SECRET_KEY;
+    if (secretKey) {
+      const masked = secretKey.substring(0, 7) + "..." + secretKey.substring(secretKey.length - 4);
+      console.log(`[Stripe Console] Found STRIPE_SECRET_KEY (${masked}). Validating connection with stripe.com API...`);
+      try {
+        const stripe = getStripe();
+        stripe.balance.retrieve()
+          .then((bal) => {
+            const mode = secretKey.startsWith("sk_test_") ? "TEST (sandbox)" : "LIVE (production)";
+            console.log(`[Stripe Console] SUCCESS! Successfully authenticated & connected with Stripe API in ${mode} mode.`);
+            console.log(`[Stripe Console] Available Balance: ${bal.available.map(a => `${(a.amount / 100).toFixed(2)} ${a.currency.toUpperCase()}`).join(', ') || 'N/A'}`);
+          })
+          .catch((err) => {
+            console.error(`[Stripe Console] ERROR: Stripe secret key verification failed: ${err.message}`);
+          });
+      } catch (err: any) {
+        console.error(`[Stripe Console] ERROR: Failed to instantiate Stripe: ${err.message}`);
+      }
+    } else {
+      console.warn(`[Stripe Console] WARNING: STRIPE_SECRET_KEY environment variable is not defined.`);
+    }
+  });
 }
 
 startServer();

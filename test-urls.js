@@ -1,14 +1,11 @@
-import https from 'https';
+const https = require('https');
 
 function checkUrl(hostname) {
   return new Promise((resolve) => {
-    const req = https.get(`https://${hostname}`, { timeout: 5000 }, (res) => {
+    https.get(`https://${hostname}`, (res) => {
       resolve(`${hostname}: ${res.statusCode}`);
     }).on('error', (e) => {
       resolve(`${hostname}: ERROR ${e.message}`);
-    }).on('timeout', () => {
-      req.destroy();
-      resolve(`${hostname}: ERROR Connection Timeout`);
     });
   });
 }

@@ -46,22 +46,22 @@ function AuthGuard({ children, requiredRole }: { children: React.ReactNode, requ
   
   if (requiredRole === 'merchant' && user?.role !== 'merchant' && user?.role !== 'admin') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950 p-6">
+      <div className="min-h-screen flex items-center justify-center bg-zinc-50 p-6">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white dark:bg-zinc-900 shadow-xl border border-red-100 dark:border-red-900/30 rounded-3xl max-w-md w-full p-8 text-center"
+          className="bg-white shadow-xl border border-red-100 rounded-3xl max-w-md w-full p-8 text-center"
         >
-          <div className="w-16 h-16 bg-red-50 dark:bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
             <ShieldAlert className="w-8 h-8" />
           </div>
-          <h2 className="text-2xl font-black text-zinc-900 dark:text-zinc-100 mb-3 tracking-tight">Access Denied</h2>
-          <p className="text-zinc-500 dark:text-zinc-400 mb-8 leading-relaxed">
-            This module requires <strong className="text-zinc-700 dark:text-zinc-300">Merchant</strong> account privileges. Please sign in with an authorized account to continue.
+          <h2 className="text-2xl font-black text-zinc-900 mb-3 tracking-tight">Access Denied</h2>
+          <p className="text-zinc-500 mb-8 leading-relaxed">
+            This module requires <strong className="text-zinc-700">Merchant</strong> account privileges. Please sign in with an authorized account to continue.
           </p>
           <button 
             onClick={handleLogout}
-            className="w-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-bold py-3.5 rounded-xl hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-colors"
+            className="w-full bg-zinc-900 text-white font-bold py-3.5 rounded-xl hover:bg-zinc-800 transition-colors"
           >
             Switch Account
           </button>
@@ -72,22 +72,22 @@ function AuthGuard({ children, requiredRole }: { children: React.ReactNode, requ
 
   if (requiredRole === 'user' && user?.role !== 'user' && user?.role !== 'admin') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950 p-6">
+      <div className="min-h-screen flex items-center justify-center bg-zinc-50 p-6">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white dark:bg-zinc-900 shadow-xl border border-red-100 dark:border-red-900/30 rounded-3xl max-w-md w-full p-8 text-center"
+          className="bg-white shadow-xl border border-red-100 rounded-3xl max-w-md w-full p-8 text-center"
         >
-          <div className="w-16 h-16 bg-red-50 dark:bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
             <ShieldAlert className="w-8 h-8" />
           </div>
-          <h2 className="text-2xl font-black text-zinc-900 dark:text-zinc-100 mb-3 tracking-tight">Access Restricted</h2>
-          <p className="text-zinc-500 dark:text-zinc-400 mb-8 leading-relaxed">
-            This module is reserved for <strong className="text-zinc-700 dark:text-zinc-300">User</strong> accounts.
+          <h2 className="text-2xl font-black text-zinc-900 mb-3 tracking-tight">Access Restricted</h2>
+          <p className="text-zinc-500 mb-8 leading-relaxed">
+            This module is reserved for <strong className="text-zinc-700">User</strong> accounts.
           </p>
           <button 
             onClick={handleLogout}
-            className="w-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-bold py-3.5 rounded-xl hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-colors"
+            className="w-full bg-zinc-900 text-white font-bold py-3.5 rounded-xl hover:bg-zinc-800 transition-colors"
           >
             Back to Sign In
           </button>
@@ -125,10 +125,10 @@ function GlobalToast() {
   };
 
   const colors = {
-    success: 'bg-green-50 text-green-600 dark:bg-green-500/10 dark:text-green-400 border-green-200 dark:border-green-900/50',
-    error: 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400 border-red-200 dark:border-red-900/50',
-    warning: 'bg-orange-50 text-orange-600 dark:bg-orange-500/10 dark:text-orange-400 border-orange-200 dark:border-orange-900/50',
-    info: 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 border-blue-200 dark:border-blue-900/50'
+    success: 'bg-green-50 text-green-600 border-green-200',
+    error: 'bg-red-50 text-red-600 border-red-200',
+    warning: 'bg-orange-50 text-orange-600 border-orange-200',
+    info: 'bg-blue-50 text-blue-600 border-blue-200'
   };
 
   return (
@@ -175,8 +175,8 @@ export default function App() {
       <LanguageProvider>
         <GlobalToast />
       {isLandingPage || isHub || isPortalRegister ? (
-        <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans transition-colors duration-300 w-full">
-           <AnimatePresence mode="wait">
+        <div className="min-h-screen bg-zinc-50 text-zinc-900 font-sans transition-colors duration-300 w-full">
+           <AnimatePresence mode="wait" initial={false}>
              {currentScreen === 'landing_page' && <LandingPage onNavigate={navigate} />}
              {currentScreen === 'hub' && <Hub onNavigate={navigate} />}
              {currentScreen === 'portal_register' && <PortalRegister onNavigate={navigate} />}
@@ -184,8 +184,8 @@ export default function App() {
         </div>
       ) : isMerchantScreen ? (
         <AuthGuard requiredRole="merchant">
-          <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans transition-colors duration-300 w-full">
-            <AnimatePresence mode="wait">
+          <div className="min-h-screen bg-zinc-50 text-zinc-900 font-sans transition-colors duration-300 w-full">
+            <AnimatePresence mode="wait" initial={false}>
               {currentScreen === 'merchant_dashboard' && <MerchantDashboard key="merchant_dashboard" onNavigate={navigate} />}
               {currentScreen === 'merchant_individual' && <MerchantIndividualOrder key="merchant_individual" onNavigate={navigate} />}
               {currentScreen === 'merchant_batch' && <MerchantBatchOrders key="merchant_batch" onNavigate={navigate} />}
@@ -201,8 +201,8 @@ export default function App() {
         </AuthGuard>
       ) : isUserScreen ? (
         <AuthGuard requiredRole="user">
-          <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans transition-colors duration-300 w-full">
-            <AnimatePresence mode="wait">
+          <div className="min-h-screen bg-zinc-50 text-zinc-900 font-sans transition-colors duration-300 w-full">
+            <AnimatePresence mode="wait" initial={false}>
               {currentScreen === 'user_dashboard' && <UserDashboard key="user_dashboard" onNavigate={navigate} />}
               {currentScreen === 'user_individual' && <UserIndividualOrder key="user_individual" onNavigate={navigate} />}
               {currentScreen === 'user_tracking' && <UserTracking key="user_tracking" onNavigate={navigate} />}
@@ -214,11 +214,11 @@ export default function App() {
       ) : isAdminScreen ? (
         <AdminDashboard onNavigate={navigate} />
       ) : (
-        <div className="min-h-screen bg-zinc-100 dark:bg-zinc-950 flex items-center justify-center p-4 sm:p-8 font-sans transition-colors duration-300">
+        <div className="min-h-screen bg-zinc-100 flex items-center justify-center p-4 sm:p-8 font-sans transition-colors duration-300">
           {/* Mobile Frame Container */}
-          <div className="w-full max-w-[393px] h-[852px] max-h-[95vh] bg-white dark:bg-zinc-950 rounded-[3rem] shadow-2xl overflow-hidden relative border-[8px] border-zinc-900 dark:border-zinc-800 flex flex-col transition-colors duration-300">
+          <div className="w-full max-w-[393px] h-[852px] max-h-[95vh] bg-white rounded-[3rem] shadow-2xl overflow-hidden relative border-[8px] border-zinc-900 flex flex-col transition-colors duration-300">
             {/* Status Bar Mock */}
-            <div className="absolute top-0 inset-x-0 h-12 flex items-center justify-between px-6 z-50 text-xs font-semibold pointer-events-none text-zinc-900 dark:text-zinc-100 transition-colors duration-300">
+            <div className="absolute top-0 inset-x-0 h-12 flex items-center justify-between px-6 z-50 text-xs font-semibold pointer-events-none text-zinc-900 transition-colors duration-300">
               <span>9:41</span>
               <div className="flex items-center gap-1.5">
                 <div className="w-4 h-3 bg-current rounded-sm mask mask-signal"></div>
@@ -231,10 +231,10 @@ export default function App() {
             
             {/* Dynamic Island Mock */}
             <div className="absolute top-2 left-1/2 -translate-x-1/2 w-32 h-7 bg-black rounded-full z-50 pointer-events-none"></div>
-
+ 
             {/* Screen Content */}
-            <div className="flex-1 relative overflow-hidden bg-white dark:bg-zinc-950 transition-colors duration-300">
-              <AnimatePresence mode="wait">
+            <div className="flex-1 relative overflow-hidden bg-white transition-colors duration-300">
+              <AnimatePresence mode="wait" initial={false}>
                 {currentScreen === 'splash' && <Splash key="splash" onNavigate={navigate} />}
                 {currentScreen === 'onboarding' && <Onboarding key="onboarding" onNavigate={navigate} />}
                 {currentScreen === 'phone_auth' && <PhoneAuth onNavigate={navigate} />}
@@ -254,7 +254,7 @@ export default function App() {
             </div>
 
             {/* Home Indicator Mock */}
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-zinc-300 dark:bg-zinc-700 rounded-full z-50 pointer-events-none transition-colors duration-300"></div>
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-zinc-300 rounded-full z-50 pointer-events-none transition-colors duration-300"></div>
           </div>
         </div>
       )}

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Phone, ArrowRight, X, CheckCircle2, MessageSquare, ShieldCheck } from 'lucide-react';
 import { Screen } from '../types';
 import { useLanguage } from '../context/LanguageContext';
-import LogoIcon from '../components/LogoIcon';
+import Logo from '../components/Logo';
 
 interface PhoneAuthProps {
   onNavigate: (screen: Screen) => void;
@@ -61,12 +61,12 @@ export default function PhoneAuth({ onNavigate }: PhoneAuthProps) {
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 1.1 }}
-      className="absolute inset-0 bg-white dark:bg-zinc-950 flex flex-col p-8 pt-16 transition-colors duration-300"
+      className="absolute inset-0 bg-white flex flex-col p-8 pt-16 transition-colors duration-300"
     >
       {/* Back Button */}
       <button 
         onClick={() => setStep(step === 'otp' ? 'phone' : 'phone')}
-        className="absolute top-8 left-8 p-2 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800"
+        className="absolute top-8 left-8 p-2 rounded-full bg-zinc-100 border border-zinc-200"
       >
         <X className="w-5 h-5 text-zinc-500" />
       </button>
@@ -77,14 +77,14 @@ export default function PhoneAuth({ onNavigate }: PhoneAuthProps) {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.1 }}
         >
-          <LogoIcon className="w-auto h-24 mb-6 mx-auto" />
+          <Logo />
         </motion.div>
 
         <div className="text-center space-y-3">
-          <h2 className="text-3xl font-black text-zinc-900 dark:text-zinc-100 tracking-tight">
+          <h2 className="text-3xl font-black text-zinc-900 tracking-tight">
             {step === 'phone' ? 'Welcome Back' : 'Verify Identity'}
           </h2>
-          <p className="text-zinc-500 dark:text-zinc-400 text-sm font-medium leading-relaxed">
+          <p className="text-zinc-500 text-sm font-medium leading-relaxed">
             {step === 'phone' 
               ? 'Enter your mobile number to request a delivery. No password needed.'
               : `We've sent a code to +218 ${phoneNumber}. It expires in ${countdown}s.`}

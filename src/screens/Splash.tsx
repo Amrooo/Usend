@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import { ArrowRight, Globe } from 'lucide-react';
 import { Screen } from '../types';
+import Logo from '../components/Logo';
 import LogoIcon from '../components/LogoIcon';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -22,12 +23,12 @@ export default function Splash({ onNavigate }: SplashProps) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, x: isRTL ? 100 : -100 }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      className="absolute inset-0 bg-white dark:bg-zinc-950 flex flex-col items-center justify-center p-8 pt-10 transition-colors duration-300"
+      className="absolute inset-0 bg-white flex flex-col items-center justify-center p-8 pt-10 transition-colors duration-300"
     >
       {/* Navigation - Contained and Rounded */}
       <div className="absolute top-8 md:top-10 inset-x-0 z-[100] px-4 w-full flex items-center justify-center">
-        <div className="cursor-pointer text-zinc-900 dark:text-white" onClick={() => onNavigate('landing_page')}>
-          <LogoIcon className="w-auto h-32 md:h-40" />
+        <div className="cursor-pointer text-zinc-900" onClick={() => onNavigate('landing_page')}>
+          <LogoIcon className="w-auto h-20" />
         </div>
       </div>
 
@@ -38,13 +39,13 @@ export default function Splash({ onNavigate }: SplashProps) {
           transition={{ delay: 0.4, duration: 0.5 }}
           className="text-center space-y-2"
         >
-          <h2 className="text-4xl font-black tracking-tight text-zinc-900 dark:text-zinc-100 transition-colors duration-300 italic">
+          <h2 className="text-4xl font-black tracking-tight text-zinc-900 transition-colors duration-300 italic">
             {t('splash_title')}
           </h2>
-          <h3 className="text-xl font-bold tracking-tight text-zinc-600 dark:text-zinc-400 mt-1 transition-colors duration-300 uppercase">
+          <h3 className="text-xl font-bold tracking-tight text-zinc-600 mt-1 transition-colors duration-300 uppercase">
             {t('splash_subtitle')}
           </h3>
-          <p className="text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed max-w-[280px] mx-auto transition-colors duration-300 pt-3">
+          <p className="text-zinc-500 text-sm leading-relaxed max-w-[280px] mx-auto transition-colors duration-300 pt-3">
             {t('splash_desc')}
           </p>
         </motion.div>

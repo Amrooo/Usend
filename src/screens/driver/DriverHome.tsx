@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Bell, MapPin, Package, Clock, ChevronRight, CheckCircle, Shield, Moon, X } from 'lucide-react';
 import { Screen } from '../../types';
 import DriverBottomNav from '../../components/DriverBottomNav';
-import LogoIcon from '../../components/LogoIcon';
+import Logo from '../../components/Logo';
 import { useLanguage } from '../../context/LanguageContext';
 import { useState, useEffect, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
@@ -172,7 +172,7 @@ export default function DriverHome({ onNavigate }: DriverHomeProps) {
           {!isOnline ? (
             <div className="bg-zinc-50 dark:bg-zinc-900/50 rounded-3xl p-8 text-center border border-zinc-200 dark:border-zinc-800">
               <div className="w-16 h-16 bg-zinc-200 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                <LogoIcon className="h-8 w-auto mr-3" variant="dark" />
+                <Moon className="w-8 h-8 text-zinc-400" />
               </div>
               <h4 className="font-bold text-zinc-900 dark:text-zinc-100 mb-2">You are offline</h4>
               <p className="text-sm text-zinc-500 dark:text-zinc-400">Go online to start receiving delivery requests in your area.</p>

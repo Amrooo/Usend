@@ -25,13 +25,13 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative w-full max-w-2xl bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800"
+            className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden border border-zinc-200"
           >
-            <div className="flex items-center justify-between p-6 border-b border-zinc-100 dark:border-zinc-800">
-              <h3 className="text-xl font-black text-zinc-900 dark:text-zinc-100">{title}</h3>
+            <div className="flex items-center justify-between p-6 border-b border-zinc-100">
+              <h3 className="text-xl font-black text-zinc-900">{title}</h3>
               <button
                 onClick={onClose}
-                className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                className="p-2 rounded-full hover:bg-zinc-100 transition-colors"
               >
                 <X className="w-6 h-6 text-zinc-500" />
               </button>

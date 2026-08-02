@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Screen } from '../../types';
 import MerchantSidebar from '../../components/MerchantSidebar';
@@ -23,6 +23,12 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useApp } from '../../context/AppContext';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
+import StripeCheckoutForm from '../../components/merchant/StripeCheckoutForm';
+import { updateDocument } from '../../lib/firebaseUtils';
+import { db } from '../../firebase';
+import { doc, onSnapshot } from 'firebase/firestore';
 
 interface MerchantPaymentsProps {
   key?: string;
@@ -31,23 +37,67 @@ interface MerchantPaymentsProps {
 
 export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) {
   const { t, isRTL } = useLanguage();
-  const { merchantActiveTab, setMerchantActiveTab, walletBalance, setWalletBalance, user } = useApp();
+  const { merchantActiveTab, setMerchantActiveTab, user } = useApp();
   
   const [showAddFunds, setShowAddFunds] = useState(false);
   const [showWithdraw, setShowWithdraw] = useState(false);
+  const [walletBalance, setWalletBalance] = useState(1485.00);
   const [codPending, setCodPending] = useState(850.00);
+
+  // Real-time synchronization listener for Merchant transactions, COD, and wallet states directly from Firestore
+  useEffect(() => {
+    if (user && user.uid) {
+      const userDocRef = doc(db, 'users', user.uid);
+      const unsubscribe = onSnapshot(userDocRef, (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.data();
+          if (typeof data.walletBalance === 'number') {
+            setWalletBalance(data.walletBalance);
+          }
+          if (typeof data.codPending === 'number') {
+            setCodPending(data.codPending);
+          }
+          if (Array.isArray(data.transactions)) {
+            setTransactions(data.transactions);
+          }
+        }
+      }, (error) => {
+        console.error("Merchant real-time transaction sync error:", error);
+      });
+      return () => unsubscribe();
+    }
+  }, [user?.uid]);
   const [fundsAmount, setFundsAmount] = useState('');
+  const [stripeClientSecret, setStripeClientSecret] = useState<string | null>(null);
+  const [stripePubKey, setStripePubKey] = useState<string | null>(null);
+  const [setupError, setSetupError] = useState<string | null>(null);
+  
+  const stripePromise = useMemo(() => {
+    if (!stripePubKey) return null;
+    try {
+      return loadStripe(stripePubKey);
+    } catch (e) {
+      console.error("Stripe initialization error:", e);
+      setSetupError("Stripe failed to initialize. Please check your network connection.");
+      return null;
+    }
+  }, [stripePubKey]);
+  const stripeOptions = useMemo(() => stripeClientSecret ? { clientSecret: stripeClientSecret } : null, [stripeClientSecret]);
   
   // Stripe top-up state variables
   const [stripeMethod, setStripeMethod] = useState<'standard' | 'stripe_card' | 'stripe_applepay'>('stripe_card');
-  const [stripeCardNum, setStripeCardNum] = useState('4242 4242 4242 4242');
-  const [stripeCardExp, setStripeCardExp] = useState('12/28');
-  const [stripeCardCvv, setStripeCardCvv] = useState('123');
-  const [stripeCardName, setStripeCardName] = useState('USend Merchant Partner');
   const [stripeIsProcessing, setStripeIsProcessing] = useState(false);
   const [stripeShowReceipt, setStripeShowReceipt] = useState(false);
 
   const [withdrawalState, setWithdrawalState] = useState<string | null>(null);
+
+  const [transactions, setTransactions] = useState([
+    { id: 'TXN-001', date: 'Today, 14:30', type: 'Platform Fee', amount: -5.00, method: 'Wallet Deduction', status: 'Completed', ref: 'ORD-9921' },
+    { id: 'TXN-002', date: 'Today, 12:15', type: 'Funds Added', amount: 500.00, method: 'Credit Card', status: 'Completed', ref: 'Top-up' },
+    { id: 'TXN-003', date: 'Yesterday, 18:45', type: 'Platform Fee', amount: -5.00, method: 'Wallet Deduction', status: 'Completed', ref: 'ORD-9920' },
+    { id: 'TXN-004', date: 'Yesterday, 15:20', type: 'Withdrawal', amount: -1200.00, method: 'Bank Transfer', status: 'Processing', ref: 'Bank Ending 1234' },
+    { id: 'TXN-005', date: '12 Mar, 09:10', type: 'COD Collection', amount: 350.00, method: 'Driver Deposit', status: 'Completed', ref: 'Batch #44' },
+  ]);
 
   const statements = [
     { id: 'STM-2026-05', period: 'May 01 - May 15, 2026', totalOrders: 154, amount: 2450.00, vat: 122.50, status: 'Settled' },
@@ -63,29 +113,30 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
     if (codPending <= 0) return;
     setWithdrawalState('submitting');
     setTimeout(() => {
-      const newBal = walletBalance + codPending;
-      setWalletBalance(newBal);
+      const newBalance = walletBalance + codPending;
+      const newTxn = {
+        id: `TXN-COD-PAY-${Math.floor(10000 + Math.random() * 90000)}`,
+        date: 'Today, ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        type: 'COD Settlement',
+        amount: codPending,
+        method: 'Wallet Addition',
+        status: 'Completed',
+        ref: 'COD Payout'
+      };
+      const updatedTxns = [newTxn, ...transactions];
+
+      setWalletBalance(newBalance);
       setCodPending(0);
-      
-      if (user?.uid) {
-        import('../../lib/firebaseUtils').then(({ updateDocument, createDocument }) => {
-          updateDocument('users', user.uid, { walletBalance: newBal }).catch(err => console.error(err));
-          // Append transaction log
-          const txnId = `TXN-${Math.floor(100000 + Math.random() * 900000)}`;
-          createDocument(`users/${user.uid}/transactions`, txnId, {
-            id: txnId,
-            date: new Date().toLocaleString(),
-            type: 'COD Collection',
-            amount: codPending,
-            method: 'Driver Deposit',
-            status: 'Completed',
-            ref: 'COD-Payout',
-            timestamp: new Date().toISOString()
-          }).catch(err => console.error(err));
-        });
-      }
-      
       setWithdrawalState('success');
+
+      if (user && user.uid) {
+        updateDocument('users', user.uid, {
+          walletBalance: newBalance,
+          codPending: 0,
+          transactions: updatedTxns
+        }).catch(err => console.error("Error updating wallet/COD in DB:", err));
+      }
+
       setTimeout(() => setWithdrawalState(null), 2000);
     }, 1200);
   };
@@ -98,15 +149,19 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
     if (stripeMethod !== 'standard') {
       setStripeIsProcessing(true);
       try {
-        // 1. Create Stripe PaymentIntent on backend
+        const configRes = await fetch('/api/payments/config');
+        const { publishableKey } = await configRes.json();
+        setStripePubKey(publishableKey);
+
         const response = await fetch('/api/payments/create-intent', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             amountAED: parsed,
-            isTopUp: true,
-            merchantId: user?.uid || 'anonymous_merchant'
-          })
+            topup: true,
+            customerId: 'merchant-partner',
+            metadata: { type: 'wallet_topup', merchantId: 'merchant-partner' }
+          }),
         });
 
         if (!response.ok) {
@@ -115,102 +170,66 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
         }
 
         const { clientSecret } = await response.json();
-
-        // 2. Load Stripe JS SDK
-        const { loadStripe } = await import('@stripe/stripe-js');
-        const publishableKey = "pk_test_REMOVED";
-        const stripe = await loadStripe(publishableKey);
-
-        if (!stripe) {
-          throw new Error('Failed to load Stripe SDK');
-        }
-
-        // 3. Extract expiry components
-        const [expMonthStr, expYearStr] = stripeCardExp.split('/');
-        const expMonth = parseInt(expMonthStr, 10);
-        const expYear = parseInt('20' + expYearStr, 10);
-
-        // 4. Confirm card payment securely in sandbox
-        const confirmResult = await stripe.confirmCardPayment(clientSecret, {
-          payment_method: {
-            card: {
-              number: stripeCardNum.replace(/\s+/g, ''),
-              exp_month: expMonth,
-              exp_year: expYear,
-              cvc: stripeCardCvv
-            },
-            billing_details: {
-              name: stripeCardName || user?.name || 'USend Merchant Partner'
-            }
-          }
-        });
-
-        if (confirmResult.error) {
-          throw new Error(confirmResult.error.message || 'Payment confirmation failed');
-        }
-
-        if (confirmResult.paymentIntent && confirmResult.paymentIntent.status === 'succeeded') {
-          // 5. Trigger webhook locally to credit wallet balance and save transaction record
-          await fetch('/api/webhooks/stripe', {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              'stripe-signature': 'mock_signature' // bypassed in local dev
-            },
-            body: JSON.stringify({
-              type: 'payment_intent.succeeded',
-              data: {
-                object: {
-                  id: confirmResult.paymentIntent.id,
-                  metadata: {
-                    type: 'wallet_topup',
-                    merchantId: user?.uid || 'anonymous_merchant',
-                    amountAED: parsed.toString()
-                  }
-                }
-              }
-            })
-          });
-
-          setStripeIsProcessing(false);
-          setStripeShowReceipt(true);
-        } else {
-          throw new Error('Transaction pending or failed.');
-        }
+        setStripeClientSecret(clientSecret);
       } catch (err: any) {
-        console.error('Payment Error:', err);
-        alert(err.message || 'An error occurred during Stripe payment');
+        console.error("Stripe Setup Error:", err);
+        alert(err.message || "An unexpected error occurred.");
+      } finally {
         setStripeIsProcessing(false);
       }
     } else {
-      // Standard Card (fallback simulated/mocked payment)
-      const newBal = walletBalance + parsed;
-      setWalletBalance(newBal);
-      
-      if (user?.uid) {
-        import('../../lib/firebaseUtils').then(({ updateDocument, createDocument }) => {
-          updateDocument('users', user.uid, { walletBalance: newBal }).catch(err => console.error(err));
-          // Append dummy transaction log
-          const txnId = `TXN-${Math.floor(100000 + Math.random() * 900000)}`;
-          createDocument(`users/${user.uid}/transactions`, txnId, {
-            id: txnId,
-            date: new Date().toLocaleString(),
-            type: 'Funds Added',
-            amount: parsed,
-            method: 'Standard Card',
-            status: 'Completed',
-            ref: 'Mock-Topup',
-            timestamp: new Date().toISOString()
-          }).catch(err => console.error(err));
-        });
-      }
+      // Standard Card simulated flow
+      const newBalance = walletBalance + parsed;
+      const newTxn = {
+        id: `TXN-PMB-TOP-${Math.floor(10000 + Math.random() * 90000)}`,
+        date: 'Today, ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        type: 'Funds Added',
+        amount: parsed,
+        method: 'Credit Card',
+        status: 'Completed',
+        ref: 'Top-up'
+      };
+      const updatedTxns = [newTxn, ...transactions];
 
+      setWalletBalance(newBalance);
+      setTransactions(updatedTxns);
       setFundsAmount('');
       setShowAddFunds(false);
+
+      if (user && user.uid) {
+        updateDocument('users', user.uid, {
+          walletBalance: newBalance,
+          transactions: updatedTxns
+        }).catch(err => console.error("Error updating wallet in DB:", err));
+      }
     }
   };
 
-  // Setup modes
+  const handlePaymentSuccess = () => {
+    const parsed = parseFloat(fundsAmount);
+    const newBalance = walletBalance + parsed;
+    const newTxn = {
+      id: `TXN-PMB-TOP-${Math.floor(10000 + Math.random() * 90000)}`,
+      date: 'Today, ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      type: 'Funds Added',
+      amount: parsed,
+      method: stripeMethod === 'stripe_card' ? 'Credit Card (Stripe)' : 'Apple Pay (Stripe)',
+      status: 'Completed',
+      ref: 'Top-up'
+    };
+    const updatedTxns = [newTxn, ...transactions];
+
+    setWalletBalance(newBalance);
+    setTransactions(updatedTxns);
+    setStripeShowReceipt(true);
+
+    if (user && user.uid) {
+      updateDocument('users', user.uid, {
+        walletBalance: newBalance,
+        transactions: updatedTxns
+      }).catch(err => console.error("Error updating wallet in DB:", err));
+    }
+  };
   const isStatements = merchantActiveTab === 'statements' || !merchantActiveTab || (merchantActiveTab !== 'cod' && merchantActiveTab !== 'tax' && merchantActiveTab !== 'freight_invoices' && merchantActiveTab !== 'warehouse_invoices');
   const isCOD = merchantActiveTab === 'cod';
   const isTax = merchantActiveTab === 'tax';
@@ -218,7 +237,7 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
   const isWarehouseInvoices = merchantActiveTab === 'warehouse_invoices';
 
   return (
-    <div className={`flex flex-col md:flex-row h-screen overflow-hidden bg-zinc-50 dark:bg-zinc-950 w-full ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className={`flex flex-col md:flex-row h-screen overflow-hidden bg-zinc-50 w-full ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
       <MerchantSidebar currentScreen="merchant_payments" onNavigate={onNavigate} />
       
       <main className="flex-1 p-6 lg:p-10 h-full overflow-y-auto">
@@ -551,7 +570,7 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
                   <span className="px-2 py-0.5 rounded-full text-[12px] font-black uppercase bg-blue-50 text-blue-600 border border-blue-100 font-mono">stripe.com</span>
                 </div>
 
-                <form onSubmit={handleTopupSubmit} className="space-y-4 text-left">
+                <div className="space-y-4 text-left">
                   <div className="space-y-1">
                      <label className="text-[12px] font-bold uppercase tracking-wider text-zinc-400 pl-0.5">Settle top-up Amount (AED)</label>
                      <input 
@@ -596,48 +615,18 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
                     </div>
                   </div>
 
-                  {stripeMethod !== 'standard' && (
-                    <div className="bg-blue-50/40 p-4 rounded-2xl border border-blue-100 space-y-3 animate-in fade-in duration-100 text-xs">
-                      <div className="flex items-center justify-between text-[13px] text-blue-700 font-black tracking-widest uppercase">
-                        <span>Stripe UAE sandbox card</span>
-                        <span>Active</span>
-                      </div>
-                      
-                      <div className="space-y-1.5">
-                        <div className="space-y-1">
-                          <label className="text-[13px] font-bold text-blue-800 uppercase pl-0.5">Card number</label>
-                          <input 
-                            required
-                            type="text" 
-                            className="w-full bg-white border border-blue-200 px-3 py-1.5 rounded-lg font-mono font-bold text-zinc-900 text-xs"
-                            value={stripeCardNum}
-                            onChange={(e) => setStripeCardNum(e.target.value)}
-                          />
-                        </div>
+                  {stripeMethod !== 'standard' && !stripeClientSecret && (
+                    <div className="p-4 bg-blue-50 border border-blue-100 rounded-2xl text-xs text-blue-600 font-bold flex items-center justify-between">
+                      <span>Stripe secure gateway ready</span>
+                      <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                    </div>
+                  )}
 
-                        <div className="grid grid-cols-2 gap-2">
-                          <div className="space-y-1">
-                            <label className="text-[13px] font-bold text-blue-800 uppercase pl-0.5">Expiry</label>
-                            <input 
-                              required
-                              type="text" 
-                              className="w-full bg-white border border-blue-200 px-3 py-1.5 rounded-lg font-mono font-bold text-zinc-900 text-xs"
-                              value={stripeCardExp}
-                              onChange={(e) => setStripeCardExp(e.target.value)}
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-[13px] font-bold text-blue-800 uppercase pl-0.5">CVV</label>
-                            <input 
-                              required
-                              type="password" 
-                              className="w-full bg-white border border-blue-200 px-3 py-1.5 rounded-lg font-mono font-bold text-zinc-900 text-xs"
-                              value={stripeCardCvv}
-                              onChange={(e) => setStripeCardCvv(e.target.value)}
-                            />
-                          </div>
-                        </div>
-                      </div>
+                  {stripeMethod !== 'standard' && stripeClientSecret && stripePromise && stripeOptions && (
+                    <div className="border border-zinc-200 rounded-2xl p-4 bg-zinc-50 animate-in zoom-in-95 duration-200">
+                      <Elements stripe={stripePromise} options={stripeOptions}>
+                        <StripeCheckoutForm onSuccess={handlePaymentSuccess} />
+                      </Elements>
                     </div>
                   )}
 
@@ -649,18 +638,18 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
                     >
                       Cancel
                     </button>
-                    <button
-                      type="submit" 
-                      className={`flex-2 py-3 font-bold rounded-xl shadow-lg transition-all cursor-pointer text-center text-white ${
-                        stripeMethod !== 'standard'
-                          ? 'bg-blue-600 hover:bg-blue-500 shadow-blue-500/10'
-                          : 'bg-blue-600 hover:bg-blue-500 shadow-blue-500/20'
-                      }`}
-                    >
-                      {stripeMethod !== 'standard' ? 'Pay Securely via Stripe' : 'Authorize Card Settle'}
-                    </button>
+                    {(stripeMethod === 'standard' || !stripeClientSecret) && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleTopupSubmit(e as any)}
+                        disabled={stripeIsProcessing}
+                        className="flex-[2] py-3 font-bold bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-lg transition-all cursor-pointer text-center"
+                      >
+                        {stripeIsProcessing ? 'Initializing...' : (stripeMethod !== 'standard' ? 'Proceed to Secure Pay' : 'Authorize Card Settle')}
+                      </button>
+                    )}
                   </div>
-                </form>
+                </div>
               </div>
             )}
           </motion.div>

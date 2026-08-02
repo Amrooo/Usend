@@ -44,7 +44,7 @@ const ecommercePlatforms = [
   {
     id: 'shopify',
     name: 'Shopify Premium',
-    bgColor: 'bg-blue-50 dark:bg-blue-950/20',
+    bgColor: 'bg-blue-50',
     textColor: 'text-[#95BF47]',
     tagline: 'Connect Shopify Storefront',
     desc: 'Synchronize checkout orders automatically. Maps phone numbers, address payloads, and payment methods in real-time.',
@@ -53,7 +53,7 @@ const ecommercePlatforms = [
   {
     id: 'salla',
     name: 'Salla Platform (GCC)',
-    bgColor: 'bg-teal-50 dark:bg-teal-950/20',
+    bgColor: 'bg-teal-50',
     textColor: 'text-teal-600 dark:text-teal-400',
     tagline: 'Salla OAuth App Store Connection',
     desc: 'Instantly transmit GCC Salla store orders directly into USend driver routes. Native UAE/KSA city mapping.',
@@ -62,7 +62,7 @@ const ecommercePlatforms = [
   {
     id: 'woocommerce',
     name: 'WooCommerce Web Store',
-    bgColor: 'bg-purple-50 dark:bg-purple-950/20',
+    bgColor: 'bg-purple-50',
     textColor: 'text-[#6b2c91]',
     tagline: 'WordPress Rest API Webhook Hook',
     desc: 'Robust synchronization using REST JSON webhooks. Best optimized for bulk freight routes and wholesale shipping.',
@@ -71,7 +71,7 @@ const ecommercePlatforms = [
   {
     id: 'zid',
     name: 'Zid GCC Store',
-    bgColor: 'bg-orange-50 dark:bg-orange-950/20',
+    bgColor: 'bg-orange-50',
     textColor: 'text-orange-600 dark:text-orange-400',
     tagline: 'Zid Cloud Storefront Auth',
     desc: 'Native Saudi & UAE retail webapp connection. Synchronizes customer locations, COD options, and custom barcodes instantly.',
@@ -100,16 +100,59 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
   const [webhookSaved, setWebhookSaved] = useState(false);
 
   // STRIPE GATEWAY STATES
-  const [stripeSecretKey, setStripeSecretKey] = useState('sk_test_REMOVED');
-  const [stripePublishableKey, setStripePublishableKey] = useState('pk_test_REMOVED');
-  const [stripeWebhookSecret, setStripeWebhookSecret] = useState('whsec_test_secret');
-  const [stripeIsConnected, setStripeIsConnected] = useState(true);
+  const [stripeSecretKey, setStripeSecretKey] = useState('sk_test_... (Sandbox default)');
+  const [stripePublishableKey, setStripePublishableKey] = useState('pk_test_...');
+  const [stripeWebhookSecret, setStripeWebhookSecret] = useState('whsec_...');
+  const [stripeIsConnected, setStripeIsConnected] = useState(false);
   const [stripeSandboxMode, setStripeSandboxMode] = useState(true);
   const [stripeMethods, setStripeMethods] = useState({
     cards: true,
     applePay: true,
     googlePay: true
   });
+  const [stripeIsChecking, setStripeIsChecking] = useState(true);
+  const [stripeConnectionError, setStripeConnectionError] = useState<string | null>(null);
+
+  // Fetch real-time Stripe connection status on mount
+  React.useEffect(() => {
+    let active = true;
+    const fetchStatus = async () => {
+      setStripeIsChecking(true);
+      try {
+        const [configRes, statusRes] = await Promise.all([
+          fetch('/api/payments/config').then(r => r.json()).catch(() => ({})),
+          fetch('/api/payments/status').then(r => r.json()).catch(() => ({}))
+        ]);
+        
+        if (!active) return;
+
+        if (configRes.publishableKey) {
+          setStripePublishableKey(configRes.publishableKey);
+        }
+
+        if (statusRes.connected) {
+          setStripeIsConnected(true);
+          setStripeSandboxMode(statusRes.mode === 'test');
+          setStripeConnectionError(null);
+        } else {
+          setStripeIsConnected(false);
+          setStripeConnectionError(statusRes.error || 'Gateway not initialized');
+        }
+      } catch (err: any) {
+        if (active) {
+          setStripeIsConnected(false);
+          setStripeConnectionError(err?.message || 'Failed to authenticate connection status');
+        }
+      } finally {
+        if (active) setStripeIsChecking(false);
+      }
+    };
+
+    fetchStatus();
+    return () => {
+      active = false;
+    };
+  }, []);
   
   // E-COMMERCE INTEGRATION STATES
   const [activePlatforms, setActivePlatforms] = useState<string[]>(['shopify']);
@@ -352,7 +395,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
   const isApiSettings = merchantActiveTab === 'api_settings';
 
   return (
-    <div className={`flex flex-col md:flex-row h-screen overflow-hidden bg-zinc-50 dark:bg-zinc-950 w-full ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className={`flex flex-col md:flex-row h-screen overflow-hidden bg-zinc-50 w-full ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
       <MerchantSidebar currentScreen="merchant_integrations" onNavigate={onNavigate} />
       
       <main className="flex-1 p-6 lg:p-10 h-full overflow-y-auto">
@@ -527,43 +570,52 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
 
               {/* Right Column: Connection Guide & Details */}
               <div className="lg:col-span-7 space-y-6">
-                
-                {/* Integration Details block */}
+                        {/* Integration Details block */}
                 <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[2.5rem] p-6 shadow-sm space-y-4 text-left">
                   <div className="flex items-center justify-between">
                     <h3 className="font-bold text-sm uppercase tracking-wider text-zinc-900 dark:text-zinc-100 font-sans">Gateway Connection Status</h3>
-                    <span className="px-3 py-1 rounded-full text-[12px] font-black uppercase font-sans tracking-wide bg-blue-50 text-blue-600 border border-blue-100 dark:bg-blue-900/20 dark:border-blue-800">Ready to Connect</span>
+                    <span className={`px-3 py-1 rounded-full text-[12px] font-black uppercase font-sans tracking-wide border ${
+                      stripeIsChecking 
+                        ? 'bg-zinc-100 text-zinc-500 border-zinc-200'
+                        : stripeIsConnected
+                        ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-950/20 dark:border-emerald-990/30'
+                        : 'bg-red-50 text-red-600 border-red-100 dark:bg-red-950/20 dark:border-red-990/30'
+                    }`}>
+                      {stripeIsChecking ? 'Checking...' : stripeIsConnected ? 'Connected' : 'Disconnected'}
+                    </span>
                   </div>
 
                   <div className="space-y-4 text-xs font-sans text-zinc-600 dark:text-zinc-400">
                     <p className="font-medium text-[13px] leading-relaxed">
-                      Connect your Stripe account to enable secure checkout for your customers. To finalize this integration, enter your API Key and Profile ID on the left, then save.
+                      {stripeIsConnected 
+                        ? 'Your Stripe account is successfully integrated! Standard credit cards and local wallets are active for secure processing.'
+                        : 'To finalize this Stripe integration, ensure your system secrets or local environment have a valid STRIPE_SECRET_KEY, then reload the page.'}
                     </p>
 
                     <div className="bg-zinc-50 dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-800 p-5 rounded-2xl space-y-3">
                       <div className="flex justify-between items-center text-xs">
                         <span className="font-bold text-zinc-500 uppercase tracking-widest text-[13px]">API Status</span>
-                        <span className="font-mono text-blue-500 font-bold">Waiting for Initialization</span>
+                        <span className={`font-mono font-bold ${
+                          stripeIsChecking 
+                            ? 'text-zinc-400'
+                            : stripeIsConnected 
+                            ? 'text-emerald-500' 
+                            : 'text-red-500'
+                        }`}>
+                          {stripeIsChecking 
+                            ? 'Initializing connection...' 
+                            : stripeIsConnected 
+                            ? 'Active (Ready to transact)' 
+                            : stripeConnectionError || 'Connection check failed'}
+                        </span>
                       </div>
                       <div className="flex justify-between items-center text-xs">
                         <span className="font-bold text-zinc-500 uppercase tracking-widest text-[13px]">Environment</span>
-                        <div className="flex items-center gap-3">
-                          <span className="font-mono text-zinc-700 dark:text-zinc-300 font-bold">
-                            {stripeSandboxMode ? 'Sandbox Testing' : 'Production Active'}
-                          </span>
-                          <button
-                            onClick={() => setStripeSandboxMode(!stripeSandboxMode)}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                              stripeSandboxMode ? 'bg-blue-600' : 'bg-emerald-600'
-                            }`}
-                          >
-                            <span
-                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                stripeSandboxMode ? 'translate-x-6' : 'translate-x-1'
-                              }`}
-                            />
-                          </button>
-                        </div>
+                        <span className="font-mono text-zinc-700 dark:text-zinc-300 font-bold">
+                          {stripeIsConnected 
+                            ? (stripeSandboxMode ? 'Sandbox Testing (Test Mode)' : 'Production Active (Live Mode)') 
+                            : 'N/A'}
+                        </span>
                       </div>
                     </div>
                   </div>

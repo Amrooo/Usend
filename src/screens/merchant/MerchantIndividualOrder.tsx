@@ -27,8 +27,6 @@ import {
 import { useApp } from '../../context/AppContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { aramexService } from '../../services/aramexIntegration';
-import { fedexService } from '../../services/fedexService';
-import { notificationService } from '../../services/notificationService';
 
 export const UAE_ADDRESS_SUGGESTIONS = [
   { name: "Dubai Mall, Financial Center Road, Downtown Dubai", position: [25.1972, 55.2797] },
@@ -78,7 +76,7 @@ interface MerchantIndividualOrderProps {
 
 export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividualOrderProps) {
   const { t, isRTL } = useLanguage();
-  const { addRequest, merchantActiveTab, setMerchantActiveTab, user, addNotification } = useApp();
+  const { addRequest, merchantActiveTab, setMerchantActiveTab } = useApp();
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [isMapOpenQuoteTarget, setIsMapOpenQuoteTarget] = useState<'pickup' | 'dropoff' | 'manual_pickup' | 'manual_dropoff' | null>(null);
   const [isDateOpen, setIsDateOpen] = useState(false);
@@ -273,14 +271,6 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
           eta: quoteData.serviceLevel === 'express' ? '1.5 Hours' : quoteData.serviceLevel === 'standard' ? 'Same Day' : 'Next Day'
         },
         {
-          courier: 'fedex',
-          baseFee: (rateRes.breakdown?.base || 12) * 1.1,
-          insuranceFee: quoteData.insurance ? 5 : 0,
-          discount: 0,
-          total: Number(((rateRes.rateAED || 12) * 1.1 + (quoteData.insurance ? 5 : 0)).toFixed(2)),
-          eta: 'FedEx Test Env'
-        },
-        {
           courier: 'usend_fleet',
           baseFee: (rateRes.breakdown?.base || 12) * 0.8,
           insuranceFee: quoteData.insurance ? 3 : 0,
@@ -314,8 +304,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
       setCalculatedQuotes({
         distanceKm: dist,
         options: [
-          { courier: 'fedex', baseFee: base + 10, insuranceFee: ins, discount, total: totalNum + 10, eta: 'Test API' },
-          { courier: 'aramex', baseFee: base, insuranceFee: ins, discount, total: totalNum, eta: 'Same Day' },
+          { courier: 'aramex', baseFee: base, insuranceFee: ins, discount, total: totalNum, eta: 'Same Day' }
         ]
       });
     } finally {
@@ -387,52 +376,16 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
              throw new Error(aramexRes.error || "Aramex API failed to create shipment.");
           }
         } catch (err: any) {
-          console.error("Aramex Dispatch failed", err);
+          console.error("Aramex Sandbox Dispatch failed", err);
           setIsSubmitting(false);
           window.dispatchEvent(new CustomEvent('app_toast', { detail: { title: 'Aramex Integration Error', message: err.message, type: 'error' } }));
           return;
         }
-      } else if (formData.carrier === 'fedex') {
-        try {
-          const fedexRes = await fedexService.createFedexJob(payload);
-          if (!fedexRes.success) throw new Error("FedEx API failed");
-        } catch (err: any) {
-           console.error("FedEx Dispatch failed", err);
-           setIsSubmitting(false);
-           return;
-        }
       }
 
-        // Dispatch Email and SMS Notifications
-        try {
-          const notificationData = {
-            orderId: reqId,
-            amount: `${formData.amount || '150'} AED`,
-            items: formData.items || 'General Goods',
-            courier: formData.carrier
-          };
-          
-          await Promise.all([
-            notificationService.sendOrderConfirmationEmail(user?.email || 'merchant@usend.ae', notificationData),
-            notificationService.sendInvoiceEmail(user?.email || 'merchant@usend.ae', notificationData, formData.paymentType === 'card' ? 'Credit Card' : 'Cash on Delivery'),
-            notificationService.sendOrderSMS(user?.phoneNumber || '+971500000000', notificationData, 'sender'),
-            notificationService.sendOrderSMS(formData.phone, notificationData, 'receiver')
-          ]);
-        } catch (err) {
-          console.error("Failed to send some notifications:", err);
-        }
-
-        setIsSubmitting(false);
-        onNavigate('merchant_tracking');
-        
-        addNotification({
-          title: `Order Dispatched (${formData.carrier})`,
-          message: `Order ${reqId} created. Notifications sent to your email and customer's phone.`,
-          type: 'success'
-        });
-
-        window.dispatchEvent(new CustomEvent('app_toast', { detail: { title: 'Order Dispatched', message: `Order ${reqId} created. Notifications sent to your email and customer's phone.` } }));
-      };
+      setIsSubmitting(false);
+      onNavigate('merchant_tracking');
+    };
     
     submitOrder();
   };
@@ -440,7 +393,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
   const isGetQuoteMode = merchantActiveTab === 'get_quotes';
 
   return (
-    <div className={`flex flex-col md:flex-row h-screen overflow-hidden bg-zinc-50 dark:bg-zinc-950 ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className={`flex flex-col md:flex-row h-screen overflow-hidden bg-zinc-50 ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
       <MerchantSidebar currentScreen="merchant_individual" onNavigate={onNavigate} />
       
       <main className="flex-1 p-6 lg:p-10 h-full overflow-y-auto relative">
@@ -459,7 +412,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
               <span className="text-blue-600 font-bold text-[12px] uppercase tracking-[0.4em]">
                 {isGetQuoteMode ? 'Pricing Engine' : 'Express Delivery'}
               </span>
-              <h1 className="text-3xl font-display font-medium text-zinc-900 dark:text-zinc-100 uppercase tracking-tight mt-1">
+              <h1 className="text-3xl font-display font-medium text-zinc-900 uppercase tracking-tight mt-1">
                 {isGetQuoteMode ? 'Instant Commission Quote' : 'New Manual Order'}
               </h1>
               <p className="text-sm text-zinc-500 mt-1.5">
@@ -470,7 +423,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
             </div>
 
             {/* Sub-tab quick switcher */}
-            <div className="bg-zinc-200/60 dark:bg-zinc-900 p-1.5 rounded-2xl flex items-center gap-1 self-start sm:self-center">
+            <div className="bg-zinc-200/60 p-1.5 rounded-2xl flex items-center gap-1 self-start sm:self-center">
               <button 
                 onClick={() => setMerchantActiveTab('manual_orders')}
                 className={`px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all ${
@@ -499,57 +452,51 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
             <form onSubmit={handleNormalSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 space-y-6">
                 {/* Customer Information Cards */}
-                <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-8 border border-zinc-200/80 shadow-sm space-y-6">
+                <div className="bg-white dark:bg-zinc-950 border border-[#E9EFF6] dark:border-zinc-800/60 rounded-[2.5rem] p-8 shadow-[0_8px_30px_rgb(220,225,235,0.45)] dark:shadow-none space-y-7">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
+                    <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-[#2D74FF] flex items-center justify-center">
                       <User className="w-[18px] h-[18px]" />
                     </div>
-                    <h2 className="font-bold text-lg text-zinc-800 dark:text-zinc-200">Customer Details</h2>
+                    <h2 className="font-bold text-lg text-slate-800 dark:text-zinc-250">Customer Details</h2>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="space-y-2">
-                      <label className="text-[12px] font-black uppercase tracking-wider text-zinc-400">FullName</label>
-                      <input 
-                        required
-                        type="text" 
-                        value={formData.customerName}
-                        onChange={(e) => setFormData({...formData, customerName: e.target.value})}
-                        placeholder="John Doe" 
-                        className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200/60 focus:border-blue-500 rounded-xl px-4 py-3 outline-none text-zinc-900 dark:text-zinc-100 transition-colors font-medium"
-                      />
+                      <label className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider block">FullName</label>
+                      <div className="relative flex items-center">
+                        <User className="absolute left-4 text-slate-400 dark:text-zinc-500 w-4.5 h-4.5 z-10" />
+                        <input 
+                          required
+                          type="text" 
+                          value={formData.customerName}
+                          onChange={(e) => setFormData({...formData, customerName: e.target.value})}
+                          placeholder="John Doe" 
+                          className="w-full bg-slate-50/50 dark:bg-zinc-800/50 border border-[#E2E8F0] dark:border-zinc-800/80 focus:border-[#2D74FF] focus:bg-white dark:focus:bg-zinc-900 rounded-2xl pl-12 pr-4 py-3.5 outline-none text-slate-900 dark:text-zinc-100 transition-all font-medium text-sm focus:ring-4 focus:ring-[#2D74FF]/10 shadow-xs"
+                        />
+                      </div>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[12px] font-black uppercase tracking-wider text-zinc-400">Recipient Phone</label>
-                      <input 
-                        required
-                        type="tel" 
-                        value={formData.phone}
-                        onChange={handlePhoneChange}
-                        placeholder="+971 50 XXXXXXX" 
-                        className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200/60 focus:border-blue-500 rounded-xl px-4 py-3 outline-none text-zinc-900 dark:text-zinc-100 transition-colors font-mono tracking-widest"
-                        dir="ltr"
-                      />
+                      <label className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider block">Recipient Phone</label>
+                      <div className="relative flex items-center">
+                        <Phone className="absolute left-4 text-slate-400 dark:text-zinc-500 w-4.5 h-4.5 z-10" />
+                        <input 
+                          required
+                          type="tel" 
+                          value={formData.phone}
+                          onChange={handlePhoneChange}
+                          placeholder="+971 50 XXXXXXX" 
+                          className="w-full bg-slate-50/50 dark:bg-zinc-800/50 border border-[#E2E8F0] dark:border-zinc-800/80 focus:border-[#2D74FF] focus:bg-white dark:focus:bg-zinc-900 rounded-2xl pl-12 pr-4 py-3.5 outline-none text-slate-900 dark:text-zinc-100 transition-all font-mono tracking-widest text-sm focus:ring-4 focus:ring-[#2D74FF]/10 shadow-xs"
+                          dir="ltr"
+                        />
+                      </div>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="space-y-2 relative">
-                      <div className="flex items-center justify-between">
-                        <label className="text-[12px] font-black uppercase tracking-wider text-[#1452D1]">Pickup Location / Warehouse</label>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setIsMapOpenQuoteTarget('manual_pickup');
-                            setIsMapOpen(true);
-                          }}
-                          className="text-[13px] font-bold text-[#1452D1] bg-zinc-100 hover:bg-zinc-200 px-2 py-1 flex items-center gap-1 rounded-md transition-colors"
-                        >
-                          <Map className="w-3 h-3" /> Select Map
-                        </button>
-                      </div>
-                      <div className="relative">
-                        <MapPin className="absolute left-4 top-3.5 text-[#1452D1] w-4 h-4 z-10" />
+                      <label className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider block">Pickup Location / Warehouse</label>
+                      <div className="relative flex items-center">
+                        <MapPin className="absolute left-4 text-[#2D74FF] w-4.5 h-4.5 z-10" />
                         <input 
                           required
                           type="text" 
@@ -572,48 +519,50 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                             setTimeout(() => setActiveAutocompleteField(null), 250);
                           }}
                           placeholder="Type pickup address or use map..." 
-                          className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200/60 focus:border-blue-500 rounded-xl pl-11 pr-4 py-3 outline-none text-zinc-900 dark:text-zinc-100 font-medium text-sm truncate z-0"
+                          className="w-full bg-slate-50/50 dark:bg-zinc-800/50 border border-[#E2E8F0] dark:border-zinc-800/80 focus:border-[#2D74FF] focus:bg-white dark:focus:bg-zinc-900 rounded-2xl pl-12 pr-28 py-3.5 outline-none text-slate-900 dark:text-zinc-100 font-medium text-sm truncate z-0 focus:ring-4 focus:ring-[#2D74FF]/10 shadow-xs"
                         />
-                        {activeAutocompleteField === 'manual_pickup' && (
-                          <div className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto">
-                            {UAE_ADDRESS_SUGGESTIONS.filter(item => item.name.toLowerCase().includes(autocompleteQuery.toLowerCase())).slice(0, 5).map((item, idx) => (
-                              <button
-                                key={idx}
-                                type="button"
-                                onMouseDown={() => {
-                                  setFormData({
-                                    ...formData,
-                                    pickupAddress: item.name,
-                                    pickupPosition: item.position as [number, number]
-                                  });
-                                  setActiveAutocompleteField(null);
-                                }}
-                                className="w-full text-left px-6 py-3 text-xs text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex items-center gap-2 border-b border-zinc-100 dark:border-zinc-800/50 last:border-0"
-                              >
-                                <MapPin className="w-3.5 h-3.5 text-[#1452D1] shrink-0" />
-                                <span className="truncate">{item.name}</span>
-                              </button>
-                            ))}
-                          </div>
-                        )}
+                        <div className="absolute right-2 top-1.5 bottom-1.5 flex items-center">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsMapOpenQuoteTarget('manual_pickup');
+                              setIsMapOpen(true);
+                            }}
+                            className="h-[38px] px-3.5 rounded-xl bg-[#2D74FF]/5 hover:bg-[#2D74FF]/10 active:scale-95 text-[#2D74FF] border border-[#2D74FF]/15 text-[11px] font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer"
+                          >
+                            <Map className="w-3.5 h-3.5" /> Map
+                          </button>
+                        </div>
                       </div>
+                      
+                      {activeAutocompleteField === 'manual_pickup' && (
+                        <div className="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-zinc-900 border border-[#E2E8F0] dark:border-zinc-800 rounded-2xl shadow-xl z-50 max-h-48 overflow-y-auto">
+                          {UAE_ADDRESS_SUGGESTIONS.filter(item => item.name.toLowerCase().includes(autocompleteQuery.toLowerCase())).slice(0, 5).map((item, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onMouseDown={() => {
+                                setFormData({
+                                  ...formData,
+                                  pickupAddress: item.name,
+                                  pickupPosition: item.position as [number, number]
+                                });
+                                setActiveAutocompleteField(null);
+                              }}
+                              className="w-full text-left px-6 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors flex items-center gap-2 border-b border-[#F1F5F9] dark:border-[#1E293B] last:border-0"
+                            >
+                              <MapPin className="w-3.5 h-3.5 text-[#2D74FF] shrink-0" />
+                              <span className="truncate">{item.name}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
+
                     <div className="space-y-2 relative">
-                      <div className="flex items-center justify-between">
-                        <label className="text-[12px] font-black uppercase tracking-wider text-rose-500">Dropoff Location / Customer</label>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setIsMapOpenQuoteTarget('manual_dropoff');
-                            setIsMapOpen(true);
-                          }}
-                          className="text-[13px] font-bold text-rose-500 bg-zinc-100 hover:bg-zinc-200 px-2 py-1 flex items-center gap-1 rounded-md transition-colors"
-                        >
-                          <Map className="w-3 h-3" /> Select Map
-                        </button>
-                      </div>
-                      <div className="relative">
-                        <MapPin className="absolute left-4 top-3.5 text-rose-500 w-4 h-4 z-10" />
+                      <label className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider block">Dropoff Location / Customer</label>
+                      <div className="relative flex items-center">
+                        <MapPin className="absolute left-4 text-rose-500 w-4.5 h-4.5 z-10" />
                         <input 
                           required
                           type="text" 
@@ -636,85 +585,86 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                             setTimeout(() => setActiveAutocompleteField(null), 250);
                           }}
                           placeholder="Type dropoff address or use map..." 
-                          className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200/60 focus:border-blue-500 rounded-xl pl-11 pr-24 py-3 outline-none text-zinc-900 dark:text-zinc-100 font-medium text-sm truncate z-0"
+                          className="w-full bg-slate-50/50 dark:bg-zinc-800/50 border border-[#E2E8F0] dark:border-zinc-800/80 focus:border-[#2D74FF] focus:bg-white dark:focus:bg-zinc-900 rounded-2xl pl-12 pr-28 py-3.5 outline-none text-slate-900 dark:text-zinc-100 font-medium text-sm truncate z-0 focus:ring-4 focus:ring-[#2D74FF]/10 shadow-xs"
                         />
-                        <button 
-                          type="button"
-                          onClick={() => {
-                            if (!formData.address) return;
-                            setFormData({
-                              ...formData,
-                              address: `${formData.address.trim()}, P.O. Box 12345, AE`
-                            });
-                            alert(t('address_validation_alert') || 'Google Maps Address Validation applied. Standardized postal codes injected.');
-                          }}
-                          className="absolute right-2 top-2 bottom-2 bg-blue-50 hover:bg-blue-100 text-blue-600 text-[13px] font-black uppercase tracking-widest px-3 rounded-lg transition-colors flex items-center justify-center z-10"
-                        >
-                          {t('auto_fix') || 'Auto-Fix'}
-                        </button>
-                        {activeAutocompleteField === 'manual_dropoff' && (
-                          <div className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto">
-                            {UAE_ADDRESS_SUGGESTIONS.filter(item => item.name.toLowerCase().includes(autocompleteQuery.toLowerCase())).slice(0, 5).map((item, idx) => (
-                              <button
-                                key={idx}
-                                type="button"
-                                onMouseDown={() => {
-                                  setFormData({
-                                    ...formData,
-                                    address: item.name,
-                                    position: item.position as [number, number]
-                                  });
-                                  setActiveAutocompleteField(null);
-                                }}
-                                className="w-full text-left px-6 py-3 text-xs text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex items-center gap-2 border-b border-zinc-100 dark:border-zinc-800/50 last:border-0"
-                              >
-                                <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
-                                <span className="truncate">{item.name}</span>
-                              </button>
-                            ))}
-                          </div>
-                        )}
+                        
+                        <div className="absolute right-2 top-1.5 bottom-1.5 flex items-center">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsMapOpenQuoteTarget('manual_dropoff');
+                              setIsMapOpen(true);
+                            }}
+                            className="h-[38px] px-3.5 rounded-xl bg-rose-50 hover:bg-rose-100/80 text-rose-600 border border-rose-200/40 text-[11px] font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer"
+                          >
+                            <Map className="w-3.5 h-3.5" /> Map
+                          </button>
+                        </div>
                       </div>
+                      
+                      {activeAutocompleteField === 'manual_dropoff' && (
+                        <div className="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-zinc-900 border border-[#E2E8F0] dark:border-zinc-800 rounded-2xl shadow-xl z-50 max-h-48 overflow-y-auto">
+                          {UAE_ADDRESS_SUGGESTIONS.filter(item => item.name.toLowerCase().includes(autocompleteQuery.toLowerCase())).slice(0, 5).map((item, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onMouseDown={() => {
+                                setFormData({
+                                  ...formData,
+                                  address: item.name,
+                                  position: item.position as [number, number]
+                                });
+                                setActiveAutocompleteField(null);
+                              }}
+                              className="w-full text-left px-6 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors flex items-center gap-2 border-b border-[#F1F5F9] dark:border-[#1E293B] last:border-0"
+                            >
+                              <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                              <span className="truncate">{item.name}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="space-y-2 col-span-1">
-                      <label className="text-[12px] font-black uppercase tracking-wider text-zinc-400">Scheduled Delivery</label>
-                      <div className="relative">
-                        <Calendar className="absolute left-4 top-3.5 text-zinc-400 w-4 h-4" />
+                      <label className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider block">Scheduled Delivery</label>
+                      <div className="relative flex items-center">
+                        <Calendar className="absolute left-4 text-slate-400 dark:text-zinc-500 w-4.5 h-4.5 z-10 pointer-events-none" />
                         <input 
                           readOnly
                           required
                           type="text" 
                           value={formData.deliveryDate}
                           onClick={() => setIsDateOpen(true)}
-                          className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200/60 hover:border-zinc-300 rounded-xl pl-11 pr-4 py-3 outline-none text-zinc-900 dark:text-zinc-100 cursor-pointer font-medium text-sm"
+                          className="w-full bg-slate-50/50 dark:bg-zinc-800/50 border border-[#E2E8F0] dark:border-zinc-800/80 hover:border-slate-300 dark:hover:border-zinc-700 rounded-2xl pl-12 pr-4 py-3.5 outline-none text-slate-900 dark:text-zinc-100 cursor-pointer font-medium text-sm transition-all shadow-xs"
                         />
                       </div>
                     </div>
+                    
                     {/* Dynamic Distance Indicator */}
                     <div className="space-y-2 col-span-1">
-                      <label className="text-[12px] font-black uppercase tracking-wider text-zinc-405">GPS Calculated Distance</label>
-                      <div className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200/60 rounded-xl px-4 py-3 font-semibold text-sm text-zinc-900 dark:text-zinc-100 flex items-center justify-between">
-                        <span>
-                          {formData.pickupPosition && formData.position ? (
-                            <span className="text-blue-600 font-bold">
-                              {Number((() => {
-                                const R = 6371;
-                                const dLat = (formData.position[0] - formData.pickupPosition[0]) * Math.PI / 180;
-                                const dLon = (formData.position[1] - formData.pickupPosition[1]) * Math.PI / 180;
-                                const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(formData.pickupPosition[0] * Math.PI / 180) * Math.cos(formData.position[0] * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-                                return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-                              })()).toFixed(1)} km
-                            </span>
-                          ) : (
-                            <span className="text-zinc-400 italic">Select both locations on map</span>
-                          )}
-                        </span>
-                        <span className="text-[13px] bg-slate-100 dark:bg-zinc-700 text-[#1452D1] font-black uppercase tracking-widest px-2 py-1 rounded">
-                          REAL-TIME TRACK
-                        </span>
+                      <label className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider block">GPS Calculated Distance</label>
+                      <div className="w-full h-[50px] bg-slate-50/50 dark:bg-zinc-850 border border-[#E2E8F0] dark:border-zinc-800/80 rounded-2xl px-5 font-semibold text-sm text-slate-800 dark:text-zinc-100 flex items-center justify-between shadow-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="text-slate-400 dark:text-zinc-500 font-medium text-xs uppercase tracking-wider">Calculated:</span>
+                          <span>
+                            {formData.pickupPosition && formData.position ? (
+                              <strong className="text-[#2D74FF] font-black text-sm tracking-tight animate-fade-in">
+                                {Number((() => {
+                                  const R = 6371;
+                                  const dLat = (formData.position[0] - formData.pickupPosition[0]) * Math.PI / 180;
+                                  const dLon = (formData.position[1] - formData.pickupPosition[1]) * Math.PI / 180;
+                                  const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(formData.pickupPosition[0] * Math.PI / 180) * Math.cos(formData.position[0] * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+                                  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                                })()).toFixed(1)} km
+                              </strong>
+                            ) : (
+                              <span className="text-zinc-400 dark:text-zinc-500 italic font-medium text-xs">Waiting for locations</span>
+                            )}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -936,11 +886,6 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                           key: 'aramex', 
                           label: 'Aramex Sandbox Service', 
                           desc: 'Dispatches packages directly into Aramex\'s sandbox courier channels. Generates automated sandbox API Waybills, WSDL XML logs, and external tracking.' 
-                        },
-                        { 
-                          key: 'fedex', 
-                          label: 'FedEx Test Sandbox', 
-                          desc: 'Simulated integration with FedEx sandbox APIs for testing.' 
                         }
                       ].map((carrier) => (
                         <div key={carrier.key} className="space-y-2">

@@ -51,12 +51,12 @@ export default function Onboarding({ onNavigate }: OnboardingProps) {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: isRTL ? 100 : -100 }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      className="absolute inset-0 bg-white dark:bg-zinc-950 flex flex-col p-8 pt-20 transition-colors duration-300"
+      className="absolute inset-0 bg-white flex flex-col p-8 pt-20 transition-colors duration-300"
     >
       <div className={`flex ${isRTL ? 'justify-start' : 'justify-end'} w-full`}>
         <button 
           onClick={() => onNavigate('home')}
-          className="text-zinc-500 dark:text-zinc-400 font-medium text-sm transition-colors duration-300"
+          className="text-zinc-500 font-medium text-sm transition-colors duration-300"
         >
           {t('skip')}
         </button>
@@ -79,10 +79,10 @@ export default function Onboarding({ onNavigate }: OnboardingProps) {
               })()}
             </div>
             
-            <h2 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-4 transition-colors duration-300">
+            <h2 className="text-3xl font-bold tracking-tight text-zinc-900 mb-4 transition-colors duration-300">
               {steps[currentStep].title}
             </h2>
-            <p className="text-zinc-500 dark:text-zinc-400 text-base leading-relaxed max-w-[280px] mx-auto transition-colors duration-300">
+            <p className="text-zinc-500 text-base leading-relaxed max-w-[280px] mx-auto transition-colors duration-300">
               {steps[currentStep].description}
             </p>
           </motion.div>

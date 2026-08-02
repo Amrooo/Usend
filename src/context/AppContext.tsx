@@ -67,24 +67,11 @@ export interface USendUser {
   role: string;
 }
 
-export interface AppNotification {
-  id: string;
-  title: string;
-  message: string;
-  date: string;
-  read: boolean;
-  type: 'info' | 'success' | 'warning' | 'error';
-}
-
 interface AppContextType {
   activeRequests: USendRequest[];
   merchants: Merchant[];
   users: USendUser[];
   settings: PlatformSettings | null;
-  notifications: AppNotification[];
-  addNotification: (n: Omit<AppNotification, 'id' | 'date' | 'read'>) => void;
-  markNotificationRead: (id: string) => void;
-  markAllNotificationsRead: () => void;
   addRequest: (req: USendRequest) => void;
   updateRequest: (id: string, data: Partial<USendRequest>) => void;
   updateRequestStatus: (id: string, status: RequestStatus, eta?: string) => void;
@@ -99,10 +86,6 @@ interface AppContextType {
   merchantActiveTab: string;
   setMerchantActiveTab: (tab: string) => void;
   setUser: (user: any) => void;
-  walletBalance: number;
-  setWalletBalance: React.Dispatch<React.SetStateAction<number>>;
-  transactions: any[];
-  setTransactions: React.Dispatch<React.SetStateAction<any[]>>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -114,7 +97,7 @@ const INITIAL_MERCHANTS: Merchant[] = [];
 const INITIAL_USERS: USendUser[] = [];
 
 const INITIAL_SETTINGS: PlatformSettings = {
-  merchantCommission: 5,
+  merchantCommission: 2.5,
   driverPlatformFee: 15,
   baseDeliveryFee: 12,
   perKmRate: 2.5
@@ -145,18 +128,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [merchantActiveTab, setMerchantActiveTab] = useState<string>('dashboard');
-  const [notifications, setNotifications] = useState<AppNotification[]>([]);
-  const [walletBalance, setWalletBalance] = useState(1485.00);
-  const [transactions, setTransactions] = useState<any[]>([
-    { id: 'TXN-001', date: 'Today, 14:30', type: 'Platform Fee', amount: -5.00, method: 'Wallet Deduction', status: 'Completed', ref: 'ORD-9921' },
-    { id: 'TXN-002', date: 'Today, 12:15', type: 'Funds Added', amount: 500.00, method: 'Credit Card', status: 'Completed', ref: 'Top-up' },
-    { id: 'TXN-003', date: 'Yesterday, 18:45', type: 'Platform Fee', amount: -5.00, method: 'Wallet Deduction', status: 'Completed', ref: 'ORD-9920' },
-    { id: 'TXN-004', date: 'Yesterday, 15:20', type: 'Withdrawal', amount: -1200.00, method: 'Bank Transfer', status: 'Processing', ref: 'Bank Ending 1234' },
-    { id: 'TXN-005', date: '12 Mar, 09:10', type: 'COD Collection', amount: 350.00, method: 'Driver Deposit', status: 'Completed', ref: 'Batch #44' },
-  ]);
 
   useEffect(() => {
+    let unsubscribeUserDoc: () => void = () => {};
+
     const unsubscribeAuth = onAuthStateChanged(auth, async (u) => {
+      unsubscribeUserDoc();
       
       if (u) {
         let finalRole = 'user';
@@ -179,8 +156,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
               photoUrl: u.photoURL,
               role: finalRole,
               status: 'Active',
-              createdAt: new Date().toISOString(),
-              walletBalance: 1485.00
+              createdAt: new Date().toISOString()
             });
           } else {
             const data = userDoc.data();
@@ -193,7 +169,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
             finalRole = 'admin';
           }
           
-          setUser({ ...u, ...userDoc.data(), role: finalRole });
+          const currentDoc = await getDoc(userDocRef);
+          const docData = currentDoc.data() || {};
+          setUser({ ...u, ...docData, role: finalRole });
+
+          // real-time onSnapshot tracking of authenticated user doc (wallet balance / transactions etc)
+          unsubscribeUserDoc = onSnapshot(userDocRef, (snapshot) => {
+            if (snapshot.exists()) {
+              const data = snapshot.data();
+              setUser((prev: any) => {
+                if (!prev) return null;
+                if (
+                  prev.walletBalance === data.walletBalance &&
+                  prev.codPending === data.codPending &&
+                  JSON.stringify(prev.transactions) === JSON.stringify(data.transactions) &&
+                  prev.role === data.role &&
+                  prev.name === data.name
+                ) {
+                  return prev;
+                }
+                return { ...prev, ...data, role: data.role || finalRole };
+              });
+            }
+          }, (error) => {
+            console.warn('Real-time profile sync skipped:', error.message);
+          });
+
         } catch (error) {
           console.warn('Profile DB sync skipped (offline or missing permission):', error);
           
@@ -202,11 +203,30 @@ export function AppProvider({ children }: { children: ReactNode }) {
           }
           setUser({ ...u, role: finalRole });
         }
+
+        // Sync guest orders from localStorage to this user account
+        try {
+          const storedGuest = JSON.parse(localStorage.getItem('guestOrders') || '[]');
+          if (storedGuest.length > 0) {
+            for (const item of storedGuest) {
+              await updateDocument('requests', item.id, {
+                userId: u.uid,
+                applicantType: 'User'
+              });
+            }
+            localStorage.removeItem('guestOrders');
+          }
+        } catch (err) {
+          console.warn("Failed to sync guest orders to account:", err);
+        }
       } else {
         setUser(null);
       }
     });
-    return () => unsubscribeAuth();
+    return () => {
+      unsubscribeAuth();
+      unsubscribeUserDoc();
+    };
   }, []);
 
   useEffect(() => {
@@ -264,40 +284,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       console.warn('Settings Firestore sync skipped (will use fallback mock data):', error.message);
     });
 
-    // Subscribe to user doc for walletBalance updates in real-time
-    const unsubscribeUserDoc = onSnapshot(doc(db, 'users', user.uid), (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.data();
-        if (data && data.walletBalance !== undefined) {
-          setWalletBalance(data.walletBalance);
-        }
-      }
-    }, (error) => {
-      console.warn("User doc subscription skipped:", error.message);
-    });
-
-    // Subscribe to user's transactions subcollection
-    const unsubscribeTransactions = subscribeToCollection<any>(
-      `users/${user.uid}/transactions`,
-      (data) => {
-        if (data && data.length > 0) {
-          setTransactions(data.sort((a, b) => b.date.localeCompare(a.date)));
-        }
-      },
-      (error) => {
-        console.warn("Transactions subcollection sync skipped:", error.message);
-      }
-    );
-
     return () => {
       unsubscribeRequests();
       unsubscribeMerchants();
       unsubscribeUsers();
       unsubscribeSettings();
-      unsubscribeUserDoc();
-      unsubscribeTransactions();
     };
-  }, [user]);
+  }, [user?.uid]);
 
   useEffect(() => {
     // SSE Event Source for live Aramex webhook notifications
@@ -336,22 +329,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const signOutUser = async () => {
     await logout();
-  };
-  const addNotification = (n: Omit<AppNotification, 'id' | 'date' | 'read'>) => {
-    const newNotif: AppNotification = {
-      ...n,
-      id: Math.random().toString(36).substring(7),
-      date: new Date().toISOString(),
-      read: false
-    };
-    setNotifications(prev => [newNotif, ...prev]);
-  };
-
-  const markNotificationRead = (id: string) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-  };
-  const markAllNotificationsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
   };
 
   const addRequest = async (req: USendRequest) => {
@@ -439,15 +416,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setCurrentRequest,
       isLoading,
       merchantActiveTab,
-      setMerchantActiveTab,
-      notifications,
-      addNotification,
-      markNotificationRead,
-      markAllNotificationsRead,
-      walletBalance,
-      setWalletBalance,
-      transactions,
-      setTransactions
+      setMerchantActiveTab
     }}>
       {children}
     </AppContext.Provider>
