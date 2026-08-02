@@ -25,17 +25,17 @@ export default function Home({ onNavigate }: HomeProps) {
   const [showNotifications, setShowNotifications] = useState(false);
 
   const notifications = [
-    { id: 1, title: 'Shipment Delivered', message: 'Your furniture shipment has been delivered successfully.', time: '2h ago', icon: CheckCircle, color: 'text-blue-500' },
-    { id: 2, title: 'Driver Arriving', message: 'Your driver is 5 minutes away from the pickup location.', time: '45m ago', icon: Clock, color: 'text-blue-500' },
-    { id: 3, title: 'Payment Confirmed', message: 'Payment for order #MRSL-9921-X has been processed.', time: '1h ago', icon: CheckCircle, color: 'text-blue-500' },
+    { id: 1, title: 'Shipment Delivered', message: 'Your furniture shipment has been delivered successfully.', time: '2h ago', icon: CheckCircle, color: 'text-emerald-500' },
+    { id: 2, title: 'Driver Arriving', message: 'Your driver is 5 minutes away from the pickup location.', time: '45m ago', icon: Clock, color: 'text-emerald-500' },
+    { id: 3, title: 'Payment Confirmed', message: 'Payment for order #MRSL-9921-X has been processed.', time: '1h ago', icon: CheckCircle, color: 'text-emerald-500' },
     { id: 4, title: 'New Message', message: 'Driver Alex Rivera sent you a message.', time: '10m ago', icon: AlertCircle, color: 'text-orange-500' },
   ];
 
   const quickActions = [
     { id: 'furniture', icon: Sofa, label: t('furniture'), sub: t('sofas_beds'), color: 'bg-red-500/10 text-red-500' },
-    { id: 'electronics', icon: Monitor, label: t('electronics'), sub: t('tv_pc'), color: 'bg-blue-500/10 text-blue-500' },
+    { id: 'electronics', icon: Monitor, label: t('electronics'), sub: t('tv_pc'), color: 'bg-emerald-500/10 text-emerald-500' },
     { id: 'documents', icon: FileText, label: t('documents'), sub: t('legal_files'), color: 'bg-orange-500/10 text-orange-500' },
-    { id: 'custom', icon: Package, label: t('custom_load'), sub: t('specialized'), color: 'bg-blue-500 text-white', isSolid: true },
+    { id: 'custom', icon: Package, label: t('custom_load'), sub: t('specialized'), color: 'bg-emerald-500 text-white', isSolid: true },
   ];
 
   return (
@@ -82,7 +82,7 @@ export default function Home({ onNavigate }: HomeProps) {
               className="w-10 h-10 rounded-full bg-zinc-900 text-white flex items-center justify-center relative transition-colors duration-300"
             >
               <Bell className="w-4 h-4" />
-              <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-blue-500 rounded-full border-2 border-zinc-900"></span>
+              <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-emerald-500 rounded-full border-2 border-zinc-900"></span>
             </button>
           </div>
         </div>
@@ -103,7 +103,7 @@ export default function Home({ onNavigate }: HomeProps) {
           onClick={() => onNavigate('details')}
           className="w-full h-16 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl flex items-center px-4 gap-3 shadow-sm dark:shadow-none active:scale-[0.98] transition-all duration-300"
         >
-          <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
+          <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
           </div>
           <span className="flex-1 text-left rtl:text-right text-zinc-500 dark:text-zinc-400 text-sm">e.g. 'I need to move a king size bed'</span>
@@ -114,7 +114,7 @@ export default function Home({ onNavigate }: HomeProps) {
         <div>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 transition-colors duration-300">{t('quick_actions')}</h3>
-            <button className="text-xs font-bold text-blue-600 dark:text-blue-500 tracking-wider uppercase">{t('see_all')}</button>
+            <button className="text-xs font-bold text-emerald-600 dark:text-emerald-500 tracking-wider uppercase">{t('see_all')}</button>
           </div>
           <div className="grid grid-cols-2 gap-4">
             {quickActions.map((action, i) => (
@@ -126,7 +126,7 @@ export default function Home({ onNavigate }: HomeProps) {
                 onClick={() => onNavigate('details')}
                 className={`p-5 rounded-3xl flex flex-col items-start gap-4 text-left rtl:text-right transition-all duration-300 active:scale-95 relative overflow-hidden ${
                   action.isSolid 
-                    ? 'bg-gradient-to-r from-blue-700 to-blue-500 text-white shadow-lg shadow-green-600/30 dark:shadow-none' 
+                    ? 'bg-gradient-to-r from-emerald-700 to-emerald-500 text-white shadow-lg shadow-green-600/30 dark:shadow-none' 
                     : 'bg-zinc-900 text-white border border-zinc-800'
                 }`}
               >
@@ -150,7 +150,7 @@ export default function Home({ onNavigate }: HomeProps) {
                 </div>
                 <div className="relative z-10">
                   <h4 className="font-bold mb-1">{action.label}</h4>
-                  <p className={`text-xs ${action.isSolid ? 'text-blue-100' : 'text-zinc-400'}`}>{action.sub}</p>
+                  <p className={`text-xs ${action.isSolid ? 'text-emerald-100' : 'text-zinc-400'}`}>{action.sub}</p>
                 </div>
               </motion.button>
             ))}
@@ -166,7 +166,7 @@ export default function Home({ onNavigate }: HomeProps) {
           >
             <div className="flex items-start justify-between mb-6">
               <div className="flex gap-3">
-                <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center">
                   <Package className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -174,14 +174,14 @@ export default function Home({ onNavigate }: HomeProps) {
                   <h4 className="font-bold text-sm">{t('in_transit')}</h4>
                 </div>
               </div>
-              <span className="px-2.5 py-1 rounded-full border border-blue-500/30 text-blue-400 text-[12px] font-bold tracking-wider uppercase bg-blue-500/10">
+              <span className="px-2.5 py-1 rounded-full border border-emerald-500/30 text-emerald-400 text-[12px] font-bold tracking-wider uppercase bg-emerald-500/10">
                 Active
               </span>
             </div>
             
             <div className="space-y-3">
               <div className="h-1.5 w-full bg-zinc-800 dark:bg-zinc-700 rounded-full overflow-hidden transition-colors duration-300">
-                <div className="h-full bg-blue-500 w-[65%] rounded-full relative">
+                <div className="h-full bg-emerald-500 w-[65%] rounded-full relative">
                   <div className={`absolute ${isRTL ? 'left-0' : 'right-0'} top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)]`}></div>
                 </div>
               </div>
@@ -216,7 +216,7 @@ export default function Home({ onNavigate }: HomeProps) {
             >
               <div className="p-6 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-600">
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-600">
                     <Bell className="w-5 h-5" />
                   </div>
                   <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{t('notifications')}</h3>

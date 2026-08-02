@@ -59,7 +59,7 @@ export default function Splash({ onNavigate }: SplashProps) {
       >
         <button
           onClick={() => onNavigate('phone_auth')}
-          className="w-full h-16 bg-blue-700 rounded-3xl flex items-center justify-center gap-2 text-white font-semibold text-lg shadow-[0_8px_30px_rgb(21,128,61,0.4)] dark:shadow-none transition-transform active:scale-95"
+          className="w-full h-16 bg-emerald-700 rounded-3xl flex items-center justify-center gap-2 text-white font-semibold text-lg shadow-[0_8px_30px_rgb(21,128,61,0.4)] dark:shadow-none transition-transform active:scale-95"
         >
           {t('get_started')}
           <ArrowRight className={`w-5 h-5 ${isRTL ? 'rotate-180' : ''}`} />

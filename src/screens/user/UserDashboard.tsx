@@ -178,7 +178,7 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
               <h2 className="text-xl font-display font-semibold uppercase tracking-tight text-slate-900">{t('recent_orders') || 'Recent Orders'}</h2>
               <button 
                 onClick={() => onNavigate('user_tracking')}
-                className="text-[#2D74FF] font-bold text-[12px] uppercase tracking-widest hover:opacity-75 transition-opacity"
+                className="text-[#10b981] font-bold text-[12px] uppercase tracking-widest hover:opacity-75 transition-opacity"
               >
                 {t('view_all_orders') || 'View All Orders'}
               </button>
@@ -202,7 +202,7 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
                       <td className="p-8">
                         <span className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[12px] font-bold uppercase tracking-widest ${
                           order.status === 'delivered' ? 'bg-emerald-50 text-emerald-600' :
-                          order.status === 'in_transit' || order.status === 'En-route' ? 'bg-blue-50 text-[#2D74FF]' :
+                          order.status === 'in_transit' || order.status === 'En-route' ? 'bg-emerald-50 text-[#10b981]' :
                           'bg-orange-50 text-orange-655'
                         }`}>
                           {order.status === 'delivered' && <CheckCircle2 className="w-3 h-3" />}
@@ -237,7 +237,7 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
             <div className="flex justify-between items-center bg-zinc-50 p-4 rounded-2xl">
               <div>
                 <p className="text-[12px] font-black text-zinc-400 uppercase tracking-widest leading-none mb-1">Status</p>
-                <p className="text-blue-600 font-black uppercase text-xs tracking-widest">Delivered Successfully</p>
+                <p className="text-emerald-600 font-black uppercase text-xs tracking-widest">Delivered Successfully</p>
               </div>
               <div className="text-right">
                 <p className="text-[12px] font-black text-zinc-400 uppercase tracking-widest leading-none mb-1">Amount</p>

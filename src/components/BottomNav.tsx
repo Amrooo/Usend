@@ -26,7 +26,7 @@ export default function BottomNav({ currentScreen, onNavigate }: BottomNavProps)
             <button 
               key={item.id}
               onClick={() => onNavigate('details')}
-              className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-blue-500/30 transform transition-all active:scale-95 hover:bg-gradient-to-r from-blue-700 to-blue-500 flex-shrink-0"
+              className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-emerald-500/30 transform transition-all active:scale-95 hover:bg-gradient-to-r from-emerald-700 to-emerald-500 flex-shrink-0"
             >
               <Plus className="w-6 h-6 stroke-[3px]" />
             </button>
@@ -39,7 +39,7 @@ export default function BottomNav({ currentScreen, onNavigate }: BottomNavProps)
             onClick={() => item.id !== 'wallet' && onNavigate(item.id as Screen)}
             className={`relative flex items-center justify-center h-10 px-3 rounded-full transition-all duration-300 ${
               isActive 
-                ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400' 
+                ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' 
                 : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'
             }`}
           >

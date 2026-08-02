@@ -205,7 +205,7 @@ export default function MerchantWallet({ onNavigate }: MerchantWalletProps) {
           {/* Page Headers */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 pb-5">
             <div>
-              <span className="text-blue-600 font-bold text-[12px] uppercase tracking-[0.4em] block">
+              <span className="text-emerald-600 font-bold text-[12px] uppercase tracking-[0.4em] block">
                 Financial Operations Ledger
               </span>
               <h1 className="text-3xl font-display font-medium text-zinc-900 uppercase tracking-tight mt-1">
@@ -291,11 +291,11 @@ export default function MerchantWallet({ onNavigate }: MerchantWalletProps) {
                           <td className="p-4 text-zinc-400">{txn.date}</td>
                           <td className="p-4">
                             <span className={`font-bold ${
-                              txn.amount > 0 ? 'text-blue-600' : 'text-zinc-600'
+                              txn.amount > 0 ? 'text-emerald-600' : 'text-zinc-600'
                             }`}>{txn.type}</span>
                           </td>
                           <td className="p-4 text-zinc-400">{txn.method}</td>
-                          <td className={`p-4 text-right pr-6 font-bold font-mono ${txn.amount > 0 ? 'text-blue-600' : 'text-zinc-900'}`}>
+                          <td className={`p-4 text-right pr-6 font-bold font-mono ${txn.amount > 0 ? 'text-emerald-600' : 'text-zinc-900'}`}>
                             {txn.amount > 0 ? '+' : ''}AED {txn.amount.toFixed(2)}
                           </td>
                         </tr>
@@ -319,7 +319,7 @@ export default function MerchantWallet({ onNavigate }: MerchantWalletProps) {
           >
             {stripeShowReceipt ? (
               <div className="text-center py-6 space-y-6">
-                <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto">
+                <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
                   <CheckCircle2 className="w-8 h-8" />
                 </div>
                 <div className="space-y-1">
@@ -348,7 +348,7 @@ export default function MerchantWallet({ onNavigate }: MerchantWalletProps) {
               <div className="text-center py-10 space-y-4">
                 <div className="relative w-12 h-12 mx-auto">
                   <div className="absolute inset-0 rounded-full border-4 border-zinc-100 animate-pulse" />
-                  <div className="absolute inset-0 rounded-full border-4 border-blue-600 border-t-transparent animate-spin" />
+                  <div className="absolute inset-0 rounded-full border-4 border-emerald-600 border-t-transparent animate-spin" />
                 </div>
                 <div className="space-y-1">
                   <h4 className="font-bold text-sm text-zinc-800">Processing Stripe UAE Gateway Settle...</h4>
@@ -359,7 +359,7 @@ export default function MerchantWallet({ onNavigate }: MerchantWalletProps) {
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-black text-zinc-900">Top-up Wallet Portal</h3>
-                  <span className="px-2 py-0.5 rounded-full text-[12px] font-black uppercase bg-blue-50 text-blue-600 border border-blue-100 font-mono">stripe.com</span>
+                  <span className="px-2 py-0.5 rounded-full text-[12px] font-black uppercase bg-emerald-50 text-emerald-600 border border-emerald-100 font-mono">stripe.com</span>
                 </div>
 
                 <div className="space-y-4 text-left">
@@ -397,7 +397,7 @@ export default function MerchantWallet({ onNavigate }: MerchantWalletProps) {
                         onClick={() => setStripeMethod('stripe_card')}
                         className={`p-3 rounded-xl border flex flex-col items-center gap-1.5 font-bold transition-all cursor-pointer text-center ${
                           stripeMethod !== 'standard'
-                            ? 'bg-blue-50 border-blue-300 text-blue-800'
+                            ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
                             : 'bg-zinc-50 hover:bg-zinc-100 text-zinc-600 border-zinc-200'
                         }`}
                       >
@@ -408,9 +408,9 @@ export default function MerchantWallet({ onNavigate }: MerchantWalletProps) {
                   </div>
 
                   {stripeMethod !== 'standard' && !stripeClientSecret && (
-                    <div className="p-4 bg-blue-50 border border-blue-100 rounded-2xl text-xs text-blue-600 font-bold flex items-center justify-between">
+                    <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl text-xs text-emerald-600 font-bold flex items-center justify-between">
                       <span>Stripe secure gateway ready</span>
-                      <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                      <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
                     </div>
                   )}
 
@@ -435,7 +435,7 @@ export default function MerchantWallet({ onNavigate }: MerchantWalletProps) {
                         type="button"
                         onClick={(e) => handleTopupSubmit(e as any)}
                         disabled={stripeIsProcessing}
-                        className="flex-[2] py-3 font-bold bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-lg transition-all cursor-pointer text-center"
+                        className="flex-[2] py-3 font-bold bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl shadow-lg transition-all cursor-pointer text-center"
                       >
                         {stripeIsProcessing ? 'Initializing...' : (stripeMethod !== 'standard' ? 'Proceed to Secure Pay' : 'Authorize Card Settle')}
                       </button>

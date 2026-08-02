@@ -18,15 +18,15 @@ export default function Onboarding({ onNavigate }: OnboardingProps) {
       title: t('onboarding_title_1'),
       description: t('onboarding_desc_1'),
       icon: Scan,
-      color: "text-blue-500",
-      bgColor: "bg-blue-500/10"
+      color: "text-emerald-500",
+      bgColor: "bg-emerald-500/10"
     },
     {
       title: t('onboarding_title_2'),
       description: t('onboarding_desc_2'),
       icon: Banknote,
-      color: "text-blue-500",
-      bgColor: "bg-blue-500/10"
+      color: "text-emerald-500",
+      bgColor: "bg-emerald-500/10"
     },
     {
       title: t('onboarding_title_3'),
@@ -96,7 +96,7 @@ export default function Onboarding({ onNavigate }: OnboardingProps) {
               key={index} 
               className={`h-2 rounded-full transition-all duration-300 ${
                 index === currentStep 
-                  ? 'w-8 bg-gradient-to-r from-blue-700 to-blue-500' 
+                  ? 'w-8 bg-gradient-to-r from-emerald-700 to-emerald-500' 
                   : 'w-2 bg-zinc-200 dark:bg-zinc-800'
               }`}
             />
