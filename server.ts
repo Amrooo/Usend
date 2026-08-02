@@ -270,12 +270,13 @@ app.post("/api/aramex/:serviceType", async (req, res) => {
       ClientInfo: {
         UserName: aramexUser ? aramexUser.replace(/,$/, '') : "testingapi@aramex.com",
         Password: process.env.ARAMEX_PASSWORD || "R123456789$r",
-        Version: process.env.ARAMEX_VERSION || "v1",
+        Version: process.env.ARAMEX_VERSION || "v1.0",
         AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER || "45796",
         AccountPin: process.env.ARAMEX_ACCOUNT_PIN || "116216",
         AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY || "DXB",
         AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY_CODE || "AE",
-        Source: process.env.ARAMEX_SOURCE || "24",
+        Source: process.env.ARAMEX_SOURCE !== undefined ? Number(process.env.ARAMEX_SOURCE) : 0,
+        PreferredLanguageCode: process.env.ARAMEX_PREFERRED_LANGUAGE || null
       },
     };
 
