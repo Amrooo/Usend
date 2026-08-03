@@ -592,7 +592,9 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                       {/* Printable Waybill design */}
                       <div className="bg-white text-zinc-950 border-2 border-zinc-950 p-4 rounded-3xl font-sans text-left flex flex-col justify-between shadow-xs border-dashed">
                         <div className="border-b-2 border-zinc-950 pb-2 flex justify-between items-start">
-                          <span className="text-sm font-black uppercase tracking-tight italic text-[#d12421]">aramex</span>
+                          <span className={`text-sm font-black uppercase tracking-tight italic ${(liveSelectedOrder.courier || '').toLowerCase().includes('noon') ? 'text-amber-600' : 'text-[#d12421]'}`}>
+                            {(liveSelectedOrder.courier || '').toLowerCase().includes('noon') ? 'noon' : 'aramex'}
+                          </span>
                           <div className="text-right">
                             <span className="text-[13px] font-black uppercase text-zinc-400 block">Delivery Protocol</span>
                             <span className="text-[12px] font-bold bg-zinc-950 text-white px-1.5 py-0.5 rounded tracking-wide uppercase">COD Parcel</span>

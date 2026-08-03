@@ -307,9 +307,11 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
         const currentTxns = Array.isArray(user.transactions) ? user.transactions : [];
         const updatedTxns = [newTxn, ...currentTxns];
         try {
-          await updateDocument('users', user.uid, { transactions: updatedTxns });
+          if (user?.uid && !user.uid.startsWith('user-')) {
+            await updateDocument('users', user.uid, { transactions: updatedTxns });
+          }
         } catch (txnError) {
-          console.error("Error committing transaction to Firestore user profile:", txnError);
+          console.warn("Firestore user transaction sync skipped, local state maintained:", txnError);
         }
       }
 

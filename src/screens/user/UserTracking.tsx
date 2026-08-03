@@ -23,7 +23,7 @@ interface UserTrackingProps {
 
 export default function UserTracking({ onNavigate }: UserTrackingProps) {
   const { t, isRTL } = useLanguage();
-  const { activeRequests, user, updateRequestStatus } = useApp();
+  const { activeRequests, user, updateRequestStatus, updateRequest } = useApp();
   const [isMapReady, setIsMapReady] = useState(false);
   const [filter, setFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -45,7 +45,8 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
   );
   const activeOrders = myRequests;
   const [selectedOrder, setSelectedOrder] = useState<USendRequest | null>(null);
-  const [aramexSteps, setAramexSteps] = useState<any[]>([]);
+  const liveSelectedOrder = selectedOrder ? (activeRequests.find(r => r.id === selectedOrder.id) || selectedOrder) : null;
+  const [showApiLogs, setShowApiLogs] = useState(false);
 
   useEffect(() => {
     if (selectedOrder?.externalTrackingNumber && selectedOrder.carrier === 'aramex') {

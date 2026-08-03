@@ -215,6 +215,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
               });
             }
             localStorage.removeItem('guestOrders');
+            // Notify user that their guest orders have been linked
+            window.dispatchEvent(new CustomEvent('app_toast', {
+              detail: {
+                type: 'success',
+                title: 'Guest Orders Linked',
+                message: `${storedGuest.length} guest order${storedGuest.length > 1 ? 's have' : ' has'} been linked to your account.`
+              }
+            }));
           }
         } catch (err) {
           console.warn("Failed to sync guest orders to account:", err);
