@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useApp } from '../../context/AppContext';
+import { updateDocument } from '../../lib/firebaseUtils';
 import { 
   courierIntegrationService, 
   defaultAramexCreds, 
@@ -86,7 +87,7 @@ interface MerchantIntegrationsProps {
 
 export default function MerchantIntegrations({ onNavigate }: MerchantIntegrationsProps) {
   const { t, isRTL } = useLanguage();
-  const { merchantActiveTab, setMerchantActiveTab, addRequest } = useApp();
+  const { merchantActiveTab, setMerchantActiveTab, addRequest, user } = useApp();
 
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [copiedTestKey, setCopiedTestKey] = useState<string | null>(null);
@@ -181,6 +182,22 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
   const [aramexCreds, setAramexCreds] = useState<CourierCredentials>({ ...defaultAramexCreds });
   const [dhlCreds, setDhlCreds] = useState<CourierCredentials>({ ...defaultDhlCreds });
   const [fedexCreds, setFedexCreds] = useState<CourierCredentials>({ ...defaultFedexCreds });
+
+  React.useEffect(() => {
+    if (user && user.integrations) {
+      if (user.integrations.aramex) setAramexCreds(user.integrations.aramex);
+      if (user.integrations.dhl) setDhlCreds(user.integrations.dhl);
+      if (user.integrations.fedex) setFedexCreds(user.integrations.fedex);
+      
+      const activeKeys = Object.keys(user.integrations).filter(k => user.integrations[k]?.accountNumber);
+      if (activeKeys.length > 0) {
+        setConnectedCouriers(activeKeys);
+      }
+    }
+    if (user && Array.isArray(user.activePlatforms)) {
+      setActivePlatforms(user.activePlatforms);
+    }
+  }, [user]);
 
   // Rate calculator tool states
   const [rateOriginCity, setRateOriginCity] = useState('Dubai');
@@ -839,7 +856,13 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                         onClick={() => {
                           setPlatformConnecting(true);
                           setTimeout(() => {
-                            setActivePlatforms(prev => [...prev, configuringPlatform!]);
+                            const newPlatforms = [...activePlatforms, configuringPlatform!];
+                            setActivePlatforms(newPlatforms);
+                            if (user && user.uid) {
+                              updateDocument('users', user.uid, {
+                                activePlatforms: newPlatforms
+                              }).catch(err => console.error("Error saving activePlatforms to DB:", err));
+                            }
                             setToastMsg(`Successfully linked ${configuringPlatform!.toUpperCase()} to USend Merchant Portal!`);
                             setTimeout(() => setToastMsg(null), 3000);
                             setPlatformConnecting(false);
@@ -930,7 +953,13 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                               
                               <button 
                                 onClick={() => {
-                                  setActivePlatforms(prev => prev.filter(p => p !== platform.id));
+                                  const newPlatforms = activePlatforms.filter(p => p !== platform.id);
+                                  setActivePlatforms(newPlatforms);
+                                  if (user && user.uid) {
+                                    updateDocument('users', user.uid, {
+                                      activePlatforms: newPlatforms
+                                    }).catch(err => console.error("Error saving activePlatforms to DB:", err));
+                                  }
                                   setToastMsg(`Unlinked ${platform.name} platform.`);
                                   setTimeout(() => setToastMsg(null), 3000);
                                 }}
@@ -1231,6 +1260,17 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                         </div>
                         <button
                           onClick={() => {
+                            const currentCreds = getActiveCreds(selectedCourierForConfig);
+                            if (user && user.uid) {
+                              const updatedIntegrations = {
+                                ...(user.integrations || {}),
+                                [selectedCourierForConfig]: currentCreds
+                              };
+                              updateDocument('users', user.uid, {
+                                integrations: updatedIntegrations
+                              }).catch(err => console.error("Error saving integrations to DB:", err));
+                            }
+
                             if (!connectedCouriers.includes(selectedCourierForConfig)) {
                               setConnectedCouriers(prev => [...prev, selectedCourierForConfig]);
                               setToastMsg(`Successfully connected to ${selectedCourierForConfig.toUpperCase()} Sandbox!`);

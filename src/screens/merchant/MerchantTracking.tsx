@@ -506,10 +506,14 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                 <div className="p-6 border-b border-zinc-200 flex items-center justify-between shadow-xs z-10">
                   <div>
                     <h2 className="text-xl font-black text-zinc-900 uppercase tracking-tight">{t('order_details')}</h2>
-                    <div className="flex items-center gap-2 mt-1">
-                       <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{liveSelectedOrder.id}</p>
-                       <span className="text-[12px] font-bold bg-zinc-100 text-zinc-650 px-2 py-0.5 rounded-md">REF-4421</span>
-                    </div>
+                     <div className="flex items-center gap-2 mt-1">
+                        <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{liveSelectedOrder.id}</p>
+                        {liveSelectedOrder.externalTrackingNumber && (
+                           <span className="text-[10px] font-mono font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded-md border border-amber-200 uppercase">
+                              {liveSelectedOrder.externalTrackingNumber}
+                           </span>
+                        )}
+                     </div>
                   </div>
                   <button 
                     onClick={() => setSelectedOrder(null)} 

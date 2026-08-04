@@ -199,7 +199,7 @@ export default function UserPayments({ onNavigate }: UserPaymentsProps) {
     return list.sort((a, b) => b.id.localeCompare(a.id));
   }, [cardPayments, transactions]);
 
-  // Load saved cards from Firestore or fallback to mock defaults
+  // Load saved cards from Firestore
   useEffect(() => {
     if (user && user.uid) {
       const loadProfileCards = async () => {
@@ -211,20 +211,12 @@ export default function UserPayments({ onNavigate }: UserPaymentsProps) {
             if (Array.isArray(data.savedCards)) {
               setCards(data.savedCards);
             } else {
-              const initialCards = [
-                { id: 'card-1', last4: '4242', brand: 'Visa', exp: '12/28', isDefault: true },
-                { id: 'card-2', last4: '8888', brand: 'Mastercard', exp: '08/25', isDefault: false },
-              ];
-              setCards(initialCards);
-              await updateDocument('users', user.uid, { savedCards: initialCards });
+              setCards([]);
             }
           }
         } catch (err) {
           console.error("Failed to load user saved cards:", err);
-          setCards([
-            { id: 'card-1', last4: '4242', brand: 'Visa', exp: '12/28', isDefault: true },
-            { id: 'card-2', last4: '8888', brand: 'Mastercard', exp: '08/25', isDefault: false },
-          ]);
+          setCards([]);
         }
       };
       loadProfileCards();

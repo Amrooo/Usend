@@ -97,7 +97,7 @@ interface OrderWizardProps {
 
 export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true }: OrderWizardProps) {
   const { isRTL, t } = useLanguage();
-  const { addRequest, user } = useApp();
+  const { addRequest, user, courierConfigs } = useApp();
 
   const [wizardStep, setWizardStep] = useState<0 | 1 | 2 | 3 | 4 | 5>(0);
   const [shipmentType, setShipmentType] = useState<'domestic' | 'international' | null>(null);
@@ -122,10 +122,18 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
 
   // Shipment details
   const [shipmentData, setShipmentData] = useState({
-    weight: '1', description: '', quantity: '1', photo: null as string | null, courier: 'usend' as 'usend' | 'aramex', declaredValue: ''
+    weight: '1', 
+    description: '', 
+    quantity: '1', 
+    photo: null as string | null, 
+    courier: 'noon' as 'usend' | 'aramex' | 'noon', 
+    declaredValue: '',
+    codAmount: '150',
+    receiverPaymentMode: 'cod' as 'cod' | 'card'
   });
 
-  // Payment details
+  // Sender Delivery Fee payment details
+  const [senderPaymentMethod, setSenderPaymentMethod] = useState<'card' | 'wallet'>('card');
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [stripeClientSecret, setStripeClientSecret] = useState<string | null>(null);
   const [stripePubKey, setStripePubKey] = useState<string | null>(null);
@@ -197,6 +205,21 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
   };
 
   const calculateTotal = () => {
+    const courierId = shipmentData.courier || 'noon';
+    const userType = isGuest ? 'guest' : (user?.role === 'merchant' || user?.email?.toLowerCase().includes('merchant') ? 'merchant' : 'user');
+    
+    const config = courierConfigs?.[courierId];
+    if (config && config.rates && config.rates[userType]) {
+      const rate = config.rates[userType];
+      const baseFee = rate.baseFee;
+      const additionalWeight = Math.max(0, parseFloat(shipmentData.weight || '1') - 1); // standard threshold: 1kg
+      const weightFee = additionalWeight * rate.perKgRate;
+      const codFee = shipmentData.receiverPaymentMode === 'cod' ? rate.codFee : 0;
+      const distanceFee = rate.perKmRate * 15; // Assume 15km average for base calculation
+      
+      return baseFee + weightFee + codFee + distanceFee;
+    }
+
     const baseFee = shipmentType === 'international' ? 120 : 30;
     const additionalWeight = Math.max(0, parseFloat(shipmentData.weight || '1') - 5);
     const weightFee = additionalWeight * 5;
@@ -266,15 +289,20 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
     const newOrderId = `REQ-${Math.floor(1000 + Math.random() * 9000)}`;
     const totalAmount = calculateTotal();
     
-    const reqPayload = {
+    const codVal = parseFloat(shipmentData.codAmount || '0') || 0;
+
+    const reqPayload: any = {
       id: newOrderId,
-      name: shipperData.name || (isGuest ? (isRTL ? 'مستخدم ضيف' : 'Guest User') : user?.name || 'User'),
+      name: shipperData.name || (isGuest ? (isRTL ? 'ÙØ³ØªØ®Ø¯Ù Ø¶ÙÙ' : 'Guest User') : user?.name || 'User'),
+      receiverName: receiverData.name || 'Recipient',
+      receiverPhone: receiverData.phone || '+971',
       userId: isGuest ? undefined : user?.uid,
       phone: shipperData.phone || '+971',
+      pickupAddress: shipperData.city ? `${shipperData.street}, ${shipperData.city}, ${shipperData.country}` : 'Dubai, UAE',
       channel: isGuest ? 'Guest Flow' : 'User Portal',
       date: new Date().toLocaleDateString(),
       status: 'Pending' as const,
-      paymentStatus: confirmedPaymentIntent ? 'paid' : 'pending',
+      paymentStatus: confirmedPaymentIntent ? 'paid' : (senderPaymentMethod === 'wallet' ? 'paid' : 'pending'),
       stripeIntentId: confirmedPaymentIntent?.id,
       address: receiverData.city ? `${receiverData.street}, ${receiverData.city}, ${receiverData.country}` : 'Dubai, UAE',
       fromDestination: shipperData.city ? `${shipperData.street}, ${shipperData.city}, ${shipperData.country}` : 'Sharjah, UAE',
@@ -283,11 +311,13 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
       itemType: 'Package',
       description: `${shipmentData.quantity}x ${shipmentData.description} (${shipmentData.weight}kg)`,
       amountType: 'single item' as const,
-      paymentMethod: paymentMethod === 'cod' ? 'Cash on Delivery' : 'Credit Card',
-      orderAmount: `${totalAmount} AED`,
+      paymentMethod: shipmentData.receiverPaymentMode === 'card' ? 'Card on Delivery' : 'Cash on Delivery',
+      orderAmount: `${codVal} AED`,
+      deliveryFee: `${totalAmount} AED`,
+      senderPaymentMethod: senderPaymentMethod === 'wallet' ? 'USend Wallet' : 'Credit Card (Stripe)',
       applicantType: isGuest ? 'Guest' as const : 'User' as const,
       etaTime: 'Pending',
-      courier: shipmentData.courier === 'aramex' ? 'Aramex' : 'USend Fleet',
+      courier: shipmentData.courier === 'aramex' ? 'Aramex' : shipmentData.courier === 'noon' ? 'Noon RoD' : 'USend Fleet',
     };
     
     try {

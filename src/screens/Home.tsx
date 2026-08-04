@@ -6,6 +6,7 @@ import Logo from '../components/Logo';
 import { useDarkMode } from '../hooks/useDarkMode';
 import { useLanguage } from '../context/LanguageContext';
 import { useState } from 'react';
+import { useApp } from '../context/AppContext';
 
 const ACTION_IMAGES: Record<string, string> = {
   'furniture': 'https://images.unsplash.com/photo-1592078615290-033ee584e267?q=80&w=400&auto=format&fit=crop',
@@ -23,6 +24,33 @@ export default function Home({ onNavigate }: HomeProps) {
   const { isDark, toggle } = useDarkMode();
   const { t, language, setLanguage, isRTL } = useLanguage();
   const [showNotifications, setShowNotifications] = useState(false);
+  const { activeRequests, user, setCurrentRequest } = useApp();
+  const [trackingIdInput, setTrackingIdInput] = useState('');
+  const [trackingError, setTrackingError] = useState<string | null>(null);
+
+  // Find active orders
+  const storedGuestOrders = JSON.parse(localStorage.getItem('guestOrders') || '[]');
+  const myActiveOrders = activeRequests.filter(req => 
+    (user?.uid && req.userId === user.uid && req.status !== 'delivered') ||
+    (!user?.uid && storedGuestOrders.some((g: any) => g.id === req.id) && req.status !== 'delivered')
+  );
+
+  const latestOrder = myActiveOrders[0];
+
+  const handleTrackSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!trackingIdInput.trim()) return;
+    
+    const cleanId = trackingIdInput.trim().toUpperCase();
+    const req = activeRequests.find(r => r.id === cleanId || r.id.replace(/\D/g, '') === cleanId.replace(/\D/g, ''));
+    if (req) {
+      setCurrentRequest(req);
+      onNavigate('tracking');
+    } else {
+      setTrackingError(t('order_not_found') || 'Order not found. Check the ID.');
+      setTimeout(() => setTrackingError(null), 3000);
+    }
+  };
 
   const notifications = [
     { id: 1, title: 'Shipment Delivered', message: 'Your furniture shipment has been delivered successfully.', time: '2h ago', icon: CheckCircle, color: 'text-emerald-500' },
@@ -157,40 +185,74 @@ export default function Home({ onNavigate }: HomeProps) {
           </div>
         </div>
 
-        {/* Active Shipment */}
+        {/* Active Shipment or Tracking Search */}
         <div>
-          <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mb-4 transition-colors duration-300">{t('active_shipment')}</h3>
-          <button 
-            onClick={() => onNavigate('tracking')}
-            className="w-full text-left rtl:text-right bg-zinc-900 dark:bg-zinc-800 rounded-3xl p-5 text-white shadow-xl shadow-zinc-900/10 dark:shadow-none transition-all duration-300 active:scale-[0.98]"
-          >
-            <div className="flex items-start justify-between mb-6">
-              <div className="flex gap-3">
-                <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center">
-                  <Package className="w-5 h-5 text-white" />
+          <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mb-4 transition-colors duration-300">
+            {latestOrder ? t('active_shipment') : 'Track Delivery'}
+          </h3>
+          
+          {latestOrder ? (
+            <button 
+              onClick={() => {
+                setCurrentRequest(latestOrder);
+                onNavigate('tracking');
+              }}
+              className="w-full text-left rtl:text-right bg-zinc-900 dark:bg-zinc-800 rounded-3xl p-5 text-white shadow-xl shadow-zinc-900/10 dark:shadow-none transition-all duration-300 active:scale-[0.98]"
+            >
+              <div className="flex items-start justify-between mb-6">
+                <div className="flex gap-3">
+                  <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center">
+                    <Package className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-[12px] font-bold tracking-widest text-zinc-500 uppercase mb-0.5">ID: {latestOrder.id}</p>
+                    <h4 className="font-bold text-sm">
+                      {latestOrder.status === 'Pending' ? t('pending') : latestOrder.status === 'in_transit' || latestOrder.status === 'En-route' ? t('in_transit') : latestOrder.status}
+                    </h4>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-[12px] font-bold tracking-widest text-zinc-500 uppercase mb-0.5">ID: MRSL-9921-X</p>
-                  <h4 className="font-bold text-sm">{t('in_transit')}</h4>
+                <span className="px-2.5 py-1 rounded-full border border-emerald-500/30 text-emerald-400 text-[12px] font-bold tracking-wider uppercase bg-emerald-500/10">
+                  Active
+                </span>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="h-1.5 w-full bg-zinc-800 dark:bg-zinc-700 rounded-full overflow-hidden transition-colors duration-300">
+                  <div 
+                    className="h-full bg-emerald-500 rounded-full relative"
+                    style={{ width: latestOrder.status === 'Pending' ? '15%' : latestOrder.status === 'En-route' ? '40%' : '75%' }}
+                  >
+                    <div className={`absolute ${isRTL ? 'left-0' : 'right-0'} top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)]`}></div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-xs text-zinc-400">
+                  <span className="truncate max-w-[150px]">{latestOrder.pickupAddress}</span>
+                  <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {latestOrder.etaTime || '45 min'}</span>
                 </div>
               </div>
-              <span className="px-2.5 py-1 rounded-full border border-emerald-500/30 text-emerald-400 text-[12px] font-bold tracking-wider uppercase bg-emerald-500/10">
-                Active
-              </span>
-            </div>
-            
-            <div className="space-y-3">
-              <div className="h-1.5 w-full bg-zinc-800 dark:bg-zinc-700 rounded-full overflow-hidden transition-colors duration-300">
-                <div className="h-full bg-emerald-500 w-[65%] rounded-full relative">
-                  <div className={`absolute ${isRTL ? 'left-0' : 'right-0'} top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)]`}></div>
-                </div>
+            </button>
+          ) : (
+            <form onSubmit={handleTrackSubmit} className="space-y-3">
+              <div className="relative">
+                <input 
+                  type="text" 
+                  value={trackingIdInput}
+                  onChange={(e) => setTrackingIdInput(e.target.value)}
+                  placeholder="Enter Tracking / Order ID (e.g. REQ-1234)"
+                  className="w-full h-14 bg-zinc-100 dark:bg-zinc-900 border border-zinc-205 dark:border-zinc-800 rounded-2xl pl-4 pr-16 text-sm font-bold outline-none focus:border-emerald-500 transition-colors text-zinc-900 dark:text-white"
+                />
+                <button 
+                  type="submit"
+                  className="absolute right-2 top-2 h-10 px-4 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-colors cursor-pointer"
+                >
+                  Track
+                </button>
               </div>
-              <div className="flex items-center justify-between text-xs text-zinc-400">
-                <span>{t('pickup')}</span>
-                <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {t('eta')}: 45 min</span>
-              </div>
-            </div>
-          </button>
+              {trackingError && (
+                <p className="text-xs font-bold text-rose-500 pl-2">{trackingError}</p>
+              )}
+            </form>
+          )}
         </div>
       </div>
 

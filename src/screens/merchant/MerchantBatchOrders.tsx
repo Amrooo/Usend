@@ -395,7 +395,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
 
               {/* Rows layout */}
               <div className="bg-white rounded-[2rem] border border-zinc-200 shadow-sm overflow-hidden">
-"                <div className="p-6 border-b border-zinc-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-zinc-50/50">
+                <div className="p-6 border-b border-zinc-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-zinc-50/50">
                   <div>
                     <span className="text-xs font-black uppercase tracking-widest text-zinc-400 block">Review Batch Manifest lines</span>
                     <span className="text-[12px] font-bold text-zinc-500">Select courier integration channel for this batch</span>
@@ -425,8 +425,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
                        <Plus className="w-4 h-4" /> Add Row
                      </button>
                   </div>
-                </d
-<truncated 4 bytes>
+                </div>
 
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse min-w-[900px]">
