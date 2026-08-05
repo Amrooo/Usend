@@ -160,7 +160,7 @@ const landingTranslations = {
     portalAdminTitle: 'بوابة الإدارة العامة',
     portalAdminTitleDesc: 'نظرة عامة لمعدلات أداء شركات التوصيل، تتبع خرائط السائقين عبر GPS، تعديل النظام والتحكم الكامل في الدفاتر اللوجستية.',
     portalAdminBtn: 'افتح بوابة الإدارة',
-    estimatorBadge: 'حاسبة الشحن التقديرية',
+    estimatorBadge: 'حاسبة الشحن التائديرية',
     estimatorTitle: 'قارن أسعار الشحن المحلي بالإمارات',
     estimatorDesc: 'حدد إمارات الاستلام والتسليم وقارن بين خيارات شركات الشحن المتعددة مع التكلفة التقديرية وسرعة الشحن المتوقعة.',
     pricingSource: 'إمارة الاستلام',
@@ -363,8 +363,8 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
       ref={targetRef}
     >
       
-      {/* HERO SECTION - Deep Curved Blue Container (Full Width) */}
-      <div className="w-full relative bg-[#060B26] text-white rounded-b-[4.5rem] overflow-hidden pb-36 px-4 md:px-8 z-10">
+      {/* HERO SECTION - Sky Blue to Royal Blue Gradient Container (Matching mockup exactly) */}
+      <div className="w-full relative bg-gradient-to-b from-[#2B6CB0] via-[#2563EB] to-[#1E3A8A] text-white rounded-b-[4.5rem] overflow-hidden pb-36 px-4 md:px-8 z-10">
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:40px_40px] opacity-40"></div>
         
         {/* HEADER MENU - Transparent Overlay matching mockup exactly */}
@@ -1133,191 +1133,193 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 <div>
                   <h4 className="text-xs font-black text-slate-900">Dmitri Volkov</h4>
                   <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">COO, EuroBridge Manufacturing</p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-          </div>
-        </div>
-      </section>
-
-      {/* READY TO MOVE YOUR CARGO? - CTA Vessel Banner - Full Width */}
-      <section className="w-full py-24 px-4 md:px-8 bg-white">
-        <div className="max-w-7xl mx-auto rounded-[3rem] overflow-hidden border border-slate-100 shadow-2xl relative min-h-[420px] flex items-center justify-center text-center text-white bg-slate-900">
-          {/* Ocean Vessel background image */}
-          <div className="absolute inset-0 z-0">
-            <img 
-              src={ctaCargoShip} 
-              alt="Ready to Move Your Cargo" 
-              className="w-full h-full object-cover opacity-35"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-transparent"></div>
-          </div>
-
-          <div className="relative z-10 max-w-3xl mx-auto px-6 py-12 space-y-6">
-            <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tight max-w-3xl mx-auto leading-tight font-sans">
-              {isRTL ? 'جاهز لنقل شحنتك؟' : 'READY TO MOVE\nYOUR CARGO?'}
-            </h2>
-            <p className="text-slate-355 font-medium leading-relaxed text-xs md:text-sm max-w-xl mx-auto font-sans">
-              Get a custom freight quote in under 2 minutes. No commitments, no hidden fees — just fast, transparent pricing from a network that delivers.
-            </p>
-            <div className="pt-4">
-              <button 
-                onClick={() => setGuestModalOpen(true)}
-                className="px-8 py-4 bg-[#2563EB] hover:bg-blue-600 text-white text-[13px] font-black uppercase tracking-widest rounded-full transition-all shadow-lg shadow-blue-500/20 cursor-pointer"
-              >
-                {isRTL ? 'احصل على عرض سعر مجاني' : 'Get a Free Quote'}
-              </button>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* FAQ ACCORDION SECTION - Full Width */}
-      <section id="faq" className="w-full py-24 bg-[#FAFBFD] relative border-t border-slate-100">
-        <div className="max-w-4xl mx-auto px-4 space-y-12">
-          <div className="text-center space-y-4">
-            <span className="px-4.5 py-1.5 rounded-full bg-blue-50 text-blue-600 text-[11px] font-black uppercase tracking-widest inline-block">
-              {content.faqBadge}
-            </span>
-            <h2 className="text-3xl md:text-[2.6rem] font-black uppercase text-slate-900 tracking-tight leading-none">
-              {content.faqTitle}
-            </h2>
-          </div>
-
-          <div className="space-y-4">
-            {[
-              { q: content.faq1Q, a: content.faq1A },
-              { q: content.faq2Q, a: content.faq2A },
-              { q: content.faq3Q, a: content.faq3A },
-              { q: content.faq4Q, a: content.faq4A }
-            ].map((item, idx) => (
-              <div 
-                key={idx} 
-                className="bg-white border border-slate-150 rounded-2xl overflow-hidden shadow-xs transition-all duration-300"
-              >
-                <button 
-                  onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
-                  className="w-full p-6 text-left flex items-center justify-between gap-4 focus:outline-hidden cursor-pointer"
-                >
-                  <span className="font-extrabold text-[13px] md:text-sm text-slate-900 tracking-tight">{item.q}</span>
-                  <span className={`w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 transition-transform duration-300 ${activeFaq === idx ? 'rotate-180' : ''}`}>
-                    <ChevronDown className="w-3.5 h-3.5" />
-                  </span>
-                </button>
-                <AnimatePresence>
-                  {activeFaq === idx && (
-                    <motion.div 
-                      initial={{ height: 0 }}
-                      animate={{ height: 'auto' }}
-                      exit={{ height: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <p className="px-6 pb-6 text-xs md:text-[13px] text-slate-500 font-medium leading-relaxed border-t border-slate-50 pt-4">
-                        {item.a}
-                      </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* WATERMARK FOOTER SECTION - Full Width */}
-      <footer className="w-full bg-[#060B26] text-white pt-24 pb-16 px-4 md:px-8 border-t border-white/5 relative overflow-hidden">
-        {/* Large transparent watermark background logo */}
-        <div className="absolute inset-x-0 bottom-4 text-center select-none pointer-events-none z-0">
-          <span className="text-[15vw] font-black tracking-widest text-white/[0.015] uppercase leading-none block font-sans">
-            SWIFTMOVE
-          </span>
-        </div>
-
-        <div className="max-w-7xl mx-auto space-y-16 relative z-10">
-          
-          {/* Footer main banner */}
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 pb-12 border-b border-white/10">
-            <div className="space-y-2 text-left">
-              <h3 className="text-xl md:text-3xl font-black uppercase tracking-tight">{content.footerLead}</h3>
-              <p className="text-slate-400 text-xs md:text-sm font-semibold">{content.footerLeadDesc}</p>
+        {/* READY TO MOVE YOUR CARGO? - CTA Vessel Banner - Full Width */}
+        <section className="w-full py-24 px-4 md:px-8 bg-white">
+          <div className="max-w-7xl mx-auto rounded-[3rem] overflow-hidden border border-slate-100 shadow-2xl relative min-h-[420px] flex items-center justify-center text-center text-white bg-slate-900">
+            {/* Ocean Vessel background image */}
+            <div className="absolute inset-0 z-0">
+              <img 
+                src={ctaCargoShip} 
+                alt="Ready to Move Your Cargo" 
+                className="w-full h-full object-cover opacity-35"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-transparent"></div>
             </div>
-            <div className="flex gap-4">
-              <button 
-                onClick={() => setGuestModalOpen(true)}
-                className="px-6 py-3.5 bg-white text-slate-950 text-[12px] font-black uppercase tracking-widest rounded-full hover:bg-[#2563EB] hover:text-white transition-all shadow-md cursor-pointer"
-              >
-                Launch Platform
-              </button>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 text-left">
-            
-            <div className="space-y-6 md:col-span-2">
-              <div className="flex items-center gap-3">
-                <LogoIcon className="h-10 w-auto" variant="dark" />
-                <div className="flex flex-col">
-                  <span className="text-sm font-black tracking-widest text-white uppercase leading-none">SwiftMove</span>
-                  <span className="text-[12px] font-mono font-bold uppercase text-[#2563EB] tracking-[0.25em]">Smart Shipping</span>
-                </div>
-              </div>
-              <p className="text-[12px] text-slate-400 leading-relaxed max-w-md font-semibold font-sans">
-                Global logistics and transportation built for businesses that demand speed, precision, and real-time supply chain visibility.
+            <div className="relative z-10 max-w-3xl mx-auto px-6 py-12 space-y-6">
+              <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tight max-w-3xl mx-auto leading-tight font-sans">
+                {isRTL ? 'جاهز لنقل شحنتك؟' : 'READY TO MOVE\nYOUR CARGO?'}
+              </h2>
+              <p className="text-slate-350 font-medium leading-relaxed text-xs md:text-sm max-w-xl mx-auto font-sans">
+                Get a custom freight quote in under 2 minutes. No commitments, no hidden fees — just fast, transparent pricing from a network that delivers.
               </p>
+              <div className="pt-4">
+                <button 
+                  onClick={() => setGuestModalOpen(true)}
+                  className="px-8 py-4 bg-[#2563EB] hover:bg-blue-600 text-white text-[13px] font-black uppercase tracking-widest rounded-full transition-all shadow-lg shadow-blue-500/20 cursor-pointer"
+                >
+                  {isRTL ? 'احصل على عرض سعر مجاني' : 'Get a Free Quote'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ ACCORDION SECTION - Full Width */}
+        <section id="faq" className="w-full py-24 bg-[#FAFBFD] relative border-t border-slate-100">
+          <div className="max-w-4xl mx-auto px-4 space-y-12">
+            <div className="text-center space-y-4">
+              <span className="px-4.5 py-1.5 rounded-full bg-blue-50 text-blue-600 text-[11px] font-black uppercase tracking-widest inline-block">
+                {content.faqBadge}
+              </span>
+              <h2 className="text-3xl md:text-[2.6rem] font-black uppercase text-slate-900 tracking-tight leading-none">
+                {content.faqTitle}
+              </h2>
             </div>
 
             <div className="space-y-4">
-              <h4 className="text-[13px] font-black uppercase text-slate-500 tracking-widest font-sans">Connect Hubs</h4>
-              <ul className="space-y-2 text-[13px] font-bold text-slate-350 font-sans">
-                <li>
-                  <span 
-                    className="hover:text-[#2563EB] transition-colors cursor-pointer" 
-                    onClick={() => {
-                      setLoginRole('user');
-                      setLoginEmail('user@swiftmove.com');
-                      setLoginModalOpen(true);
-                    }}
+              {[
+                { q: content.faq1Q, a: content.faq1A },
+                { q: content.faq2Q, a: content.faq2A },
+                { q: content.faq3Q, a: content.faq3A },
+                { q: content.faq4Q, a: content.faq4A }
+              ].map((item, idx) => (
+                <div 
+                  key={idx} 
+                  className="bg-white border border-slate-150 rounded-2xl overflow-hidden shadow-xs transition-all duration-300"
+                >
+                  <button 
+                    onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
+                    className="w-full p-6 text-left flex items-center justify-between gap-4 focus:outline-hidden cursor-pointer"
                   >
-                    Individual Terminal
-                  </span>
-                </li>
-                <li>
-                  <span 
-                    className="hover:text-[#2563EB] transition-colors cursor-pointer" 
-                    onClick={() => {
-                      setLoginRole('merchant');
-                      setLoginEmail('merchant@swiftmove.com');
-                      setLoginModalOpen(true);
-                    }}
-                  >
-                    Merchant Control Panel
-                  </span>
-                </li>
-              </ul>
+                    <span className="font-extrabold text-[13px] md:text-sm text-slate-900 tracking-tight">{item.q}</span>
+                    <span className={`w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 transition-transform duration-300 ${activeFaq === idx ? 'rotate-180' : ''}`}>
+                      <ChevronDown className="w-3.5 h-3.5" />
+                    </span>
+                  </button>
+                  <AnimatePresence>
+                    {activeFaq === idx && (
+                      <motion.div 
+                        initial={{ height: 0 }}
+                        animate={{ height: 'auto' }}
+                        exit={{ height: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <p className="px-6 pb-6 text-xs md:text-[13px] text-slate-500 font-medium leading-relaxed border-t border-slate-50 pt-4">
+                          {item.a}
+                        </p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* WATERMARK FOOTER SECTION - Full Width */}
+        <footer className="w-full bg-[#060B26] text-white pt-24 pb-16 px-4 md:px-8 border-t border-white/5 relative overflow-hidden">
+          {/* Large transparent watermark background logo */}
+          <div className="absolute inset-x-0 bottom-4 text-center select-none pointer-events-none z-0">
+            <span className="text-[15vw] font-black tracking-widest text-white/[0.015] uppercase leading-none block font-sans">
+              SWIFTMOVE
+            </span>
+          </div>
+
+          <div className="max-w-7xl mx-auto space-y-16 relative z-10">
+            
+            {/* Footer main banner */}
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 pb-12 border-b border-white/10">
+              <div className="space-y-2 text-left">
+                <h3 className="text-xl md:text-3xl font-black uppercase tracking-tight">{content.footerLead}</h3>
+                <p className="text-slate-400 text-xs md:text-sm font-semibold">{content.footerLeadDesc}</p>
+              </div>
+              <div className="flex gap-4">
+                <button 
+                  onClick={() => setGuestModalOpen(true)}
+                  className="px-6 py-3.5 bg-white text-slate-950 text-[12px] font-black uppercase tracking-widest rounded-full hover:bg-[#2563EB] hover:text-white transition-all shadow-md cursor-pointer"
+                >
+                  Launch Platform
+                </button>
+              </div>
             </div>
 
-            <div className="space-y-4">
-              <h4 className="text-[13px] font-black uppercase text-slate-500 tracking-widest font-sans">Corporate Parameters</h4>
-              <ul className="space-y-2 text-[13px] font-bold text-slate-350 font-sans">
-                <li><span className="hover:text-[#2563EB] transition-colors cursor-pointer" onClick={() => { setLoginRole('admin'); setLoginModalOpen(true); }}>Zonal Admin Portal</span></li>
-                <li><a href="#" className="hover:text-[#2563EB] transition-colors">Safety Logs</a></li>
-                <li><a href="#" className="hover:text-[#2563EB] transition-colors">API Keys</a></li>
-              </ul>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-12 text-left">
+              
+              <div className="space-y-6 md:col-span-2">
+                <div className="flex items-center gap-3">
+                  <LogoIcon className="h-10 w-auto" variant="dark" />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-black tracking-widest text-white uppercase leading-none">SwiftMove</span>
+                    <span className="text-[12px] font-mono font-bold uppercase text-[#2563EB] tracking-[0.25em]">Smart Shipping</span>
+                  </div>
+                </div>
+                <p className="text-[12px] text-slate-400 leading-relaxed max-w-md font-semibold font-sans">
+                  Global logistics and transportation built for businesses that demand speed, precision, and real-time supply chain visibility.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="text-[13px] font-black uppercase text-slate-500 tracking-widest font-sans">Connect Hubs</h4>
+                <ul className="space-y-2 text-[13px] font-bold text-slate-350 font-sans">
+                  <li>
+                    <span 
+                      className="hover:text-[#2563EB] transition-colors cursor-pointer" 
+                      onClick={() => {
+                        setLoginRole('user');
+                        setLoginEmail('user@swiftmove.com');
+                        setLoginModalOpen(true);
+                      }}
+                    >
+                      Individual Terminal
+                    </span>
+                  </li>
+                  <li>
+                    <span 
+                      className="hover:text-[#2563EB] transition-colors cursor-pointer" 
+                      onClick={() => {
+                        setLoginRole('merchant');
+                        setLoginEmail('merchant@swiftmove.com');
+                        setLoginModalOpen(true);
+                      }}
+                    >
+                      Merchant Control Panel
+                    </span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="text-[13px] font-black uppercase text-slate-500 tracking-widest font-sans">Corporate Parameters</h4>
+                <ul className="space-y-2 text-[13px] font-bold text-slate-350 font-sans">
+                  <li><span className="hover:text-[#2563EB] transition-colors cursor-pointer" onClick={() => { setLoginRole('admin'); setLoginModalOpen(true); }}>Zonal Admin Portal</span></li>
+                  <li><a href="#" className="hover:text-[#2563EB] transition-colors">Safety Logs</a></li>
+                  <li><a href="#" className="hover:text-[#2563EB] transition-colors">API Keys</a></li>
+                </ul>
+              </div>
+
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-12 border-t border-white/10 text-[13px] font-black text-slate-500 uppercase tracking-widest font-sans">
+              <p>{content.copyright}</p>
+              <div className="flex items-center gap-8">
+                <a href="#" className="hover:text-[#2563EB] transition-colors">Privacy Policy</a>
+                <a href="#" className="hover:text-[#2563EB] transition-colors">Service Terms</a>
+              </div>
             </div>
 
           </div>
+        </footer>
 
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-12 border-t border-white/10 text-[13px] font-black text-slate-500 uppercase tracking-widest font-sans">
-            <p>{content.copyright}</p>
-            <div className="flex items-center gap-8">
-              <a href="#" className="hover:text-[#2563EB] transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-[#2563EB] transition-colors">Service Terms</a>
-            </div>
-          </div>
-
-        </div>
-      </footer>
+      </div>
 
       {/* GUEST ORDER WIZARD MODAL */}
       <AnimatePresence>
