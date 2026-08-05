@@ -1,4 +1,6 @@
-import { motion, useScroll, useTransform, AnimatePresence } from 'motion/react';
+import os
+
+code = """import { motion, useScroll, useTransform, AnimatePresence } from 'motion/react';
 import { useRef, useState, useEffect } from 'react';
 import React from 'react';
 import { Screen } from '../types';
@@ -43,7 +45,7 @@ const landingTranslations = {
     adminAccess: 'Admin Portal',
     hubAccess: 'Hub Access',
     heroBadge: 'Multi-Courier E-Commerce Shipping Gateway',
-    heroTitle: 'Unified Courier Hub\nFor E-Commerce',
+    heroTitle: 'Unified Courier Hub\\nFor E-Commerce',
     heroDesc: 'SwiftMove is a central hub connecting online merchants and users with last-mile couriers to deliver products and items seamlessly. Provide recipient details, designate item prices, and choose payment modes in one unified dashboard. Easily dispatch via sandbox channels like Aramex or use our active on-demand local drivers on the SwiftMove driver app.',
     btnDownloadApp: 'Download App',
     btnLearnMore: 'Get Pricing Estimate',
@@ -131,7 +133,7 @@ const landingTranslations = {
     adminAccess: 'بوابة الإدارة العامة',
     hubAccess: 'الوصول للمنصة',
     heroBadge: 'بوابة الشحن الموحدة للتجارة الإلكترونية وشبكة السائقين',
-    heroTitle: 'منصة شحن متكاملة\nللتجارة الإلكترونية',
+    heroTitle: 'منصة شحن متكاملة\\nللتجارة الإلكترونية',
     heroDesc: 'سويفت موف هي منصة لوجستية مركزية لربط المتاجر والعملاء بالسائقين بهدف توصيل المنتجات والطرود من موقع لآخر بسلاسة وسهولة. حدد تفاصيل المستلم وسعر المنتج المراد تحصيله وخيارات الدفع المفضلة في واجهة موحدة. يمكنك توجيه الطلبات تلقائياً لأرامكس عبر سائقيهم، أو إسنادها فوراً لسائقين محليين عبر تطبيق السائق الخاص بسويفت موف.',
     btnDownloadApp: 'تحميل التطبيق',
     btnLearnMore: 'احصل على تسعيرة شحن',
@@ -317,9 +319,9 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
       
       if (matchOrder) {
         const orderNum = matchOrder[0].toUpperCase();
-        reply = `Status for ${orderNum}: \n\n• Current Location: Dubai Al Quoz Sorting Facility\n• Shipping Line: Aramex Express (Sandbox)\n• Expected Delivery: Next Business Day before 6:00 PM\n• Payout Mode: Cash on Delivery (320.00 AED)`;
+        reply = `Status for ${orderNum}: \\n\\n• Current Location: Dubai Al Quoz Sorting Facility\\n• Shipping Line: Aramex Express (Sandbox)\\n• Expected Delivery: Next Business Day before 6:00 PM\\n• Payout Mode: Cash on Delivery (320.00 AED)`;
       } else if (userMsg.toLowerCase().includes('rate') || userMsg.toLowerCase().includes('price') || userMsg.toLowerCase().includes('cost')) {
-        reply = "Our standard UAE domestic rates:\n\n• Dubai to Abu Dhabi (Express Road): Starting at 25 AED base\n• Local messengers (Same Day): 15 AED flat rate\n• Extra Weight tariff: 1.5 AED per extra KG\n\nUse the Live Shipping Calculator on our home page to compare exact tariffs.";
+        reply = "Our standard UAE domestic rates:\\n\\n• Dubai to Abu Dhabi (Express Road): Starting at 25 AED base\\n• Local messengers (Same Day): 15 AED flat rate\\n• Extra Weight tariff: 1.5 AED per extra KG\\n\\nUse the Live Shipping Calculator on our home page to compare exact tariffs.";
       } else {
         reply = "Thanks for reaching out! I can track any 'REQ-' code in our UAE sandbox. Enter an order code or type 'rates' to see our current shipping prices.";
       }
@@ -1156,7 +1158,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
 
           <div className="relative z-10 max-w-3xl mx-auto px-6 py-12 space-y-6">
             <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tight max-w-3xl mx-auto leading-tight font-sans">
-              {isRTL ? 'جاهز لنقل شحنتك؟' : 'READY TO MOVE\nYOUR CARGO?'}
+              {isRTL ? 'جاهز لنقل شحنتك؟' : 'READY TO MOVE\\nYOUR CARGO?'}
             </h2>
             <p className="text-slate-355 font-medium leading-relaxed text-xs md:text-sm max-w-xl mx-auto font-sans">
               Get a custom freight quote in under 2 minutes. No commitments, no hidden fees — just fast, transparent pricing from a network that delivers.
@@ -1449,4 +1451,9 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
   );
 };
 
-export default LandingPage;
+export default LandingPage;"""
+
+with open("src/screens/LandingPage.tsx", "w", encoding="utf-8") as f:
+    f.write(code)
+
+print("LandingPage.tsx completely rewritten with clean full-width layers!")
