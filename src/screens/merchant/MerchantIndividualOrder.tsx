@@ -454,7 +454,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                 {/* Customer Information Cards */}
                 <div className="bg-white dark:bg-zinc-950 border border-[#E9EFF6] dark:border-zinc-800/60 rounded-[2.5rem] p-8 shadow-[0_8px_30px_rgb(220,225,235,0.45)] dark:shadow-none space-y-7">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-[#2D74FF] flex items-center justify-center">
+                    <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-[#3b82f6] flex items-center justify-center">
                       <User className="w-[18px] h-[18px]" />
                     </div>
                     <h2 className="font-bold text-lg text-slate-800 dark:text-zinc-250">Customer Details</h2>
@@ -471,7 +471,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                           value={formData.customerName}
                           onChange={(e) => setFormData({...formData, customerName: e.target.value})}
                           placeholder="John Doe" 
-                          className="w-full bg-slate-50/50 dark:bg-zinc-800/50 border border-[#E2E8F0] dark:border-zinc-800/80 focus:border-[#2D74FF] focus:bg-white dark:focus:bg-zinc-900 rounded-2xl pl-12 pr-4 py-3.5 outline-none text-slate-900 dark:text-zinc-100 transition-all font-medium text-sm focus:ring-4 focus:ring-[#2D74FF]/10 shadow-xs"
+                          className="w-full bg-slate-50/50 dark:bg-zinc-800/50 border border-[#E2E8F0] dark:border-zinc-800/80 focus:border-[#3b82f6] focus:bg-white dark:focus:bg-zinc-900 rounded-2xl pl-12 pr-4 py-3.5 outline-none text-slate-900 dark:text-zinc-100 transition-all font-medium text-sm focus:ring-4 focus:ring-[#3b82f6]/10 shadow-xs"
                         />
                       </div>
                     </div>
@@ -485,7 +485,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                           value={formData.phone}
                           onChange={handlePhoneChange}
                           placeholder="+971 50 XXXXXXX" 
-                          className="w-full bg-slate-50/50 dark:bg-zinc-800/50 border border-[#E2E8F0] dark:border-zinc-800/80 focus:border-[#2D74FF] focus:bg-white dark:focus:bg-zinc-900 rounded-2xl pl-12 pr-4 py-3.5 outline-none text-slate-900 dark:text-zinc-100 transition-all font-mono tracking-widest text-sm focus:ring-4 focus:ring-[#2D74FF]/10 shadow-xs"
+                          className="w-full bg-slate-50/50 dark:bg-zinc-800/50 border border-[#E2E8F0] dark:border-zinc-800/80 focus:border-[#3b82f6] focus:bg-white dark:focus:bg-zinc-900 rounded-2xl pl-12 pr-4 py-3.5 outline-none text-slate-900 dark:text-zinc-100 transition-all font-mono tracking-widest text-sm focus:ring-4 focus:ring-[#3b82f6]/10 shadow-xs"
                           dir="ltr"
                         />
                       </div>
@@ -496,7 +496,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                     <div className="space-y-2 relative">
                       <label className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider block">Pickup Location / Warehouse</label>
                       <div className="relative flex items-center">
-                        <MapPin className="absolute left-4 text-[#2D74FF] w-4.5 h-4.5 z-10" />
+                        <MapPin className="absolute left-4 text-[#3b82f6] w-4.5 h-4.5 z-10" />
                         <input 
                           required
                           type="text" 
@@ -519,7 +519,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                             setTimeout(() => setActiveAutocompleteField(null), 250);
                           }}
                           placeholder="Type pickup address or use map..." 
-                          className="w-full bg-slate-50/50 dark:bg-zinc-800/50 border border-[#E2E8F0] dark:border-zinc-800/80 focus:border-[#2D74FF] focus:bg-white dark:focus:bg-zinc-900 rounded-2xl pl-12 pr-28 py-3.5 outline-none text-slate-900 dark:text-zinc-100 font-medium text-sm truncate z-0 focus:ring-4 focus:ring-[#2D74FF]/10 shadow-xs"
+                          className="w-full bg-slate-50/50 dark:bg-zinc-800/50 border border-[#E2E8F0] dark:border-zinc-800/80 focus:border-[#3b82f6] focus:bg-white dark:focus:bg-zinc-900 rounded-2xl pl-12 pr-28 py-3.5 outline-none text-slate-900 dark:text-zinc-100 font-medium text-sm truncate z-0 focus:ring-4 focus:ring-[#3b82f6]/10 shadow-xs"
                         />
                         <div className="absolute right-2 top-1.5 bottom-1.5 flex items-center">
                           <button
@@ -528,7 +528,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                               setIsMapOpenQuoteTarget('manual_pickup');
                               setIsMapOpen(true);
                             }}
-                            className="h-[38px] px-3.5 rounded-xl bg-[#2D74FF]/5 hover:bg-[#2D74FF]/10 active:scale-95 text-[#2D74FF] border border-[#2D74FF]/15 text-[11px] font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer"
+                            className="h-[38px] px-3.5 rounded-xl bg-[#3b82f6]/5 hover:bg-[#3b82f6]/10 active:scale-95 text-[#3b82f6] border border-[#3b82f6]/15 text-[11px] font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer"
                           >
                             <Map className="w-3.5 h-3.5" /> Map
                           </button>
@@ -551,7 +551,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                               }}
                               className="w-full text-left px-6 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors flex items-center gap-2 border-b border-[#F1F5F9] dark:border-[#1E293B] last:border-0"
                             >
-                              <MapPin className="w-3.5 h-3.5 text-[#2D74FF] shrink-0" />
+                              <MapPin className="w-3.5 h-3.5 text-[#3b82f6] shrink-0" />
                               <span className="truncate">{item.name}</span>
                             </button>
                           ))}
@@ -585,7 +585,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                             setTimeout(() => setActiveAutocompleteField(null), 250);
                           }}
                           placeholder="Type dropoff address or use map..." 
-                          className="w-full bg-slate-50/50 dark:bg-zinc-800/50 border border-[#E2E8F0] dark:border-zinc-800/80 focus:border-[#2D74FF] focus:bg-white dark:focus:bg-zinc-900 rounded-2xl pl-12 pr-28 py-3.5 outline-none text-slate-900 dark:text-zinc-100 font-medium text-sm truncate z-0 focus:ring-4 focus:ring-[#2D74FF]/10 shadow-xs"
+                          className="w-full bg-slate-50/50 dark:bg-zinc-800/50 border border-[#E2E8F0] dark:border-zinc-800/80 focus:border-[#3b82f6] focus:bg-white dark:focus:bg-zinc-900 rounded-2xl pl-12 pr-28 py-3.5 outline-none text-slate-900 dark:text-zinc-100 font-medium text-sm truncate z-0 focus:ring-4 focus:ring-[#3b82f6]/10 shadow-xs"
                         />
                         
                         <div className="absolute right-2 top-1.5 bottom-1.5 flex items-center">
@@ -651,7 +651,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                           <span className="text-slate-400 dark:text-zinc-500 font-medium text-xs uppercase tracking-wider">Calculated:</span>
                           <span>
                             {formData.pickupPosition && formData.position ? (
-                              <strong className="text-[#2D74FF] font-black text-sm tracking-tight animate-fade-in">
+                              <strong className="text-[#3b82f6] font-black text-sm tracking-tight animate-fade-in">
                                 {Number((() => {
                                   const R = 6371;
                                   const dLat = (formData.position[0] - formData.pickupPosition[0]) * Math.PI / 180;
@@ -991,7 +991,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                             setIsMapOpenQuoteTarget('pickup');
                             setIsMapOpen(true);
                           }}
-                          className="text-[13px] font-bold text-[#1452D1] bg-zinc-100 hover:bg-zinc-200 px-2 py-1 flex items-center gap-1 rounded-md transition-colors"
+                          className="text-[13px] font-bold text-[#2563EB] bg-zinc-100 hover:bg-zinc-200 px-2 py-1 flex items-center gap-1 rounded-md transition-colors"
                         >
                           <Map className="w-3 h-3" /> Select Map
                         </button>

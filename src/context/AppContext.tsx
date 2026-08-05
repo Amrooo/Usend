@@ -67,15 +67,57 @@ export interface USendUser {
   role: string;
 }
 
+export interface CourierRateDetail {
+  baseFee: number;
+  perKmRate: number;
+  perKgRate: number;
+  expressSurcharge: number;
+  codFee: number;
+}
+
+export interface CourierIntegrationConfig {
+  id: string;
+  name: string;
+  status: 'Active' | 'Inactive';
+  currentMode: 'sandbox' | 'production';
+  sandboxCreds: {
+    username: string;
+    password?: string;
+    accountNumber: string;
+    accountPin: string;
+    accountEntity: string;
+    accountCountryCode: string;
+    source: string;
+    apiKey?: string;
+  };
+  productionCreds: {
+    username: string;
+    password?: string;
+    accountNumber: string;
+    accountPin: string;
+    accountEntity: string;
+    accountCountryCode: string;
+    source: string;
+    apiKey?: string;
+  };
+  rates: {
+    guest: CourierRateDetail;
+    user: CourierRateDetail;
+    merchant: CourierRateDetail;
+  };
+}
+
 interface AppContextType {
   activeRequests: USendRequest[];
   merchants: Merchant[];
   users: USendUser[];
   settings: PlatformSettings | null;
+  courierConfigs: Record<string, CourierIntegrationConfig>;
   addRequest: (req: USendRequest) => void;
   updateRequest: (id: string, data: Partial<USendRequest>) => void;
   updateRequestStatus: (id: string, status: RequestStatus, eta?: string) => void;
   updateSettings: (settings: PlatformSettings) => void;
+  updateCourierConfigs: (configs: Record<string, CourierIntegrationConfig>) => Promise<void>;
   addUser: (user: Partial<USendUser>) => void;
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -103,6 +145,127 @@ const INITIAL_SETTINGS: PlatformSettings = {
   perKmRate: 2.5
 };
 
+const INITIAL_COURIER_CONFIGS: Record<string, CourierIntegrationConfig> = {
+  aramex: {
+    id: 'aramex',
+    name: 'Aramex Express',
+    status: 'Active',
+    currentMode: 'sandbox',
+    sandboxCreds: {
+      username: "testingapi@aramex.com",
+      password: "R123456789$r",
+      accountNumber: "45796",
+      accountPin: "116216",
+      accountEntity: "DXB",
+      accountCountryCode: "AE",
+      source: "24"
+    },
+    productionCreds: {
+      username: "",
+      password: "",
+      accountNumber: "",
+      accountPin: "",
+      accountEntity: "",
+      accountCountryCode: "AE",
+      source: "24"
+    },
+    rates: {
+      guest: { baseFee: 30, perKmRate: 0, perKgRate: 5, expressSurcharge: 25, codFee: 10 },
+      user: { baseFee: 25, perKmRate: 0, perKgRate: 4, expressSurcharge: 20, codFee: 8 },
+      merchant: { baseFee: 15, perKmRate: 0, perKgRate: 2.5, expressSurcharge: 10, codFee: 5 }
+    }
+  },
+  noon: {
+    id: 'noon',
+    name: 'Noon RoD Staging',
+    status: 'Active',
+    currentMode: 'sandbox',
+    sandboxCreds: {
+      username: "noon_sandbox_user",
+      password: "NoonPassword_2026",
+      accountNumber: "NOON-DXB-9901",
+      accountPin: "9901",
+      accountEntity: "DXB",
+      accountCountryCode: "AE",
+      source: "noon_staging",
+      apiKey: "noon_secret_key_123"
+    },
+    productionCreds: {
+      username: "",
+      password: "",
+      accountNumber: "",
+      accountPin: "",
+      accountEntity: "",
+      accountCountryCode: "AE",
+      source: "",
+      apiKey: ""
+    },
+    rates: {
+      guest: { baseFee: 25, perKmRate: 0, perKgRate: 4.5, expressSurcharge: 20, codFee: 8 },
+      user: { baseFee: 20, perKmRate: 0, perKgRate: 3.5, expressSurcharge: 15, codFee: 6 },
+      merchant: { baseFee: 12, perKmRate: 0, perKgRate: 2.0, expressSurcharge: 8, codFee: 3 }
+    }
+  },
+  dhl: {
+    id: 'dhl',
+    name: 'DHL Express',
+    status: 'Active',
+    currentMode: 'sandbox',
+    sandboxCreds: {
+      username: "dhl_sandbox_user_ae",
+      password: "DHL_secret_2026",
+      accountNumber: "849301931-DXB",
+      accountPin: "902123",
+      accountEntity: "MIDDLE_EAST",
+      accountCountryCode: "AE",
+      source: "30"
+    },
+    productionCreds: {
+      username: "",
+      password: "",
+      accountNumber: "",
+      accountPin: "",
+      accountEntity: "",
+      accountCountryCode: "AE",
+      source: ""
+    },
+    rates: {
+      guest: { baseFee: 45, perKmRate: 0, perKgRate: 7, expressSurcharge: 30, codFee: 12 },
+      user: { baseFee: 35, perKmRate: 0, perKgRate: 6, expressSurcharge: 25, codFee: 10 },
+      merchant: { baseFee: 25, perKmRate: 0, perKgRate: 4.5, expressSurcharge: 15, codFee: 6 }
+    }
+  },
+  fedex: {
+    id: 'fedex',
+    name: 'FedEx GCC',
+    status: 'Active',
+    currentMode: 'sandbox',
+    sandboxCreds: {
+      username: "fedex_api_express_sandbox",
+      password: "FedexSecuredPwd_9901",
+      accountNumber: "990158221",
+      accountPin: "FDX-3029",
+      accountEntity: "GCC_FEDEX",
+      accountCountryCode: "AE",
+      source: "45"
+    },
+    productionCreds: {
+      username: "",
+      password: "",
+      accountNumber: "",
+      accountPin: "",
+      accountEntity: "",
+      accountCountryCode: "AE",
+      source: ""
+    },
+    rates: {
+      guest: { baseFee: 40, perKmRate: 0, perKgRate: 6.5, expressSurcharge: 28, codFee: 10 },
+      user: { baseFee: 30, perKmRate: 0, perKgRate: 5.5, expressSurcharge: 22, codFee: 8 },
+      merchant: { baseFee: 20, perKmRate: 0, perKgRate: 4.0, expressSurcharge: 12, codFee: 5 }
+    }
+  }
+};
+
 export function AppProvider({ children }: { children: ReactNode }) {
   const [activeRequests, setActiveRequests] = useState<USendRequest[]>(() => {
     const saved = localStorage.getItem('usend_requests');
@@ -120,6 +283,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [merchants, setMerchants] = useState<Merchant[]>(INITIAL_MERCHANTS);
   const [users, setUsers] = useState<USendUser[]>(INITIAL_USERS);
   const [settings, setSettings] = useState<PlatformSettings | null>(INITIAL_SETTINGS);
+  const [courierConfigs, setCourierConfigs] = useState<Record<string, CourierIntegrationConfig>>(INITIAL_COURIER_CONFIGS);
   const [currentRequest, setCurrentRequest] = useState<USendRequest | null>(null);
   
   useEffect(() => {
@@ -215,6 +379,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
               });
             }
             localStorage.removeItem('guestOrders');
+            // Notify user that their guest orders have been linked
+            window.dispatchEvent(new CustomEvent('app_toast', {
+              detail: {
+                type: 'success',
+                title: 'Guest Orders Linked',
+                message: `${storedGuest.length} guest order${storedGuest.length > 1 ? 's have' : ' has'} been linked to your account.`
+              }
+            }));
           }
         } catch (err) {
           console.warn("Failed to sync guest orders to account:", err);
@@ -284,11 +456,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
       console.warn('Settings Firestore sync skipped (will use fallback mock data):', error.message);
     });
 
+    const unsubscribeCourierConfigs = onSnapshot(doc(db, 'settings', 'courier_configs'), (snapshot) => {
+      if (snapshot.exists()) {
+        setCourierConfigs(snapshot.data() as Record<string, CourierIntegrationConfig>);
+      }
+    }, (error) => {
+      console.warn('Courier Configs Firestore sync skipped (will use fallback mock data):', error.message);
+    });
+
     return () => {
       unsubscribeRequests();
       unsubscribeMerchants();
       unsubscribeUsers();
       unsubscribeSettings();
+      unsubscribeCourierConfigs();
     };
   }, [user?.uid]);
 
@@ -388,6 +569,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     await updateDocument('settings', 'global', newSettings);
   };
 
+  const updateCourierConfigs = async (newConfigs: Record<string, CourierIntegrationConfig>) => {
+    setCourierConfigs(newConfigs);
+    try {
+      await setDoc(doc(db, 'settings', 'courier_configs'), newConfigs);
+    } catch (e) {
+      console.warn('Firestore courier configs write failed:', e);
+    }
+  };
+
   const addUser = async (userData: Partial<USendUser>) => {
     const id = userData.id || userData.uid || `USR-${Math.floor(Math.random() * 1000)}`;
     await createDocument('users', id, {
@@ -403,10 +593,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       merchants,
       users,
       settings,
+      courierConfigs,
       addRequest, 
       updateRequest,
       updateRequestStatus, 
       updateSettings,
+      updateCourierConfigs,
       addUser,
       signIn,
       signOut: signOutUser,

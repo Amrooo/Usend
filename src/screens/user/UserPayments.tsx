@@ -199,7 +199,7 @@ export default function UserPayments({ onNavigate }: UserPaymentsProps) {
     return list.sort((a, b) => b.id.localeCompare(a.id));
   }, [cardPayments, transactions]);
 
-  // Load saved cards from Firestore or fallback to mock defaults
+  // Load saved cards from Firestore
   useEffect(() => {
     if (user && user.uid) {
       const loadProfileCards = async () => {
@@ -211,20 +211,12 @@ export default function UserPayments({ onNavigate }: UserPaymentsProps) {
             if (Array.isArray(data.savedCards)) {
               setCards(data.savedCards);
             } else {
-              const initialCards = [
-                { id: 'card-1', last4: '4242', brand: 'Visa', exp: '12/28', isDefault: true },
-                { id: 'card-2', last4: '8888', brand: 'Mastercard', exp: '08/25', isDefault: false },
-              ];
-              setCards(initialCards);
-              await updateDocument('users', user.uid, { savedCards: initialCards });
+              setCards([]);
             }
           }
         } catch (err) {
           console.error("Failed to load user saved cards:", err);
-          setCards([
-            { id: 'card-1', last4: '4242', brand: 'Visa', exp: '12/28', isDefault: true },
-            { id: 'card-2', last4: '8888', brand: 'Mastercard', exp: '08/25', isDefault: false },
-          ]);
+          setCards([]);
         }
       };
       loadProfileCards();
@@ -422,7 +414,7 @@ export default function UserPayments({ onNavigate }: UserPaymentsProps) {
                     </button>
                   ) : (
                     <div className="flex-1 text-xs text-zinc-400 flex items-center gap-1 font-semibold">
-                      <ShieldCheck className="w-4 h-4 text-green-500" /> Powered by Stripe payments
+                      <ShieldCheck className="w-4 h-4 text-blue-505" /> Powered by Stripe payments
                     </div>
                   )}
                   <button 
@@ -485,10 +477,10 @@ export default function UserPayments({ onNavigate }: UserPaymentsProps) {
                       <td className="py-3.5 px-4">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold leading-none ${
                           payment.status === 'Completed' || payment.status === 'paid'
-                            ? 'bg-green-50 dark:bg-green-950/30 text-green-600 dark:text-green-400 border border-green-100 dark:border-green-900/40' 
+                            ? 'bg-blue-50 dark:bg-green-950/30 text-blue-600 dark:text-green-400 border border-blue-100 dark:border-blue-900/40' 
                             : 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/40'
                         }`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${payment.status === 'Completed' || payment.status === 'paid' ? 'bg-green-500' : 'bg-amber-500'}`} />
+                          <span className={`w-1.5 h-1.5 rounded-full ${payment.status === 'Completed' || payment.status === 'paid' ? 'bg-blue-500' : 'bg-amber-500'}`} />
                           {payment.status === 'Completed' || payment.status === 'paid' ? 'Paid' : 'Unconfirmed'}
                         </span>
                       </td>

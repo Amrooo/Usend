@@ -80,7 +80,7 @@ export function getFirestoreErrorInfo(error: unknown, operationType: OperationTy
 
 export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
   const errInfo = getFirestoreErrorInfo(error, operationType, path);
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  console.warn('Firestore sync skipped (unauthenticated/permission restriction):', errInfo.error || path);
   throw new Error(JSON.stringify(errInfo));
 }
 

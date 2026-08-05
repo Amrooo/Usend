@@ -61,14 +61,12 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
         // Fallback checks
         if (email.toLowerCase().includes('admin')) targetRole = 'admin';
         else if (email.toLowerCase().includes('merchant')) targetRole = 'merchant';
-        else if (email.toLowerCase().includes('driver')) targetRole = 'driver';
-        else if (email.toLowerCase().includes('user')) targetRole = 'user';
+        else if (email.toLowerCase().includes('driver') || email.toLowerCase().includes('user')) targetRole = 'user';
       }
 
       let redirectScreen: Screen = 'merchant_dashboard';
       if (targetRole === 'admin') redirectScreen = 'admin_dashboard';
-      else if (targetRole === 'user' || (targetRole as string) === 'Individual') redirectScreen = 'user_dashboard';
-      else if (targetRole === 'driver') redirectScreen = 'driver_home';
+      else if (targetRole === 'user' || (targetRole as string) === 'Individual' || (targetRole as string) === 'driver') redirectScreen = 'user_dashboard';
 
       onClose();
       onNavigate(redirectScreen);
@@ -79,13 +77,11 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
         let targetRole = defaultRole;
         if (email.toLowerCase().includes('admin') || email.toLowerCase() === 'octman.sam@gmail.com') targetRole = 'admin';
         else if (email.toLowerCase().includes('merchant')) targetRole = 'merchant';
-        else if (email.toLowerCase().includes('driver')) targetRole = 'driver';
-        else if (email.toLowerCase().includes('user')) targetRole = 'user';
+        else if (email.toLowerCase().includes('driver') || email.toLowerCase().includes('user')) targetRole = 'user';
 
         let redirectScreen: Screen = 'merchant_dashboard';
         if (targetRole === 'admin') redirectScreen = 'admin_dashboard';
-        else if (targetRole === 'user') redirectScreen = 'user_dashboard';
-        else if (targetRole === 'driver') redirectScreen = 'driver_home';
+        else if (targetRole === 'user' || (targetRole as string) === 'driver') redirectScreen = 'user_dashboard';
         
         setUser({
           uid: 'demo-fallback-uid',
@@ -126,7 +122,7 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
             className="bg-white text-slate-900 border border-slate-200 rounded-[2.5rem] w-full max-w-md p-8 shadow-2xl relative overflow-hidden z-10 select-none animate-in fade-in zoom-in duration-200"
           >
             {/* Elegant Background Light Accent */}
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#1452D1]/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#2563EB]/10 rounded-full blur-3xl pointer-events-none" />
 
             {/* Header close button */}
             <button 
@@ -138,7 +134,7 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
 
             {/* Title block */}
             <div className="space-y-2 mb-8">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-[#1452D1] text-[12px] font-black uppercase tracking-widest font-sans">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-[#2563EB] text-[12px] font-black uppercase tracking-widest font-sans">
                 USend Shipping Portal
               </span>
               <h3 className="text-xl md:text-2xl font-bold tracking-tight text-zinc-900">
@@ -163,7 +159,7 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="user@usend.com"
-                    className="w-full h-12.5 bg-slate-50 border border-slate-200 text-slate-900 rounded-xl pl-11 pr-4 focus:ring-2 focus:ring-[#1452D1] focus:outline-hidden tracking-normal text-xs font-semibold transition-all"
+                    className="w-full h-12.5 bg-slate-50 border border-slate-200 text-slate-900 rounded-xl pl-11 pr-4 focus:ring-2 focus:ring-[#2563EB] focus:outline-hidden tracking-normal text-xs font-semibold transition-all"
                   />
                 </div>
               </div>
@@ -180,10 +176,10 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full h-12.5 bg-slate-50 border border-slate-200 text-slate-900 rounded-xl pl-11 pr-4 focus:ring-2 focus:ring-[#1452D1] focus:outline-hidden tracking-widest text-xs font-semibold transition-all"
+                    className="w-full h-12.5 bg-slate-50 border border-slate-200 text-slate-900 rounded-xl pl-11 pr-4 focus:ring-2 focus:ring-[#2563EB] focus:outline-hidden tracking-widest text-xs font-semibold transition-all"
                   />
                 </div>
-                <div className="text-[12px] text-[#1452D1] font-medium pt-1 text-right">
+                <div className="text-[12px] text-[#2563EB] font-medium pt-1 text-right">
                   Default Demo Password: <span className="font-bold underline">password</span>
                 </div>
               </div>
@@ -203,7 +199,7 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-13 mt-6 bg-[#1452D1] hover:bg-slate-900 disabled:bg-slate-300 text-white transition-all duration-300 font-extrabold uppercase tracking-widest text-[13px] rounded-xl flex items-center justify-center gap-2 shadow-md hover:shadow-blue-500/20 active:scale-98 cursor-pointer"
+                className="w-full h-13 mt-6 bg-[#2563EB] hover:bg-slate-900 disabled:bg-slate-300 text-white transition-all duration-300 font-extrabold uppercase tracking-widest text-[13px] rounded-xl flex items-center justify-center gap-2 shadow-md hover:shadow-blue-500/20 active:scale-98 cursor-pointer"
               >
                 {loading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -223,7 +219,7 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
                   onClose();
                   onNavigate('portal_register');
                 }}
-                className="text-[#1452D1] hover:text-[#1452D1]/80 hover:underline uppercase transition-all"
+                className="text-[#2563EB] hover:text-[#2563EB]/80 hover:underline uppercase transition-all"
               >
                 Create Account
               </button>

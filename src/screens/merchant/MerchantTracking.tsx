@@ -506,10 +506,14 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                 <div className="p-6 border-b border-zinc-200 flex items-center justify-between shadow-xs z-10">
                   <div>
                     <h2 className="text-xl font-black text-zinc-900 uppercase tracking-tight">{t('order_details')}</h2>
-                    <div className="flex items-center gap-2 mt-1">
-                       <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{liveSelectedOrder.id}</p>
-                       <span className="text-[12px] font-bold bg-zinc-100 text-zinc-650 px-2 py-0.5 rounded-md">REF-4421</span>
-                    </div>
+                     <div className="flex items-center gap-2 mt-1">
+                        <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{liveSelectedOrder.id}</p>
+                        {liveSelectedOrder.externalTrackingNumber && (
+                           <span className="text-[10px] font-mono font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded-md border border-amber-200 uppercase">
+                              {liveSelectedOrder.externalTrackingNumber}
+                           </span>
+                        )}
+                     </div>
                   </div>
                   <button 
                     onClick={() => setSelectedOrder(null)} 
@@ -582,7 +586,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                            </button>
                         )}
                         {liveSelectedOrder.aramexLogs?.pickupId && (
-                           <div className="bg-green-500/10 border border-green-500/20 text-green-600 p-3 rounded-xl flex items-center justify-between px-4">
+                           <div className="bg-blue-500/10 border border-blue-500/20 text-blue-600 p-3 rounded-xl flex items-center justify-between px-4">
                               <span className="text-[12px] font-black uppercase tracking-widest">Pickup Booked</span>
                               <span className="text-xs font-mono font-bold">{liveSelectedOrder.aramexLogs.pickupId}</span>
                            </div>
@@ -592,7 +596,9 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                       {/* Printable Waybill design */}
                       <div className="bg-white text-zinc-950 border-2 border-zinc-950 p-4 rounded-3xl font-sans text-left flex flex-col justify-between shadow-xs border-dashed">
                         <div className="border-b-2 border-zinc-950 pb-2 flex justify-between items-start">
-                          <span className="text-sm font-black uppercase tracking-tight italic text-[#d12421]">aramex</span>
+                          <span className={`text-sm font-black uppercase tracking-tight italic ${(liveSelectedOrder.courier || '').toLowerCase().includes('noon') ? 'text-amber-600' : 'text-[#d12421]'}`}>
+                            {(liveSelectedOrder.courier || '').toLowerCase().includes('noon') ? 'noon' : 'aramex'}
+                          </span>
                           <div className="text-right">
                             <span className="text-[13px] font-black uppercase text-zinc-400 block">Delivery Protocol</span>
                             <span className="text-[12px] font-bold bg-zinc-950 text-white px-1.5 py-0.5 rounded tracking-wide uppercase">COD Parcel</span>
@@ -694,7 +700,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                           {showSoapLogs && (
                             <div className="p-3 border-t border-zinc-200 space-y-3 font-mono text-[12px] max-h-[220px] overflow-y-auto bg-black text-zinc-300">
                               <div className="space-y-1">
-                                <span className="text-[#1452D1] font-black block uppercase tracking-wider text-[13px]">WSDL ENDPOINT: https://ws.aramex.net/ShippingAPI.v1</span>
+                                <span className="text-[#2563EB] font-black block uppercase tracking-wider text-[13px]">WSDL ENDPOINT: https://ws.aramex.net/ShippingAPI.v1</span>
                                 <span className="text-zinc-500 italic block text-[13px]">SOAPEnvelope XML Request (ClientInfo Header Authorization)</span>
                                 <pre className="bg-zinc-950/80 p-2 rounded text-zinc-400 overflow-x-auto select-all leading-normal">
                                   {JSON.stringify(liveSelectedOrder.aramexLogs.request, null, 2)}

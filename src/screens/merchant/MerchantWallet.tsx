@@ -27,8 +27,8 @@ export default function MerchantWallet({ onNavigate }: MerchantWalletProps) {
   
   const [showAddFunds, setShowAddFunds] = useState(false);
   const [showWithdraw, setShowWithdraw] = useState(false);
-  const [walletBalance, setWalletBalance] = useState(1485.00);
-  const [codPending, setCodPending] = useState(850.00);
+  const [walletBalance, setWalletBalance] = useState(0.00);
+  const [codPending, setCodPending] = useState(0.00);
   const [fundsAmount, setFundsAmount] = useState('');
   const [stripeClientSecret, setStripeClientSecret] = useState<string | null>(null);
   const [stripePubKey, setStripePubKey] = useState<string | null>(null);
@@ -51,15 +51,7 @@ export default function MerchantWallet({ onNavigate }: MerchantWalletProps) {
   const [stripeIsProcessing, setStripeIsProcessing] = useState(false);
   const [stripeShowReceipt, setStripeShowReceipt] = useState(false);
 
-  const defaultTransactions = [
-    { id: 'TXN-001', date: 'Today, 14:30', type: 'Platform Fee', amount: -5.00, method: 'Wallet Deduction', status: 'Completed', ref: 'ORD-9921' },
-    { id: 'TXN-002', date: 'Today, 12:15', type: 'Funds Added', amount: 500.00, method: 'Credit Card', status: 'Completed', ref: 'Top-up' },
-    { id: 'TXN-003', date: 'Yesterday, 18:45', type: 'Platform Fee', amount: -5.00, method: 'Wallet Deduction', status: 'Completed', ref: 'ORD-9920' },
-    { id: 'TXN-004', date: 'Yesterday, 15:20', type: 'Withdrawal', amount: -1200.00, method: 'Bank Transfer', status: 'Processing', ref: 'Bank Ending 1234' },
-    { id: 'TXN-005', date: '12 Mar, 09:10', type: 'COD Collection', amount: 350.00, method: 'Driver Deposit', status: 'Completed', ref: 'Batch #44' },
-  ];
-
-  const [transactions, setTransactions] = useState(defaultTransactions);
+  const [transactions, setTransactions] = useState<any[]>([]);
 
   useEffect(() => {
     if (user) {

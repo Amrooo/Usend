@@ -59,6 +59,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
   ]);
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [isSubmittingCSV, setIsSubmittingCSV] = useState(false);
+  const [batchCarrier, setBatchCarrier] = useState<'noon' | 'aramex'>('noon');
 
   // Tab 2: Heavy Freight States
   const [freightData, setFreightData] = useState({
@@ -394,14 +395,36 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
 
               {/* Rows layout */}
               <div className="bg-white rounded-[2rem] border border-zinc-200 shadow-sm overflow-hidden">
-                <div className="p-6 border-b border-zinc-100 flex justify-between items-center bg-zinc-50/50">
-                  <span className="text-xs font-black uppercase tracking-widest text-zinc-400">Review Batch Manifest lines</span>
-                  <button 
-                    onClick={addOrderRow}
-                    className="flex items-center gap-1 bg-zinc-100/80 hover:bg-zinc-200 text-zinc-800 font-bold px-4 py-2 rounded-lg text-xs tracking-wider"
-                  >
-                    <Plus className="w-4 h-4" /> Add Row
-                  </button>
+                <div className="p-6 border-b border-zinc-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-zinc-50/50">
+                  <div>
+                    <span className="text-xs font-black uppercase tracking-widest text-zinc-400 block">Review Batch Manifest lines</span>
+                    <span className="text-[12px] font-bold text-zinc-500">Select courier integration channel for this batch</span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                     <div className="flex bg-zinc-200/60 p-1 rounded-xl">
+                        <button
+                          type="button"
+                          onClick={() => setBatchCarrier('noon')}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${batchCarrier === 'noon' ? 'bg-amber-500 text-white shadow-xs' : 'text-zinc-600 hover:text-zinc-900'}`}
+                        >
+                          Noon RoD Staging
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setBatchCarrier('aramex')}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${batchCarrier === 'aramex' ? 'bg-[#d12421] text-white shadow-xs' : 'text-zinc-600 hover:text-zinc-900'}`}
+                        >
+                          Aramex Sandbox
+                        </button>
+                     </div>
+                     <button 
+                       onClick={addOrderRow}
+                       className="flex items-center gap-1 bg-zinc-100/80 hover:bg-zinc-200 text-zinc-800 font-bold px-4 py-2 rounded-xl text-xs tracking-wider border border-zinc-200 cursor-pointer"
+                     >
+                       <Plus className="w-4 h-4" /> Add Row
+                     </button>
+                  </div>
                 </div>
 
                 <div className="overflow-x-auto">

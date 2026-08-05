@@ -5,9 +5,9 @@
 @theme {
   --font-sans: var(--primary-font), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--display-font), sans-serif;
-  --color-brand: #2D74FF;
-  --color-brand-vibrant: #4f8bf9;
-  --color-brand-deep: #0a1128;
+  --color-brand: #2563EB;
+  --color-brand-vibrant: #3b82f6;
+  --color-brand-deep: #060B26;
 }
 
 @custom-variant dark (&:where(.dark, .dark *));

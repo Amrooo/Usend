@@ -1,3 +1,6 @@
+import { db } from '../firebase';
+import { doc, getDoc } from 'firebase/firestore';
+
 export interface CourierCredentials {
   version: string;
   accountNumber: string;
@@ -19,6 +22,8 @@ export interface RateParams {
   weightKb: number; // weight in kg
   isExpress: boolean;
   credentials: CourierCredentials;
+  userType?: 'guest' | 'user' | 'merchant';
+  codAmount?: number;
 }
 
 export interface ShipmentParams {
@@ -91,19 +96,29 @@ export const courierIntegrationService = {
     // Generate simulated network delay
     await new Promise(resolve => setTimeout(resolve, 800));
 
+    let rateConfig: any = null;
+    try {
+      const configDoc = await getDoc(doc(db, 'settings', 'courier_configs'));
+      if (configDoc.exists()) {
+        const configs = configDoc.data();
+        rateConfig = configs[courierId]?.rates?.[params.userType || 'guest'];
+      }
+    } catch (e) {
+      console.warn("Failed to fetch live courier rates from Firestore, falling back to local formulas:", e);
+    }
+
     const isDomestic = params.originCountry.toLowerCase() === params.destCountry.toLowerCase();
     
     // Base Rates
-    let baseRate = 12.00; // Economy / Domestic
-    if (courierId === 'dhl') baseRate = 18.00;
-    if (courierId === 'fedex') baseRate = 16.50;
-
-    let expressSurcharge = params.isExpress ? 25.00 : 0;
-    let weightSurcharge = Math.max(0, params.weightKb - 1) * (isDomestic ? 4.50 : 15.00);
+    let baseRate = rateConfig ? rateConfig.baseFee : (courierId === 'dhl' ? 18.00 : courierId === 'fedex' ? 16.50 : 12.00);
+    let expressSurcharge = params.isExpress ? (rateConfig ? rateConfig.expressSurcharge : 25.00) : 0;
+    let weightSurcharge = Math.max(0, params.weightKb - 1) * (rateConfig ? rateConfig.perKgRate : (isDomestic ? 4.50 : 15.00));
+    let distanceSurcharge = rateConfig ? (rateConfig.perKmRate * 15) : 0;
     let crossBorderFee = isDomestic ? 0 : 45.00;
+    let codFee = params.codAmount && rateConfig ? rateConfig.codFee : 0;
 
     // Fuel and service margins
-    let netTotal = baseRate + expressSurcharge + weightSurcharge + crossBorderFee;
+    let netTotal = baseRate + expressSurcharge + weightSurcharge + distanceSurcharge + crossBorderFee + codFee;
     let taxes = netTotal * 0.05; // 5% VAT UAE
     let finalTotal = netTotal + taxes;
 
@@ -114,7 +129,7 @@ export const courierIntegrationService = {
     let requestPayload = {};
     let responsePayload = {};
 
-    if (courierId === 'aramex') {
+    if (courierId === 'aramex' && !rateConfig) {
       try {
         const aramexPayload = {
           ClientInfo: {

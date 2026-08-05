@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useApp } from '../../context/AppContext';
+import { updateDocument } from '../../lib/firebaseUtils';
 import { 
   courierIntegrationService, 
   defaultAramexCreds, 
@@ -86,7 +87,7 @@ interface MerchantIntegrationsProps {
 
 export default function MerchantIntegrations({ onNavigate }: MerchantIntegrationsProps) {
   const { t, isRTL } = useLanguage();
-  const { merchantActiveTab, setMerchantActiveTab, addRequest } = useApp();
+  const { merchantActiveTab, setMerchantActiveTab, addRequest, user } = useApp();
 
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [copiedTestKey, setCopiedTestKey] = useState<string | null>(null);
@@ -181,6 +182,22 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
   const [aramexCreds, setAramexCreds] = useState<CourierCredentials>({ ...defaultAramexCreds });
   const [dhlCreds, setDhlCreds] = useState<CourierCredentials>({ ...defaultDhlCreds });
   const [fedexCreds, setFedexCreds] = useState<CourierCredentials>({ ...defaultFedexCreds });
+
+  React.useEffect(() => {
+    if (user && user.integrations) {
+      if (user.integrations.aramex) setAramexCreds(user.integrations.aramex);
+      if (user.integrations.dhl) setDhlCreds(user.integrations.dhl);
+      if (user.integrations.fedex) setFedexCreds(user.integrations.fedex);
+      
+      const activeKeys = Object.keys(user.integrations).filter(k => user.integrations[k]?.accountNumber);
+      if (activeKeys.length > 0) {
+        setConnectedCouriers(activeKeys);
+      }
+    }
+    if (user && Array.isArray(user.activePlatforms)) {
+      setActivePlatforms(user.activePlatforms);
+    }
+  }, [user]);
 
   // Rate calculator tool states
   const [rateOriginCity, setRateOriginCity] = useState('Dubai');
@@ -312,7 +329,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
             </p>
 
             <div className="bg-zinc-50 dark:bg-zinc-800/40 p-4 rounded-2xl flex flex-col gap-2.5 text-xs text-left border border-zinc-100 dark:border-zinc-800/80">
-              <div className="flex items-center gap-1.5 text-[12px] font-black uppercase text-[#1452D1] tracking-wider">
+              <div className="flex items-center gap-1.5 text-[12px] font-black uppercase text-[#2563EB] tracking-wider">
                 <Terminal className="w-3.5 h-3.5" /> API Capabilities Ready
               </div>
               <div className="flex flex-wrap gap-2 text-[12px] font-bold text-zinc-650">
@@ -351,7 +368,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                     ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 cursor-not-allowed flex items-center gap-1.5'
                     : isConnected
                       ? 'bg-zinc-100 border border-zinc-200 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-600 text-zinc-500 dark:bg-zinc-800 dark:border-transparent dark:text-zinc-300'
-                      : 'bg-[#1452D1] hover:bg-zinc-950 text-white dark:hover:bg-white dark:hover:text-zinc-950 active:scale-95'
+                      : 'bg-[#2563EB] hover:bg-zinc-950 text-white dark:hover:bg-white dark:hover:text-zinc-950 active:scale-95'
                 }`}
               >
                 {isConnecting ? (
@@ -518,7 +535,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                         type="checkbox" 
                         checked={stripeMethods.cards}
                         onChange={(e) => setStripeMethods({...stripeMethods, cards: e.target.checked})}
-                        className="w-4 h-4 accent-emerald-600 rounded"
+                        className="w-4 h-4 accent-blue-600 rounded"
                       />
                       <div className="text-left">
                         <span className="text-xs font-extrabold text-zinc-805 dark:text-white block font-sans">Visa / Mastercard / Amex Protocol</span>
@@ -531,7 +548,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                         type="checkbox" 
                         checked={stripeMethods.applePay}
                         onChange={(e) => setStripeMethods({...stripeMethods, applePay: e.target.checked})}
-                        className="w-4 h-4 accent-emerald-600 rounded"
+                        className="w-4 h-4 accent-blue-600 rounded"
                       />
                       <div className="text-left">
                         <span className="text-xs font-extrabold text-zinc-800 dark:text-white block font-sans">Apple Pay Integration</span>
@@ -544,7 +561,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                         type="checkbox" 
                         checked={stripeMethods.samsungPay}
                         onChange={(e) => setStripeMethods({...stripeMethods, samsungPay: e.target.checked})}
-                        className="w-4 h-4 accent-emerald-600 rounded"
+                        className="w-4 h-4 accent-blue-600 rounded"
                       />
                       <div className="text-left">
                         <span className="text-xs font-extrabold text-zinc-850 dark:text-white block font-sans">Samsung Pay</span>
@@ -557,7 +574,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                         type="checkbox" 
                         checked={stripeMethods.tabby}
                         onChange={(e) => setStripeMethods({...stripeMethods, tabby: e.target.checked})}
-                        className="w-4 h-4 accent-emerald-600 rounded"
+                        className="w-4 h-4 accent-blue-600 rounded"
                       />
                       <div className="text-left">
                         <span className="text-xs font-extrabold text-zinc-850 dark:text-white block font-sans">Tabby - Buy Now Pay Later</span>
@@ -578,7 +595,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                       stripeIsChecking 
                         ? 'bg-zinc-100 text-zinc-500 border-zinc-200'
                         : stripeIsConnected
-                        ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-950/20 dark:border-emerald-990/30'
+                        ? 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-950/20 dark:border-blue-990/30'
                         : 'bg-red-50 text-red-600 border-red-100 dark:bg-red-950/20 dark:border-red-990/30'
                     }`}>
                       {stripeIsChecking ? 'Checking...' : stripeIsConnected ? 'Connected' : 'Disconnected'}
@@ -599,7 +616,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                           stripeIsChecking 
                             ? 'text-zinc-400'
                             : stripeIsConnected 
-                            ? 'text-emerald-500' 
+                            ? 'text-blue-500' 
                             : 'text-red-500'
                         }`}>
                           {stripeIsChecking 
@@ -839,7 +856,13 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                         onClick={() => {
                           setPlatformConnecting(true);
                           setTimeout(() => {
-                            setActivePlatforms(prev => [...prev, configuringPlatform!]);
+                            const newPlatforms = [...activePlatforms, configuringPlatform!];
+                            setActivePlatforms(newPlatforms);
+                            if (user && user.uid) {
+                              updateDocument('users', user.uid, {
+                                activePlatforms: newPlatforms
+                              }).catch(err => console.error("Error saving activePlatforms to DB:", err));
+                            }
                             setToastMsg(`Successfully linked ${configuringPlatform!.toUpperCase()} to USend Merchant Portal!`);
                             setTimeout(() => setToastMsg(null), 3000);
                             setPlatformConnecting(false);
@@ -847,7 +870,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                           }, 1000);
                         }}
                         disabled={platformConnecting || !platformStoreUrl || !platformAccessToken}
-                        className="w-full py-4 bg-[#1452D1] hover:bg-zinc-950 text-white dark:hover:bg-white dark:text-zinc-950 dark:hover:text-[#1452D1] font-black text-xs uppercase tracking-widest rounded-2xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 active:scale-98"
+                        className="w-full py-4 bg-[#2563EB] hover:bg-zinc-950 text-white dark:hover:bg-white dark:text-zinc-950 dark:hover:text-[#2563EB] font-black text-xs uppercase tracking-widest rounded-2xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 active:scale-98"
                       >
                         {platformConnecting ? (
                           <>
@@ -860,7 +883,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                     </div>
 
                     <div className="bg-zinc-950 text-zinc-400 rounded-3xl p-6 md:p-8 font-mono text-[12px] flex flex-col justify-between border border-zinc-850 h-[360px] relative">
-                      <div className="absolute top-4 right-4 text-[12px] uppercase tracking-widest text-[#1452D1] font-bold">API Synchronization</div>
+                      <div className="absolute top-4 right-4 text-[12px] uppercase tracking-widest text-[#2563EB] font-bold">API Synchronization</div>
                       <div className="space-y-4 text-left leading-relaxed">
                         <p className="text-zinc-620 font-bold">// webhook payloads automatically mapped using USend rest bridge</p>
                         <div>
@@ -930,7 +953,13 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                               
                               <button 
                                 onClick={() => {
-                                  setActivePlatforms(prev => prev.filter(p => p !== platform.id));
+                                  const newPlatforms = activePlatforms.filter(p => p !== platform.id);
+                                  setActivePlatforms(newPlatforms);
+                                  if (user && user.uid) {
+                                    updateDocument('users', user.uid, {
+                                      activePlatforms: newPlatforms
+                                    }).catch(err => console.error("Error saving activePlatforms to DB:", err));
+                                  }
                                   setToastMsg(`Unlinked ${platform.name} platform.`);
                                   setTimeout(() => setToastMsg(null), 3000);
                                 }}
@@ -947,7 +976,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                                   setPlatformStoreUrl('');
                                   setPlatformAccessToken('');
                                 }}
-                                className="px-5 py-2.5 rounded-full font-black text-[12px] uppercase tracking-widest bg-[#1452D1] hover:bg-zinc-950 text-white dark:hover:bg-white dark:text-zinc-950 transition-all shadow-sm active:scale-95 cursor-pointer w-full sm:w-auto text-center"
+                                className="px-5 py-2.5 rounded-full font-black text-[12px] uppercase tracking-widest bg-[#2563EB] hover:bg-zinc-950 text-white dark:hover:bg-white dark:text-zinc-950 transition-all shadow-sm active:scale-95 cursor-pointer w-full sm:w-auto text-center"
                               >
                                 Authorize connection
                               </button>
@@ -1001,7 +1030,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                 
                 {/* Header with nodes network connection logo rebranded */}
                 <div className="flex flex-col md:flex-row items-center gap-6 p-8 bg-white dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800">
-                  <div className="w-14 h-14 rounded-2xl bg-[#1452D1]/10 text-[#1452D1] flex items-center justify-center shrink-0">
+                  <div className="w-14 h-14 rounded-2xl bg-[#2563EB]/10 text-[#2563EB] flex items-center justify-center shrink-0">
                     <Truck className="w-7 h-7" />
                   </div>
                   <div className="text-left flex-1">
@@ -1025,7 +1054,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                       value={courierSearchQuery}
                       onChange={(e) => setCourierSearchQuery(e.target.value)}
                       placeholder="Search couriers and dispatch networks..." 
-                      className="w-full bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white font-sans text-xs font-semibold rounded-2xl pl-10 pr-4 py-3 border border-zinc-200 dark:border-zinc-700 outline-none focus:ring-2 focus:ring-[#1452D1]/20 focus:border-[#1452D1] transition-all placeholder:text-zinc-455 placeholder:font-normal" 
+                      className="w-full bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white font-sans text-xs font-semibold rounded-2xl pl-10 pr-4 py-3 border border-zinc-200 dark:border-zinc-700 outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] transition-all placeholder:text-zinc-455 placeholder:font-normal" 
                     />
                   </div>
                 </div>
@@ -1098,7 +1127,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                 {/* Banner / Header */}
                 <div className="p-8 bg-zinc-950 text-white flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-800 shrink-0">
                   <div className="flex items-center gap-4 text-left">
-                    <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-[#1452D1]">
+                    <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-[#2563EB]">
                       <Terminal className="w-6 h-6 text-white" />
                     </div>
                     <div>
@@ -1141,7 +1170,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                       onClick={() => setSandboxActiveTab(tab.id as any)}
                       className={`flex items-center gap-2 py-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all shrink-0 ${
                         sandboxActiveTab === tab.id
-                          ? 'border-[#1452D1] text-[#1452D1]'
+                          ? 'border-[#2563EB] text-[#2563EB]'
                           : 'border-transparent text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
                       }`}
                     >
@@ -1231,6 +1260,17 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                         </div>
                         <button
                           onClick={() => {
+                            const currentCreds = getActiveCreds(selectedCourierForConfig);
+                            if (user && user.uid) {
+                              const updatedIntegrations = {
+                                ...(user.integrations || {}),
+                                [selectedCourierForConfig]: currentCreds
+                              };
+                              updateDocument('users', user.uid, {
+                                integrations: updatedIntegrations
+                              }).catch(err => console.error("Error saving integrations to DB:", err));
+                            }
+
                             if (!connectedCouriers.includes(selectedCourierForConfig)) {
                               setConnectedCouriers(prev => [...prev, selectedCourierForConfig]);
                               setToastMsg(`Successfully connected to ${selectedCourierForConfig.toUpperCase()} Sandbox!`);
@@ -1241,7 +1281,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                             }
                             setSandboxActiveTab('rate');
                           }}
-                          className="px-6 py-3 bg-[#1452D1] text-white font-black text-xs uppercase tracking-widest rounded-xl hover:bg-zinc-950 dark:hover:bg-white dark:hover:text-zinc-950 transition-colors shadow-lg shadow-blue-500/10"
+                          className="px-6 py-3 bg-[#2563EB] text-white font-black text-xs uppercase tracking-widest rounded-xl hover:bg-zinc-950 dark:hover:bg-white dark:hover:text-zinc-950 transition-colors shadow-lg shadow-blue-500/10"
                         >
                           Save Credentials & Continue &rarr;
                         </button>
@@ -1256,7 +1296,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                         {/* Control panel */}
                         <div className="md:col-span-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 space-y-4">
                           <h4 className="font-bold text-xs uppercase tracking-widest text-zinc-850 dark:text-white flex items-center gap-1.5">
-                            <Sliders className="w-4 h-4 text-[#1452D1]" /> Parameter Tuner
+                            <Sliders className="w-4 h-4 text-[#2563EB]" /> Parameter Tuner
                           </h4>
                           
                           <div className="space-y-1.5">
@@ -1304,7 +1344,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                               step="0.5"
                               value={rateWeight}
                               onChange={(e) => setRateWeight(Number(e.target.value))}
-                              className="w-full h-1 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-[#1452D1]"
+                              className="w-full h-1 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-[#2563EB]"
                             />
                           </div>
 
@@ -1313,7 +1353,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                               type="checkbox"
                               checked={rateExpress}
                               onChange={(e) => setRateExpress(e.target.checked)}
-                              className="w-4 h-4 accent-[#1452D1] rounded"
+                              className="w-4 h-4 accent-[#2563EB] rounded"
                             />
                             <span className="text-[13px] font-bold text-zinc-700 dark:text-zinc-300">Express Priority Parcel Rate</span>
                           </label>
@@ -1333,7 +1373,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                               setRateResult(res);
                               setRateLoading(false);
                             }}
-                            className="w-full py-3 bg-[#1452D1] hover:bg-zinc-950 text-white dark:hover:bg-white dark:hover:text-zinc-950 font-black text-[12px] uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-blue-500/10"
+                            className="w-full py-3 bg-[#2563EB] hover:bg-zinc-950 text-white dark:hover:bg-white dark:hover:text-zinc-950 font-black text-[12px] uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-blue-500/10"
                           >
                             {rateLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
                             Run API request
@@ -1353,20 +1393,20 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                               </div>
                             ) : rateLoading ? (
                               <div className="h-full flex flex-col items-center justify-center text-zinc-400 text-center space-y-3">
-                                <RefreshCw className="w-8 h-8 animate-spin text-[#1452D1]" />
+                                <RefreshCw className="w-8 h-8 animate-spin text-[#2563EB]" />
                                 <p className="text-[12px] tracking-wider text-blue-400 font-bold">TRANSMITTING SOAP SOAP:Envelope SOAPAction="getRates"...</p>
                               </div>
                             ) : (
                               <div className="flex-1 flex flex-col h-full">
                                 <div className="flex justify-between border-b border-zinc-800 pb-3 mb-3 text-[12px] font-bold text-zinc-400 shrink-0">
                                   <span>🚀 HTTP 200 SUCCESS ({rateResult.timestamp})</span>
-                                  <span className="text-[#1452D1] font-mono">{rateResult.serviceName}</span>
+                                  <span className="text-[#2563EB] font-mono">{rateResult.serviceName}</span>
                                 </div>
                                 
                                 <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto pr-1 select-all h-full max-h-[190px]">
                                   {/* Request */}
                                   <div className="text-left bg-zinc-900 border border-zinc-800 rounded-xl p-3 flex flex-col">
-                                    <div className="text-[13px] font-black text-[#1452D1] uppercase mb-1 flex items-center justify-between">
+                                    <div className="text-[13px] font-black text-[#2563EB] uppercase mb-1 flex items-center justify-between">
                                       <span>Request Payload (RPC)</span>
                                       <button onClick={() => navigator.clipboard.writeText(JSON.stringify(rateResult.requestPayload, null, 2))} className="hover:text-white"><Copy className="w-3 h-3" /></button>
                                     </div>
@@ -1405,7 +1445,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                         {/* Control Forms */}
                         <div className="lg:col-span-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 space-y-4">
                           <h4 className="font-bold text-xs uppercase tracking-widest text-zinc-850 dark:text-white flex items-center gap-1.5 border-b border-zinc-100 dark:border-zinc-800 pb-2">
-                            <Sliders className="w-4 h-4 text-[#1452D1]" /> Waybill Information
+                            <Sliders className="w-4 h-4 text-[#2563EB]" /> Waybill Information
                           </h4>
 
                           <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
@@ -1510,7 +1550,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                               setTrackNumberInput(res.trackingNumber);
                               setShipLoading(false);
                             }}
-                            className="w-full py-3 bg-[#1452D1] hover:bg-zinc-950 text-white dark:hover:bg-white dark:hover:text-zinc-950 font-black text-[12px] uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-lg"
+                            className="w-full py-3 bg-[#2563EB] hover:bg-zinc-950 text-white dark:hover:bg-white dark:hover:text-zinc-950 font-black text-[12px] uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-lg"
                           >
                             {shipLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
                             Generate Air Waybill
@@ -1527,7 +1567,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                             </div>
                           ) : shipLoading ? (
                             <div className="bg-black text-zinc-400 rounded-3xl p-10 h-[430px] flex flex-col items-center justify-center text-center space-y-4 font-mono text-[12px]">
-                              <RefreshCw className="w-10 h-10 animate-spin text-[#1452D1]" />
+                              <RefreshCw className="w-10 h-10 animate-spin text-[#2563EB]" />
                               <div className="space-y-1">
                                 <p className="text-blue-400 font-bold">TRANSMITTING WSDL: 'ShippingAPI.V2/Shipments'</p>
                                 <p className="text-zinc-500">Payload matching standard SOAP v1.1. Encoding Base64 print signals...</p>
@@ -1591,7 +1631,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
 
                               {/* JSON Payloads raw data block */}
                               <div className="bg-zinc-950 text-zinc-300 rounded-3xl p-5 font-mono text-[13px] h-[430px] flex flex-col justify-between overflow-hidden shadow-2xl relative">
-                                <div className="absolute top-4 right-4 text-[12px] font-black uppercase text-[#1452D1]">SOAP WSDL Trace</div>
+                                <div className="absolute top-4 right-4 text-[12px] font-black uppercase text-[#2563EB]">SOAP WSDL Trace</div>
                                 
                                 <div className="flex justify-between border-b border-zinc-805 pb-2.5 shrink-0 text-[12px] font-black uppercase text-zinc-400">
                                   <span>Response Signature Stream</span>
@@ -1634,8 +1674,8 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                         
                         {/* Status tracker parameters */}
                         <div className="md:col-span-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 space-y-4">
-                          <h4 className="font-bold text-xs uppercase tracking-widest text-[#1452D1] flex items-center gap-1.5 border-b border-zinc-100 dark:border-zinc-850 pb-2">
-                            <Sliders className="w-4 h-4 text-[#1452D1]" /> Tracking Service
+                          <h4 className="font-bold text-xs uppercase tracking-widest text-[#2563EB] flex items-center gap-1.5 border-b border-zinc-100 dark:border-zinc-850 pb-2">
+                            <Sliders className="w-4 h-4 text-[#2563EB]" /> Tracking Service
                           </h4>
 
                           <div className="space-y-2">
@@ -1659,7 +1699,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                               setTrackResult(res);
                               setTrackLoading(false);
                             }}
-                            className="w-full py-3 bg-[#1452D1] hover:bg-zinc-950 text-white dark:hover:bg-white dark:hover:text-zinc-950 font-black text-[12px] uppercase tracking-widest rounded-xl transition-all"
+                            className="w-full py-3 bg-[#2563EB] hover:bg-zinc-950 text-white dark:hover:bg-white dark:hover:text-zinc-950 font-black text-[12px] uppercase tracking-widest rounded-xl transition-all"
                           >
                             {trackLoading ? 'Querying status...' : 'Query Waybill Status'}
                           </button>
@@ -1675,7 +1715,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                             </div>
                           ) : trackLoading ? (
                             <div className="bg-black text-zinc-400 rounded-3xl p-10 h-[340px] flex flex-col items-center justify-center text-center space-y-4 font-mono text-[12px]">
-                              <RefreshCw className="w-8 h-8 animate-spin text-[#1452D1]" />
+                              <RefreshCw className="w-8 h-8 animate-spin text-[#2563EB]" />
                               <p className="text-blue-400 font-bold">RESOLVING TRACKING REFERENCE OVER CLOUD CONSOLE...</p>
                             </div>
                           ) : (
@@ -1703,12 +1743,12 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                                       <h4 className="text-sm font-bold text-zinc-900 dark:text-white mt-1">Waybill Status: Out For Delivery</h4>
                                     </div>
 
-                                    <div className="relative border-l-2 border-[#1452D1]/30 ml-3 space-y-6">
+                                    <div className="relative border-l-2 border-[#2563EB]/30 ml-3 space-y-6">
                                       {trackResult.steps.map((step: any, sIdx: number) => (
                                         <div key={sIdx} className="relative pl-6">
                                           {/* Node circle */}
                                           <div className={`absolute -left-[7px] top-1 w-3 h-3 rounded-full border-2 ${
-                                            sIdx === trackResult.steps.length - 1 ? 'bg-blue-500 border-blue-200 scale-125' : 'bg-[#1452D1] border-white dark:border-zinc-900'
+                                            sIdx === trackResult.steps.length - 1 ? 'bg-blue-500 border-blue-200 scale-125' : 'bg-[#2563EB] border-white dark:border-zinc-900'
                                           }`}></div>
                                           <div className="text-left">
                                             <div className="flex items-center gap-2">
@@ -1716,7 +1756,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                                               <span className="text-[13px] font-bold text-zinc-400 font-mono">{step.time}</span>
                                             </div>
                                             <p className="text-[12px] text-zinc-500 mt-1 leading-relaxed">{step.description}</p>
-                                            <span className="text-[12px] font-black tracking-widest text-[#1452D1] uppercase mt-1 block bg-blue-50 dark:bg-zinc-800 inline-block px-1.5 py-0.5 rounded">{step.status}</span>
+                                            <span className="text-[12px] font-black tracking-widest text-[#2563EB] uppercase mt-1 block bg-blue-50 dark:bg-zinc-800 inline-block px-1.5 py-0.5 rounded">{step.status}</span>
                                           </div>
                                         </div>
                                       ))}

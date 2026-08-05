@@ -131,7 +131,7 @@ export default function PortalSidebar({ currentScreen, onNavigate }: PortalSideb
     <>
       <div className={`md:hidden flex items-center justify-between p-4 bg-white text-zinc-800 sticky top-0 z-40 border-b border-[#e2e8f0] shadow-sm`}>
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => handleItemClick(isMerchant ? 'merchant_dashboard' : 'user_dashboard')}>
-          <div className="w-8 h-8 rounded-xl bg-[#2D74FF]/10 border border-[#2D74FF]/20 flex items-center justify-center text-[#2D74FF]">
+          <div className="w-8 h-8 rounded-xl bg-[#3b82f6]/10 border border-[#3b82f6]/20 flex items-center justify-center text-[#3b82f6]">
             <Anchor className="w-4 h-4" />
           </div>
           <span className="font-bold text-xs tracking-widest uppercase text-zinc-900">{isMerchant ? 'USend Merchant' : 'USend Consumer'}</span>

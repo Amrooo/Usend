@@ -1,4 +1,4 @@
-import logo from '../assets/usend-logo.svg';
+import logo from '../assets/usend-logo.png';
 
 export default function Logo({ className = '' }: { className?: string }) {
   return (

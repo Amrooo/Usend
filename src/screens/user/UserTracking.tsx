@@ -23,7 +23,7 @@ interface UserTrackingProps {
 
 export default function UserTracking({ onNavigate }: UserTrackingProps) {
   const { t, isRTL } = useLanguage();
-  const { activeRequests, user, updateRequestStatus } = useApp();
+  const { activeRequests, user, updateRequestStatus, updateRequest } = useApp();
   const [isMapReady, setIsMapReady] = useState(false);
   const [filter, setFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -45,7 +45,9 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
   );
   const activeOrders = myRequests;
   const [selectedOrder, setSelectedOrder] = useState<USendRequest | null>(null);
+  const liveSelectedOrder = selectedOrder ? (activeRequests.find(r => r.id === selectedOrder.id) || selectedOrder) : null;
   const [aramexSteps, setAramexSteps] = useState<any[]>([]);
+  const [showApiLogs, setShowApiLogs] = useState(false);
 
   useEffect(() => {
     if (selectedOrder?.externalTrackingNumber && selectedOrder.carrier === 'aramex') {
@@ -346,12 +348,18 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                 <div className="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-hide">
                   
                   {/* Courier Assigment */}
+"                  {/* Courier & External Tracking Assignment */}
                   <div className="bg-zinc-50 p-4 rounded-2xl border border-zinc-200 space-y-3">
                      <div className="flex items-center justify-between">
                         <span className="text-[12px] font-black uppercase text-zinc-500 tracking-widest">Handled By</span>
+                        {selectedOrder.externalTrackingNumber && (
+                           <span className="text-[10px] font-mono font-black bg-amber-100 text-amber-900 px-2 py-0.5 rounded border border-amber-200 uppercase">
+                              {selectedOrder.externalTrackingNumber}
+                           </span>
+                        )}
                      </div>
                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-900 flex items-center justify-center shrink-0">
                            <Truck className="w-5 h-5" />
                         </div>
                         <div>
@@ -359,7 +367,7 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                              {selectedOrder.courier || (selectedOrder.channel === 'Merchant Portal' ? 'Aramex' : 'USend Fleet')}
                            </p>
                            <p className="text-[12px] text-zinc-500 font-bold uppercase tracking-wider">
-                             {(selectedOrder.courier === 'Aramex Cargo' || selectedOrder.channel === 'Merchant Portal') ? 'External Logistics Provider' : 'Internal Fleet Driver'}
+                             {(selectedOrder.courier || '').toLowerCase().includes('noon') ? 'Noon RoD Staging Gateway' : (selectedOrder.courier || '').toLowerCase().includes('aramex') ? 'Aramex B2B Gateway' : 'Internal Fleet Driver'}
                            </p>
                         </div>
                      </div>

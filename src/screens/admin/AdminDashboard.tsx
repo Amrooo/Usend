@@ -56,11 +56,29 @@ const revenueData = [
 
 function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
   const { t, isRTL } = useLanguage();
+  const { activeRequests, merchants } = useApp();
+
+  // Calculate today's revenue (sum of deliveryFee/orderAmount of requests today)
+  const todayDateStr = new Date().toLocaleDateString();
+  const todayRequests = activeRequests.filter(r => r.date === todayDateStr);
+  const todayRevenue = todayRequests.reduce((sum, r) => {
+    const feeVal = parseFloat(String(r.deliveryFee || r.orderAmount || '0').replace(/[^0-9.]/g, '')) || 0;
+    return sum + feeVal;
+  }, 0);
+
+  const pendingRequestsCount = activeRequests.filter(r => r.status === 'Pending').length;
+
+  const totalSettlements = activeRequests
+    .filter(r => r.status === 'delivered' && r.paymentMethod === 'Cash on Delivery')
+    .reduce((sum, r) => sum + (parseFloat(String(r.orderAmount || '0').replace(/[^0-9.]/g, '')) || 0), 0);
+
+  const activeMerchantsCount = merchants.length;
+
   const stats = [
-    { label: 'Today\'s Revenue', value: '42,500 AED', trend: '+12%', icon: <DollarSign className="w-5 h-5" />, color: 'text-brand' },
-    { label: 'Pending Requests', value: '142', trend: '+5', icon: <Clock className="w-5 h-5" />, color: 'text-orange-500' },
-    { label: 'Settlements Due', value: '1.2M AED', trend: '-2%', icon: <Wallet className="w-5 h-5" />, color: 'text-purple-600' },
-    { label: t('active_merchants') || 'Active Merchants', value: '842', trend: '+18', icon: <Store className="w-5 h-5" />, color: 'text-blue-500' },
+    { label: 'Today\'s Revenue', value: `${todayRevenue.toLocaleString()} AED`, trend: todayRevenue > 0 ? '+100%' : '0%', icon: <DollarSign className="w-5 h-5" />, color: 'text-brand' },
+    { label: 'Pending Requests', value: String(pendingRequestsCount), trend: pendingRequestsCount > 0 ? `+${pendingRequestsCount}` : '0', icon: <Clock className="w-5 h-5" />, color: 'text-orange-500' },
+    { label: 'Settlements Due', value: `${totalSettlements.toLocaleString()} AED`, trend: '0%', icon: <Wallet className="w-5 h-5" />, color: 'text-purple-600' },
+    { label: t('active_merchants') || 'Active Merchants', value: String(activeMerchantsCount), trend: activeMerchantsCount > 0 ? `+${activeMerchantsCount}` : '0', icon: <Store className="w-5 h-5" />, color: 'text-blue-500' },
   ];
 
   return (
@@ -103,7 +121,7 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
                       {stat.label}
                     </span>
                   </div>
-                  <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest ${stat.trend.startsWith('+') ? 'text-emerald-700 bg-emerald-50' : 'text-red-600 bg-red-50'}`}>{stat.trend}</span>
+                  <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest ${stat.trend.startsWith('+') ? 'text-blue-700 bg-blue-50' : 'text-red-600 bg-red-50'}`}>{stat.trend}</span>
                 </div>
                 
                 <div className="flex justify-between items-end mt-2">
@@ -156,8 +174,8 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
             </div>
             <div className="flex items-center gap-4">
                <div className="flex items-center gap-2">
-                 <div className="w-2 h-2 rounded-full bg-[#2D74FF]"></div>
-                 <span className="text-[12px] font-bold uppercase tracking-widest text-[#2D74FF]">{t('revenue') || 'Revenue'}</span>
+                 <div className="w-2 h-2 rounded-full bg-[#3b82f6]"></div>
+                 <span className="text-[12px] font-bold uppercase tracking-widest text-[#3b82f6]">{t('revenue') || 'Revenue'}</span>
                </div>
                <div className="flex items-center gap-2">
                  <div className="w-2 h-2 rounded-full bg-slate-350"></div>
@@ -171,8 +189,8 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
               <AreaChart data={revenueData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#2D74FF" stopOpacity={0.15}/>
-                    <stop offset="95%" stopColor="#2D74FF" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#EFF4FC" />
@@ -182,7 +200,7 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
                   contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)' }}
                   itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
                 />
-                <Area type="monotone" dataKey="revenue" stroke="#2D74FF" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
+                <Area type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
                 <Area type="monotone" dataKey="settlements" stroke="#E2E8F0" strokeWidth={2} fill="transparent" strokeDasharray="5 5" />
               </AreaChart>
             </ResponsiveContainer>
@@ -194,7 +212,7 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
           className="bg-white border border-[#E9EFF6] rounded-[2.5rem] p-10 relative overflow-hidden shadow-[0_8px_30px_rgb(220,225,235,0.45)] flex flex-col cursor-pointer group/card hover:shadow-xl transition-all"
         >
           <div className="mb-8">
-             <h3 className="text-xl font-display font-semibold uppercase tracking-tight text-slate-900 mb-2 group-hover/card:text-[#2D74FF] transition-colors">{t('uae_ops_map')}</h3>
+             <h3 className="text-xl font-display font-semibold uppercase tracking-tight text-slate-900 mb-2 group-hover/card:text-[#3b82f6] transition-colors">{t('uae_ops_map')}</h3>
              <p className="text-xs text-zinc-400 font-medium">{t('live_origin')}</p>
           </div>
           <div className="flex-1 min-h-[250px] bg-zinc-900 rounded-[2rem] relative overflow-hidden group z-0">
@@ -202,9 +220,9 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
                <TileLayer
                  url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
                />
-               <Marker position={[25.2048, 55.2708]} icon={createCustomMarker('bg-[#2D74FF]', '#2D74FF', '0s')} />
+               <Marker position={[25.2048, 55.2708]} icon={createCustomMarker('bg-[#3b82f6]', '#3b82f6', '0s')} />
                <Marker position={[24.4539, 54.3773]} icon={createCustomMarker('bg-blue-400', '#34d399', '0.5s')} />
-               <Marker position={[25.3463, 55.4209]} icon={createCustomMarker('bg-[#2D74FF]', '#2D74FF', '1s')} />
+               <Marker position={[25.3463, 55.4209]} icon={createCustomMarker('bg-[#3b82f6]', '#3b82f6', '1s')} />
                <Marker position={[25.7895, 55.9432]} icon={createCustomMarker('bg-orange-400', '#fb923c', '1.5s')} />
              </MapContainer>
              <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-transparent to-transparent pointer-events-none z-10"></div>
@@ -212,7 +230,7 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
           
           <div className="grid grid-cols-2 gap-4 mt-8 pointer-events-none">
              <div className="flex items-center gap-3">
-               <div className="w-2 h-2 bg-[#2D74FF] rounded-full"></div>
+               <div className="w-2 h-2 bg-[#3b82f6] rounded-full"></div>
                <span className="text-xs font-bold text-zinc-600">{t('merchant_api')}</span>
              </div>
              <div className="flex items-center gap-3">
@@ -656,7 +674,7 @@ function RequestsHub() {
               <button onClick={() => setStatusFilter('Pending')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Pending' ? 'bg-orange-50 text-orange-655 ring-1 ring-orange-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-orange-400"></div>Pending</button>
               <button onClick={() => setStatusFilter('Exceptions')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Exceptions' ? 'bg-red-50 text-red-650 ring-1 ring-red-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>{t('exceptions') || 'Exceptions'}</button>
               <button onClick={() => setStatusFilter('Reviewing')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Reviewing' ? 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>Reviewing</button>
-              <button onClick={() => setStatusFilter('Approved')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Approved' ? 'bg-blue-50 text-blue-600 ring-1 ring-emerald-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>Approved</button>
+              <button onClick={() => setStatusFilter('Approved')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Approved' ? 'bg-blue-50 text-blue-600 ring-1 ring-blue-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>Approved</button>
               <button onClick={() => setStatusFilter('assigning')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'assigning' ? 'bg-blue-50 text-blue-600 ring-1 ring-blue-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>Assigning</button>
               <button onClick={() => setStatusFilter('in_transit')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'in_transit' ? 'bg-purple-50 text-purple-600 ring-1 ring-purple-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>In Transit</button>
               <button onClick={() => setStatusFilter('delivered')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'delivered' ? 'bg-blue-50 text-blue-705 ring-1 ring-green-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>Delivered</button>
@@ -738,7 +756,7 @@ function RequestsHub() {
                    position={req.position || [25.0, 55.0]} 
                    icon={createInteractiveMarker(
                      req.status === 'Pending' ? 'bg-orange-400' : req.status === 'Approved' ? 'bg-blue-400' : req.status === 'Rejected' ? 'bg-red-500' : req.status === 'assigning' ? 'bg-blue-400' : 'bg-brand',
-                     req.status === 'Pending' ? '#fb923c' : req.status === 'Approved' ? '#34d399' : req.status === 'Rejected' ? '#ef4444' : req.status === 'assigning' ? '#60a5fa' : '#1452D1',
+                     req.status === 'Pending' ? '#fb923c' : req.status === 'Approved' ? '#34d399' : req.status === 'Rejected' ? '#ef4444' : req.status === 'assigning' ? '#60a5fa' : '#2563EB',
                      req.id
                    )}
                    eventHandlers={{ click: () => setSelectedRequest(req) }}
@@ -1175,7 +1193,7 @@ function RequestsHub() {
                          position={selectedRequest.position}
                          icon={L.divIcon({
                            className: 'custom-interactive-marker',
-                           html: `<div class="relative"><div class="w-4 h-4 bg-brand rounded-full border-2 border-white shadow-[0_0_15px_#1452D1] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-ping"></div><div class="w-4 h-4 bg-brand rounded-full border-2 border-white shadow-[0_0_15px_#1452D1] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div></div>`,
+                           html: `<div class="relative"><div class="w-4 h-4 bg-brand rounded-full border-2 border-white shadow-[0_0_15px_#2563EB] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-ping"></div><div class="w-4 h-4 bg-brand rounded-full border-2 border-white shadow-[0_0_15px_#2563EB] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div></div>`,
                            iconSize: [16, 16],
                            iconAnchor: [8, 8]
                          })}
@@ -1204,8 +1222,7 @@ function UsersDirectory() {
   const { isRTL } = useLanguage();
   const { users, addUser } = useApp();
 
-  // Load the 1000 simulated users based on user state
-  const allExtendedUsers = useState(() => generateUsersArray(users))[0];
+  const allExtendedUsers = users;
 
   const [isAddingUser, setIsAddingUser] = useState(false);
   const [newUser, setNewUser] = useState({ name: '', type: 'Customer', phone: '' });
@@ -1540,11 +1557,11 @@ function CouriersDirectory() {
   const { isRTL, t } = useLanguage();
   const { users } = useApp();
 
-  // Load and enhance simulated couriers
-  const [courierList, setCourierList] = useState<any[]>(() => {
-    const list = generateUsersArray(users).filter(u => u.type === 'Driver' || u.role === 'driver');
-    // Enhance with rich logistics telemetry fields deterministically
-    return list.map((u, i) => {
+  // Load and enhance real drivers
+  const [courierList, setCourierList] = useState<any[]>([]);
+  useEffect(() => {
+    const list = users.filter(u => u.type === 'Driver' || u.role === 'driver');
+    const enhanced = list.map((u, i) => {
       const idNum = parseInt(u.id.replace(/\D/g, '')) || i;
       const vehicleVal = idNum % 3 === 0 ? 'sedan' : idNum % 3 === 1 ? 'van' : 'motorcycle';
       const rawCODVal = Math.floor((idNum * 23.4) % 1250);
@@ -1558,10 +1575,11 @@ function CouriersDirectory() {
         position: [lat, lng] as [number, number],
         successRate: rate.toFixed(1),
         currentRoute: idNum % 2 === 0 ? 'Dubai Marina → Downtown' : 'Zayed Port → Al Reem Island',
-        activeDeliveryId: idNum % 5 === 0 ? `REQ-${2040 - (idNum % 3)}` : null
+        activeJobsCount: idNum % 4
       };
     });
-  });
+    setCourierList(enhanced);
+  }, [users]);
 
   const [selectedCourier, setSelectedCourier] = useState<any>(null);
   const [isAddingCourier, setIsAddingCourier] = useState(false);
@@ -1791,7 +1809,7 @@ function CouriersDirectory() {
                         <span className="text-xs font-black text-zinc-800">{courier.deliveries} trips</span>
                       </div>
                       <div className="text-right">
-                        <span className="text-[13px] font-semibold text-[#1452D1] uppercase tracking-widest block mb-0.5">{t('cod_collected_cash') || 'COD Cash'}</span>
+                        <span className="text-[13px] font-semibold text-[#2563EB] uppercase tracking-widest block mb-0.5">{t('cod_collected_cash') || 'COD Cash'}</span>
                         <span className="text-sm font-black text-zinc-950 font-mono">AED {courier.rawCOD.toFixed(2)}</span>
                       </div>
                     </div>
@@ -1912,7 +1930,7 @@ function CouriersDirectory() {
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
-                  <Marker position={selectedCourier.position} icon={createCustomMarker('bg-brand', '#1452D1')} />
+                  <Marker position={selectedCourier.position} icon={createCustomMarker('bg-brand', '#2563EB')} />
                 </MapContainer>
               </div>
               <span className="text-[12px] text-zinc-400 flex items-center gap-1.5 mt-2 justify-center">
@@ -1999,8 +2017,7 @@ function CouriersDirectory() {
 function MerchantDirectory() {
   const { merchants } = useApp();
 
-  // Load the 150 simulated merchants deterministically
-  const allExtendedMerchants = useState(() => generateMerchantsArray(merchants))[0];
+  const allExtendedMerchants = merchants;
 
   // Filters & Page Setup
   const [searchQuery, setSearchQuery] = useState('');
@@ -2394,8 +2411,8 @@ function MerchantDirectory() {
                       <AreaChart data={successData} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
                         <defs>
                           <linearGradient id="colorRate" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#1452D1" stopOpacity={0.12}/>
-                            <stop offset="95%" stopColor="#1452D1" stopOpacity={0}/>
+                            <stop offset="5%" stopColor="#2563EB" stopOpacity={0.12}/>
+                            <stop offset="95%" stopColor="#2563EB" stopOpacity={0}/>
                           </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E4E4E7" />
@@ -2405,7 +2422,7 @@ function MerchantDirectory() {
                           formatter={(value: any) => [`${value}%`, 'Success Rate']}
                           contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 5px 15px -3px rgba(0, 0, 0, 0.08)', fontSize: '11px' }}
                         />
-                        <Area type="monotone" dataKey="rate" stroke="#1452D1" strokeWidth={2.5} fillOpacity={1} fill="url(#colorRate)" />
+                        <Area type="monotone" dataKey="rate" stroke="#2563EB" strokeWidth={2.5} fillOpacity={1} fill="url(#colorRate)" />
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
@@ -2529,7 +2546,7 @@ function AdminSettings() {
          <div className="mt-12 flex justify-end">
             <button 
               onClick={handleSave}
-              className="px-10 py-5 rounded-full bg-brand text-white font-black text-[12px] uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-brand/20"
+              className="px-10 py-5 rounded-full bg-brand text-white font-black text-[12px] uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-brand/20 cursor-pointer"
             >
                Save Configurations
             </button>
@@ -2540,110 +2557,509 @@ function AdminSettings() {
 }
 
 function AdminIntegrations() {
-  const [webhookLogs, setWebhookLogs] = useState([
-    { id: "ERR-902", source: "Shopify Webhook", merchant: "Noon E-commerce", description: "Incompatible JSON payload shape, auto-fallback parser applied", time: "5 mins ago", severity: "Warning" },
-    { id: "ERR-901", source: "Salla Webhook", merchant: "Spinneys Supermarket", description: "Authorization token expired on merchant endpoint, status 401", time: "1 hour ago", severity: "Critical" },
-    { id: "ERR-900", source: "REST Courier API", merchant: "IKEA UAE", description: "Rate limit threshold breached (max 60/min), temporary block applied", time: "3 hours ago", severity: "Info" }
-  ]);
+  const { courierConfigs, updateCourierConfigs } = useApp();
+  const [selectedCourierId, setSelectedCourierId] = useState<'aramex' | 'noon' | 'dhl' | 'fedex'>('aramex');
+  const [localConfigs, setLocalConfigs] = useState<any>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (courierConfigs) {
+      setLocalConfigs(courierConfigs);
+    }
+  }, [courierConfigs]);
+
+  const triggerToast = (msg: string) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(null), 3000);
+  };
+
+  if (!localConfigs) {
+    return (
+      <div className="flex items-center justify-center p-20 bg-white border border-zinc-200 rounded-[3rem] shadow-sm animate-pulse">
+        <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  const currentConfig = localConfigs[selectedCourierId] || {
+    id: selectedCourierId,
+    name: selectedCourierId.toUpperCase(),
+    status: 'Inactive',
+    currentMode: 'sandbox',
+    sandboxCreds: { username: '', accountNumber: '', accountPin: '', accountEntity: '', accountCountryCode: 'AE', source: '' },
+    productionCreds: { username: '', accountNumber: '', accountPin: '', accountEntity: '', accountCountryCode: 'AE', source: '' },
+    rates: {
+      guest: { baseFee: 0, perKmRate: 0, perKgRate: 0, expressSurcharge: 0, codFee: 0 },
+      user: { baseFee: 0, perKmRate: 0, perKgRate: 0, expressSurcharge: 0, codFee: 0 },
+      merchant: { baseFee: 0, perKmRate: 0, perKgRate: 0, expressSurcharge: 0, codFee: 0 }
+    }
+  };
+
+  const handleCredChange = (mode: 'sandbox' | 'production', field: string, value: string) => {
+    setLocalConfigs((prev: any) => {
+      const targetMode = mode === 'sandbox' ? 'sandboxCreds' : 'productionCreds';
+      return {
+        ...prev,
+        [selectedCourierId]: {
+          ...prev[selectedCourierId],
+          [targetMode]: {
+            ...prev[selectedCourierId][targetMode],
+            [field]: value
+          }
+        }
+      };
+    });
+  };
+
+  const handleRateChange = (userType: 'guest' | 'user' | 'merchant', field: string, value: number) => {
+    setLocalConfigs((prev: any) => {
+      return {
+        ...prev,
+        [selectedCourierId]: {
+          ...prev[selectedCourierId],
+          rates: {
+            ...prev[selectedCourierId].rates,
+            [userType]: {
+              ...prev[selectedCourierId].rates[userType],
+              [field]: value
+            }
+          }
+        }
+      };
+    });
+  };
+
+  const handleToggleStatus = () => {
+    setLocalConfigs((prev: any) => ({
+      ...prev,
+      [selectedCourierId]: {
+        ...prev[selectedCourierId],
+        status: prev[selectedCourierId].status === 'Active' ? 'Inactive' : 'Active'
+      }
+    }));
+  };
+
+  const handleToggleMode = (mode: 'sandbox' | 'production') => {
+    setLocalConfigs((prev: any) => ({
+      ...prev,
+      [selectedCourierId]: {
+        ...prev[selectedCourierId],
+        currentMode: mode
+      }
+    }));
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await updateCourierConfigs(localConfigs);
+      triggerToast(`Saved ${currentConfig.name} configuration successfully!`);
+    } catch (err: any) {
+      triggerToast(`Error: ${err.message || 'Failed to save settings'}`);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const activeCreds = currentConfig.currentMode === 'sandbox' ? currentConfig.sandboxCreds : currentConfig.productionCreds;
+
+  const courierLogos: Record<string, string> = {
+    aramex: 'https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?q=80&w=100&auto=format&fit=crop',
+    noon: 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=100&auto=format&fit=crop',
+    dhl: 'https://images.unsplash.com/photo-1616401784845-180882ba9ba8?q=80&w=100&auto=format&fit=crop',
+    fedex: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=100&auto=format&fit=crop'
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
+      {/* Toast Notification */}
+      {toastMsg && (
+        <div className="fixed bottom-6 right-6 z-50 bg-zinc-900 text-white px-6 py-4 rounded-2xl shadow-xl flex items-center gap-3 border border-zinc-800 animate-bounce">
+          <div className="w-2 h-2 rounded-full bg-orange-500 animate-ping"></div>
+          <span className="text-xs font-bold uppercase tracking-wider">{toastMsg}</span>
+        </div>
+      )}
+
       <div className="bg-white border border-zinc-200 rounded-[3rem] p-10 shadow-sm relative overflow-hidden">
-         <div className="absolute top-0 right-0 w-64 h-64 bg-brand/5 rounded-bl-[100px] -z-10 pointer-events-none"></div>
-         
-         <div className="mb-12">
-            <h3 className="text-xl font-display font-medium uppercase tracking-tight text-zinc-900 mb-2">APIs & Webhooks Auditor</h3>
-            <p className="text-sm text-zinc-500 font-medium max-w-2xl">Monitor real-time webhook subscriptions, transaction feeds, and generate carrier keys for Noon, IKEA and Salla platforms.</p>
-         </div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-brand/5 rounded-bl-[100px] -z-10 pointer-events-none"></div>
 
-         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Aramex / External Provider Guide */}
-            <div className="border border-zinc-200 rounded-[2rem] p-8 hover:border-brand/30 transition-colors bg-white">
-               <div className="w-12 h-12 bg-zinc-100 text-zinc-800 rounded-xl flex items-center justify-center mb-6">
-                 <Repeat className="w-6 h-6" />
-               </div>
-               <h4 className="font-bold text-zinc-900 mb-2">Cross-Courier Mappings</h4>
-               <p className="text-sm text-zinc-600 mb-6 leading-relaxed">
-                  Automatically map status updates between internal dispatches and third-party networks (e.g. DHL, Aramex).
-               </p>
-               <div className="space-y-4">
-                 <div className="bg-zinc-50 p-4 rounded-2xl">
-                   <p className="text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-2">1. Connect API Sandbox</p>
-                   <p className="text-xs text-zinc-700 font-mono text-xs truncate">POST https://api.usend.ae/v1/aramex-bridge</p>
-                 </div>
-                 <div className="bg-zinc-50 p-4 rounded-2xl">
-                   <p className="text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-2">2. Map Webhook Signals</p>
-                   <p className="text-xs text-zinc-700">Translates external status mappings directly to UAE unified tracking.</p>
-                 </div>
-               </div>
-               <button className="mt-8 px-6 py-3 border-2 border-zinc-200 rounded-full text-zinc-600 font-bold text-[12px] uppercase tracking-widest hover:border-zinc-900 hover:text-zinc-900 transition-colors w-full">
-                  View Webhook Logs
-               </button>
+        <div className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <h3 className="text-xl font-display font-medium uppercase tracking-tight text-zinc-900 mb-2">Courier Integration Gateway</h3>
+            <p className="text-sm text-zinc-500 font-medium max-w-2xl">Toggle active environment APIs, verify credentials, and customize rate tables based on applicant user profiles.</p>
+          </div>
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="px-8 py-4 bg-orange-500 text-white rounded-full font-bold text-xs uppercase tracking-widest hover:bg-orange-600 transition-colors shadow-lg shadow-orange-500/20 active:scale-95 flex items-center justify-center gap-2 cursor-pointer min-w-[200px]"
+          >
+            {isSaving ? (
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              <>
+                <Check className="w-4 h-4" /> Save Integration Settings
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Courier Select Tabs */}
+        <div className="flex flex-wrap gap-4 mb-10 border-b border-zinc-100 pb-8">
+          {(Object.keys(localConfigs) as Array<'aramex' | 'noon' | 'dhl' | 'fedex'>).map((id) => {
+            const cfg = localConfigs[id];
+            const isSelected = selectedCourierId === id;
+            return (
+              <button
+                key={id}
+                onClick={() => setSelectedCourierId(id)}
+                className={`flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer ${
+                  isSelected
+                    ? 'border-orange-500 bg-orange-50/20 text-orange-950 shadow-sm'
+                    : 'border-zinc-200 hover:border-zinc-300 bg-white text-zinc-600'
+                }`}
+              >
+                <div className="w-10 h-10 rounded-xl overflow-hidden bg-zinc-100 shrink-0 border border-zinc-200">
+                  <img src={courierLogos[id]} alt={cfg.name} className="w-full h-full object-cover grayscale opacity-80" />
+                </div>
+                <div className="text-left">
+                  <p className="font-bold text-xs uppercase tracking-widest text-zinc-800">{cfg.name}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className={`w-1.5 h-1.5 rounded-full ${cfg.status === 'Active' ? 'bg-blue-500' : 'bg-zinc-400'}`}></span>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{cfg.status}</span>
+                    <span className="text-[10px] text-zinc-300">•</span>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-zinc-500">{cfg.currentMode}</span>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Configurations Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* General & Mode Settings */}
+          <div className="lg:col-span-1 space-y-6">
+            <div className="border border-zinc-200 rounded-[2rem] p-6 bg-zinc-50/50 space-y-6">
+              <h4 className="font-bold text-zinc-900 text-xs uppercase tracking-widest pb-4 border-b border-zinc-200/60">Gateway Status</h4>
+              
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold text-zinc-800">Integration Active</p>
+                  <p className="text-[11px] text-zinc-400 font-medium">Activate/deactivate this courier channel globally.</p>
+                </div>
+                <button
+                  onClick={handleToggleStatus}
+                  className={`w-12 h-6 rounded-full relative transition-colors ${
+                    currentConfig.status === 'Active' ? 'bg-blue-500' : 'bg-zinc-300'
+                  }`}
+                >
+                  <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-all ${
+                    currentConfig.status === 'Active' ? 'right-1' : 'left-1'
+                  }`} />
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-xs font-bold text-zinc-800">API Environment</p>
+                <div className="grid grid-cols-2 gap-2 bg-zinc-200/60 p-1 rounded-xl">
+                  <button
+                    onClick={() => handleToggleMode('sandbox')}
+                    className={`py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${
+                      currentConfig.currentMode === 'sandbox'
+                        ? 'bg-white text-zinc-900 shadow-sm'
+                        : 'text-zinc-500 hover:text-zinc-800'
+                    }`}
+                  >
+                    Sandbox
+                  </button>
+                  <button
+                    onClick={() => handleToggleMode('production')}
+                    className={`py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${
+                      currentConfig.currentMode === 'production'
+                        ? 'bg-zinc-900 text-white shadow-sm'
+                        : 'text-zinc-500 hover:text-zinc-800'
+                    }`}
+                  >
+                    Production
+                  </button>
+                </div>
+              </div>
             </div>
 
-            {/* Merchant Custom Integration Guide */}
-            <div className="border border-zinc-200 rounded-[2rem] p-8 hover:border-brand/30 transition-colors bg-white">
-               <div className="w-12 h-12 bg-zinc-100 text-zinc-800 rounded-xl flex items-center justify-center mb-6">
-                 <Code2 className="w-6 h-6" />
-               </div>
-               <h4 className="font-bold text-zinc-900 mb-2">Bearer Token Configurations</h4>
-               <p className="text-sm text-zinc-650 mb-6 leading-relaxed">
-                  Audit, cycle, or generate bearer keys and endpoints to allow merchants to programmatically book orders.
-               </p>
-               <div className="space-y-4">
-                 <div className="bg-zinc-50 p-4 rounded-2xl">
-                   <p className="text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-2">1. Carrier Credentials</p>
-                   <p className="text-xs text-zinc-700">Manage unique <span className="font-bold bg-zinc-100 px-1.5 py-0.5 rounded">Bearer Tokens</span> for Noon & Ikea portals.</p>
-                 </div>
-                 <div className="bg-zinc-50 p-4 rounded-2xl">
-                   <p className="text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-2">2. Endpoint Address</p>
-                   <p className="text-xs text-zinc-700 font-mono text-xs truncate">POST https://api.usend.ae/v1/orders/bulk</p>
-                 </div>
-               </div>
-               <button className="mt-8 px-6 py-3 bg-zinc-900 text-white rounded-full font-bold text-[12px] uppercase tracking-widest hover:bg-black transition-colors w-full">
-                  Generate Sandbox Key
-               </button>
+            <div className="bg-orange-50/30 border border-orange-100 rounded-[2rem] p-6 space-y-4">
+              <div className="flex items-center gap-2 text-orange-600">
+                <Activity className="w-4 h-4" />
+                <span className="text-xs font-black uppercase tracking-widest">Sandbox Mock Log</span>
+              </div>
+              <p className="text-xs text-zinc-600 leading-relaxed">
+                When set to <span className="font-bold text-zinc-900">Sandbox</span>, rate calls and airway bill generation dispatch into simulated carrier endpoints. Noon RoD integration is mapped to standard staging structures.
+              </p>
             </div>
-         </div>
+          </div>
 
-         {/* Webhook Failure Audit logs table */}
-         <div className="mt-12 border-t border-zinc-100 pt-12">
-            <h4 className="font-bold text-zinc-900 mb-4 flex items-center gap-2 text-xs uppercase tracking-widest"><ShieldAlert className="w-4 h-4 text-orange-500" /> Integration Exception Log</h4>
-            <div className="overflow-x-auto">
-               <table className="w-full text-left border-collapse">
-                  <thead>
-                     <tr className="bg-zinc-50 text-zinc-400 text-[13px] font-black uppercase tracking-widest border-b border-zinc-100">
-                        <th className="p-4">ID</th>
-                        <th className="p-4">Platform Channel</th>
-                        <th className="p-4">Merchant Target</th>
-                        <th className="p-4">Exception Description</th>
-                        <th className="p-4">Occurred</th>
-                        <th className="p-4 text-right">Failure Severity</th>
-                     </tr>
-                  </thead>
-                  <tbody className="text-xs">
-                     {webhookLogs.map((log, idx) => (
-                        <tr key={idx} className="border-b border-zinc-50 hover:bg-zinc-50/50 transition-colors">
-                           <td className="p-4 font-mono font-bold text-zinc-500">{log.id}</td>
-                           <td className="p-4 font-bold text-zinc-700">{log.source}</td>
-                           <td className="p-4 font-bold text-zinc-700">{log.merchant}</td>
-                           <td className="p-4 text-zinc-500">{log.description}</td>
-                           <td className="p-4 text-zinc-400">{log.time}</td>
-                           <td className="p-4 text-right">
-                              <span className={`px-2 py-0.5 rounded-full text-[12px] font-black uppercase tracking-widest ${
-                                 log.severity === 'Critical' ? 'bg-red-50 text-red-600' :
-                                 log.severity === 'Warning' ? 'bg-orange-50 text-orange-600' :
-                                 'bg-zinc-100 text-zinc-650'
-                              }`}>
-                                 {log.severity}
-                              </span>
-                           </td>
-                        </tr>
-                     ))}
-                  </tbody>
-               </table>
+          {/* Credentials Settings Form */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="border border-zinc-200 rounded-[2rem] p-8 bg-white space-y-6">
+              <h4 className="font-bold text-zinc-900 text-xs uppercase tracking-widest pb-4 border-b border-zinc-200/60 flex items-center gap-2">
+                <Code2 className="w-4 h-4 text-orange-500" /> API Connection Parameters ({currentConfig.currentMode.toUpperCase()})
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 pl-1">API Username</label>
+                  <input
+                    type="text"
+                    value={activeCreds.username || ''}
+                    onChange={(e) => handleCredChange(currentConfig.currentMode, 'username', e.target.value)}
+                    placeholder="Enter API username/email"
+                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 pl-1">API Password / Secret</label>
+                  <input
+                    type="password"
+                    value={activeCreds.password || ''}
+                    onChange={(e) => handleCredChange(currentConfig.currentMode, 'password', e.target.value)}
+                    placeholder="••••••••••••••"
+                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 pl-1">Account Number / client ID</label>
+                  <input
+                    type="text"
+                    value={activeCreds.accountNumber || ''}
+                    onChange={(e) => handleCredChange(currentConfig.currentMode, 'accountNumber', e.target.value)}
+                    placeholder="e.g. 45796"
+                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 pl-1">Account Pin / Entity Pin</label>
+                  <input
+                    type="text"
+                    value={activeCreds.accountPin || ''}
+                    onChange={(e) => handleCredChange(currentConfig.currentMode, 'accountPin', e.target.value)}
+                    placeholder="e.g. 116216"
+                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 pl-1">Account Entity / Node Code</label>
+                  <input
+                    type="text"
+                    value={activeCreds.accountEntity || ''}
+                    onChange={(e) => handleCredChange(currentConfig.currentMode, 'accountEntity', e.target.value)}
+                    placeholder="e.g. DXB"
+                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 pl-1">Source ID / Channel Ref</label>
+                  <input
+                    type="text"
+                    value={activeCreds.source || ''}
+                    onChange={(e) => handleCredChange(currentConfig.currentMode, 'source', e.target.value)}
+                    placeholder="e.g. 24"
+                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800"
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 pl-1">API Key / Secret Token (Optional)</label>
+                  <input
+                    type="text"
+                    value={activeCreds.apiKey || ''}
+                    onChange={(e) => handleCredChange(currentConfig.currentMode, 'apiKey', e.target.value)}
+                    placeholder="Enter integration private API key"
+                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800"
+                  />
+                </div>
+              </div>
             </div>
-         </div>
+          </div>
+        </div>
+
+        {/* Dynamic Rate Setting Section */}
+        <div className="mt-12 border-t border-zinc-100 pt-12">
+          <div className="mb-8">
+            <h4 className="font-bold text-zinc-900 text-xs uppercase tracking-widest flex items-center gap-2 mb-2">
+              <DollarSign className="w-4 h-4 text-orange-500" /> Tiered Delivery Rates Matrix
+            </h4>
+            <p className="text-xs text-zinc-500">Specify exactly the shipping rates to be billed. Charges adapt programmatically when orders are booked by guest accounts, logged-in portal users, or corporate merchants.</p>
+          </div>
+
+          <div className="overflow-x-auto border border-zinc-200 rounded-3xl">
+            <table className="w-full text-left border-collapse min-w-[600px]">
+              <thead>
+                <tr className="bg-zinc-50 text-zinc-500 text-[11px] font-black uppercase tracking-widest border-b border-zinc-200">
+                  <th className="p-5 w-1/3">Price Component Detail</th>
+                  <th className="p-5 text-center">Guest Checkout (AED)</th>
+                  <th className="p-5 text-center">Standard Portal User (AED)</th>
+                  <th className="p-5 text-center">Premium Corporate Merchant (AED)</th>
+                </tr>
+              </thead>
+              <tbody className="text-xs font-semibold text-zinc-700">
+                <tr className="border-b border-zinc-50 hover:bg-zinc-50/50">
+                  <td className="p-5">
+                    <p className="font-bold text-zinc-800">Base Delivery Fee</p>
+                    <p className="text-[10px] text-zinc-400 font-medium">Standard baseline collection fee for deliveries.</p>
+                  </td>
+                  <td className="p-5 text-center">
+                    <input
+                      type="number"
+                      value={currentConfig.rates.guest.baseFee}
+                      onChange={(e) => handleRateChange('guest', 'baseFee', parseFloat(e.target.value) || 0)}
+                      className="w-24 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
+                    />
+                  </td>
+                  <td className="p-5 text-center">
+                    <input
+                      type="number"
+                      value={currentConfig.rates.user.baseFee}
+                      onChange={(e) => handleRateChange('user', 'baseFee', parseFloat(e.target.value) || 0)}
+                      className="w-24 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
+                    />
+                  </td>
+                  <td className="p-5 text-center">
+                    <input
+                      type="number"
+                      value={currentConfig.rates.merchant.baseFee}
+                      onChange={(e) => handleRateChange('merchant', 'baseFee', parseFloat(e.target.value) || 0)}
+                      className="w-24 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
+                    />
+                  </td>
+                </tr>
+
+                <tr className="border-b border-zinc-50 hover:bg-zinc-50/50">
+                  <td className="p-5">
+                    <p className="font-bold text-zinc-800">Per KG Excess Surcharge</p>
+                    <p className="text-[10px] text-zinc-400 font-medium">Charged per additional kilogram exceeding standard threshold.</p>
+                  </td>
+                  <td className="p-5 text-center">
+                    <input
+                      type="number"
+                      value={currentConfig.rates.guest.perKgRate}
+                      onChange={(e) => handleRateChange('guest', 'perKgRate', parseFloat(e.target.value) || 0)}
+                      className="w-24 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
+                    />
+                  </td>
+                  <td className="p-5 text-center">
+                    <input
+                      type="number"
+                      value={currentConfig.rates.user.perKgRate}
+                      onChange={(e) => handleRateChange('user', 'perKgRate', parseFloat(e.target.value) || 0)}
+                      className="w-24 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
+                    />
+                  </td>
+                  <td className="p-5 text-center">
+                    <input
+                      type="number"
+                      value={currentConfig.rates.merchant.perKgRate}
+                      onChange={(e) => handleRateChange('merchant', 'perKgRate', parseFloat(e.target.value) || 0)}
+                      className="w-24 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
+                    />
+                  </td>
+                </tr>
+
+                <tr className="border-b border-zinc-50 hover:bg-zinc-50/50">
+                  <td className="p-5">
+                    <p className="font-bold text-zinc-800">Per KM Distance Surcharge</p>
+                    <p className="text-[10px] text-zinc-400 font-medium">Extra transit cost computed per kilometer of route distance.</p>
+                  </td>
+                  <td className="p-5 text-center">
+                    <input
+                      type="number"
+                      value={currentConfig.rates.guest.perKmRate}
+                      onChange={(e) => handleRateChange('guest', 'perKmRate', parseFloat(e.target.value) || 0)}
+                      className="w-24 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
+                    />
+                  </td>
+                  <td className="p-5 text-center">
+                    <input
+                      type="number"
+                      value={currentConfig.rates.user.perKmRate}
+                      onChange={(e) => handleRateChange('user', 'perKmRate', parseFloat(e.target.value) || 0)}
+                      className="w-24 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
+                    />
+                  </td>
+                  <td className="p-5 text-center">
+                    <input
+                      type="number"
+                      value={currentConfig.rates.merchant.perKmRate}
+                      onChange={(e) => handleRateChange('merchant', 'perKmRate', parseFloat(e.target.value) || 0)}
+                      className="w-24 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
+                    />
+                  </td>
+                </tr>
+
+                <tr className="border-b border-zinc-50 hover:bg-zinc-50/50">
+                  <td className="p-5">
+                    <p className="font-bold text-zinc-800">Urgent Express Premium</p>
+                    <p className="text-[10px] text-zinc-400 font-medium">Additional speed premium applied for priority on-demand runs.</p>
+                  </td>
+                  <td className="p-5 text-center">
+                    <input
+                      type="number"
+                      value={currentConfig.rates.guest.expressSurcharge}
+                      onChange={(e) => handleRateChange('guest', 'expressSurcharge', parseFloat(e.target.value) || 0)}
+                      className="w-24 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
+                    />
+                  </td>
+                  <td className="p-5 text-center">
+                    <input
+                      type="number"
+                      value={currentConfig.rates.user.expressSurcharge}
+                      onChange={(e) => handleRateChange('user', 'expressSurcharge', parseFloat(e.target.value) || 0)}
+                      className="w-24 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
+                    />
+                  </td>
+                  <td className="p-5 text-center">
+                    <input
+                      type="number"
+                      value={currentConfig.rates.merchant.expressSurcharge}
+                      onChange={(e) => handleRateChange('merchant', 'expressSurcharge', parseFloat(e.target.value) || 0)}
+                      className="w-24 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
+                    />
+                  </td>
+                </tr>
+
+                <tr className="hover:bg-zinc-50/50">
+                  <td className="p-5">
+                    <p className="font-bold text-zinc-800">Cash on Delivery (COD) Fee</p>
+                    <p className="text-[10px] text-zinc-400 font-medium">Extra collection / bank settlement processing handling fee.</p>
+                  </td>
+                  <td className="p-5 text-center">
+                    <input
+                      type="number"
+                      value={currentConfig.rates.guest.codFee}
+                      onChange={(e) => handleRateChange('guest', 'codFee', parseFloat(e.target.value) || 0)}
+                      className="w-24 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
+                    />
+                  </td>
+                  <td className="p-5 text-center">
+                    <input
+                      type="number"
+                      value={currentConfig.rates.user.codFee}
+                      onChange={(e) => handleRateChange('user', 'codFee', parseFloat(e.target.value) || 0)}
+                      className="w-24 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
+                    />
+                  </td>
+                  <td className="p-5 text-center">
+                    <input
+                      type="number"
+                      value={currentConfig.rates.merchant.codFee}
+                      onChange={(e) => handleRateChange('merchant', 'codFee', parseFloat(e.target.value) || 0)}
+                      className="w-24 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -3026,7 +3442,7 @@ function WalletManagementDesk() {
                    <td className="p-6 text-zinc-500 font-mono text-xs">AED 12.00</td>
                    <td className="p-6 text-zinc-800 font-bold font-mono text-xs">AED 12.00</td>
                    <td className="p-6 text-center">
-                     <span className="px-3 py-1 text-green-500 font-bold font-mono text-[13px] uppercase tracking-widest"><Check className="inline w-3 h-3 -mt-0.5" /> {t('matched') || 'Matched'}</span>
+                     <span className="px-3 py-1 text-blue-505 font-bold font-mono text-[13px] uppercase tracking-widest"><Check className="inline w-3 h-3 -mt-0.5" /> {t('matched') || 'Matched'}</span>
                    </td>
                 </tr>
                 <tr className="border-b border-zinc-50 hover:bg-zinc-50/50 transition-colors">
@@ -3073,7 +3489,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
     <div className={`min-h-screen bg-[#EFF3EE] text-zinc-900 font-sans ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Background Style */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className={`absolute top-0 ${isRTL ? 'left-0' : 'right-0'} w-[500px] h-[500px] bg-emerald-100/20 rounded-full blur-[120px] -translate-y-1/2`}></div>
+        <div className={`absolute top-0 ${isRTL ? 'left-0' : 'right-0'} w-[500px] h-[500px] bg-blue-100/20 rounded-full blur-[120px] -translate-y-1/2`}></div>
       </div>
 
       <div className="flex relative z-10 w-full min-h-screen">
@@ -3156,7 +3572,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
           {/* Top Bar */}
           <header className={`flex flex-col md:flex-row md:items-center justify-between gap-8 mb-16 ${isRTL ? 'text-right' : ''}`}>
             <div>
-              <p className={`text-[#2D74FF] font-bold text-xs uppercase tracking-widest mb-1 flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <p className={`text-[#3b82f6] font-bold text-xs uppercase tracking-widest mb-1 flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <MapPin className="w-4 h-4" /> {t('uae_network_control') || 'UAE Network Control'}
               </p>
               <h1 className="text-3xl lg:text-4xl font-display font-semibold uppercase tracking-tight text-slate-900">
@@ -3172,12 +3588,12 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                    placeholder={t('query_records') || 'Query records...'}
                    value={searchQuery}
                    onChange={(e) => setSearchQuery(e.target.value)}
-                   className={`bg-white border border-[#E9EFF6] focus:border-[#2D74FF]/55 focus:bg-white outline-none rounded-full py-4 ${isRTL ? 'pr-14 pl-8' : 'pl-14 pr-8'} text-sm text-zinc-900 placeholder:text-zinc-300 w-[240px] lg:w-[320px] transition-all shadow-sm`}
+                   className={`bg-white border border-[#E9EFF6] focus:border-[#3b82f6]/55 focus:bg-white outline-none rounded-full py-4 ${isRTL ? 'pr-14 pl-8' : 'pl-14 pr-8'} text-sm text-zinc-900 placeholder:text-zinc-300 w-[240px] lg:w-[320px] transition-all shadow-sm`}
                 />
               </div>
               <button 
                 onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
-                className="w-12 h-12 rounded-2xl bg-white border border-[#E9EFF6] flex items-center justify-center text-[#2D74FF] hover:border-[#2D74FF] transition-colors cursor-pointer group"
+                className="w-12 h-12 rounded-2xl bg-white border border-[#E9EFF6] flex items-center justify-center text-[#3b82f6] hover:border-[#3b82f6] transition-colors cursor-pointer group"
               >
                 <div className="flex gap-1 items-center">
                    <span className="text-[12px] font-black uppercase tracking-widest">{language === 'en' ? 'AR' : 'EN'}</span>
@@ -3186,11 +3602,11 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
               <div className="relative">
                 <div className="w-12 h-12 rounded-2xl bg-white border border-[#E9EFF6] flex items-center justify-center text-zinc-450 hover:bg-zinc-50 transition-colors cursor-pointer relative group">
                   <Bell className="w-5 h-5 text-zinc-500" />
-                  <span className="absolute top-2 right-2 w-2 h-2 bg-[#2D74FF] rounded-full shadow-[0_0_8px_#2D74FF]"></span>
+                  <span className="absolute top-2 right-2 w-2 h-2 bg-[#3b82f6] rounded-full shadow-[0_0_8px_#3b82f6]"></span>
                 </div>
               </div>
               <div className={`flex items-center gap-4 ${isRTL ? 'pr-4 border-r' : 'pl-4 border-l'} border-zinc-200`}>
-                <div className="w-12 h-12 rounded-full border-2 border-[#2D74FF] p-0.5">
+                <div className="w-12 h-12 rounded-full border-2 border-[#3b82f6] p-0.5">
                   <div className="w-full h-full rounded-full bg-zinc-200 overflow-hidden">
                     <img alt="User" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200" className="w-full h-full object-cover" />
                   </div>
