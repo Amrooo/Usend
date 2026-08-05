@@ -16,10 +16,6 @@ import Tracking from './screens/Tracking';
 import Completed from './screens/Completed';
 import Orders from './screens/Orders';
 import Profile from './screens/Profile';
-import DriverHome from './screens/driver/DriverHome';
-import DriverActiveJob from './screens/driver/DriverActiveJob';
-import DriverEarnings from './screens/driver/DriverEarnings';
-import DriverProfile from './screens/driver/DriverProfile';
 import MerchantDashboard from './screens/merchant/MerchantDashboard';
 import MerchantBatchOrders from './screens/merchant/MerchantBatchOrders';
 import MerchantIndividualOrder from './screens/merchant/MerchantIndividualOrder';
@@ -246,10 +242,6 @@ export default function App() {
                 {currentScreen === 'completed' && <Completed key="completed" onNavigate={navigate} />}
                 {currentScreen === 'orders' && <Orders key="orders" onNavigate={navigate} />}
                 {currentScreen === 'profile' && <Profile key="profile" onNavigate={navigate} />}
-                {currentScreen === 'driver_home' && <DriverHome key="driver_home" onNavigate={navigate} />}
-                {currentScreen === 'driver_active_job' && <DriverActiveJob key="driver_active_job" onNavigate={navigate} />}
-                {currentScreen === 'driver_earnings' && <DriverEarnings key="driver_earnings" onNavigate={navigate} />}
-                {currentScreen === 'driver_profile' && <DriverProfile key="driver_profile" onNavigate={navigate} />}
               </AnimatePresence>
             </div>
 

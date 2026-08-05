@@ -56,14 +56,12 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
         if (userDocSnap.exists()) {
           const data = userDocSnap.data();
           if (data.role === 'admin') redirectScreen = 'admin_dashboard';
-          else if (data.role === 'user' || (data.role as string) === 'Individual') redirectScreen = 'user_dashboard';
-          else if (data.role === 'driver') redirectScreen = 'driver_home';
+          else if (data.role === 'user' || (data.role as string) === 'Individual' || data.role === 'driver') redirectScreen = 'user_dashboard';
         }
       } catch (docErr) {
         // Fallback mapping if doc fetch fails
         if (email.includes('admin')) redirectScreen = 'admin_dashboard';
-        else if (email.includes('user')) redirectScreen = 'user_dashboard';
-        else if (email.includes('driver')) redirectScreen = 'driver_home';
+        else if (email.includes('user') || email.includes('driver')) redirectScreen = 'user_dashboard';
       }
 
       onNavigate(redirectScreen);
@@ -72,8 +70,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
         let redirectScreen: Screen = 'merchant_dashboard';
         let targetRole = 'merchant';
         if (email.includes('admin') || email.toLowerCase() === 'octman.sam@gmail.com') { redirectScreen = 'admin_dashboard'; targetRole = 'admin'; }
-        else if (email.includes('user')) { redirectScreen = 'user_dashboard'; targetRole = 'user'; }
-        else if (email.includes('driver')) { redirectScreen = 'driver_home'; targetRole = 'driver'; }
+        else if (email.includes('user') || email.includes('driver')) { redirectScreen = 'user_dashboard'; targetRole = 'user'; }
         
         setUser({
           uid: 'demo-fallback-uid',

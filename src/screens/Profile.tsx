@@ -97,28 +97,6 @@ export default function Profile({ onNavigate }: ProfileProps) {
             ))}
           </div>
 
-          {/* Switch to Driver Mode */}
-          <button
-            onClick={() => onNavigate('driver_home')}
-            className="w-full relative overflow-hidden p-5 rounded-3xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-xl transition-transform active:scale-[0.98] group"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <div className="flex items-center justify-between relative z-10">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-white/10 dark:bg-black/10 flex items-center justify-center backdrop-blur-sm">
-                  <Car className="w-6 h-6" />
-                </div>
-                <div className="text-left rtl:text-right">
-                  <span className="block font-black text-lg">{t('driver_mode')}</span>
-                  <span className="block text-zinc-400 dark:text-zinc-500 text-sm font-medium mt-0.5">{t('switch_to_driver')}</span>
-                </div>
-              </div>
-              <div className="w-10 h-10 rounded-full bg-white/10 dark:bg-black/10 flex items-center justify-center">
-                <ChevronRight className={`w-5 h-5 ${isRTL ? 'rotate-180' : ''}`} />
-              </div>
-            </div>
-          </button>
-
           {/* Recent Activity */}
           <div>
             <div className="flex items-center justify-between mb-4 px-1">

@@ -64,13 +64,7 @@ export default function Splash({ onNavigate }: SplashProps) {
           {t('get_started')}
           <ArrowRight className={`w-5 h-5 ${isRTL ? 'rotate-180' : ''}`} />
         </button>
-        
-        <button
-          onClick={() => onNavigate('driver_home')}
-          className="w-full h-16 bg-zinc-100 dark:bg-zinc-900 rounded-3xl flex items-center justify-center gap-2 text-zinc-900 dark:text-zinc-100 font-semibold text-lg transition-transform active:scale-95 border border-zinc-200 dark:border-zinc-800"
-        >
-          {t('driver_mode')}
-        </button>
+
       </motion.div>
     </motion.div>
   );

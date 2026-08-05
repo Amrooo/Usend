@@ -343,8 +343,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
     setLoginError(null);
 
     let redirectScreen: Screen = 'merchant_dashboard';
-    if (loginRole === 'user') redirectScreen = 'user_dashboard';
-    else if (loginRole === 'driver') redirectScreen = 'driver_home';
+    if (loginRole === 'user' || (loginRole as string) === 'driver') redirectScreen = 'user_dashboard';
     else if (loginRole === 'admin') redirectScreen = 'admin_dashboard';
 
     try {
@@ -355,11 +354,9 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
       if (loginPassword === 'password') {
         console.warn("Demo Fallback applied. Auth error details: ", err);
         
-        // Setup a mock user to easily bypass the AuthGuard for demo purposes.
         let targetRole = 'merchant';
         if (loginEmail.toLowerCase().includes('admin') || loginEmail.toLowerCase() === 'octman.sam@gmail.com') targetRole = 'admin';
-        else if (loginEmail.toLowerCase().includes('driver')) targetRole = 'driver';
-        else if (loginEmail.toLowerCase().includes('user')) targetRole = 'user';
+        else if (loginEmail.toLowerCase().includes('driver') || loginEmail.toLowerCase().includes('user')) targetRole = 'user';
         
         setUser({
           uid: 'demo-fallback-uid',
@@ -1108,7 +1105,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
           </div>
 
           {/* Connected Bento-Style Grid demonstrating full-stack unified portals capabilities */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
             {/* Portal 1: Personal User */}
             <div className="bg-slate-950/80 border border-slate-800 rounded-3xl p-6.5 hover:border-[#047857] transition-all flex flex-col justify-between group">
@@ -1153,30 +1150,6 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                   className="w-full py-3 px-4 rounded-xl bg-slate-900 border border-slate-800 hover:bg-[#047857] hover:text-white text-slate-300 text-[12px] font-black uppercase tracking-widest transition-all text-center flex items-center justify-center gap-2"
                 >
                   <span>{content.portalBusinessBtn}</span>
-                  <ArrowUpRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Portal 3: Drivers */}
-            <div className="bg-slate-950/80 border border-slate-800 rounded-3xl p-6.5 hover:border-[#047857] transition-all flex flex-col justify-between group">
-              <div className="space-y-4">
-                <div className="w-11 h-11 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:bg-[#047857] group-hover:text-white transition-all">
-                  <Truck className="w-5 h-5" />
-                </div>
-                <h3 className="text-xl font-black uppercase text-white tracking-tight">{content.portalCourierTitle}</h3>
-                <p className="text-xs text-slate-400 leading-relaxed">{content.portalCourierDesc}</p>
-              </div>
-              <div className="pt-8">
-                <button 
-                  onClick={() => {
-                    setLoginRole('driver');
-                    setLoginEmail('driver@usend.com');
-                    setLoginModalOpen(true);
-                  }}
-                  className="w-full py-3 px-4 rounded-xl bg-slate-900 border border-slate-800 hover:bg-[#047857] hover:text-white text-slate-300 text-[12px] font-black uppercase tracking-widest transition-all text-center flex items-center justify-center gap-2"
-                >
-                  <span>{content.portalCourierBtn}</span>
                   <ArrowUpRight className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -1695,18 +1668,6 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                     }}
                   >
                     Merchant Control Panel
-                  </span>
-                </li>
-                <li>
-                  <span 
-                    className="hover:text-[#047857] transition-colors cursor-pointer" 
-                    onClick={() => {
-                      setLoginRole('driver');
-                      setLoginEmail('driver@usend.com');
-                      setLoginModalOpen(true);
-                    }}
-                  >
-                    Driver Delivery App
                   </span>
                 </li>
               </ul>
