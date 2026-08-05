@@ -268,7 +268,6 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
 
   const content = landingTranslations[language as 'en' | 'ar'] || landingTranslations.en;
   
-  // Interactive Live Estimator states (UAE Domestic)
   const [estSource, setEstSource] = useState('DXB');
   const [estTarget, setEstTarget] = useState('AUH');
   const [estWeight, setEstWeight] = useState(5);
@@ -288,13 +287,11 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
 
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
 
-  // Parallax scroll trackers
   const { scrollY } = useScroll({
     target: targetRef,
     offset: ['start start', 'end start']
   });
 
-  // Floating AI assist states
   const [botOpen, setBotOpen] = useState(false);
   const [botMessages, setBotMessages] = useState<{sender: 'bot'|'user', text: string}[]>([
     { sender: 'bot', text: content.botGreeting }
@@ -363,99 +360,116 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
       ref={targetRef}
     >
       
-      {/* HERO SECTION - Sky Blue to Royal Blue Gradient Container (Matching mockup exactly) */}
-      <div className="w-full relative bg-gradient-to-b from-[#6aaad4] via-[#2563EB] to-[#1E3A8A] text-white rounded-b-[4.5rem] overflow-hidden pb-0 px-4 md:px-8 z-10">
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:40px_40px] opacity-40"></div>
-        
-        {/* HEADER MENU - Transparent Overlay matching mockup exactly */}
-        <nav className="w-full bg-transparent text-white py-6 border-b border-white/10 z-50 relative">
-          <div className="max-w-7xl mx-auto w-full px-4 md:px-8 flex items-center justify-between">
-            
-            {/* Left Brand Logo */}
-            <div className="flex items-center cursor-pointer select-none" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-              <LogoIcon className="h-8 w-auto" variant="dark" />
-              <span className="text-xl font-bold tracking-tight text-white font-sans ml-2">
-                SwiftMove
-              </span>
+      {/* ─── HERO ─── Sky outer wrapper + rounded blue card inside (matching reference) */}
+      <div
+        className="w-full relative z-10"
+        style={{
+          background: 'linear-gradient(180deg, #9ecde8 0%, #72b2d8 35%, #4d98c4 70%, #3483b2 100%)',
+          padding: '20px 20px 0 20px',
+        }}
+      >
+        {/* Rounded blue gradient card */}
+        <div
+          className="w-full rounded-[2rem] overflow-hidden relative text-white"
+          style={{ background: 'linear-gradient(180deg, #1a5fb4 0%, #1d4ed8 50%, #1e3a8a 100%)' }}
+        >
+          {/* Subtle grid texture overlay */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              backgroundImage:
+                'linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px)',
+              backgroundSize: '40px 40px',
+            }}
+          />
+
+          {/* ── NAV inside card ── */}
+          <nav className="relative z-50 flex items-center justify-between px-6 md:px-10 py-5 border-b border-white/10">
+            {/* Logo */}
+            <div
+              className="flex items-center gap-2 cursor-pointer select-none"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            >
+              <LogoIcon className="h-7 w-auto" variant="dark" />
+              <span className="text-lg font-bold text-white tracking-tight">SwiftMove</span>
             </div>
 
-            {/* Suffix Divider + Links */}
-            <div className="hidden md:flex items-center">
-              <div className="h-4 w-px bg-white/20 mx-6"></div>
-              <div className="flex items-center gap-8 text-[13px] font-semibold text-white/80 font-sans">
-                <a href="#landing-root" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="text-white hover:text-[#2563EB] transition-colors">{isRTL ? 'الرئيسية' : 'Home'}</a>
-                <a href="#services" onClick={(e) => handleScrollTo(e, 'services')} className="hover:text-[#2563EB] transition-colors">{isRTL ? 'الخدمات' : 'Services'}</a>
-                <a href="#solutions" onClick={(e) => handleScrollTo(e, 'solutions')} className="hover:text-[#2563EB] transition-colors">{isRTL ? 'الحلول' : 'Solutions'}</a>
-                <a href="#sectors" onClick={(e) => handleScrollTo(e, 'sectors')} className="hover:text-[#2563EB] transition-colors">{isRTL ? 'الشبكة' : 'Network'}</a>
-                <a href="#about" onClick={(e) => handleScrollTo(e, 'about')} className="hover:text-[#2563EB] transition-colors">{isRTL ? 'من نحن' : 'About'}</a>
-                <a href="#faq" onClick={(e) => handleScrollTo(e, 'faq')} className="hover:text-[#2563EB] transition-colors">{isRTL ? 'اتصل بنا' : 'Contact'}</a>
-              </div>
+            {/* Links */}
+            <div className="hidden md:flex items-center gap-7 text-[13px] font-medium text-white/80">
+              <a href="#landing-root" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="text-white font-semibold">{isRTL ? 'الرئيسية' : 'Home'}</a>
+              <a href="#services"  onClick={(e) => handleScrollTo(e, 'services')}  className="hover:text-white transition-colors">{isRTL ? 'الخدمات' : 'Services'}</a>
+              <a href="#solutions" onClick={(e) => handleScrollTo(e, 'solutions')} className="hover:text-white transition-colors">{isRTL ? 'الحلول' : 'Solutions'}</a>
+              <a href="#sectors"   onClick={(e) => handleScrollTo(e, 'sectors')}   className="hover:text-white transition-colors">{isRTL ? 'الشبكة' : 'Network'}</a>
+              <a href="#about"     onClick={(e) => handleScrollTo(e, 'about')}     className="hover:text-white transition-colors">{isRTL ? 'من نحن' : 'About'}</a>
+              <a href="#faq"       onClick={(e) => handleScrollTo(e, 'faq')}       className="hover:text-white transition-colors">{isRTL ? 'اتصل بنا' : 'Contact'}</a>
             </div>
 
-            {/* Right links: Track Shipment and Get a Quote */}
-            <div className="flex items-center gap-6 text-[13px] font-semibold text-white/80 font-sans">
-              <button 
+            {/* Right CTA */}
+            <div className="flex items-center gap-4 text-[13px]">
+              <button
                 onClick={() => setBotOpen(true)}
-                className="hover:text-[#2563EB] transition-colors cursor-pointer"
+                className="hidden sm:block text-white/80 hover:text-white transition-colors cursor-pointer font-medium"
               >
                 {isRTL ? 'تتبع الشحنة' : 'Track Shipment'}
               </button>
-              <button 
+              <button
                 onClick={() => setGuestModalOpen(true)}
-                className="px-5 py-2.5 rounded-lg bg-white text-[#2563EB] hover:bg-slate-100 font-bold transition-all duration-200 shadow-sm cursor-pointer"
+                className="px-5 py-2 rounded-full bg-white text-blue-700 hover:bg-blue-50 font-bold transition-all cursor-pointer shadow-sm"
               >
                 {isRTL ? 'طلب تسعيرة' : 'Get a Quote'}
               </button>
             </div>
+          </nav>
 
-          </div>
-        </nav>
-
-        {/* Transparent Watermark Background Logo */}
-        <div className="absolute inset-x-0 bottom-24 text-center select-none pointer-events-none z-0">
-          <span className="text-[17vw] font-black tracking-widest text-white/[0.025] uppercase leading-none block font-sans">
-            SWIFTMOVE
-          </span>
-        </div>
-
-        <div className="max-w-7xl mx-auto flex flex-col items-center text-center relative z-10 space-y-8 pt-16">
-          <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight max-w-4xl mx-auto leading-[1.15] font-sans">
-            {isRTL 
-              ? 'حلول مخصصة لمتطلبات عملك — النقل البري والجوي والبحري موحد على منصة ذكية واحدة.' 
-              : 'Tailored solutions for your business requirements — road, air, and ocean freight unified on a single intelligent platform.'}
-          </h1>
-          
-          {/* Buttons */}
-          <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
-            <button 
-              onClick={() => setGuestModalOpen(true)}
-              className="px-8 py-4 bg-[#2563EB] hover:bg-blue-600 text-white text-[13px] font-black uppercase tracking-widest rounded-full transition-all flex items-center gap-2 shadow-lg shadow-blue-500/20 cursor-pointer"
+          {/* SWIFTMOVE giant watermark behind content */}
+          <div className="absolute inset-x-0 bottom-0 text-center select-none pointer-events-none z-0 overflow-hidden leading-none">
+            <span
+              className="text-[22vw] font-black tracking-widest uppercase block font-sans"
+              style={{ color: 'rgba(255,255,255,0.07)' }}
             >
-              <span>{isRTL ? 'ابدأ الشحن كضيف' : 'Start Shipping'}</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-            <button 
-              onClick={() => {
-                setLoginRole('merchant');
-                setLoginModalOpen(true);
-              }}
-              className="px-8 py-4 bg-white text-slate-900 hover:bg-slate-100 text-[13px] font-black uppercase tracking-widest rounded-full transition-all flex items-center gap-2 shadow-md cursor-pointer"
-            >
-              <span>{isRTL ? 'بوابة التاجر' : 'Merchant Portal'}</span>
-              <ArrowRight className="w-4 h-4 text-blue-600" />
-            </button>
+              SWIFTMOVE
+            </span>
           </div>
 
-          {/* Overlapping Truck Image - flush to bottom of hero */}
-          <div className="w-full max-w-5xl mx-auto pt-12 relative">
-            <img 
-              src={heroTruck} 
-              alt="SwiftMove Cargo Delivery Truck" 
-              className="w-full h-auto object-contain select-none filter drop-shadow-[0_20px_50px_rgba(0,0,0,0.4)] hover:scale-[1.01] transition-transform duration-700 block"
-            />
+          {/* ── Hero body ── */}
+          <div className="relative z-10 flex flex-col items-center text-center px-6 md:px-10 pt-12 pb-0">
+            <h1 className="text-3xl sm:text-4xl md:text-[2.75rem] font-bold leading-[1.2] tracking-tight max-w-3xl mx-auto font-sans">
+              {isRTL
+                ? 'حلول مخصصة لمتطلبات عملك — النقل البري والجوي والبحري موحد على منصة ذكية واحدة.'
+                : 'Tailored solutions for your business requirements — road, air, and ocean freight unified on a single intelligent platform.'}
+            </h1>
+
+            {/* Buttons */}
+            <div className="flex flex-wrap items-center justify-center gap-4 mt-8">
+              <button
+                onClick={() => setGuestModalOpen(true)}
+                className="px-7 py-3.5 bg-[#2563EB] hover:bg-blue-500 text-white text-[13px] font-bold rounded-full transition-all flex items-center gap-2 shadow-lg cursor-pointer border border-blue-400/40"
+              >
+                {isRTL ? 'ابدأ الشحن' : 'Start Shipping'}
+                <ArrowRight className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setBotOpen(true)}
+                className="px-7 py-3.5 bg-white/15 hover:bg-white/25 text-white text-[13px] font-bold rounded-full transition-all flex items-center gap-2 border border-white/30 cursor-pointer"
+              >
+                {isRTL ? 'تواصل معنا' : 'Contact Us'}
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Truck image — mix-blend-mode:multiply removes white bg on blue gradient */}
+            <div className="w-full max-w-4xl mx-auto mt-10 relative z-10">
+              <img
+                src={heroTruck}
+                alt="SwiftMove Cargo Delivery Truck"
+                className="w-full h-auto block select-none"
+                style={{ mixBlendMode: 'multiply' }}
+              />
+            </div>
           </div>
-        </div>
-      </div>
+
+        </div>{/* end rounded card */}
+      </div>{/* end sky wrapper */}
 
       {/* TIMELINE SECTION - Full Width */}
       <section className="w-full bg-white py-16 px-4 md:px-8 border-b border-slate-100 relative z-20">
