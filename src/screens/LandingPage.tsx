@@ -1319,8 +1319,6 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
           </div>
         </footer>
 
-      </div>
-
       {/* GUEST ORDER WIZARD MODAL */}
       <AnimatePresence>
         {guestModalOpen && (
