@@ -364,7 +364,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
     >
       
       {/* HERO SECTION - Sky Blue to Royal Blue Gradient Container (Matching mockup exactly) */}
-      <div className="w-full relative bg-gradient-to-b from-[#2B6CB0] via-[#2563EB] to-[#1E3A8A] text-white rounded-b-[4.5rem] overflow-hidden pb-36 px-4 md:px-8 z-10">
+      <div className="w-full relative bg-gradient-to-b from-[#6aaad4] via-[#2563EB] to-[#1E3A8A] text-white rounded-b-[4.5rem] overflow-hidden pb-0 px-4 md:px-8 z-10">
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:40px_40px] opacity-40"></div>
         
         {/* HEADER MENU - Transparent Overlay matching mockup exactly */}
@@ -446,19 +446,19 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
             </button>
           </div>
 
-          {/* Overlapping Truck Image */}
-          <div className="w-full max-w-5xl mx-auto pt-16 relative">
+          {/* Overlapping Truck Image - flush to bottom of hero */}
+          <div className="w-full max-w-5xl mx-auto pt-12 relative">
             <img 
               src={heroTruck} 
               alt="SwiftMove Cargo Delivery Truck" 
-              className="w-full h-auto object-contain select-none filter drop-shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:scale-[1.01] transition-transform duration-700"
+              className="w-full h-auto object-contain select-none filter drop-shadow-[0_20px_50px_rgba(0,0,0,0.4)] hover:scale-[1.01] transition-transform duration-700 block"
             />
           </div>
         </div>
       </div>
 
-      {/* TIMELINE SECTION (Directly Below Hero curved block) - Full Width */}
-      <section className="w-full bg-white py-16 px-4 md:px-8 border-b border-slate-100 relative z-20 -mt-16">
+      {/* TIMELINE SECTION - Full Width */}
+      <section className="w-full bg-white py-16 px-4 md:px-8 border-b border-slate-100 relative z-20">
         <div className="max-w-7xl mx-auto">
           <p className="text-[11px] font-black uppercase text-slate-400 tracking-[0.2em] text-center mb-12">
             {isRTL ? 'حلول مخصصة لمتطلبات عملك' : 'TAILORED SOLUTIONS FOR YOUR BUSINESS REQUIREMENTS'}
