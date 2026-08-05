@@ -121,10 +121,10 @@ function GlobalToast() {
   };
 
   const colors = {
-    success: 'bg-green-50 text-green-600 border-green-200',
+    success: 'bg-blue-50 text-blue-600 border-blue-200',
     error: 'bg-red-50 text-red-600 border-red-200',
     warning: 'bg-orange-50 text-orange-600 border-orange-200',
-    info: 'bg-emerald-50 text-emerald-600 border-emerald-200'
+    info: 'bg-blue-50 text-blue-600 border-blue-200'
   };
 
   return (

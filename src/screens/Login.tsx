@@ -92,7 +92,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
   return (
     <div className={`min-h-screen bg-[#FAFAFA] text-[#111111] font-sans overflow-x-hidden relative flex flex-col ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Top Banner Accent */}
-      <div className="absolute top-0 inset-x-0 h-1.5 bg-[#047857] z-[110]" />
+      <div className="absolute top-0 inset-x-0 h-1.5 bg-[#2563EB] z-[110]" />
 
       {/* Decorative Grid Mesh Background */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-[0.35] pointer-events-none" />
@@ -141,7 +141,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
               ) : (
                 <button 
                   onClick={() => onNavigate('hub')}
-                  className="px-6 py-2.5 rounded-full bg-[#047857] hover:bg-emerald-600 text-white text-[12px] font-black uppercase tracking-widest transition-all shadow-md active:scale-95"
+                  className="px-6 py-2.5 rounded-full bg-[#2563EB] hover:bg-blue-600 text-white text-[12px] font-black uppercase tracking-widest transition-all shadow-md active:scale-95"
                 >
                   {content.loginCustomer}
                 </button>
@@ -154,7 +154,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
         <main className="relative z-10 flex-1 flex flex-col items-center justify-center p-6 mt-32 md:mt-0">
           <div className="w-full max-w-md my-auto bg-white p-8 lg:p-10 rounded-[2.5rem] shadow-sm border border-zinc-200/80 relative overflow-hidden">
             {/* Soft Green Splatter Behind */}
-            <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-[80px] opacity-20 bg-[#047857]/20 pointer-events-none" />
+            <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-[80px] opacity-20 bg-[#2563EB]/20 pointer-events-none" />
 
             <AnimatePresence mode="wait">
               {!loginType ? (
@@ -166,7 +166,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
                   className="space-y-4 relative z-10"
                 >
                   <div className={`text-center mb-8 ${isRTL ? 'text-right' : ''}`}>
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#047857]/10 border border-[#047857]/20 rounded-full text-[#047857] text-[13px] font-black uppercase tracking-widest leading-none mb-3">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#2563EB]/10 border border-[#2563EB]/20 rounded-full text-[#2563EB] text-[13px] font-black uppercase tracking-widest leading-none mb-3">
                       Secure Gateway
                     </div>
                     <h1 className="text-3xl font-extrabold tracking-tight uppercase leading-tight text-zinc-950">
@@ -180,34 +180,34 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
                   <div className="grid grid-cols-1 gap-4">
                     <button
                       onClick={() => setLoginType('individual')}
-                      className="group relative p-4 rounded-[1.8rem] bg-white border border-zinc-200/80 hover:border-[#047857]/40 text-left transition-all duration-300 shadow-sm flex items-center justify-between active:scale-[0.99]"
+                      className="group relative p-4 rounded-[1.8rem] bg-white border border-zinc-200/80 hover:border-[#2563EB]/40 text-left transition-all duration-300 shadow-sm flex items-center justify-between active:scale-[0.99]"
                     >
                       <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse text-right' : ''}`}>
-                        <div className="w-12 h-12 rounded-xl bg-zinc-50 group-hover:bg-[#047857]/5 flex items-center justify-center transition-colors shadow-sm border border-zinc-150">
-                          <User className="w-5 h-5 text-zinc-500 group-hover:text-[#047857] transition-colors" />
+                        <div className="w-12 h-12 rounded-xl bg-zinc-50 group-hover:bg-[#2563EB]/5 flex items-center justify-center transition-colors shadow-sm border border-zinc-150">
+                          <User className="w-5 h-5 text-zinc-500 group-hover:text-[#2563EB] transition-colors" />
                         </div>
                         <div>
                           <p className="text-base font-black text-zinc-950 leading-none mb-1">{isRTL ? 'فردي' : 'Individual'}</p>
                           <p className="text-[12px] text-zinc-400 font-bold uppercase tracking-wider">Consumer Shipping Portal</p>
                         </div>
                       </div>
-                      <ArrowRight className={`w-4 h-4 text-zinc-350 group-hover:text-[#047857] ${isRTL ? 'rotate-180 -translate-x-1' : 'translate-x-0'} group-hover:translate-x-1 transition-all duration-300`} />
+                      <ArrowRight className={`w-4 h-4 text-zinc-350 group-hover:text-[#2563EB] ${isRTL ? 'rotate-180 -translate-x-1' : 'translate-x-0'} group-hover:translate-x-1 transition-all duration-300`} />
                     </button>
 
                     <button
                       onClick={() => setLoginType('business')}
-                      className="group relative p-4 rounded-[1.8rem] bg-white border border-zinc-200/80 hover:border-[#047857]/40 text-left transition-all duration-300 shadow-sm flex items-center justify-between active:scale-[0.99]"
+                      className="group relative p-4 rounded-[1.8rem] bg-white border border-zinc-200/80 hover:border-[#2563EB]/40 text-left transition-all duration-300 shadow-sm flex items-center justify-between active:scale-[0.99]"
                     >
                       <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse text-right' : ''}`}>
-                        <div className="w-12 h-12 rounded-xl bg-zinc-50 group-hover:bg-[#047857]/5 flex items-center justify-center transition-colors shadow-sm border border-zinc-150">
-                          <Building2 className="w-5 h-5 text-zinc-500 group-hover:text-[#047857] transition-colors" />
+                        <div className="w-12 h-12 rounded-xl bg-zinc-50 group-hover:bg-[#2563EB]/5 flex items-center justify-center transition-colors shadow-sm border border-zinc-150">
+                          <Building2 className="w-5 h-5 text-zinc-500 group-hover:text-[#2563EB] transition-colors" />
                         </div>
                         <div>
                           <p className="text-base font-black text-zinc-950 leading-none mb-1">{isRTL ? 'أعمال' : 'Business'}</p>
                           <p className="text-[12px] text-zinc-400 font-bold uppercase tracking-wider">Enterprise Merchant Console</p>
                         </div>
                       </div>
-                      <ArrowRight className={`w-4 h-4 text-zinc-350 group-hover:text-[#047857] ${isRTL ? 'rotate-180 -translate-x-1' : 'translate-x-0'} group-hover:translate-x-1 transition-all duration-300`} />
+                      <ArrowRight className={`w-4 h-4 text-zinc-350 group-hover:text-[#2563EB] ${isRTL ? 'rotate-180 -translate-x-1' : 'translate-x-0'} group-hover:translate-x-1 transition-all duration-300`} />
                     </button>
                   </div>
                 </motion.div>
@@ -220,7 +220,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
                   className="space-y-5 relative z-10"
                 >
                   <div className={`mb-6 ${isRTL ? 'text-right' : 'text-center'}`}>
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#047857]/10 text-[13px] font-black uppercase tracking-widest text-[#047857] mb-3">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#2563EB]/10 text-[13px] font-black uppercase tracking-widest text-[#2563EB] mb-3">
                       {loginType === 'business' ? (isRTL ? 'بوابة الأعمال' : 'Business Portal') : (isRTL ? 'بوابة الأفراد' : 'Individual Portal')}
                     </div>
                     <h2 className="text-2xl font-extrabold uppercase tracking-tight text-zinc-950 leading-tight">Access Terminal</h2>
@@ -238,7 +238,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           required
-                          className={`w-full h-12.5 bg-zinc-50/50 border border-zinc-200/80 focus:border-[#047857] focus:bg-white outline-none rounded-xl ${isRTL ? 'pr-11 pl-4 text-right' : 'pl-11 pr-4'} text-zinc-900 placeholder:text-zinc-400 transition-all text-sm font-semibold`}
+                          className={`w-full h-12.5 bg-zinc-50/50 border border-zinc-200/80 focus:border-[#2563EB] focus:bg-white outline-none rounded-xl ${isRTL ? 'pr-11 pl-4 text-right' : 'pl-11 pr-4'} text-zinc-900 placeholder:text-zinc-400 transition-all text-sm font-semibold`}
                           placeholder="identifier@usend.com"
                         />
                       </div>
@@ -255,7 +255,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           required
-                          className={`w-full h-12.5 bg-zinc-50/50 border border-zinc-200/80 focus:border-[#047857] focus:bg-white outline-none rounded-xl ${isRTL ? 'pr-11 pl-4 text-right' : 'pl-11 pr-4'} text-zinc-900 placeholder:text-zinc-400 transition-all text-sm font-semibold`}
+                          className={`w-full h-12.5 bg-zinc-50/50 border border-zinc-200/80 focus:border-[#2563EB] focus:bg-white outline-none rounded-xl ${isRTL ? 'pr-11 pl-4 text-right' : 'pl-11 pr-4'} text-zinc-900 placeholder:text-zinc-400 transition-all text-sm font-semibold`}
                           placeholder="••••••••"
                         />
                       </div>
@@ -275,7 +275,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="w-full h-12.5 bg-[#047857] hover:bg-emerald-600 disabled:bg-emerald-300 text-white rounded-xl font-extrabold text-[12px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98] mt-4"
+                      className="w-full h-12.5 bg-[#2563EB] hover:bg-blue-600 disabled:bg-blue-300 text-white rounded-xl font-extrabold text-[12px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98] mt-4"
                     >
                       {loading ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -292,7 +292,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
                     {isRTL ? 'ليس لديك حساب؟' : "Don't have an account?"}{' '}
                     <button
                       onClick={() => onNavigate('register')}
-                      className="text-[#047857] hover:underline hover:text-emerald-600 font-extrabold ml-1"
+                      className="text-[#2563EB] hover:underline hover:text-blue-600 font-extrabold ml-1"
                     >
                       {isRTL ? 'إنشاء ملف جديد' : 'Initialize Profile'}
                     </button>
@@ -309,9 +309,9 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
            USend Logistics LLC — All Rights Reserved 2026
          </p>
          <div className="flex items-center justify-center gap-8 text-[12px] font-bold text-zinc-400 uppercase tracking-widest mt-4">
-           <a href="#" className="hover:text-[#047857] transition-colors">Privacy Policy</a>
-           <a href="#" className="hover:text-[#047857] transition-colors">Terms of Service</a>
-           <a href="#" className="hover:text-[#047857] transition-colors">Legal Terms</a>
+           <a href="#" className="hover:text-[#2563EB] transition-colors">Privacy Policy</a>
+           <a href="#" className="hover:text-[#2563EB] transition-colors">Terms of Service</a>
+           <a href="#" className="hover:text-[#2563EB] transition-colors">Legal Terms</a>
          </div>
       </footer>
     </div>

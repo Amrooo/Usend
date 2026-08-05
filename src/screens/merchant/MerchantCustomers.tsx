@@ -95,7 +95,7 @@ export default function MerchantCustomers({ onNavigate }: MerchantCustomersProps
                 placeholder={t('search_orders')} 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className={`bg-white border border-zinc-200 rounded-xl ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none text-zinc-900 w-full md:w-64`}
+                className={`bg-white border border-zinc-200 rounded-xl ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none text-zinc-900 w-full md:w-64`}
               />
             </div>
           </div>
@@ -185,7 +185,7 @@ export default function MerchantCustomers({ onNavigate }: MerchantCustomersProps
                 <div className="p-8 space-y-8">
                   {/* Profile Header */}
                   <div className="flex flex-col items-center text-center">
-                    <div className="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-4xl font-black mb-4">
+                    <div className="w-24 h-24 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-4xl font-black mb-4">
                       {selectedCustomer.name.charAt(0)}
                     </div>
                     <h3 className="text-2xl font-black text-zinc-900">{selectedCustomer.name}</h3>
@@ -259,7 +259,7 @@ export default function MerchantCustomers({ onNavigate }: MerchantCustomersProps
 
                   {/* Actions */}
                   <div className="flex gap-3 pt-4">
-                    <button className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-emerald-600/20 active:scale-95">
+                    <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-blue-600/20 active:scale-95">
                       {t('contact_customer')}
                     </button>
                   </div>

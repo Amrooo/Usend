@@ -39,7 +39,7 @@ const AeroLogoIcon = ({ className = "w-6 h-6" }: { className?: string }) => (
 // Partner Logistics Star/Star-symbol Logos matching the uploaded sample yellow banner
 const MaerskLogo = () => (
   <div className="flex items-center gap-2 md:gap-2.5 select-none shrink-0" id="logo-maersk">
-    <div className="w-8 h-8 md:w-9.5 md:h-9.5 bg-white/10 rounded-md flex items-center justify-center text-[#047857] shrink-0 shadow-sm">
+    <div className="w-8 h-8 md:w-9.5 md:h-9.5 bg-white/10 rounded-md flex items-center justify-center text-[#2563EB] shrink-0 shadow-sm">
       <svg className="w-5 h-5 md:w-6 md:h-6 fill-current" viewBox="0 0 24 24">
         {/* Precise symmetrical 8-pointed star */}
         <polygon points="12,2 14.1,8.3 20.3,6.2 16.2,11.3 21.8,14.7 15,14.7 16.2,21.5 12,17.2 7.8,21.5 9,14.7 2.2,14.7 7.8,11.3 3.7,6.2 9.9,8.3" />
@@ -155,19 +155,19 @@ const landingTranslations = {
     hubAccess: 'Hub Access',
     heroBadge: 'Multi-Courier E-Commerce Shipping Gateway',
     heroTitle: 'Unified Courier Hub\nFor E-Commerce',
-    heroDesc: 'USend is a central hub connecting online merchants and users with last-mile couriers to deliver products and items seamlessly. Provide recipient details, designate item prices, and choose payment modes in one unified dashboard. Easily dispatch via sandbox channels like Aramex or use our active on-demand local drivers on the USend driver app.',
+    heroDesc: 'SwiftMove is a central hub connecting online merchants and users with last-mile couriers to deliver products and items seamlessly. Provide recipient details, designate item prices, and choose payment modes in one unified dashboard. Easily dispatch via sandbox channels like Aramex or use our active on-demand local drivers on the SwiftMove driver app.',
     btnDownloadApp: 'Download App',
     btnLearnMore: 'Get Pricing Estimate',
-    aboutCaption: 'About USend Gateway',
+    aboutCaption: 'About SwiftMove Gateway',
     aboutTitle: 'Connect Online Shops & Custom API Dispatches to UAE Courier Networks.',
-    aboutDesc: 'Enter receiver parameters, set the exact payment value you want to collect, and determine options for cash or card. Integrated services like Aramex automatically route jobs to external carriers, while other dispatches are handled immediately by local USend drivers using the Driver App.',
+    aboutDesc: 'Enter receiver parameters, set the exact payment value you want to collect, and determine options for cash or card. Integrated services like Aramex automatically route jobs to external carriers, while other dispatches are handled immediately by local SwiftMove drivers using the Driver App.',
     aboutAchievement: '98.5% On-Time Delivery Across UAE Domestic Networks',
     statIndigenous: '15K+ Active Store Merchants',
     statTons: '5M+ Waybills Generated',
     statClients: '98%+ Courier SLA Met',
     servicesBadge: 'Unified Gateway',
     servicesTitle: 'One integration. Connected courier channels.',
-    servicesDesc: 'From establishing customer delivery addresses and collecting custom cash payouts to on-demand driver dispatch, USend powers the complete logistics loop.',
+    servicesDesc: 'From establishing customer delivery addresses and collecting custom cash payouts to on-demand driver dispatch, SwiftMove powers the complete logistics loop.',
     portalsBadge: 'All-In-One Unified Ecosystem',
     portalsTitle: 'Connected Ports For UAE E-Commerce Deliveries',
     portalsDesc: 'Gain direct access to respective interfaces built precisely for portal merchants, active driver fleets, retail customers, and country-wide administrators.',
@@ -199,10 +199,10 @@ const landingTranslations = {
     howStep1Desc: 'Input recipient credentials, delivery destinations, and specify package price details and optimal payout methods for COD/Prepaid.',
     howStep2Num: '02',
     howStep2Title: 'Integrated Courier Selection',
-    howStep2Desc: 'Choose the courier that fits. Selecting Aramex utilizes external sandbox tracking, and other options assign directly to the USend driver pool.',
+    howStep2Desc: 'Choose the courier that fits. Selecting Aramex utilizes external sandbox tracking, and other options assign directly to the SwiftMove driver pool.',
     howStep3Num: '03',
     howStep3Title: 'On-Demand Local Driver Assignment',
-    howStep3Desc: 'Private driver fleets accept pending USend orders via the Driver Companion App, initiating optimized navigation and live tracking.',
+    howStep3Desc: 'Private driver fleets accept pending SwiftMove orders via the Driver Companion App, initiating optimized navigation and live tracking.',
     howStep4Num: '04',
     howStep4Title: 'Instant COD Settlement',
     howStep4Desc: 'Cash-on-Delivery collections are automatically updated on your merchant ledger. Settle and withdraw payments straight to your bank account.',
@@ -212,7 +212,7 @@ const landingTranslations = {
     teamSlogan: 'Skilled Experts in Logistics and E-Commerce Integration. Delivering GCC Domestic Excellence.',
     faqBadge: 'Common Questions',
     faqTitle: 'Frequently Answered Questions',
-    faq1Q: 'How does USend integrate with my existing online store?',
+    faq1Q: 'How does SwiftMove integrate with my existing online store?',
     faq1A: 'We support one-click API integrations for WooCommerce, Shopify, Magento, and Wix. Once connected, orders are synced in real-time, allowing immediate waybill generation.',
     faq2Q: 'Do you support international parcel shipping?',
     faq2A: 'International shipping across GCC states (Riyadh, Doha, Bahrain, Muscat) and worldwide is currently under construction and is marked as "Coming Soon" with live trials launching next quarter.',
@@ -222,14 +222,14 @@ const landingTranslations = {
     faq4A: 'Our smart wallet tracks driver feedback instantly. Once the receiver confirms signature and pays, the amount is credited to your Merchant Wallet to withdraw anytime.',
     footerLead: 'Accelerate E-Commerce Deliveries & Settle Payments Instantly',
     footerLeadDesc: 'Link your store with our multi-courier aggregator and optimize your delivery operational speed.',
-    copyright: '© 2026 USEND SYSTEMS (SHIPLIFIER GATEWAY AGENCY). REGULATION COMPLIANT IN UAE.',
-    botGreeting: 'Hello! I am USend AI Assistant. Enter any Order Number (e.g., REQ-1001) to track your delivery, or ask about our e-commerce integrations.',
+    copyright: '© 2026 SWIFTMOVE SYSTEMS (SHIPLIFIER GATEWAY AGENCY). REGULATION COMPLIANT IN UAE.',
+    botGreeting: 'Hello! I am SwiftMove AI Assistant. Enter any Order Number (e.g., REQ-1001) to track your delivery, or ask about our e-commerce integrations.',
     smartSolutionsTitle: 'Smart Solutions',
     smartSolutionsForShipping: 'for Shipping',
-    smartSolutionsDesc: 'USend offers shipping tools that simplify logistics for modern businesses',
+    smartSolutionsDesc: 'SwiftMove offers shipping tools that simplify logistics for modern businesses',
     startNowBtn: 'Start Now',
     talkToSalesBtn: 'Talk to Sales',
-    aboutUsCaption: 'About USend Gateway',
+    aboutUsCaption: 'About SwiftMove Gateway',
     aboutUsTitle: 'About Us',
     successRate: 'Success Rate In On-Time Product Delivery',
   },
@@ -314,10 +314,10 @@ const landingTranslations = {
     botGreeting: 'مرحباً! أنا مساعد يو إس إند الذكي للربط اللوجستي والتتبع. أدخل كود شحنتك (Req-1XXX) لمراجعة موقع الطرد.',
     smartSolutionsTitle: 'حلول ذكية لـ',
     smartSolutionsForShipping: 'عمليات الشحن',
-    smartSolutionsDesc: 'تقدم شركة USend أدوات شحن تبسط العمليات اللوجستية للشركات الحديثة',
+    smartSolutionsDesc: 'تقدم شركة SwiftMove أدوات شحن تبسط العمليات اللوجستية للشركات الحديثة',
     startNowBtn: 'ابدأ الآن',
     talkToSalesBtn: 'تحدث إلى المبيعات',
-    aboutUsCaption: 'حـول منصــة USend',
+    aboutUsCaption: 'حـول منصــة SwiftMove',
     aboutUsTitle: 'من نحن',
     successRate: 'نسبة النجاح في توصيل المنتجات في الوقت المحدد',
   }
@@ -332,7 +332,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
   // Unified Login Modal State
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [loginRole, setLoginRole] = useState<'merchant' | 'user' | 'driver' | 'admin'>('merchant');
-  const [loginEmail, setLoginEmail] = useState('merchant@usend.com');
+  const [loginEmail, setLoginEmail] = useState('merchant@swiftmove.com');
   const [loginPassword, setLoginPassword] = useState('password');
   const [loginError, setLoginError] = useState<string | null>(null);
   const [loginLoading, setLoginLoading] = useState(false);
@@ -455,7 +455,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
       const serviceKeywords = ['service', 'what do you do', 'provide', 'help', 'individual', 'merchant', 'business', 'track', 'wallet', 'delivery', 'طريقة', 'سعر', 'خدمات', 'كيف', 'شحن'];
       if (serviceKeywords.some(keyword => query.includes(keyword))) {
         let response = language === 'en'
-          ? "USend provides high-scale logistical services in UAE networks:\n\n• Individual send courier: Quick point-to-point dispatch across UAE cities.\n• Enterprise Merchant: Bulk order uploads, fully synchronized COD wallet ledger, and developer APIs.\n• Fleet Tracking: Highly visual live maps linked with drivers.\n• Intelligent AI Routing & Support on-the-go.\n\nWhich portal or tool would you like to open?"
+          ? "SwiftMove provides high-scale logistical services in UAE networks:\n\n• Individual send courier: Quick point-to-point dispatch across UAE cities.\n• Enterprise Merchant: Bulk order uploads, fully synchronized COD wallet ledger, and developer APIs.\n• Fleet Tracking: Highly visual live maps linked with drivers.\n• Intelligent AI Routing & Support on-the-go.\n\nWhich portal or tool would you like to open?"
           : "شبكة مرسال توفر خدمات تشغيلية متكاملة بجميع موانئ دولة الإمارات:\n\n• إرسال الطرود الفردية: استدعاء فوري ومؤتمت للمناديب المحليين.\n• منصة الشركات والتجار: فواتير مجمعة، تحصيل المدفوعات والـ COD، وخطوط مبرمجة سريعة.\n• خرائط التتبع التفاعلية بمجرد الإطلاق.\n• تعويض وإيداع سريع للأموال.\n\nأي بوابة تشغيلية تود مراجعتها الآن؟";
         
         setBotMessages(m => [...m, { sender: 'bot', text: response }]);
@@ -535,7 +535,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
   return (
     <div 
       id="landing-root"
-      className="min-h-screen bg-gradient-to-b from-[#DBEAFE] via-[#EFF6FF] to-white text-slate-900 font-sans selection:bg-[#047857]/20 overflow-x-hidden relative" 
+      className="min-h-screen bg-gradient-to-b from-[#DBEAFE] via-[#EFF6FF] to-white text-slate-900 font-sans selection:bg-[#2563EB]/20 overflow-x-hidden relative" 
       dir={isRTL ? "rtl" : "ltr"} 
       ref={targetRef}
     >
@@ -564,23 +564,23 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
           className="w-full z-[100] border-b border-slate-200/80 bg-white/90 backdrop-blur-md sticky top-0 transition-all duration-300 shadow-xs"
         >
           <div className="max-w-7xl mx-auto w-full px-4 md:px-8 py-4 flex items-center justify-between">
-            {/* Logo Brand Label: USend */}
+            {/* Logo Brand Label: SwiftMove */}
             <div className="flex items-center gap-2.5 cursor-pointer select-none" onClick={() => onNavigate('landing_page')}>
               <LogoIcon className="h-[46px] lg:h-[52px] w-auto" />
             </div>
             
             {/* Mid links for easy jump on landing, perfectly mimicking menu */}
             <div className="hidden md:flex items-center gap-8 text-[13px] font-medium text-slate-500 font-sans">
-              <a href="#landing-root" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="text-slate-950 font-bold hover:text-[#047857] transition-colors">{isRTL ? 'الرئيسية' : 'Home'}</a>
-              <a href="#about" onClick={(e) => handleScrollTo(e, 'about')} className="hover:text-[#047857] transition-colors">{isRTL ? 'من نحن' : 'About us'}</a>
-              <a href="#estimator" onClick={(e) => handleScrollTo(e, 'estimator')} className="hover:text-[#047857] transition-colors">{isRTL ? 'الحاسبة' : 'Estimator'}</a>
+              <a href="#landing-root" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="text-slate-950 font-bold hover:text-[#2563EB] transition-colors">{isRTL ? 'الرئيسية' : 'Home'}</a>
+              <a href="#about" onClick={(e) => handleScrollTo(e, 'about')} className="hover:text-[#2563EB] transition-colors">{isRTL ? 'من نحن' : 'About us'}</a>
+              <a href="#estimator" onClick={(e) => handleScrollTo(e, 'estimator')} className="hover:text-[#2563EB] transition-colors">{isRTL ? 'الحاسبة' : 'Estimator'}</a>
               
               {/* Interactive Page drop-down link */}
               <div className="relative">
                 <button 
                   onClick={() => setPageDropdownOpen(!pageDropdownOpen)}
                   onMouseEnter={() => setPageDropdownOpen(true)}
-                  className="hover:text-[#047857] flex items-center gap-1 transition-colors focus:outline-hidden font-medium"
+                  className="hover:text-[#2563EB] flex items-center gap-1 transition-colors focus:outline-hidden font-medium"
                 >
                   <span>{isRTL ? 'المنصات' : 'Ecosystems'}</span>
                   <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
@@ -607,7 +607,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                             setLoginRole(item.r as any);
                             setLoginModalOpen(true);
                           }}
-                          className="w-full text-left font-sans font-bold text-[12px] uppercase tracking-wider text-slate-600 hover:text-[#047857] hover:bg-[#047857]/5 p-2.5 rounded-xl transition-all block"
+                          className="w-full text-left font-sans font-bold text-[12px] uppercase tracking-wider text-slate-600 hover:text-[#2563EB] hover:bg-[#2563EB]/5 p-2.5 rounded-xl transition-all block"
                         >
                           {item.l}
                         </button>
@@ -631,7 +631,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 onClick={() => {
                   onNavigate('hub');
                 }}
-                className="px-5.5 py-2.5 rounded-full bg-[#047857] hover:bg-emerald-600 text-white text-[12px] font-bold tracking-wide transition-all duration-200 shadow-sm"
+                className="px-5.5 py-2.5 rounded-full bg-[#2563EB] hover:bg-blue-600 text-white text-[12px] font-bold tracking-wide transition-all duration-200 shadow-sm"
                 id="header-signin-btn"
               >
                 {isRTL ? 'تسجيل الدخول' : 'Sign In'}
@@ -657,7 +657,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
             </motion.div>
 
             <h1 className="text-[2.6rem] sm:text-[3.9rem] md:text-[4.5rem] font-bold text-slate-900 tracking-tight leading-[1.12]">
-              {content.smartSolutionsTitle} <span className="text-[#047857]">{content.smartSolutionsForShipping}</span>
+              {content.smartSolutionsTitle} <span className="text-[#2563EB]">{content.smartSolutionsForShipping}</span>
             </h1>
 
             <p className="text-slate-500 text-sm sm:text-base font-medium max-w-xl mx-auto select-none leading-relaxed">
@@ -670,7 +670,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 onClick={() => {
                   onNavigate('hub');
                 }}
-                className="px-7 py-3 rounded-full bg-[#047857] text-white hover:bg-emerald-600 font-bold transition-all text-[12px] shadow-sm hover:-translate-y-0.5 active:translate-y-0"
+                className="px-7 py-3 rounded-full bg-[#2563EB] text-white hover:bg-blue-600 font-bold transition-all text-[12px] shadow-sm hover:-translate-y-0.5 active:translate-y-0"
                 id="hero-download-btn"
               >
                 {content.startNowBtn}
@@ -678,7 +678,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
               <a 
                 href="#estimator"
                 onClick={(e) => handleScrollTo(e, 'estimator')}
-                className="px-7 py-3 rounded-full bg-emerald-50 text-[#047857] hover:bg-emerald-100 font-bold transition-all text-[12px] block text-center border border-emerald-100/50"
+                className="px-7 py-3 rounded-full bg-blue-50 text-[#2563EB] hover:bg-blue-100 font-bold transition-all text-[12px] block text-center border border-blue-100/50"
                 id="hero-learn-btn"
               >
                 {content.talkToSalesBtn}
@@ -718,8 +718,8 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                     <div className="space-y-3">
                       <span className="text-[13px] font-black text-slate-400 uppercase tracking-widest pl-2 block">Main Menu</span>
                       <div className="space-y-1">
-                        <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-emerald-50 text-[#047857] text-[13px] font-bold cursor-pointer">
-                          <span className="w-1.5 h-1.5 bg-[#047857] rounded-full" />
+                        <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-blue-50 text-[#2563EB] text-[13px] font-bold cursor-pointer">
+                          <span className="w-1.5 h-1.5 bg-[#2563EB] rounded-full" />
                           <span>Dashboard</span>
                         </div>
                         <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-400 text-[13px] font-bold hover:bg-slate-50 cursor-pointer transition-colors">
@@ -749,10 +749,10 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
 
                   {/* Sidebar bottom indicator */}
                   <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100 flex items-center gap-2">
-                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-ping" />
                     <div>
                       <p className="text-[13px] font-black text-slate-800 leading-none">SYSTEM ACTIVE</p>
-                      <p className="text-[13px] text-slate-400 font-mono mt-0.5 uppercase">USend Cloud Mirror</p>
+                      <p className="text-[13px] text-slate-400 font-mono mt-0.5 uppercase">SwiftMove Cloud Mirror</p>
                     </div>
                   </div>
                 </div>
@@ -808,7 +808,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                           <p className="text-lg font-bold font-mono text-slate-900 mt-0.5">{item.value}</p>
                         </div>
                         <div className="flex items-center gap-1.5 mt-2">
-                          <span className={`inline-block px-1.5 py-0.5 rounded text-[13px] font-black ${(item.up) ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                          <span className={`inline-block px-1.5 py-0.5 rounded text-[13px] font-black ${(item.up) ? 'bg-blue-50 text-blue-600' : 'bg-rose-50 text-rose-600'}`}>
                             {item.pct}
                           </span>
                           <span className="text-[13px] text-slate-400 font-medium">Last Week</span>
@@ -856,7 +856,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                                 {/* Delivery layer (Light Green) */}
                                 <div className="w-full bg-[#A7F3D0] rounded-t-xs" style={{ height: `${(item.d / item.s) * 100}%` }} />
                                 {/* Shipment layer (Main Green) */}
-                                <span className="absolute bottom-0 inset-x-0 bg-[#047857]" style={{ height: `${item.s}%`, zIndex: -1 }} />
+                                <span className="absolute bottom-0 inset-x-0 bg-[#2563EB]" style={{ height: `${item.s}%`, zIndex: -1 }} />
                               </div>
                               <span className="text-[13px] font-bold text-slate-400 mt-2">{item.m}</span>
                             </div>
@@ -872,8 +872,8 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                         </div>
                         <div className="grid grid-cols-2 gap-x-6 gap-y-2">
                           {[
-                            { name: 'DKI Jakarta', r: 96, c: 'bg-[#047857]' },
-                            { name: 'East Java', r: 56, c: 'bg-emerald-500' },
+                            { name: 'DKI Jakarta', r: 96, c: 'bg-[#2563EB]' },
+                            { name: 'East Java', r: 56, c: 'bg-blue-500' },
                             { name: 'West Java', r: 83, c: 'bg-indigo-500' },
                             { name: 'DIY Yogyakarta', r: 43, c: 'bg-amber-500' },
                           ].map((col, idx) => (
@@ -898,25 +898,25 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                         
                         <div className="flex justify-between items-center pb-2 border-b border-slate-50">
                           <div>
-                            <h4 className="text-[12px] font-black text-[#047857] tracking-tight uppercase">Delivery Tracking</h4>
+                            <h4 className="text-[12px] font-black text-[#2563EB] tracking-tight uppercase">Delivery Tracking</h4>
                             <p className="text-[13px] text-zinc-400 font-bold uppercase tracking-wider">Tracking ID: #SHP-1001</p>
                           </div>
-                          <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-600 rounded text-[13px] font-black uppercase">In Transit</span>
+                          <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[13px] font-black uppercase">In Transit</span>
                         </div>
 
                         {/* Tiny live map graphic route simulation */}
-                        <div className="h-24 my-2.5 rounded-xl bg-emerald-50/50 relative overflow-hidden flex items-center justify-center border border-slate-100">
-                          <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#047857_1px,transparent_1px)] bg-[size:10px_10px]" />
-                          <div className="absolute top-[35%] left-[20%] w-[60%] h-0.5 bg-dashed border-t border-dashed border-emerald-400 transform rotate-[12deg]" />
+                        <div className="h-24 my-2.5 rounded-xl bg-blue-50/50 relative overflow-hidden flex items-center justify-center border border-slate-100">
+                          <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#2563EB_1px,transparent_1px)] bg-[size:10px_10px]" />
+                          <div className="absolute top-[35%] left-[20%] w-[60%] h-0.5 bg-dashed border-t border-dashed border-blue-400 transform rotate-[12deg]" />
                           
-                          <div className="absolute top-[28%] left-[20%] w-2.5 h-2.5 bg-[#047857] rounded-full border border-white shadow-md" />
-                          <div className="absolute bottom-[35%] right-[20%] w-2.5 h-2.5 bg-emerald-500 rounded-full border border-white shadow-md" />
+                          <div className="absolute top-[28%] left-[20%] w-2.5 h-2.5 bg-[#2563EB] rounded-full border border-white shadow-md" />
+                          <div className="absolute bottom-[35%] right-[20%] w-2.5 h-2.5 bg-blue-500 rounded-full border border-white shadow-md" />
                           
                           {/* Animated truck pin */}
                           <motion.div 
                             animate={{ x: [-45, 45], y: [-10, 10] }}
                             transition={{ repeat: Infinity, duration: 4.5, ease: "linear" }}
-                            className="absolute top-[35%] left-[50%] bg-[#047857] text-white rounded-lg p-0.5 shadow-md z-10"
+                            className="absolute top-[35%] left-[50%] bg-[#2563EB] text-white rounded-lg p-0.5 shadow-md z-10"
                           >
                             <Truck className="w-3.5 h-3.5" />
                           </motion.div>
@@ -926,7 +926,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                         <div className="space-y-1 bg-slate-50 p-2 rounded-xl border border-slate-100">
                           <div className="flex justify-between items-center text-[12px] font-black text-slate-800 uppercase">
                             <span>Los Angeles, US</span>
-                            <span className="text-[#047857]">➡️</span>
+                            <span className="text-[#2563EB]">➡️</span>
                             <span>Canberra, AU</span>
                           </div>
                           <p className="text-[13px] font-mono font-bold text-slate-450 text-right">Estimate: 14/03/2025</p>
@@ -963,9 +963,9 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                       <div className="relative w-11 h-11 bg-slate-50 rounded-full flex items-center justify-center border border-slate-100">
                         <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 36 36">
                           <path className="text-slate-100" strokeWidth="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                          <path className="text-[#047857]" strokeWidth="3" strokeDasharray="81, 100" strokeLinecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                          <path className="text-[#2563EB]" strokeWidth="3" strokeDasharray="81, 100" strokeLinecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                         </svg>
-                        <span className="text-[12px] font-bold font-mono text-[#047857]">81%</span>
+                        <span className="text-[12px] font-bold font-mono text-[#2563EB]">81%</span>
                       </div>
                       <div className="text-left">
                         <p className="text-[12px] font-bold text-slate-400 uppercase tracking-tight">Shipping Revenue</p>
@@ -998,7 +998,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
         </header>
 
         {/* BRAND TICKER - Trusted by Leaders (placed immediately beneath the screen mockup) */}
-        <section className="py-12 bg-[#047857] border-y border-emerald-600/20 flex flex-col items-center justify-center relative select-none overflow-hidden">
+        <section className="py-12 bg-[#2563EB] border-y border-blue-600/20 flex flex-col items-center justify-center relative select-none overflow-hidden">
           <div className="max-w-7xl mx-auto px-6 w-full">
             <p className="text-center text-[13px] font-black text-stone-900/60 uppercase tracking-[0.35em] mb-7">
               {isRTL ? 'شركاؤنا المعتمدون' : 'Our Partners'}
@@ -1007,8 +1007,8 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
           
           <div className="w-full relative overflow-hidden">
             {/* Soft edge vignetting fade filters */}
-            <div className="absolute inset-y-0 left-0 w-16 md:w-36 bg-gradient-to-r from-[#047857] to-transparent z-10 pointer-events-none" />
-            <div className="absolute inset-y-0 right-0 w-16 md:w-36 bg-gradient-to-l from-[#047857] to-transparent z-10 pointer-events-none" />
+            <div className="absolute inset-y-0 left-0 w-16 md:w-36 bg-gradient-to-r from-[#2563EB] to-transparent z-10 pointer-events-none" />
+            <div className="absolute inset-y-0 right-0 w-16 md:w-36 bg-gradient-to-l from-[#2563EB] to-transparent z-10 pointer-events-none" />
 
             {/* Seamless high-fidelity scrolling container */}
             <motion.div 
@@ -1060,7 +1060,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
               <div className="col-span-12 sm:col-span-7 rounded-[2rem] overflow-hidden border border-slate-205/70 shadow-md bg-slate-100 min-h-[310px]">
                 <img 
                   src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=800" 
-                  alt="USend Cargo Delivery Truck" 
+                  alt="SwiftMove Cargo Delivery Truck" 
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-700 select-none"
                 />
               </div>
@@ -1093,7 +1093,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
         <motion.div style={{ y: portalsY }} className="max-w-7xl mx-auto px-4 md:px-8 relative z-10">
           
           <div className="text-center max-w-3xl mx-auto space-y-4 mb-20">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-[#047857] text-[12px] font-extrabold uppercase tracking-widest shadow-sm">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-[#2563EB] text-[12px] font-extrabold uppercase tracking-widest shadow-sm">
               🔑 {content.portalsBadge}
             </div>
             <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight leading-[1.1] uppercase">
@@ -1108,9 +1108,9 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
             {/* Portal 1: Personal User */}
-            <div className="bg-slate-950/80 border border-slate-800 rounded-3xl p-6.5 hover:border-[#047857] transition-all flex flex-col justify-between group">
+            <div className="bg-slate-950/80 border border-slate-800 rounded-3xl p-6.5 hover:border-[#2563EB] transition-all flex flex-col justify-between group">
               <div className="space-y-4">
-                <div className="w-11 h-11 rounded-2xl bg-[#047857]/10 border border-[#047857]/20 flex items-center justify-center text-[#047857] group-hover:bg-[#047857] group-hover:text-white transition-all">
+                <div className="w-11 h-11 rounded-2xl bg-[#2563EB]/10 border border-[#2563EB]/20 flex items-center justify-center text-[#2563EB] group-hover:bg-[#2563EB] group-hover:text-white transition-all">
                   <Package className="w-5 h-5" />
                 </div>
                 <h3 className="text-xl font-black uppercase text-white tracking-tight">{content.portalPersonalTitle}</h3>
@@ -1120,10 +1120,10 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 <button 
                   onClick={() => {
                     setLoginRole('user');
-                    setLoginEmail('user@usend.com');
+                    setLoginEmail('user@swiftmove.com');
                     setLoginModalOpen(true);
                   }}
-                  className="w-full py-3 px-4 rounded-xl bg-slate-900 border border-slate-800 hover:bg-[#047857] hover:text-white text-slate-300 text-[12px] font-black uppercase tracking-widest transition-all text-center flex items-center justify-center gap-2"
+                  className="w-full py-3 px-4 rounded-xl bg-slate-900 border border-slate-800 hover:bg-[#2563EB] hover:text-white text-slate-300 text-[12px] font-black uppercase tracking-widest transition-all text-center flex items-center justify-center gap-2"
                 >
                   <span>{content.portalPersonalBtn}</span>
                   <ArrowUpRight className="w-3.5 h-3.5" />
@@ -1132,9 +1132,9 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
             </div>
 
             {/* Portal 2: Enterprise Merchant */}
-            <div className="bg-slate-950/80 border border-slate-800 rounded-3xl p-6.5 hover:border-[#047857] transition-all flex flex-col justify-between group">
+            <div className="bg-slate-950/80 border border-slate-800 rounded-3xl p-6.5 hover:border-[#2563EB] transition-all flex flex-col justify-between group">
               <div className="space-y-4">
-                <div className="w-11 h-11 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 group-hover:bg-[#047857] group-hover:text-white transition-all">
+                <div className="w-11 h-11 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 group-hover:bg-[#2563EB] group-hover:text-white transition-all">
                   <Building className="w-5 h-5" />
                 </div>
                 <h3 className="text-xl font-black uppercase text-white tracking-tight">{content.portalBusinessTitle}</h3>
@@ -1144,10 +1144,10 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 <button 
                   onClick={() => {
                     setLoginRole('merchant');
-                    setLoginEmail('merchant@usend.com');
+                    setLoginEmail('merchant@swiftmove.com');
                     setLoginModalOpen(true);
                   }}
-                  className="w-full py-3 px-4 rounded-xl bg-slate-900 border border-slate-800 hover:bg-[#047857] hover:text-white text-slate-300 text-[12px] font-black uppercase tracking-widest transition-all text-center flex items-center justify-center gap-2"
+                  className="w-full py-3 px-4 rounded-xl bg-slate-900 border border-slate-800 hover:bg-[#2563EB] hover:text-white text-slate-300 text-[12px] font-black uppercase tracking-widest transition-all text-center flex items-center justify-center gap-2"
                 >
                   <span>{content.portalBusinessBtn}</span>
                   <ArrowUpRight className="w-3.5 h-3.5" />
@@ -1156,12 +1156,12 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
             </div>
 
             {/* Portal 4: Control Tower Admin */}
-            <div className="bg-slate-950/80 border border-[#047857]/40 rounded-3xl p-6.5 hover:border-[#047857] transition-all flex flex-col justify-between group/admin relative overflow-hidden">
-              <div className="absolute top-0 right-0 px-3 py-1 bg-[#047857] text-[13px] font-black uppercase tracking-widest rounded-bl-xl text-white">
+            <div className="bg-slate-950/80 border border-[#2563EB]/40 rounded-3xl p-6.5 hover:border-[#2563EB] transition-all flex flex-col justify-between group/admin relative overflow-hidden">
+              <div className="absolute top-0 right-0 px-3 py-1 bg-[#2563EB] text-[13px] font-black uppercase tracking-widest rounded-bl-xl text-white">
                 Super Command
               </div>
               <div className="space-y-4">
-                <div className="w-11 h-11 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 group-hover/admin:bg-[#047857] group-hover/admin:text-white transition-all">
+                <div className="w-11 h-11 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 group-hover/admin:bg-[#2563EB] group-hover/admin:text-white transition-all">
                   <Shield className="w-5 h-5" />
                 </div>
                 <h3 className="text-xl font-black uppercase text-white tracking-tight">{content.portalAdminTitle}</h3>
@@ -1171,10 +1171,10 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 <button 
                   onClick={() => {
                     setLoginRole('admin');
-                    setLoginEmail('admin@usend.com');
+                    setLoginEmail('admin@swiftmove.com');
                     setLoginModalOpen(true);
                   }}
-                  className="w-full py-3 px-4 rounded-xl bg-[#047857] hover:bg-slate-900 text-white text-[12px] font-black uppercase tracking-widest transition-all text-center flex items-center justify-center gap-2"
+                  className="w-full py-3 px-4 rounded-xl bg-[#2563EB] hover:bg-slate-900 text-white text-[12px] font-black uppercase tracking-widest transition-all text-center flex items-center justify-center gap-2"
                 >
                   <span>{content.portalAdminBtn}</span>
                   <ArrowUpRight className="w-3.5 h-3.5" />
@@ -1207,7 +1207,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           
           <div className="text-center max-w-2xl mx-auto space-y-4 mb-16">
-            <span className="text-[12px] font-black text-[#047857] uppercase tracking-[0.4em]">{content.howBadge}</span>
+            <span className="text-[12px] font-black text-[#2563EB] uppercase tracking-[0.4em]">{content.howBadge}</span>
             <h2 className="text-3xl md:text-5xl font-black text-slate-900 uppercase tracking-tight leading-tight">{content.howTitle}</h2>
           </div>
 
@@ -1231,7 +1231,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 className="bg-slate-50 border border-slate-200/60 rounded-3xl p-6.5 hover:shadow-md transition-all relative group"
               >
                 {/* Flow indicator badge */}
-                <div className="absolute -top-4 -left-4 w-9 h-9 rounded-full bg-slate-900 border border-slate-800 text-white font-black text-[12px] uppercase font-mono flex items-center justify-center group-hover:bg-[#047857] transition-all">
+                <div className="absolute -top-4 -left-4 w-9 h-9 rounded-full bg-slate-900 border border-slate-800 text-white font-black text-[12px] uppercase font-mono flex items-center justify-center group-hover:bg-[#2563EB] transition-all">
                   {step.num}
                 </div>
                 <div className="space-y-4 pt-2">
@@ -1243,7 +1243,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
 
           </div>
 
-          {/* Sea Containers Banner Image with Play Button overlap - USend motif */}
+          {/* Sea Containers Banner Image with Play Button overlap - SwiftMove motif */}
           <div className="mt-16 rounded-[2.5rem] overflow-hidden relative h-[380px] shadow-lg">
             <img 
               src="https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&q=80&w=1500" 
@@ -1256,7 +1256,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
             {/* Elements overlap */}
             <div className="absolute inset-0 p-8 flex flex-col justify-between items-start text-white">
               <span className="px-3.5 py-1.5 bg-white/10 backdrop-blur-md rounded-full text-[13px] font-black uppercase tracking-widest border border-white/20">
-                USend Network Film
+                SwiftMove Network Film
               </span>
               
               <div className="w-full flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
@@ -1267,8 +1267,8 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 
                 {/* Circular Play Button matching mockup representation */}
                 <button 
-                  onClick={() => alert('Launching USend corporate corridor showcase video.')}
-                  className="w-16 h-16 rounded-full bg-[#047857] text-white hover:bg-white hover:text-[#047857] transition-all flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 shrink-0 self-end"
+                  onClick={() => alert('Launching SwiftMove corporate corridor showcase video.')}
+                  className="w-16 h-16 rounded-full bg-[#2563EB] text-white hover:bg-white hover:text-[#2563EB] transition-all flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 shrink-0 self-end"
                   aria-label="Play Corporate Video"
                 >
                   <Play className="w-6 h-6 fill-current ml-1" />
@@ -1289,7 +1289,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
             
             {/* Left side text headers */}
             <div className="lg:col-span-5 space-y-6">
-              <span className="inline-flex items-center gap-2 px-3 py-1 bg-slate-800 border border-slate-700 text-[#047857] text-[12px] font-extrabold uppercase tracking-widest rounded-full">
+              <span className="inline-flex items-center gap-2 px-3 py-1 bg-slate-800 border border-slate-700 text-[#2563EB] text-[12px] font-extrabold uppercase tracking-widest rounded-full">
                 <Calculator className="w-4 h-4" /> {content.estimatorBadge}
               </span>
               <h2 className="text-3xl md:text-4.5xl font-black uppercase tracking-tight leading-tight">
@@ -1301,15 +1301,15 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
               
               <div className="pt-4 space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-emerald-500/15 text-[#047857] flex items-center justify-center font-black text-xs font-mono">1</div>
+                  <div className="w-5 h-5 rounded-full bg-blue-500/15 text-[#2563EB] flex items-center justify-center font-black text-xs font-mono">1</div>
                   <p className="text-xs text-slate-300">Base handling fee is variable between local and international.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-emerald-500/15 text-[#047857] flex items-center justify-center font-black text-xs font-mono">2</div>
+                  <div className="w-5 h-5 rounded-full bg-blue-500/15 text-[#2563EB] flex items-center justify-center font-black text-xs font-mono">2</div>
                   <p className="text-xs text-slate-300">Volumetric weight calculated as: (W * L * H) / 5000 according to IATA standards.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-emerald-500/15 text-[#047857] flex items-center justify-center font-black text-xs font-mono">3</div>
+                  <div className="w-5 h-5 rounded-full bg-blue-500/15 text-[#2563EB] flex items-center justify-center font-black text-xs font-mono">3</div>
                   <p className="text-xs text-slate-300">Instant direct access links generate automated router parameters.</p>
                 </div>
               </div>
@@ -1331,7 +1331,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                       <select 
                         value={estSource}
                         onChange={(e) => setEstSource(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-[#047857] appearance-none cursor-pointer"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-[#2563EB] appearance-none cursor-pointer"
                       >
                         <option value="DXB">Dubai Airport (DXB)</option>
                         <option value="AUH">Abu Dhabi Port (AUH)</option>
@@ -1347,7 +1347,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                       <select 
                         value={estTarget}
                         onChange={(e) => setEstTarget(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-[#047857] appearance-none cursor-pointer"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-[#2563EB] appearance-none cursor-pointer"
                       >
                         <option value="RUH">Riyadh Hub, KSA (RUH)</option>
                         <option value="DOH">Doha Terminal, Qatar (DOH)</option>
@@ -1364,7 +1364,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 <div className="space-y-2">
                   <div className="flex justify-between items-center text-[12px] font-black text-slate-500 uppercase tracking-wider">
                     <span>{content.pricingWeight}</span>
-                    <span className="font-mono text-[#047857] text-xs">{estWeight} KG</span>
+                    <span className="font-mono text-[#2563EB] text-xs">{estWeight} KG</span>
                   </div>
                   <input 
                     type="range" 
@@ -1372,7 +1372,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                     max="150" 
                     value={estWeight}
                     onChange={(e) => setEstWeight(Number(e.target.value))}
-                    className="w-full accent-[#047857] h-1.5 bg-slate-100 rounded-lg cursor-pointer animate-pulse"
+                    className="w-full accent-[#2563EB] h-1.5 bg-slate-100 rounded-lg cursor-pointer animate-pulse"
                   />
                   <div className="flex justify-between text-[12px] font-bold text-slate-400">
                     <span>1 KG (Envelope/Docs)</span>
@@ -1390,7 +1390,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                       max="150"
                       value={estWidth}
                       onChange={(e) => setEstWidth(Math.max(1, Number(e.target.value)))}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-[#047857]"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-[#2563EB]"
                     />
                   </div>
                   <div className="space-y-2">
@@ -1401,7 +1401,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                       max="150"
                       value={estLength}
                       onChange={(e) => setEstLength(Math.max(1, Number(e.target.value)))}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-[#047857]"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-[#2563EB]"
                     />
                   </div>
                 </div>
@@ -1409,7 +1409,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 <button 
                   type="submit"
                   disabled={calculating}
-                  className="w-full py-4 rounded-xl bg-[#047857] hover:bg-emerald-600 text-white font-black uppercase tracking-widest text-[12px] transition-all shadow-md active:scale-98 flex items-center justify-center gap-2"
+                  className="w-full py-4 rounded-xl bg-[#2563EB] hover:bg-blue-600 text-white font-black uppercase tracking-widest text-[12px] transition-all shadow-md active:scale-98 flex items-center justify-center gap-2"
                 >
                   {calculating ? (
                     <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -1434,14 +1434,14 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <span className="inline-block px-2.5 py-0.5 bg-emerald-50 text-[#047857] text-[12px] font-extrabold uppercase tracking-widest rounded border border-emerald-100/50">
+                        <span className="inline-block px-2.5 py-0.5 bg-blue-50 text-[#2563EB] text-[12px] font-extrabold uppercase tracking-widest rounded border border-blue-100/50">
                           {estimateResult.routeType} Recommended
                         </span>
                         <h4 className="text-sm font-black text-slate-800 uppercase mt-1">Zonal Shipping Rate Receipt</h4>
                       </div>
                       <div className="text-right">
                         <p className="text-[13px] text-slate-400 uppercase font-black">Estimated Sum</p>
-                        <p className="text-xl font-black font-mono text-[#047857]">AED {estimateResult.totalPrice}.00</p>
+                        <p className="text-xl font-black font-mono text-[#2563EB]">AED {estimateResult.totalPrice}.00</p>
                       </div>
                     </div>
 
@@ -1467,7 +1467,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                       </div>
                       <button 
                         onClick={() => onNavigate('hub')}
-                        className="py-2.5 px-4 rounded-lg bg-slate-900 text-white text-[13px] font-black uppercase tracking-widest hover:bg-[#047857] transition-all text-center"
+                        className="py-2.5 px-4 rounded-lg bg-slate-900 text-white text-[13px] font-black uppercase tracking-widest hover:bg-[#2563EB] transition-all text-center"
                       >
                         Settle & Ship Now
                       </button>
@@ -1488,7 +1488,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           
           <div className="text-center max-w-2xl mx-auto space-y-4 mb-16">
-            <span className="text-[12px] font-black text-[#047857] uppercase tracking-[0.4em]">{content.teamBadge}</span>
+            <span className="text-[12px] font-black text-[#2563EB] uppercase tracking-[0.4em]">{content.teamBadge}</span>
             <h2 className="text-3xl md:text-5xl font-black text-slate-900 uppercase tracking-tight leading-tight">{content.teamTitle}</h2>
             <p className="text-slate-500 text-sm font-medium">{content.teamDesc}</p>
           </div>
@@ -1496,7 +1496,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             
             {/* Promo Card skilled experts */}
-            <div className="bg-[#047857] rounded-[2rem] p-8 text-white flex flex-col justify-between shadow-lg">
+            <div className="bg-[#2563EB] rounded-[2rem] p-8 text-white flex flex-col justify-between shadow-lg">
               <div className="space-y-4">
                 <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white text-lg">
                   💡
@@ -1505,12 +1505,12 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 <p className="text-xs text-white/80 leading-relaxed font-semibold">{content.teamSlogan}</p>
               </div>
               <div className="pt-8">
-                <span className="text-[13px] font-mono tracking-widest uppercase font-black opacity-60">USend Systems UAE</span>
+                <span className="text-[13px] font-mono tracking-widest uppercase font-black opacity-60">SwiftMove Systems UAE</span>
               </div>
             </div>
 
             {/* Team member: Kristin Watson */}
-            <div className="bg-slate-50 border border-slate-200/70 rounded-[2rem] overflow-hidden group hover:border-[#047857] transition-all relative">
+            <div className="bg-slate-50 border border-slate-200/70 rounded-[2rem] overflow-hidden group hover:border-[#2563EB] transition-all relative">
               <div className="h-64 overflow-hidden relative">
                 <img 
                   src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400" 
@@ -1526,7 +1526,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
             </div>
 
             {/* Team member: Jane Cooper */}
-            <div className="bg-slate-50 border border-slate-200/70 rounded-[2rem] overflow-hidden group hover:border-[#047857] transition-all relative">
+            <div className="bg-slate-50 border border-slate-200/70 rounded-[2rem] overflow-hidden group hover:border-[#2563EB] transition-all relative">
               <div className="h-64 overflow-hidden relative">
                 <img 
                   src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=400" 
@@ -1542,7 +1542,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
             </div>
 
             {/* Team member: Robert Fox */}
-            <div className="bg-slate-50 border border-slate-200/70 rounded-[2rem] overflow-hidden group hover:border-[#047857] transition-all relative">
+            <div className="bg-slate-50 border border-slate-200/70 rounded-[2rem] overflow-hidden group hover:border-[#2563EB] transition-all relative">
               <div className="h-64 overflow-hidden relative">
                 <img 
                   src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400" 
@@ -1569,7 +1569,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
         <div className="max-w-4xl mx-auto px-4">
           
           <div className="text-center space-y-4 mb-16">
-            <span className="text-[12px] font-black text-[#047857] uppercase tracking-[0.4em]">{content.faqBadge}</span>
+            <span className="text-[12px] font-black text-[#2563EB] uppercase tracking-[0.4em]">{content.faqBadge}</span>
             <h2 className="text-3xl md:text-5xl font-black text-slate-900 uppercase tracking-tight">{content.faqTitle}</h2>
           </div>
 
@@ -1590,7 +1590,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                   style={{ textAlign: isRTL ? 'right' : 'left' }}
                 >
                   <p className="text-sm font-black uppercase text-slate-800 tracking-tight flex items-center gap-3">
-                    <span className="text-[#047857] font-mono text-[12px]/none flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100/50 font-bold">?</span>
+                    <span className="text-[#2563EB] font-mono text-[12px]/none flex items-center justify-center w-5 h-5 rounded-full bg-blue-100/50 font-bold">?</span>
                     {item.q}
                   </p>
                   <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform ${activeFaq === idx ? 'rotate-180' : ''}`} />
@@ -1608,12 +1608,19 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
         </div>
       </section>
 
-      {/* FOOTER SECTION - Optimize Speed */}
-      <footer className="bg-slate-950 text-white pt-24 pb-16 px-4 md:px-8 border-t border-slate-800 relative">
-        <div className="max-w-7xl mx-auto space-y-16">
+      {/* FOOTER SECTION - Rethemed with Watermark and Deep Cobalt Navy */}
+      <footer className="bg-[#060B26] text-white pt-24 pb-16 px-4 md:px-8 border-t border-white/5 relative overflow-hidden">
+        {/* Large transparent watermark background logo SWIFTMOVE */}
+        <div className="absolute inset-x-0 bottom-4 text-center select-none pointer-events-none z-0">
+          <span className="text-[15vw] font-black tracking-widest text-white/[0.015] uppercase leading-none block font-sans">
+            SWIFTMOVE
+          </span>
+        </div>
+
+        <div className="max-w-7xl mx-auto space-y-16 relative z-10">
           
           {/* Footer main banner call */}
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 pb-12 border-b border-white/15">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 pb-12 border-b border-white/10">
             <div className="space-y-2">
               <h3 className="text-xl md:text-3xl font-black uppercase tracking-tight">{content.footerLead}</h3>
               <p className="text-slate-400 text-xs md:text-sm font-semibold">{content.footerLeadDesc}</p>
@@ -1621,7 +1628,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
             <div className="flex gap-4">
               <button 
                 onClick={() => onNavigate('hub')}
-                className="px-6 py-3.5 bg-white text-slate-950 text-[12px] font-black uppercase tracking-widest rounded-full hover:bg-[#047857] hover:text-white transition-all"
+                className="px-6 py-3.5 bg-white text-slate-950 text-[12px] font-black uppercase tracking-widest rounded-full hover:bg-[#2563EB] hover:text-white transition-all shadow-md"
               >
                 Launch Platform
               </button>
@@ -1634,8 +1641,8 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
               <div className="flex items-center gap-3">
                 <LogoIcon className="h-10 w-auto" variant="dark" />
                 <div className="flex flex-col">
-                  <span className="text-sm font-black tracking-widest text-white uppercase leading-none">USEND</span>
-                  <span className="text-[12px] font-mono font-bold uppercase text-emerald-400 tracking-[0.25em]">Smart Shipping</span>
+                  <span className="text-sm font-black tracking-widest text-white uppercase leading-none">SWIFTMOVE</span>
+                  <span className="text-[12px] font-mono font-bold uppercase text-[#2563EB] tracking-[0.25em]">Smart Shipping</span>
                 </div>
               </div>
               <p className="text-[12px] text-slate-400 leading-relaxed max-w-md font-semibold">
@@ -1645,13 +1652,13 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
 
             <div className="space-y-4">
               <h4 className="text-[13px] font-black uppercase text-slate-500 tracking-widest">Connect Hubs</h4>
-              <ul className="space-y-2 text-[13px] font-bold text-slate-300">
+              <ul className="space-y-2 text-[13px] font-bold text-slate-350">
                 <li>
                   <span 
-                    className="hover:text-[#047857] transition-colors cursor-pointer" 
+                    className="hover:text-[#2563EB] transition-colors cursor-pointer" 
                     onClick={() => {
                       setLoginRole('user');
-                      setLoginEmail('user@usend.com');
+                      setLoginEmail('user@swiftmove.com');
                       setLoginModalOpen(true);
                     }}
                   >
@@ -1660,10 +1667,10 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 </li>
                 <li>
                   <span 
-                    className="hover:text-[#047857] transition-colors cursor-pointer" 
+                    className="hover:text-[#2563EB] transition-colors cursor-pointer" 
                     onClick={() => {
                       setLoginRole('merchant');
-                      setLoginEmail('merchant@usend.com');
+                      setLoginEmail('merchant@swiftmove.com');
                       setLoginModalOpen(true);
                     }}
                   >
@@ -1675,10 +1682,10 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
 
             <div className="space-y-4">
               <h4 className="text-[13px] font-black uppercase text-slate-500 tracking-widest">Corporate Parameters</h4>
-              <ul className="space-y-2 text-[13px] font-bold text-slate-300">
-                <li><span className="hover:text-[#047857] transition-colors cursor-pointer" onClick={() => { setLoginRole('admin'); setLoginModalOpen(true); }}>Zonal Admin Portal</span></li>
-                <li><a href="#" className="hover:text-[#047857] transition-colors">Safety Logs</a></li>
-                <li><a href="#" className="hover:text-[#047857] transition-colors">API Keys</a></li>
+              <ul className="space-y-2 text-[13px] font-bold text-slate-350">
+                <li><span className="hover:text-[#2563EB] transition-colors cursor-pointer" onClick={() => { setLoginRole('admin'); setLoginModalOpen(true); }}>Zonal Admin Portal</span></li>
+                <li><a href="#" className="hover:text-[#2563EB] transition-colors">Safety Logs</a></li>
+                <li><a href="#" className="hover:text-[#2563EB] transition-colors">API Keys</a></li>
               </ul>
             </div>
 
@@ -1687,8 +1694,8 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-12 border-t border-white/10 text-[13px] font-black text-slate-500 uppercase tracking-widest">
             <p>{content.copyright}</p>
             <div className="flex items-center gap-8">
-              <a href="#" className="hover:text-[#047857] transition-colors">Privacy Polity</a>
-              <a href="#" className="hover:text-[#047857] transition-colors">Service Terms</a>
+              <a href="#" className="hover:text-[#2563EB] transition-colors">Privacy Policy</a>
+              <a href="#" className="hover:text-[#2563EB] transition-colors">Service Terms</a>
             </div>
           </div>
 
@@ -1697,7 +1704,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
 
       </div>
 
-      {/* FLOAT CHATBOT DIALOGUE - USend AI */}
+      {/* FLOAT CHATBOT DIALOGUE - SwiftMove AI */}
       <AnimatePresence>
         {botOpen && (
           <motion.div
@@ -1709,11 +1716,11 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
              {/* Header */}
              <div className="bg-slate-900 p-5 text-white flex justify-between items-center border-b border-slate-800">
                <div className="flex items-center gap-3">
-                 <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 text-[#047857] animate-bounce">
+                 <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/20 text-[#2563EB] animate-bounce">
                    <AiFace3DIcon className="w-6 h-6" />
                  </div>
                  <div>
-                   <h3 className="font-extrabold text-xs uppercase tracking-wide">USend AI Support</h3>
+                   <h3 className="font-extrabold text-xs uppercase tracking-wide">SwiftMove AI Support</h3>
                    <p className="text-[12px] text-cyan-400 font-bold uppercase tracking-widest font-mono">Status: active</p>
                  </div>
                </div>
@@ -1729,7 +1736,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                    <div 
                      className={`p-3.5 rounded-2xl max-w-[85%] text-xs font-semibold leading-relaxed ${
                        msg.sender === 'user' 
-                         ? 'bg-[#047857] text-white rounded-br-none' 
+                         ? 'bg-[#2563EB] text-white rounded-br-none' 
                          : 'bg-white border border-slate-200 text-slate-800 rounded-bl-none shadow-xs'
                      }`}
                      style={{ whiteSpace: 'pre-line' }}
@@ -1747,9 +1754,9 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                   value={botInput}
                   onChange={(e) => setBotInput(e.target.value)}
                   placeholder="Enter order REQ-... or ask standard rates"
-                  className="flex-1 outline-none text-xs bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:border-[#047857] transition-all font-semibold"
+                  className="flex-1 outline-none text-xs bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:border-[#2563EB] transition-all font-semibold"
                 />
-                <button type="submit" className="w-11 h-11 bg-slate-900 hover:bg-[#047857] text-white rounded-xl flex items-center justify-center shadow-lg transition-colors shrink-0">
+                <button type="submit" className="w-11 h-11 bg-slate-900 hover:bg-[#2563EB] text-white rounded-xl flex items-center justify-center shadow-lg transition-colors shrink-0">
                   <ArrowRight className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />
                 </button>
              </form>
@@ -1763,10 +1770,10 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
         {/* Toggle bot button (Desktop style) */}
         <button
           onClick={() => setBotOpen(!botOpen)}
-          className="px-5 py-3 rounded-full bg-slate-900 hover:bg-[#047857] text-white border border-slate-700 shadow-xl items-center gap-2.5 transition-all text-[13px] font-black uppercase tracking-widest flex hover:-translate-y-0.5 active:translate-y-0 select-none"
+          className="px-5 py-3 rounded-full bg-slate-900 hover:bg-[#2563EB] text-white border border-slate-700 shadow-xl items-center gap-2.5 transition-all text-[13px] font-black uppercase tracking-widest flex hover:-translate-y-0.5 active:translate-y-0 select-none"
           id="docked-bot-trigger"
         >
-          <AiFace3DIcon className="w-6 h-6 text-emerald-400 rotate-12" />
+          <AiFace3DIcon className="w-6 h-6 text-blue-400 rotate-12" />
           
         </button>
 
@@ -1778,7 +1785,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.6 }}
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="w-11 h-11 rounded-full bg-white border border-slate-200 shadow-md text-slate-850 flex items-center justify-center hover:bg-[#047857] hover:text-white transition-all select-none"
+              className="w-11 h-11 rounded-full bg-white border border-slate-200 shadow-md text-slate-850 flex items-center justify-center hover:bg-[#2563EB] hover:text-white transition-all select-none"
               title="Back To Top"
               id="back-to-top-btn"
             >

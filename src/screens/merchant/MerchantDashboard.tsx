@@ -35,7 +35,7 @@ export default function MerchantDashboard({ onNavigate }: MerchantDashboardProps
       
       <main className="flex-1 p-8 lg:p-12 h-full overflow-y-auto hide-scrollbar overflow-x-hidden relative">
         {/* Decorative Background Elements */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-100/30 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none z-0"></div>
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-100/30 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none z-0"></div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}

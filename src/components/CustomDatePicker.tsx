@@ -66,7 +66,7 @@ export default function CustomDatePicker({ onSelect, initialDate }: CustomDatePi
     <div className="p-6 space-y-6 max-h-[85vh] overflow-y-auto">
       <div className="flex items-center justify-between">
         <h3 className="font-black text-xl text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-          <CalendarIcon className="w-6 h-6 text-emerald-600" />
+          <CalendarIcon className="w-6 h-6 text-blue-600" />
           {months[currentDate.getMonth()]} {currentDate.getFullYear()}
         </h3>
         <div className="flex gap-1">
@@ -102,9 +102,9 @@ export default function CustomDatePicker({ onSelect, initialDate }: CustomDatePi
               onClick={() => handleDateClick(day)}
               className={`h-12 w-full rounded-2xl flex items-center justify-center text-sm font-bold transition-all ${
                 isSelected(day)
-                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/30 ring-2 ring-emerald-600 ring-offset-2 dark:ring-offset-zinc-900'
+                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 ring-2 ring-blue-600 ring-offset-2 dark:ring-offset-zinc-900'
                   : isToday(day)
-                    ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10'
+                    ? 'bg-blue-50 text-blue-600 dark:bg-blue-500/10'
                     : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800'
               }`}
             >
@@ -152,7 +152,7 @@ export default function CustomDatePicker({ onSelect, initialDate }: CustomDatePi
       <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800">
         <button
           onClick={() => onSelect(formatDateTime(selectedDate, selectedHour, selectedMinute))}
-          className="w-full h-14 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-xl shadow-emerald-500/20"
+          className="w-full h-14 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-xl shadow-blue-500/20"
         >
           <Check className="w-5 h-5" />
           {t('select_date') || 'Confirm Date & Time'}

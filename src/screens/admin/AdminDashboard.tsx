@@ -78,7 +78,7 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
     { label: 'Today\'s Revenue', value: `${todayRevenue.toLocaleString()} AED`, trend: todayRevenue > 0 ? '+100%' : '0%', icon: <DollarSign className="w-5 h-5" />, color: 'text-brand' },
     { label: 'Pending Requests', value: String(pendingRequestsCount), trend: pendingRequestsCount > 0 ? `+${pendingRequestsCount}` : '0', icon: <Clock className="w-5 h-5" />, color: 'text-orange-500' },
     { label: 'Settlements Due', value: `${totalSettlements.toLocaleString()} AED`, trend: '0%', icon: <Wallet className="w-5 h-5" />, color: 'text-purple-600' },
-    { label: t('active_merchants') || 'Active Merchants', value: String(activeMerchantsCount), trend: activeMerchantsCount > 0 ? `+${activeMerchantsCount}` : '0', icon: <Store className="w-5 h-5" />, color: 'text-emerald-500' },
+    { label: t('active_merchants') || 'Active Merchants', value: String(activeMerchantsCount), trend: activeMerchantsCount > 0 ? `+${activeMerchantsCount}` : '0', icon: <Store className="w-5 h-5" />, color: 'text-blue-500' },
   ];
 
   return (
@@ -121,7 +121,7 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
                       {stat.label}
                     </span>
                   </div>
-                  <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest ${stat.trend.startsWith('+') ? 'text-emerald-700 bg-emerald-50' : 'text-red-600 bg-red-50'}`}>{stat.trend}</span>
+                  <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest ${stat.trend.startsWith('+') ? 'text-blue-700 bg-blue-50' : 'text-red-600 bg-red-50'}`}>{stat.trend}</span>
                 </div>
                 
                 <div className="flex justify-between items-end mt-2">
@@ -174,8 +174,8 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
             </div>
             <div className="flex items-center gap-4">
                <div className="flex items-center gap-2">
-                 <div className="w-2 h-2 rounded-full bg-[#10b981]"></div>
-                 <span className="text-[12px] font-bold uppercase tracking-widest text-[#10b981]">{t('revenue') || 'Revenue'}</span>
+                 <div className="w-2 h-2 rounded-full bg-[#3b82f6]"></div>
+                 <span className="text-[12px] font-bold uppercase tracking-widest text-[#3b82f6]">{t('revenue') || 'Revenue'}</span>
                </div>
                <div className="flex items-center gap-2">
                  <div className="w-2 h-2 rounded-full bg-slate-350"></div>
@@ -189,8 +189,8 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
               <AreaChart data={revenueData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.15}/>
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#EFF4FC" />
@@ -200,7 +200,7 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
                   contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)' }}
                   itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
                 />
-                <Area type="monotone" dataKey="revenue" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
+                <Area type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
                 <Area type="monotone" dataKey="settlements" stroke="#E2E8F0" strokeWidth={2} fill="transparent" strokeDasharray="5 5" />
               </AreaChart>
             </ResponsiveContainer>
@@ -212,7 +212,7 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
           className="bg-white border border-[#E9EFF6] rounded-[2.5rem] p-10 relative overflow-hidden shadow-[0_8px_30px_rgb(220,225,235,0.45)] flex flex-col cursor-pointer group/card hover:shadow-xl transition-all"
         >
           <div className="mb-8">
-             <h3 className="text-xl font-display font-semibold uppercase tracking-tight text-slate-900 mb-2 group-hover/card:text-[#10b981] transition-colors">{t('uae_ops_map')}</h3>
+             <h3 className="text-xl font-display font-semibold uppercase tracking-tight text-slate-900 mb-2 group-hover/card:text-[#3b82f6] transition-colors">{t('uae_ops_map')}</h3>
              <p className="text-xs text-zinc-400 font-medium">{t('live_origin')}</p>
           </div>
           <div className="flex-1 min-h-[250px] bg-zinc-900 rounded-[2rem] relative overflow-hidden group z-0">
@@ -220,9 +220,9 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
                <TileLayer
                  url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
                />
-               <Marker position={[25.2048, 55.2708]} icon={createCustomMarker('bg-[#10b981]', '#10b981', '0s')} />
-               <Marker position={[24.4539, 54.3773]} icon={createCustomMarker('bg-emerald-400', '#34d399', '0.5s')} />
-               <Marker position={[25.3463, 55.4209]} icon={createCustomMarker('bg-[#10b981]', '#10b981', '1s')} />
+               <Marker position={[25.2048, 55.2708]} icon={createCustomMarker('bg-[#3b82f6]', '#3b82f6', '0s')} />
+               <Marker position={[24.4539, 54.3773]} icon={createCustomMarker('bg-blue-400', '#34d399', '0.5s')} />
+               <Marker position={[25.3463, 55.4209]} icon={createCustomMarker('bg-[#3b82f6]', '#3b82f6', '1s')} />
                <Marker position={[25.7895, 55.9432]} icon={createCustomMarker('bg-orange-400', '#fb923c', '1.5s')} />
              </MapContainer>
              <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-transparent to-transparent pointer-events-none z-10"></div>
@@ -230,11 +230,11 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
           
           <div className="grid grid-cols-2 gap-4 mt-8 pointer-events-none">
              <div className="flex items-center gap-3">
-               <div className="w-2 h-2 bg-[#10b981] rounded-full"></div>
+               <div className="w-2 h-2 bg-[#3b82f6] rounded-full"></div>
                <span className="text-xs font-bold text-zinc-600">{t('merchant_api')}</span>
              </div>
              <div className="flex items-center gap-3">
-               <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
+               <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
                <span className="text-xs font-bold text-zinc-600">{t('mobile_apps')}</span>
              </div>
              <div className="flex items-center gap-3">
@@ -484,12 +484,12 @@ function RequestsHub() {
     switch (status) {
       case 'Pending': return 'text-orange-650 bg-orange-50';
       case 'Reviewing': return 'text-indigo-600 bg-indigo-50';
-      case 'Approved': return 'text-emerald-600 bg-emerald-50';
+      case 'Approved': return 'text-blue-600 bg-blue-50';
       case 'Rejected': return 'text-red-600 bg-red-50';
-      case 'assigning': return 'text-emerald-600 bg-emerald-50';
+      case 'assigning': return 'text-blue-600 bg-blue-50';
       case 'En-route':
       case 'in_transit': return 'text-purple-600 bg-purple-50';
-      case 'delivered': return 'text-emerald-700 bg-emerald-100';
+      case 'delivered': return 'text-blue-700 bg-blue-100';
       default: return 'text-zinc-650 bg-zinc-50';
     }
   };
@@ -585,9 +585,9 @@ function RequestsHub() {
                  <span className="text-[12px] text-zinc-400 mt-2 block">{t('standard_block_size') || 'Standard block packing size'}</span>
               </div>
               <div className="bg-white border border-zinc-200 p-6 rounded-[2rem] shadow-sm">
-                 <span className="text-[13px] font-black uppercase tracking-widest text-emerald-600 block mb-1">{t('freight_turnovers') || 'Freight Turnovers'}</span>
-                 <p className="text-2xl font-bold text-emerald-700">17,600 AED</p>
-                 <span className="text-[12px] text-emerald-500 mt-2 block">{t('gross_billings') || 'Gross commercial billings'}</span>
+                 <span className="text-[13px] font-black uppercase tracking-widest text-blue-600 block mb-1">{t('freight_turnovers') || 'Freight Turnovers'}</span>
+                 <p className="text-2xl font-bold text-blue-700">17,600 AED</p>
+                 <span className="text-[12px] text-blue-500 mt-2 block">{t('gross_billings') || 'Gross commercial billings'}</span>
               </div>
            </div>
 
@@ -626,7 +626,7 @@ function RequestsHub() {
                                 <span className={`px-2.5 py-1 rounded-full text-[13px] font-black uppercase tracking-widest ${
                                    item.status.includes('Awaiting') ? 'bg-orange-50 text-orange-600' :
                                    item.status.includes('Inspected') ? 'bg-indigo-50 text-indigo-600' :
-                                   item.status.includes('Delivered') ? 'bg-emerald-50 text-emerald-600' :
+                                   item.status.includes('Delivered') ? 'bg-blue-50 text-blue-600' :
                                    'bg-purple-50 text-purple-600'
                                 }`}>
                                    {item.status}
@@ -650,7 +650,7 @@ function RequestsHub() {
                                 ) : item.status === 'En-Route Ground Carrier' ? (
                                    <button 
                                       onClick={() => updateFreightStatus(item.id, 'Delivered & Remitted')}
-                                      className="text-[13px] bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase tracking-widest px-3.5 py-2 rounded-xl transition-all"
+                                      className="text-[13px] bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest px-3.5 py-2 rounded-xl transition-all"
                                    >
                                       Confirm Deliver Signoff
                                    </button>
@@ -674,10 +674,10 @@ function RequestsHub() {
               <button onClick={() => setStatusFilter('Pending')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Pending' ? 'bg-orange-50 text-orange-655 ring-1 ring-orange-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-orange-400"></div>Pending</button>
               <button onClick={() => setStatusFilter('Exceptions')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Exceptions' ? 'bg-red-50 text-red-650 ring-1 ring-red-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>{t('exceptions') || 'Exceptions'}</button>
               <button onClick={() => setStatusFilter('Reviewing')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Reviewing' ? 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>Reviewing</button>
-              <button onClick={() => setStatusFilter('Approved')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Approved' ? 'bg-emerald-50 text-emerald-600 ring-1 ring-emerald-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>Approved</button>
-              <button onClick={() => setStatusFilter('assigning')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'assigning' ? 'bg-emerald-50 text-emerald-600 ring-1 ring-emerald-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>Assigning</button>
+              <button onClick={() => setStatusFilter('Approved')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Approved' ? 'bg-blue-50 text-blue-600 ring-1 ring-blue-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>Approved</button>
+              <button onClick={() => setStatusFilter('assigning')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'assigning' ? 'bg-blue-50 text-blue-600 ring-1 ring-blue-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>Assigning</button>
               <button onClick={() => setStatusFilter('in_transit')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'in_transit' ? 'bg-purple-50 text-purple-600 ring-1 ring-purple-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>In Transit</button>
-              <button onClick={() => setStatusFilter('delivered')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'delivered' ? 'bg-emerald-50 text-emerald-705 ring-1 ring-green-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>Delivered</button>
+              <button onClick={() => setStatusFilter('delivered')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'delivered' ? 'bg-blue-50 text-blue-705 ring-1 ring-green-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>Delivered</button>
           </div>
           
           <div className="flex flex-col xl:flex-row flex-wrap gap-2 w-full xl:w-auto items-center xl:justify-end mt-2 xl:mt-0">
@@ -755,8 +755,8 @@ function RequestsHub() {
                    key={req.id} 
                    position={req.position || [25.0, 55.0]} 
                    icon={createInteractiveMarker(
-                     req.status === 'Pending' ? 'bg-orange-400' : req.status === 'Approved' ? 'bg-emerald-400' : req.status === 'Rejected' ? 'bg-red-500' : req.status === 'assigning' ? 'bg-emerald-400' : 'bg-brand',
-                     req.status === 'Pending' ? '#fb923c' : req.status === 'Approved' ? '#34d399' : req.status === 'Rejected' ? '#ef4444' : req.status === 'assigning' ? '#60a5fa' : '#047857',
+                     req.status === 'Pending' ? 'bg-orange-400' : req.status === 'Approved' ? 'bg-blue-400' : req.status === 'Rejected' ? 'bg-red-500' : req.status === 'assigning' ? 'bg-blue-400' : 'bg-brand',
+                     req.status === 'Pending' ? '#fb923c' : req.status === 'Approved' ? '#34d399' : req.status === 'Rejected' ? '#ef4444' : req.status === 'assigning' ? '#60a5fa' : '#2563EB',
                      req.id
                    )}
                    eventHandlers={{ click: () => setSelectedRequest(req) }}
@@ -821,7 +821,7 @@ function RequestsHub() {
                           <div className="flex items-center justify-center gap-2">
                               {req.status === 'Pending' && (
                                 <>
-                                  <button onClick={() => { updateRequestStatus(req.id, 'Approved'); triggerToast(`Order ${req.id} set to Approved!`); }} className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-100 transition-colors" title="Approve">
+                                  <button onClick={() => { updateRequestStatus(req.id, 'Approved'); triggerToast(`Order ${req.id} set to Approved!`); }} className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 transition-colors" title="Approve">
                                     <CheckCircle2 className="w-4 h-4" />
                                   </button>
                                   <button onClick={() => { updateRequestStatus(req.id, 'Rejected'); triggerToast(`Order ${req.id} rejected.`); }} className="w-8 h-8 rounded-full bg-red-50 text-red-600 flex items-center justify-center hover:bg-red-100 transition-colors" title="Reject">
@@ -831,7 +831,7 @@ function RequestsHub() {
                               )}
 
                               {req.status === 'Approved' && (
-                                <button onClick={() => setSelectedRequest(req)} className="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[13px] uppercase tracking-widest px-3 py-1.5 rounded-xl transition-all">
+                                <button onClick={() => setSelectedRequest(req)} className="bg-blue-600 hover:bg-blue-700 text-white font-black text-[13px] uppercase tracking-widest px-3 py-1.5 rounded-xl transition-all">
                                   Assign Driver
                                 </button>
                               )}
@@ -843,7 +843,7 @@ function RequestsHub() {
                               )}
 
                               {req.status === 'in_transit' && (
-                                <button onClick={() => { updateRequestStatus(req.id, 'delivered'); triggerToast(`Order ${req.id} deliver success!`); }} className="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[13px] uppercase tracking-widest px-3 py-1.5 rounded-xl transition-all">
+                                <button onClick={() => { updateRequestStatus(req.id, 'delivered'); triggerToast(`Order ${req.id} deliver success!`); }} className="bg-blue-600 hover:bg-blue-700 text-white font-black text-[13px] uppercase tracking-widest px-3 py-1.5 rounded-xl transition-all">
                                   Sign Deliver
                                 </button>
                               )}
@@ -1036,9 +1036,9 @@ function RequestsHub() {
                  <div className="flex justify-between items-center text-xs font-bold text-zinc-550">
                     <span className={selectedRequest.status === 'Pending' ? 'text-orange-600 font-extrabold' : 'text-zinc-400'}>1. Pending</span>
                     <span className="text-zinc-300">➔</span>
-                    <span className={selectedRequest.status === 'Approved' ? 'text-emerald-600 font-extrabold' : 'text-zinc-400'}>2. Approved</span>
+                    <span className={selectedRequest.status === 'Approved' ? 'text-blue-600 font-extrabold' : 'text-zinc-400'}>2. Approved</span>
                     <span className="text-zinc-300">➔</span>
-                    <span className={selectedRequest.status === 'assigning' ? 'text-emerald-600 font-extrabold' : 'text-zinc-400'}>3. Assigning</span>
+                    <span className={selectedRequest.status === 'assigning' ? 'text-blue-600 font-extrabold' : 'text-zinc-400'}>3. Assigning</span>
                     <span className="text-zinc-300">➔</span>
                     <span className={(selectedRequest.status === 'in_transit' || selectedRequest.status === 'delivered') ? 'text-purple-600 font-extrabold' : 'text-zinc-400'}>4. Dispatched</span>
                  </div>
@@ -1063,7 +1063,7 @@ function RequestsHub() {
                            <button 
                              type="button" 
                              onClick={() => handleSimulateDispatch(selectedRequest)}
-                             className="px-4 py-2.5 bg-emerald-600 text-white font-black text-[13px] uppercase tracking-widest rounded-xl hover:bg-emerald-700 hover:scale-102 transition-all shadow-md shadow-emerald-500/10"
+                             className="px-4 py-2.5 bg-blue-600 text-white font-black text-[13px] uppercase tracking-widest rounded-xl hover:bg-blue-700 hover:scale-102 transition-all shadow-md shadow-blue-500/10"
                            >
                              Assign
                            </button>
@@ -1090,7 +1090,7 @@ function RequestsHub() {
                          <button 
                            type="button" 
                            onClick={() => handleSimulateDispatch(selectedRequest)}
-                           className="w-full py-3 bg-emerald-600 text-white font-black text-[13px] uppercase tracking-widest rounded-xl hover:bg-emerald-700 transition-colors"
+                           className="w-full py-3 bg-blue-600 text-white font-black text-[13px] uppercase tracking-widest rounded-xl hover:bg-blue-700 transition-colors"
                          >
                            Confirm Physical Delivery Signature
                          </button>
@@ -1172,9 +1172,9 @@ function RequestsHub() {
                )}
 
                <div className="grid grid-cols-2 gap-4">
-                 <div className="bg-emerald-50 p-4 rounded-2xl">
-                   <p className="text-[12px] font-black uppercase tracking-widest text-emerald-600/70 mb-1">{t('from') || 'From Destination'}</p>
-                   <p className="text-sm font-bold text-emerald-900 leading-snug">{selectedRequest.fromDestination}</p>
+                 <div className="bg-blue-50 p-4 rounded-2xl">
+                   <p className="text-[12px] font-black uppercase tracking-widest text-blue-600/70 mb-1">{t('from') || 'From Destination'}</p>
+                   <p className="text-sm font-bold text-blue-900 leading-snug">{selectedRequest.fromDestination}</p>
                  </div>
                  <div className="bg-orange-50 p-4 rounded-2xl">
                    <p className="text-[12px] font-black uppercase tracking-widest text-orange-600/70 mb-1">{t('to') || 'To Destination'}</p>
@@ -1193,7 +1193,7 @@ function RequestsHub() {
                          position={selectedRequest.position}
                          icon={L.divIcon({
                            className: 'custom-interactive-marker',
-                           html: `<div class="relative"><div class="w-4 h-4 bg-brand rounded-full border-2 border-white shadow-[0_0_15px_#047857] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-ping"></div><div class="w-4 h-4 bg-brand rounded-full border-2 border-white shadow-[0_0_15px_#047857] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div></div>`,
+                           html: `<div class="relative"><div class="w-4 h-4 bg-brand rounded-full border-2 border-white shadow-[0_0_15px_#2563EB] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-ping"></div><div class="w-4 h-4 bg-brand rounded-full border-2 border-white shadow-[0_0_15px_#2563EB] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div></div>`,
                            iconSize: [16, 16],
                            iconAnchor: [8, 8]
                          })}
@@ -1436,9 +1436,9 @@ function UsersDirectory() {
                   </div>
 
                   <span className={`px-2.5 py-1.5 rounded-full text-[13px] font-black uppercase tracking-widest shrink-0 flex items-center gap-1 ${
-                    user.status === 'Active' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
+                    user.status === 'Active' ? 'bg-blue-50 text-blue-600' : 'bg-red-50 text-red-600'
                   }`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${user.status === 'Active' ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
+                    <span className={`w-1.5 h-1.5 rounded-full ${user.status === 'Active' ? 'bg-blue-500' : 'bg-red-500'}`}></span>
                     {user.status || 'Active'}
                   </span>
                 </div>
@@ -1776,10 +1776,10 @@ function CouriersDirectory() {
                       </div>
                       <span className={`px-2.5 py-1 rounded-full text-[13px] font-black uppercase tracking-widest flex items-center gap-1.5 ${
                         courier.status === 'Active' 
-                          ? 'bg-emerald-50 text-emerald-600' 
+                          ? 'bg-blue-50 text-blue-600' 
                           : 'bg-zinc-100 text-zinc-500'
                       }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${courier.status === 'Active' ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-400'}`} />
+                        <span className={`w-1.5 h-1.5 rounded-full ${courier.status === 'Active' ? 'bg-blue-500 animate-pulse' : 'bg-zinc-400'}`} />
                         {courier.status}
                       </span>
                     </div>
@@ -1809,7 +1809,7 @@ function CouriersDirectory() {
                         <span className="text-xs font-black text-zinc-800">{courier.deliveries} trips</span>
                       </div>
                       <div className="text-right">
-                        <span className="text-[13px] font-semibold text-[#047857] uppercase tracking-widest block mb-0.5">{t('cod_collected_cash') || 'COD Cash'}</span>
+                        <span className="text-[13px] font-semibold text-[#2563EB] uppercase tracking-widest block mb-0.5">{t('cod_collected_cash') || 'COD Cash'}</span>
                         <span className="text-sm font-black text-zinc-950 font-mono">AED {courier.rawCOD.toFixed(2)}</span>
                       </div>
                     </div>
@@ -1819,7 +1819,7 @@ function CouriersDirectory() {
                   <div className="mt-5 pt-4 border-t border-zinc-100 grid grid-cols-2 gap-3">
                     <button 
                       onClick={(e) => { e.stopPropagation(); handleSettleCash(courier.id); }}
-                      className="py-2 rounded-xl bg-zinc-100 text-zinc-750 font-bold text-[13px] uppercase tracking-widest hover:bg-emerald-100 hover:text-emerald-700 transition"
+                      className="py-2 rounded-xl bg-zinc-100 text-zinc-750 font-bold text-[13px] uppercase tracking-widest hover:bg-blue-100 hover:text-blue-700 transition"
                     >
                       {t('settle_cash') || 'Settle Cash'}
                     </button>
@@ -1930,7 +1930,7 @@ function CouriersDirectory() {
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
-                  <Marker position={selectedCourier.position} icon={createCustomMarker('bg-brand', '#047857')} />
+                  <Marker position={selectedCourier.position} icon={createCustomMarker('bg-brand', '#2563EB')} />
                 </MapContainer>
               </div>
               <span className="text-[12px] text-zinc-400 flex items-center gap-1.5 mt-2 justify-center">
@@ -2184,8 +2184,8 @@ function MerchantDirectory() {
                       </div>
                     </div>
                   </div>
-                  <span className={`px-3 py-1.5 rounded-full text-[13px] font-black uppercase tracking-widest shrink-0 flex items-center gap-1.5 ${merchant.status === 'Verified' ? 'bg-emerald-50 text-emerald-600' : 'bg-orange-50 text-orange-600'}`}>
-                    {merchant.status === 'Verified' ? <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div> : <div className="w-1.5 h-1.5 rounded-full bg-orange-55 animate-pulse"></div>}
+                  <span className={`px-3 py-1.5 rounded-full text-[13px] font-black uppercase tracking-widest shrink-0 flex items-center gap-1.5 ${merchant.status === 'Verified' ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600'}`}>
+                    {merchant.status === 'Verified' ? <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div> : <div className="w-1.5 h-1.5 rounded-full bg-orange-55 animate-pulse"></div>}
                     {merchant.status}
                   </span>
                 </div>
@@ -2304,8 +2304,8 @@ function MerchantDirectory() {
                 </div>
               </div>
 
-              <div className="p-4.5 rounded-2xl bg-emerald-50/50 border border-emerald-100 space-y-2">
-                <div className="flex items-center gap-2 text-emerald-700 text-xs font-black uppercase tracking-widest">
+              <div className="p-4.5 rounded-2xl bg-blue-50/50 border border-blue-100 space-y-2">
+                <div className="flex items-center gap-2 text-blue-700 text-xs font-black uppercase tracking-widest">
                   <ShieldCheck className="w-4 h-4" /> Credentials Health: Optimal
                 </div>
                 <p className="text-[13px] font-medium leading-relaxed text-zinc-600">This secret client signature provides end-point authorization for heavy bulk freight quotes and live dispatch coordinates mapping.</p>
@@ -2411,8 +2411,8 @@ function MerchantDirectory() {
                       <AreaChart data={successData} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
                         <defs>
                           <linearGradient id="colorRate" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#047857" stopOpacity={0.12}/>
-                            <stop offset="95%" stopColor="#047857" stopOpacity={0}/>
+                            <stop offset="5%" stopColor="#2563EB" stopOpacity={0.12}/>
+                            <stop offset="95%" stopColor="#2563EB" stopOpacity={0}/>
                           </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E4E4E7" />
@@ -2422,7 +2422,7 @@ function MerchantDirectory() {
                           formatter={(value: any) => [`${value}%`, 'Success Rate']}
                           contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 5px 15px -3px rgba(0, 0, 0, 0.08)', fontSize: '11px' }}
                         />
-                        <Area type="monotone" dataKey="rate" stroke="#047857" strokeWidth={2.5} fillOpacity={1} fill="url(#colorRate)" />
+                        <Area type="monotone" dataKey="rate" stroke="#2563EB" strokeWidth={2.5} fillOpacity={1} fill="url(#colorRate)" />
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
@@ -2725,7 +2725,7 @@ function AdminIntegrations() {
                 <div className="text-left">
                   <p className="font-bold text-xs uppercase tracking-widest text-zinc-800">{cfg.name}</p>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className={`w-1.5 h-1.5 rounded-full ${cfg.status === 'Active' ? 'bg-emerald-500' : 'bg-zinc-400'}`}></span>
+                    <span className={`w-1.5 h-1.5 rounded-full ${cfg.status === 'Active' ? 'bg-blue-500' : 'bg-zinc-400'}`}></span>
                     <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{cfg.status}</span>
                     <span className="text-[10px] text-zinc-300">•</span>
                     <span className="text-[10px] font-black uppercase tracking-wider text-zinc-500">{cfg.currentMode}</span>
@@ -2752,7 +2752,7 @@ function AdminIntegrations() {
                 <button
                   onClick={handleToggleStatus}
                   className={`w-12 h-6 rounded-full relative transition-colors ${
-                    currentConfig.status === 'Active' ? 'bg-emerald-500' : 'bg-zinc-300'
+                    currentConfig.status === 'Active' ? 'bg-blue-500' : 'bg-zinc-300'
                   }`}
                 >
                   <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-all ${
@@ -3097,8 +3097,8 @@ function UnifiedInventoryDesk() {
       </div>
 
       {notif && (
-        <div className="bg-emerald-55 bg-emerald-50 border border-emerald-200 text-emerald-850 p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 animate-bounce">
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></div>
+        <div className="bg-blue-55 bg-blue-50 border border-blue-200 text-blue-850 p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 animate-bounce">
+          <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping"></div>
           {notif}
         </div>
       )}
@@ -3148,7 +3148,7 @@ function UnifiedInventoryDesk() {
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-zinc-805">{item.stock}</span>
                       <span className={`px-2.5 py-1 rounded-full text-[13px] font-black uppercase tracking-widest leading-none ${
-                        item.status === 'Healthy' ? 'bg-emerald-50 text-emerald-600' :
+                        item.status === 'Healthy' ? 'bg-blue-50 text-blue-600' :
                         item.status === 'Critical Alert' ? 'bg-orange-50 text-orange-600 animate-pulse' :
                         'bg-red-50 text-red-600'
                       }`}>
@@ -3165,7 +3165,7 @@ function UnifiedInventoryDesk() {
                         Auto-Replenish
                       </button>
                     ) : (
-                      <span className="text-[12px] font-bold text-emerald-600 flex items-center justify-center gap-1">
+                      <span className="text-[12px] font-bold text-blue-600 flex items-center justify-center gap-1">
                         ✓ Balanced
                       </span>
                     )}
@@ -3244,7 +3244,7 @@ function CSVBatchControlDesk() {
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-zinc-801">{rec.successRate}</span>
                       <span className={`px-2.5 py-1 rounded-full text-[13px] font-black uppercase tracking-widest leading-none ${
-                        rec.status === 'Completed' ? 'bg-emerald-50 text-emerald-600' :
+                        rec.status === 'Completed' ? 'bg-blue-50 text-blue-600' :
                         rec.status === 'Processing' ? 'bg-indigo-50 text-indigo-650 animate-pulse' :
                         'bg-red-50 text-red-650'
                       }`}>
@@ -3316,8 +3316,8 @@ function WalletManagementDesk() {
       </div>
 
       {notif && (
-        <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-2xl text-xs font-semibold flex items-center gap-2">
-          <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></div>
+        <div className="bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded-2xl text-xs font-semibold flex items-center gap-2">
+          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-ping"></div>
           {notif}
         </div>
       )}
@@ -3364,17 +3364,17 @@ function WalletManagementDesk() {
               {ledger.map((item, idx) => (
                 <tr key={idx} className="border-b border-zinc-50 hover:bg-zinc-50/50 transition-colors">
                   <td className="p-6 font-mono text-zinc-900 font-bold text-xs">{item.id}</td>
-                  <td className="p-6"><span className={`px-3 py-1 rounded-full text-[12px] font-bold ${item.type.includes('Refund') ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>{item.type}</span></td>
+                  <td className="p-6"><span className={`px-3 py-1 rounded-full text-[12px] font-bold ${item.type.includes('Refund') ? 'bg-amber-50 text-amber-700' : 'bg-blue-50 text-blue-700'}`}>{item.type}</span></td>
                   <td className="p-6 font-bold text-zinc-800">{item.entity}</td>
                   <td className="p-6 text-zinc-500 font-medium">{item.cycle}</td>
                   <td className="p-6 text-zinc-650 text-xs font-mono">{item.grossAmount}</td>
                   <td className="p-6 text-red-600 text-xs font-mono">{item.feesDeducted}</td>
-                  <td className="p-6 text-emerald-600 font-bold text-sm tracking-tight">{item.netRemittance}</td>
+                  <td className="p-6 text-blue-600 font-bold text-sm tracking-tight">{item.netRemittance}</td>
                   <td className="p-6 text-center">
                     {item.status === 'Pending approval' ? (
                       <button 
                         onClick={() => triggerRemittance(item.id)}
-                        className="text-[12px] bg-emerald-600 text-white font-black uppercase tracking-widest px-4 py-2.5 rounded-xl hover:bg-emerald-700 hover:scale-105 transition-all shadow-md shadow-brand/10"
+                        className="text-[12px] bg-blue-600 text-white font-black uppercase tracking-widest px-4 py-2.5 rounded-xl hover:bg-blue-700 hover:scale-105 transition-all shadow-md shadow-brand/10"
                       >
                         Authorize Payment
                       </button>
@@ -3389,7 +3389,7 @@ function WalletManagementDesk() {
                         </button>
                       </div>
                     ) : (
-                      <span className="px-3 py-1.5 rounded-full text-[13px] font-black uppercase tracking-widest bg-emerald-50 text-emerald-600 inline-block font-mono">
+                      <span className="px-3 py-1.5 rounded-full text-[13px] font-black uppercase tracking-widest bg-blue-50 text-blue-600 inline-block font-mono">
                         ✓ remitted settled
                       </span>
                     )}
@@ -3442,7 +3442,7 @@ function WalletManagementDesk() {
                    <td className="p-6 text-zinc-500 font-mono text-xs">AED 12.00</td>
                    <td className="p-6 text-zinc-800 font-bold font-mono text-xs">AED 12.00</td>
                    <td className="p-6 text-center">
-                     <span className="px-3 py-1 text-green-500 font-bold font-mono text-[13px] uppercase tracking-widest"><Check className="inline w-3 h-3 -mt-0.5" /> {t('matched') || 'Matched'}</span>
+                     <span className="px-3 py-1 text-blue-505 font-bold font-mono text-[13px] uppercase tracking-widest"><Check className="inline w-3 h-3 -mt-0.5" /> {t('matched') || 'Matched'}</span>
                    </td>
                 </tr>
                 <tr className="border-b border-zinc-50 hover:bg-zinc-50/50 transition-colors">
@@ -3489,7 +3489,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
     <div className={`min-h-screen bg-[#EFF3EE] text-zinc-900 font-sans ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Background Style */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className={`absolute top-0 ${isRTL ? 'left-0' : 'right-0'} w-[500px] h-[500px] bg-emerald-100/20 rounded-full blur-[120px] -translate-y-1/2`}></div>
+        <div className={`absolute top-0 ${isRTL ? 'left-0' : 'right-0'} w-[500px] h-[500px] bg-blue-100/20 rounded-full blur-[120px] -translate-y-1/2`}></div>
       </div>
 
       <div className="flex relative z-10 w-full min-h-screen">
@@ -3572,7 +3572,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
           {/* Top Bar */}
           <header className={`flex flex-col md:flex-row md:items-center justify-between gap-8 mb-16 ${isRTL ? 'text-right' : ''}`}>
             <div>
-              <p className={`text-[#10b981] font-bold text-xs uppercase tracking-widest mb-1 flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <p className={`text-[#3b82f6] font-bold text-xs uppercase tracking-widest mb-1 flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <MapPin className="w-4 h-4" /> {t('uae_network_control') || 'UAE Network Control'}
               </p>
               <h1 className="text-3xl lg:text-4xl font-display font-semibold uppercase tracking-tight text-slate-900">
@@ -3588,12 +3588,12 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                    placeholder={t('query_records') || 'Query records...'}
                    value={searchQuery}
                    onChange={(e) => setSearchQuery(e.target.value)}
-                   className={`bg-white border border-[#E9EFF6] focus:border-[#10b981]/55 focus:bg-white outline-none rounded-full py-4 ${isRTL ? 'pr-14 pl-8' : 'pl-14 pr-8'} text-sm text-zinc-900 placeholder:text-zinc-300 w-[240px] lg:w-[320px] transition-all shadow-sm`}
+                   className={`bg-white border border-[#E9EFF6] focus:border-[#3b82f6]/55 focus:bg-white outline-none rounded-full py-4 ${isRTL ? 'pr-14 pl-8' : 'pl-14 pr-8'} text-sm text-zinc-900 placeholder:text-zinc-300 w-[240px] lg:w-[320px] transition-all shadow-sm`}
                 />
               </div>
               <button 
                 onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
-                className="w-12 h-12 rounded-2xl bg-white border border-[#E9EFF6] flex items-center justify-center text-[#10b981] hover:border-[#10b981] transition-colors cursor-pointer group"
+                className="w-12 h-12 rounded-2xl bg-white border border-[#E9EFF6] flex items-center justify-center text-[#3b82f6] hover:border-[#3b82f6] transition-colors cursor-pointer group"
               >
                 <div className="flex gap-1 items-center">
                    <span className="text-[12px] font-black uppercase tracking-widest">{language === 'en' ? 'AR' : 'EN'}</span>
@@ -3602,11 +3602,11 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
               <div className="relative">
                 <div className="w-12 h-12 rounded-2xl bg-white border border-[#E9EFF6] flex items-center justify-center text-zinc-450 hover:bg-zinc-50 transition-colors cursor-pointer relative group">
                   <Bell className="w-5 h-5 text-zinc-500" />
-                  <span className="absolute top-2 right-2 w-2 h-2 bg-[#10b981] rounded-full shadow-[0_0_8px_#10b981]"></span>
+                  <span className="absolute top-2 right-2 w-2 h-2 bg-[#3b82f6] rounded-full shadow-[0_0_8px_#3b82f6]"></span>
                 </div>
               </div>
               <div className={`flex items-center gap-4 ${isRTL ? 'pr-4 border-r' : 'pl-4 border-l'} border-zinc-200`}>
-                <div className="w-12 h-12 rounded-full border-2 border-[#10b981] p-0.5">
+                <div className="w-12 h-12 rounded-full border-2 border-[#3b82f6] p-0.5">
                   <div className="w-full h-full rounded-full bg-zinc-200 overflow-hidden">
                     <img alt="User" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200" className="w-full h-full object-cover" />
                   </div>
