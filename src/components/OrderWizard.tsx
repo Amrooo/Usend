@@ -1,5 +1,6 @@
 import React, { useState, useRef, ChangeEvent, useMemo } from 'react';
 import { Truck, MapPin, Phone, Lock, CheckCircle2, ArrowRight, Plane, Camera, AlertCircle, Map, UploadCloud, User, DollarSign } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useLanguage } from '../context/LanguageContext';
 import { useApp } from '../context/AppContext';
 import { Screen } from '../types';
@@ -413,263 +414,315 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
   };
 
   return (
-    <div className={`w-full bg-white border border-slate-100 rounded-[2.5rem] ${isGuest ? 'shadow-xs' : 'shadow-none'} p-6 md:p-10 text-slate-800`} dir={isRTL ? "rtl" : "ltr"}>
+    <div className={`w-full bg-white rounded-[2.5rem] ${isGuest ? 'shadow-xs' : 'shadow-none'} p-6 md:p-10 text-slate-800`} dir={isRTL ? "rtl" : "ltr"}>
       <Modal isOpen={isMapOpen} onClose={() => setIsMapOpen(false)} title="Select Location on Map">
          <MapPicker onSelect={handleMapSelect} onClose={() => setIsMapOpen(false)} />
       </Modal>
 
-      <div className={`text-center space-y-3 mb-8 ${wizardStep !== 0 ? 'hidden' : ''}`}>
-        <h3 className="text-xl md:text-2xl font-black uppercase text-brand tracking-tight">
-          {isRTL ? "اختر نوع الشحنة" : "Select Shipment Type"}
-        </h3>
-        <p className="text-[13px] font-semibold text-zinc-400">
-          {isRTL ? "يرجى تحديد ما إذا كانت الشحنة محلية داخل الإمارات أو دولية خارجها" : "Choose whether you are sending packages domestically or globally."}
-        </p>
-      </div>
 
-      {wizardStep === 0 && (
-        <div className="py-2 animate-in fade-in duration-300">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto mt-4">
-            
-            {/* Domestic button card */}
-            <button 
-              onClick={() => handleSelectType('domestic')} 
-              className="bg-white border-[3px] border-zinc-100 hover:border-brand hover:shadow-xl active:bg-zinc-50 rounded-3xl p-10 flex flex-col items-center justify-center gap-6 shadow-sm transition-all group relative overflow-hidden cursor-pointer"
-            >
-              <div className="w-20 h-20 rounded-full bg-brand/5 group-hover:bg-brand/10 flex items-center justify-center transition-all duration-300 transform group-hover:scale-110">
-                <Truck className="w-10 h-10 text-brand transition-colors stroke-[1.5]" />
+      <AnimatePresence mode="wait">
+        {wizardStep === 0 && (
+          <motion.div
+            key="step0"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="py-2"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto mt-4">
+              
+              {/* Domestic button card */}
+              <motion.button 
+                whileHover={{ scale: 1.025, y: -4 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => handleSelectType('domestic')} 
+                className="bg-white border-[3px] border-zinc-100 hover:border-brand hover:shadow-2xl active:bg-zinc-50 rounded-3xl p-10 flex flex-col items-center justify-center gap-6 shadow-sm transition-all duration-300 group relative overflow-hidden cursor-pointer"
+              >
+                <div className="w-20 h-20 rounded-full bg-brand/5 group-hover:bg-brand/10 flex items-center justify-center transition-all duration-300 transform group-hover:scale-110">
+                  <Truck className="w-10 h-10 text-brand transition-colors stroke-[1.5]" />
+                </div>
+                <div className="text-center space-y-1">
+                  <h3 className="text-lg font-black text-zinc-800 uppercase tracking-tight">{isRTL ? "شحنة محلية" : "Domestic Shipment"}</h3>
+                  <p className="text-xs text-zinc-400 font-medium">{isRTL ? "توصيل سريع بين جميع إمارات الدولة" : "Within UAE 7 Emirates"}</p>
+                </div>
+                <span className="absolute top-3 right-3 bg-brand/10 text-brand text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md">
+                  {isRTL ? "فوري / اليوم التالي" : "Instant / Next-Day"}
+                </span>
+              </motion.button>
+              
+              {/* International button card */}
+              <div 
+                className="bg-white border-[3px] border-dashed border-zinc-200 opacity-40 grayscale rounded-3xl p-10 flex flex-col items-center justify-center gap-6 shadow-sm relative overflow-hidden cursor-not-allowed select-none"
+              >
+                <div className="w-20 h-20 rounded-full bg-zinc-100 flex items-center justify-center">
+                  <Plane className="w-10 h-10 text-zinc-400 stroke-[1.5]" />
+                </div>
+                <div className="text-center space-y-1">
+                  <h3 className="text-lg font-black text-zinc-400 uppercase tracking-tight">{isRTL ? "شحنة دولية" : "International"}</h3>
+                  <p className="text-xs text-zinc-300 font-medium">{isRTL ? "شحن سريع إلى جميع أنحاء العالم" : "Global courier dispatch"}</p>
+                </div>
+                <span className="absolute top-3 right-3 bg-zinc-100 text-zinc-500 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md">
+                  {isRTL ? "غير متوفر حالياً" : "Not Available"}
+                </span>
               </div>
-              <div className="text-center space-y-1">
-                <h3 className="text-lg font-black text-zinc-800 uppercase tracking-tight">{isRTL ? "شحنة محلية" : "Domestic Shipment"}</h3>
-                <p className="text-xs text-zinc-400 font-medium">{isRTL ? "توصيل سريع بين جميع إمارات الدولة" : "Within UAE 7 Emirates"}</p>
-              </div>
-              <span className="absolute top-3 right-3 bg-brand/10 text-brand text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md">
-                {isRTL ? "خلال 24 ساعة" : "Next-Day Delivery"}
-              </span>
-            </button>
-            
-            {/* International button card */}
-            <button 
-              onClick={() => handleSelectType('international')} 
-              className="bg-white border-[3px] border-zinc-100 hover:border-brand hover:shadow-xl active:bg-zinc-50 rounded-3xl p-10 flex flex-col items-center justify-center gap-6 shadow-sm transition-all group relative overflow-hidden cursor-pointer"
-            >
-              <div className="w-20 h-20 rounded-full bg-[#cca073]/5 group-hover:bg-[#cca073]/10 flex items-center justify-center transition-all duration-300 transform group-hover:scale-110">
-                <Plane className="w-10 h-10 text-[#cca073] transition-colors stroke-[1.5]" />
-              </div>
-              <div className="text-center space-y-1">
-                <h3 className="text-lg font-black text-zinc-800 uppercase tracking-tight">{isRTL ? "شحنة دولية" : "International"}</h3>
-                <p className="text-xs text-zinc-400 font-medium">{isRTL ? "شحن سريع إلى جميع أنحاء العالم" : "Global courier dispatch"}</p>
-              </div>
-              <span className="absolute top-3 right-3 bg-[#cca073]/10 text-[#cca073] text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md">
-                {isRTL ? "قريباً" : "Coming Soon"}
-              </span>
-            </button>
-            
-          </div>
-        </div>
-      )}
+              
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {renderProgressBar()}
 
-      {wizardStep === 1 && (
-        <form onSubmit={handleNextStep} className="space-y-8 animate-in fade-in mt-16 pb-4">
-          <h3 className="text-xl font-bold mb-2 uppercase tracking-tight">{isRTL ? "بيانات المرسل" : "Shipper Details"}</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
-            <div className={`space-y-2 ${isGuest ? '' : 'md:col-span-2'}`}>
-              <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Name *</label>
-              <input required type="text" value={shipperData.name} onChange={e => setShipperData(p => ({...p, name: e.target.value}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none transition-colors" />
-            </div>
-            {isGuest && (
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Email (Invoice) *</label>
-                <input required type="email" value={shipperData.email} onChange={e => setShipperData(p => ({...p, email: e.target.value}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none transition-colors" />
-              </div>
-            )}
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Phone *</label>
-              <input required type="tel" value={shipperData.phone} onChange={handlePhoneChange(setShipperData, 'phone')} placeholder="+971 50 1234567" className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none font-mono tracking-widest transition-colors" dir="ltr" />
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Country *</label>
-              <select value={shipperData.country} onChange={e => setShipperData(p => ({...p, country: e.target.value, city: countriesAndCities[e.target.value as keyof typeof countriesAndCities]?.[0] || ''}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none">
-                {Object.keys(countriesAndCities).filter(c => shipmentType === 'domestic' ? c === 'United Arab Emirates' : true).map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">City *</label>
-              <select value={shipperData.city} onChange={e => setShipperData(p => ({...p, city: e.target.value}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none">
-                {(countriesAndCities[shipperData.country as keyof typeof countriesAndCities] || []).map(city => <option key={city} value={city}>{city}</option>)}
-              </select>
-            </div>
-
-            <div className="space-y-2 md:col-span-2 relative">
-              <div className="flex justify-between items-center">
-                <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Address / Street *</label>
-                <button type="button" onClick={() => { setMapTarget('shipper'); setIsMapOpen(true); }} className="text-xs font-bold text-brand bg-brand/10 px-2 py-1 flex items-center gap-1 rounded-md mb-1"><Map className="w-3 h-3"/> Map Picker</button>
-              </div>
-              <input required type="text" value={shipperData.street} onChange={e => setShipperData(p => ({...p, street: e.target.value}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none transition-colors pr-10" placeholder="Street, Building, etc." />
-            </div>
-          </div>
-          <div className="flex gap-4 pt-6"><button type="button" onClick={handlePrevStep} className="px-8 py-3.5 rounded-xl border border-zinc-300 text-zinc-600 font-bold uppercase tracking-widest text-xs">Back</button><button type="submit" className="flex-1 py-3.5 rounded-xl bg-brand text-white font-bold uppercase tracking-widest text-xs shadow-lg">Next</button></div>
-        </form>
-      )}
-
-      {wizardStep === 2 && (
-        <form onSubmit={handleNextStep} className="space-y-8 animate-in fade-in mt-16 pb-4">
-          <h3 className="text-xl font-bold mb-2 uppercase tracking-tight">{isRTL ? "بيانات المستلم" : "Receiver Details"}</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Name *</label>
-              <input required type="text" value={receiverData.name} onChange={e => setReceiverData(p => ({...p, name: e.target.value}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none" />
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Phone *</label>
-              <input required type="tel" value={receiverData.phone} onChange={handlePhoneChange(setReceiverData, 'phone')} placeholder="+971 50 1234567" className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none font-mono tracking-widest" dir="ltr" />
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Country *</label>
-              <select value={receiverData.country} onChange={e => setReceiverData(p => ({...p, country: e.target.value, city: countriesAndCities[e.target.value as keyof typeof countriesAndCities]?.[0] || ''}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none">
-                {Object.keys(countriesAndCities).filter(c => shipmentType === 'domestic' ? c === 'United Arab Emirates' : true).map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">City *</label>
-              <select value={receiverData.city} onChange={e => setReceiverData(p => ({...p, city: e.target.value}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none">
-                {(countriesAndCities[receiverData.country as keyof typeof countriesAndCities] || []).map(city => <option key={city} value={city}>{city}</option>)}
-              </select>
-            </div>
-
-            <div className="space-y-2 md:col-span-2">
-              <div className="flex justify-between items-center">
-                <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Dropoff Address *</label>
-                <button type="button" onClick={() => { setMapTarget('receiver'); setIsMapOpen(true); }} className="text-xs font-bold text-rose-500 bg-rose-500/10 px-2 py-1 flex items-center gap-1 rounded-md mb-1"><Map className="w-3 h-3"/> Map Picker</button>
-              </div>
-              <input required type="text" value={receiverData.street} onChange={e => setReceiverData(p => ({...p, street: e.target.value}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none" />
-            </div>
-          </div>
-          <div className="flex gap-4 pt-6"><button type="button" onClick={handlePrevStep} className="px-8 py-3.5 rounded-xl border border-zinc-300 text-zinc-600 font-bold uppercase tracking-widest text-xs">Back</button><button type="submit" className="flex-1 py-3.5 rounded-xl bg-brand text-white font-bold uppercase tracking-widest text-xs shadow-lg">Next</button></div>
-        </form>
-      )}
-
-      {wizardStep === 3 && (
-        <form onSubmit={handleNextStep} className="space-y-6 animate-in fade-in mt-16 pb-4">
-          <h3 className="text-xl font-bold mb-2 uppercase tracking-tight">{isRTL ? "تفاصيل الشحنة" : "Shipment Details"}</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Weight (kg) *</label>
-              <input required type="number" step="0.1" min="0.1" value={shipmentData.weight} onChange={e => setShipmentData(p => ({...p, weight: e.target.value}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none" />
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Quantity *</label>
-              <input required type="number" min="1" value={shipmentData.quantity} onChange={e => setShipmentData(p => ({...p, quantity: e.target.value}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none" />
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Description *</label>
-              <input required type="text" value={shipmentData.description} onChange={e => setShipmentData(p => ({...p, description: e.target.value}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none" />
-              <p className="text-[10px] text-zinc-400">You can manually edit this field after photo auto-detection.</p>
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Cargo Photo (Optional - AI Extraction)</label>
-              <label className="w-full h-32 border-2 border-dashed border-zinc-300 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-brand hover:bg-brand/5">
-                {shipmentData.photo ? <img src={shipmentData.photo} className="h-full object-contain p-2"/> : <><UploadCloud className="w-8 h-8 text-zinc-400 mb-2"/><span className="text-xs font-bold">Snap or attach an image</span></>}
-                <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload}/>
-              </label>
-            </div>
-            
-            {!isGuest && (
-              <div className="space-y-4 md:col-span-2 pt-4 border-t border-zinc-100">
-                <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Advanced Courier Routing</label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <label className={`p-4 rounded-xl border-2 cursor-pointer ${shipmentData.courier === 'usend' ? 'border-brand bg-brand/5' : 'border-zinc-200'}`}>
-                    <input type="radio" value="usend" checked={shipmentData.courier === 'usend'} onChange={() => setShipmentData(p =>({...p, courier: 'usend'}))} className="hidden"/>
-                    <h4 className="font-bold text-sm">USend Fleet Delivery</h4>
-                  </label>
-                  <label className={`p-4 rounded-xl border-2 cursor-pointer ${shipmentData.courier === 'aramex' ? 'border-red-600 bg-red-600/5' : 'border-zinc-200'}`}>
-                    <input type="radio" value="aramex" checked={shipmentData.courier === 'aramex'} onChange={() => setShipmentData(p =>({...p, courier: 'aramex'}))} className="hidden"/>
-                    <h4 className="font-bold text-sm">Aramex B2B Gateway</h4>
-                  </label>
+      <AnimatePresence mode="wait">
+        {wizardStep === 1 && (
+          <motion.div
+            key="step1"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+          >
+            <form onSubmit={handleNextStep} className="space-y-8 mt-16 pb-4">
+              <h3 className="text-xl font-bold mb-2 uppercase tracking-tight">{isRTL ? "بيانات المرسل" : "Shipper Details"}</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+                <div className={`space-y-2 ${isGuest ? '' : 'md:col-span-2'}`}>
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Name *</label>
+                  <input required type="text" value={shipperData.name} onChange={e => setShipperData(p => ({...p, name: e.target.value}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none transition-colors" />
+                </div>
+                {isGuest && (
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Email (Invoice) *</label>
+                    <input required type="email" value={shipperData.email} onChange={e => setShipperData(p => ({...p, email: e.target.value}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none transition-colors" />
+                  </div>
+                )}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Phone *</label>
+                  <input required type="tel" value={shipperData.phone} onChange={handlePhoneChange(setShipperData, 'phone')} placeholder="+971 50 1234567" className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none font-mono tracking-widest transition-colors" dir="ltr" />
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Country *</label>
+                  <select value={shipperData.country} onChange={e => setShipperData(p => ({...p, country: e.target.value, city: countriesAndCities[e.target.value as keyof typeof countriesAndCities]?.[0] || ''}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none">
+                    {Object.keys(countriesAndCities).filter(c => shipmentType === 'domestic' ? c === 'United Arab Emirates' : true).map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">City *</label>
+                  <select value={shipperData.city} onChange={e => setShipperData(p => ({...p, city: e.target.value}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none">
+                    {(countriesAndCities[shipperData.country as keyof typeof countriesAndCities] || []).map(city => <option key={city} value={city}>{city}</option>)}
+                  </select>
+                </div>
+    
+                <div className="space-y-2 md:col-span-2 relative">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Address / Street *</label>
+                    <button type="button" onClick={() => { setMapTarget('shipper'); setIsMapOpen(true); }} className="text-xs font-bold text-brand bg-brand/10 px-2 py-1 flex items-center gap-1 rounded-md mb-1"><Map className="w-3 h-3"/> Map Picker</button>
+                  </div>
+                  <input required type="text" value={shipperData.street} onChange={e => setShipperData(p => ({...p, street: e.target.value}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none transition-colors pr-10" placeholder="Street, Building, etc." />
                 </div>
               </div>
-            )}
-          </div>
-          <div className="flex gap-4 pt-6"><button type="button" onClick={handlePrevStep} className="px-8 py-3.5 rounded-xl border border-zinc-300 text-zinc-600 font-bold uppercase tracking-widest text-xs">Back</button><button type="submit" className="flex-1 py-3.5 rounded-xl bg-brand text-white font-bold uppercase tracking-widest text-xs shadow-lg">Next</button></div>
-        </form>
-      )}
+              <div className="flex gap-4 pt-6"><button type="button" onClick={handlePrevStep} className="px-8 py-3.5 rounded-xl border border-zinc-300 text-zinc-600 font-bold uppercase tracking-widest text-xs">Back</button><button type="submit" className="flex-1 py-3.5 rounded-xl bg-brand text-white font-bold uppercase tracking-widest text-xs shadow-lg">Next</button></div>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {wizardStep === 4 && (
-        <div className="space-y-8 animate-in fade-in mt-16 pb-4">
-          <h3 className="text-xl font-bold mb-2 uppercase tracking-tight">{isRTL ? "مراجعة الطلب" : "Summary & Payment"}</h3>
-          
-          <div className="bg-slate-50 border border-slate-200 rounded-3xl p-6 mb-6">
-             <div className="flex justify-between items-center pb-4 border-b border-slate-200 mb-4">
-               <div><p className="text-[10px] uppercase font-bold text-zinc-500">From</p><p className="font-bold text-sm">{shipperData.city}</p></div>
-               <ArrowRight className="text-zinc-300 w-5 h-5"/>
-               <div className="text-right"><p className="text-[10px] uppercase font-bold text-zinc-500">To</p><p className="font-bold text-sm">{receiverData.city}</p></div>
-             </div>
-             <div className="flex justify-between items-center text-sm font-semibold mb-2"><span>Base Rate</span><span>{shipmentType === 'international' ? '120' : '30'} AED</span></div>
-          <div className="flex justify-between items-center text-xl font-black text-brand pt-4 border-t border-slate-200"><span>Total</span><span>{calculateTotal()} AED</span></div>
-          </div>
-          
-          {isGuest && (
-            <div className="bg-brand/10 text-brand px-4 py-3 rounded-xl text-xs font-semibold mb-6 flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4"/>
-              An invoice will be automatically sent to {shipperData.email} upon confirmation.
+      <AnimatePresence mode="wait">
+        {wizardStep === 2 && (
+          <motion.div
+            key="step2"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+          >
+            <form onSubmit={handleNextStep} className="space-y-8 mt-16 pb-4">
+              <h3 className="text-xl font-bold mb-2 uppercase tracking-tight">{isRTL ? "بيانات المستلم" : "Receiver Details"}</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Name *</label>
+                  <input required type="text" value={receiverData.name} onChange={e => setReceiverData(p => ({...p, name: e.target.value}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Phone *</label>
+                  <input required type="tel" value={receiverData.phone} onChange={handlePhoneChange(setReceiverData, 'phone')} placeholder="+971 50 1234567" className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none font-mono tracking-widest" dir="ltr" />
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Country *</label>
+                  <select value={receiverData.country} onChange={e => setReceiverData(p => ({...p, country: e.target.value, city: countriesAndCities[e.target.value as keyof typeof countriesAndCities]?.[0] || ''}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none">
+                    {Object.keys(countriesAndCities).filter(c => shipmentType === 'domestic' ? c === 'United Arab Emirates' : true).map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">City *</label>
+                  <select value={receiverData.city} onChange={e => setReceiverData(p => ({...p, city: e.target.value}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none">
+                    {(countriesAndCities[receiverData.country as keyof typeof countriesAndCities] || []).map(city => <option key={city} value={city}>{city}</option>)}
+                  </select>
+                </div>
+    
+                <div className="space-y-2 md:col-span-2">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Dropoff Address *</label>
+                    <button type="button" onClick={() => { setMapTarget('receiver'); setIsMapOpen(true); }} className="text-xs font-bold text-rose-500 bg-rose-500/10 px-2 py-1 flex items-center gap-1 rounded-md mb-1"><Map className="w-3 h-3"/> Map Picker</button>
+                  </div>
+                  <input required type="text" value={receiverData.street} onChange={e => setReceiverData(p => ({...p, street: e.target.value}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none" />
+                </div>
+              </div>
+              <div className="flex gap-4 pt-6"><button type="button" onClick={handlePrevStep} className="px-8 py-3.5 rounded-xl border border-zinc-300 text-zinc-600 font-bold uppercase tracking-widest text-xs">Back</button><button type="submit" className="flex-1 py-3.5 rounded-xl bg-brand text-white font-bold uppercase tracking-widest text-xs shadow-lg">Next</button></div>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence mode="wait">
+        {wizardStep === 3 && (
+          <motion.div
+            key="step3"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+          >
+            <form onSubmit={handleNextStep} className="space-y-6 mt-16 pb-4">
+              <h3 className="text-xl font-bold mb-2 uppercase tracking-tight">{isRTL ? "تفاصيل الشحنة" : "Shipment Details"}</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Weight (kg) *</label>
+                  <input required type="number" step="0.1" min="0.1" value={shipmentData.weight} onChange={e => setShipmentData(p => ({...p, weight: e.target.value}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Quantity *</label>
+                  <input required type="number" min="1" value={shipmentData.quantity} onChange={e => setShipmentData(p => ({...p, quantity: e.target.value}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none" />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Description *</label>
+                  <input required type="text" value={shipmentData.description} onChange={e => setShipmentData(p => ({...p, description: e.target.value}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none" />
+                  <p className="text-[10px] text-zinc-400">You can manually edit this field after photo auto-detection.</p>
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Cargo Photo (Optional - AI Extraction)</label>
+                  <label className="w-full h-32 border-2 border-dashed border-zinc-300 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-brand hover:bg-brand/5">
+                    {shipmentData.photo ? <img src={shipmentData.photo} className="h-full object-contain p-2"/> : <><UploadCloud className="w-8 h-8 text-zinc-400 mb-2"/><span className="text-xs font-bold">Snap or attach an image</span></>}
+                    <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload}/>
+                  </label>
+                </div>
+                
+                {!isGuest && (
+                  <div className="space-y-4 md:col-span-2 pt-4 border-t border-zinc-100">
+                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Advanced Courier Routing</label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <label className={`p-4 rounded-xl border-2 cursor-pointer ${shipmentData.courier === 'usend' ? 'border-brand bg-brand/5' : 'border-zinc-200'}`}>
+                        <input type="radio" value="usend" checked={shipmentData.courier === 'usend'} onChange={() => setShipmentData(p =>({...p, courier: 'usend'}))} className="hidden"/>
+                        <h4 className="font-bold text-sm">USend Fleet Delivery</h4>
+                      </label>
+                      <label className={`p-4 rounded-xl border-2 cursor-pointer ${shipmentData.courier === 'aramex' ? 'border-red-600 bg-red-600/5' : 'border-zinc-200'}`}>
+                        <input type="radio" value="aramex" checked={shipmentData.courier === 'aramex'} onChange={() => setShipmentData(p =>({...p, courier: 'aramex'}))} className="hidden"/>
+                        <h4 className="font-bold text-sm">Aramex B2B Gateway</h4>
+                      </label>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-4 pt-6"><button type="button" onClick={handlePrevStep} className="px-8 py-3.5 rounded-xl border border-zinc-300 text-zinc-600 font-bold uppercase tracking-widest text-xs">Back</button><button type="submit" className="flex-1 py-3.5 rounded-xl bg-brand text-white font-bold uppercase tracking-widest text-xs shadow-lg">Next</button></div>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence mode="wait">
+        {wizardStep === 4 && (
+          <motion.div
+            key="step4"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+          >
+            <div className="space-y-8 mt-16 pb-4">
+              <h3 className="text-xl font-bold mb-2 uppercase tracking-tight">{isRTL ? "مراجعة الطلب" : "Summary & Payment"}</h3>
+              
+              <div className="bg-slate-50 border border-slate-200 rounded-3xl p-6 mb-6">
+                 <div className="flex justify-between items-center pb-4 border-b border-slate-200 mb-4">
+                   <div><p className="text-[10px] uppercase font-bold text-zinc-500">From</p><p className="font-bold text-sm">{shipperData.city}</p></div>
+                   <ArrowRight className="text-zinc-300 w-5 h-5"/>
+                   <div className="text-right"><p className="text-[10px] uppercase font-bold text-zinc-500">To</p><p className="font-bold text-sm">{receiverData.city}</p></div>
+                 </div>
+                 <div className="flex justify-between items-center text-sm font-semibold mb-2"><span>Base Rate</span><span>{shipmentType === 'international' ? '120' : '30'} AED</span></div>
+              <div className="flex justify-between items-center text-xl font-black text-brand pt-4 border-t border-slate-200"><span>Total</span><span>{calculateTotal()} AED</span></div>
+              </div>
+              
+              {isGuest && (
+                <div className="bg-brand/10 text-brand px-4 py-3 rounded-xl text-xs font-semibold mb-6 flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4"/>
+                  An invoice will be automatically sent to {shipperData.email} upon confirmation.
+                </div>
+              )}
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <label className={`flex items-center gap-4 p-5 border-2 rounded-2xl cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-brand bg-brand/5' : 'border-zinc-200'}`}>
+                   <input type="radio" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} className="w-5 h-5 accent-brand" />
+                   <div><span className="font-bold uppercase text-sm block">Cash on Delivery</span><span className="text-xs text-zinc-500">Pay on pickup or dropoff</span></div>
+                 </label>
+                 <label className={`flex items-center gap-4 p-5 border-2 rounded-2xl cursor-pointer transition-all ${paymentMethod === 'card' ? 'border-brand bg-brand/5' : 'border-zinc-200'}`}>
+                   <input type="radio" checked={paymentMethod === 'card'} onChange={() => setPaymentMethod('card')} className="w-5 h-5 accent-brand" />
+                   <div><span className="font-bold uppercase text-sm block">Card Payment</span><span className="text-xs text-zinc-500">Visa / Mastercard</span></div>
+                 </label>
+              </div>
+    
+              {paymentMethod === 'card' && stripeClientSecret && stripePromise && stripeOptions && (
+                <div className="bg-white rounded-3xl p-6 border border-zinc-100 shadow-sm animate-in zoom-in-95 duration-200">
+                   <Elements stripe={stripePromise} options={stripeOptions}>
+                      <StripePaymentForm 
+                        clientSecret={stripeClientSecret} 
+                        totalAmount={calculateTotal()}
+                        onPaymentSuccess={(intent) => processFinalOrder(intent)}
+                        onCancel={() => setStripeClientSecret(null)}
+                      />
+                   </Elements>
+                </div>
+              )}
+    
+              {paymentMethod === 'card' && !stripeClientSecret && (
+                <div className="flex gap-4 pt-6"><button type="button" onClick={handlePrevStep} className="px-8 py-3.5 rounded-xl border border-zinc-300 text-zinc-600 font-bold uppercase tracking-widest text-xs">Back</button><button type="button" onClick={(e) => handleNextStep(e as any)} disabled={loading} className="flex-1 py-3.5 rounded-xl bg-zinc-900 text-white font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2">{loading ? 'Preparing Payment...' : 'Proceed to Card Entry'}</button></div>
+              )}
+    
+              {paymentMethod === 'cod' && (
+                <div className="flex gap-4 pt-6"><button type="button" onClick={handlePrevStep} className="px-8 py-3.5 rounded-xl border border-zinc-300 text-zinc-600 font-bold uppercase tracking-widest text-xs">Back</button><button type="button" onClick={(e) => handleNextStep(e as any)} disabled={loading} className="flex-1 py-3.5 rounded-xl bg-zinc-900 text-white font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2">{loading ? 'Processing...' : 'Confirm Order'}</button></div>
+              )}
             </div>
-          )}
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-             <label className={`flex items-center gap-4 p-5 border-2 rounded-2xl cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-brand bg-brand/5' : 'border-zinc-200'}`}>
-               <input type="radio" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} className="w-5 h-5 accent-brand" />
-               <div><span className="font-bold uppercase text-sm block">Cash on Delivery</span><span className="text-xs text-zinc-500">Pay on pickup or dropoff</span></div>
-             </label>
-             <label className={`flex items-center gap-4 p-5 border-2 rounded-2xl cursor-pointer transition-all ${paymentMethod === 'card' ? 'border-brand bg-brand/5' : 'border-zinc-200'}`}>
-               <input type="radio" checked={paymentMethod === 'card'} onChange={() => setPaymentMethod('card')} className="w-5 h-5 accent-brand" />
-               <div><span className="font-bold uppercase text-sm block">Card Payment</span><span className="text-xs text-zinc-500">Visa / Mastercard</span></div>
-             </label>
-          </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-          {paymentMethod === 'card' && stripeClientSecret && stripePromise && stripeOptions && (
-            <div className="bg-white rounded-3xl p-6 border border-zinc-100 shadow-sm animate-in zoom-in-95 duration-200">
-               <Elements stripe={stripePromise} options={stripeOptions}>
-                  <StripePaymentForm 
-                    clientSecret={stripeClientSecret} 
-                    totalAmount={calculateTotal()}
-                    onPaymentSuccess={(intent) => processFinalOrder(intent)}
-                    onCancel={() => setStripeClientSecret(null)}
-                  />
-               </Elements>
+      <AnimatePresence mode="wait">
+        {wizardStep === 5 && (
+          <motion.div
+            key="step5"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+          >
+            <div className="text-center py-10 space-y-6 max-w-sm mx-auto">
+              <div className="w-24 h-24 rounded-full bg-brand/10 flex items-center justify-center mx-auto text-brand"><CheckCircle2 className="w-12 h-12" /></div>
+              <h4 className="text-3xl font-black uppercase">Order Created</h4>
+              <div className="bg-slate-100 border border-slate-200 rounded-xl p-4">
+                 <p className="text-[10px] font-black uppercase text-slate-500">Tracking Code</p>
+                 <p className="text-2xl font-mono font-bold text-brand">{createdOrderId}</p>
+              </div>
+              <p className="text-sm text-slate-500">{isGuest ? "Your guest order has been placed. You can track it here." : "Your delivery has been scheduled."}</p>
+              <div className="pt-8">
+                <button onClick={() => isGuest && onRequestLogin ? onRequestLogin() : onNavigate('user_tracking')} className="w-full py-4 rounded-xl bg-brand text-white font-black uppercase tracking-widest text-[12px] flex items-center justify-center gap-2">
+                   {isGuest ? "Login / Track" : "View Tracking"} <ArrowRight className="w-4 h-4"/>
+                </button>
+              </div>
             </div>
-          )}
-
-          {paymentMethod === 'card' && !stripeClientSecret && (
-            <div className="flex gap-4 pt-6"><button type="button" onClick={handlePrevStep} className="px-8 py-3.5 rounded-xl border border-zinc-300 text-zinc-600 font-bold uppercase tracking-widest text-xs">Back</button><button type="button" onClick={(e) => handleNextStep(e as any)} disabled={loading} className="flex-1 py-3.5 rounded-xl bg-zinc-900 text-white font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2">{loading ? 'Preparing Payment...' : 'Proceed to Card Entry'}</button></div>
-          )}
-
-          {paymentMethod === 'cod' && (
-            <div className="flex gap-4 pt-6"><button type="button" onClick={handlePrevStep} className="px-8 py-3.5 rounded-xl border border-zinc-300 text-zinc-600 font-bold uppercase tracking-widest text-xs">Back</button><button type="button" onClick={(e) => handleNextStep(e as any)} disabled={loading} className="flex-1 py-3.5 rounded-xl bg-zinc-900 text-white font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2">{loading ? 'Processing...' : 'Confirm Order'}</button></div>
-          )}
-        </div>
-      )}
-
-      {wizardStep === 5 && (
-        <div className="text-center py-10 space-y-6 max-w-sm mx-auto">
-          <div className="w-24 h-24 rounded-full bg-brand/10 flex items-center justify-center mx-auto text-brand"><CheckCircle2 className="w-12 h-12" /></div>
-          <h4 className="text-3xl font-black uppercase">Order Created</h4>
-          <div className="bg-slate-100 border border-slate-200 rounded-xl p-4">
-             <p className="text-[10px] font-black uppercase text-slate-500">Tracking Code</p>
-             <p className="text-2xl font-mono font-bold text-brand">{createdOrderId}</p>
-          </div>
-          <p className="text-sm text-slate-500">{isGuest ? "Your guest order has been placed. You can track it here." : "Your delivery has been scheduled."}</p>
-          <div className="pt-8">
-            <button onClick={() => isGuest && onRequestLogin ? onRequestLogin() : onNavigate('user_tracking')} className="w-full py-4 rounded-xl bg-brand text-white font-black uppercase tracking-widest text-[12px] flex items-center justify-center gap-2">
-               {isGuest ? "Login / Track" : "View Tracking"} <ArrowRight className="w-4 h-4"/>
-            </button>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

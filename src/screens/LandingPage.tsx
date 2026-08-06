@@ -329,21 +329,13 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
       titleAr: 'نأخذ شحنتك إلى أبعد من ذلك، أسرع، وبأمان أكبر',
       descEn: 'We are your dependable partner for delivering your precious items and ensuring your products reach their destination safely.',
       descAr: 'نحن شريكك الموثوق به لتسليم أغراضك الثمينة وضمان وصول منتجاتك إلى وجهتها بأمان.',
-    },
-    {
-      type: 'image',
-      image: shipmentImg,
-      titleEn: 'Seamless Inter-Emirate Delivery Network',
-      titleAr: 'شبكة توصيل سلسة بين الإمارات',
-      descEn: 'Fast and reliable domestic shipping across all seven Emirates.',
-      descAr: 'شحن محلي سريع وموثوق عبر جميع الإمارات السبع.',
     }
   ];
 
   useEffect(() => {
     const interval = setInterval(() => {
       setHeroSlideIdx(prev => (prev + 1) % heroSlides.length);
-    }, 5000);
+    }, 7500);
     return () => clearInterval(interval);
   }, []);
 
@@ -462,7 +454,7 @@ const [botOpen, setBotOpen] = useState(false);
 
       {/* ─── HERO SLIDER ─── */}
       <div className="w-full relative z-10 bg-white px-6 md:px-16 py-4 pb-0">
-        <div className="relative w-full h-[600px] md:h-[750px] rounded-[2rem] overflow-hidden shadow-sm">
+        <div className="relative w-full h-[510px] md:h-[640px] rounded-[2rem] overflow-hidden shadow-sm">
           {/* Background Slider */}
           <AnimatePresence mode="wait">
             {heroSlides[heroSlideIdx].type === 'video' ? (
@@ -794,16 +786,179 @@ const [botOpen, setBotOpen] = useState(false);
       </section>
 
 {/* BRAND TICKER MARQUEE - Vignette Slate Branding (Full Width) */}
-      <section className="w-full py-12 bg-white border-b border-slate-100 flex flex-col items-center justify-center relative select-none overflow-hidden">
-        <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-white to-transparent z-10" />
-        <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-white to-transparent z-10" />
-        <div className="flex items-center gap-16 animate-marquee whitespace-nowrap">
-          {logos.concat(logos).map((logoItem, idx) => (
-            <div key={idx} className="flex items-center gap-2 select-none shrink-0 opacity-55 hover:opacity-100 transition-opacity">
-              <span className="text-slate-800 font-black text-[13px] uppercase tracking-widest">{logoItem.name}</span>
-              <span className="w-1.5 h-1.5 bg-[#113f36] rounded-full"></span>
-            </div>
-          ))}
+      <section className="w-full py-20 bg-slate-50/50 border-t border-b border-slate-100/60 flex flex-col items-center justify-center relative select-none overflow-hidden">
+        <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-slate-50/50 via-slate-50/20 to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-slate-50/50 via-slate-50/20 to-transparent z-10 pointer-events-none" />
+        
+        {/* Partners Section Header */}
+        <div className="max-w-7xl mx-auto px-6 text-center mb-12 relative z-10">
+          <p className="text-[10px] font-black uppercase text-[#113f36] tracking-[0.25em] mb-3">
+            {isRTL ? 'الشركات المدعومة لخدمات الشحن السريع' : 'INTEGRATED EXPRESS SHIPPING NETWORKS'}
+          </p>
+          <h2 className="text-xl md:text-2xl font-black text-slate-900 uppercase tracking-tight">
+            {isRTL ? 'ندعم الشحن مع كبرى شركات التوصيل والمنصات' : 'Connected with Leading Carriers & Global Brands'}
+          </h2>
+        </div>
+
+        {/* Marquee Ticker */}
+        <div className="w-full overflow-hidden flex whitespace-nowrap">
+          <div className="flex items-center gap-8 animate-marquee whitespace-nowrap py-4 pr-8">
+            {[
+              {
+                logo: (
+                  <div className="flex items-center gap-1.5 select-none shrink-0 font-sans">
+                    <span className="text-[#E31B23] font-black text-2xl tracking-tighter italic">aramex</span>
+                  </div>
+                )
+              },
+              {
+                logo: (
+                  <div className="flex items-center gap-1.5 select-none shrink-0 font-sans">
+                    <div className="bg-[#feee00] text-black font-extrabold text-lg px-3.5 py-1.5 rounded-lg tracking-tighter">
+                      noon
+                    </div>
+                  </div>
+                )
+              },
+              {
+                logo: (
+                  <div className="flex items-center gap-1.5 select-none shrink-0 font-sans">
+                    <div className="bg-[#ffcc00] text-[#d00000] font-black italic text-xl px-4 py-1.5 rounded-lg tracking-tight">
+                      DHL
+                    </div>
+                  </div>
+                )
+              },
+              {
+                logo: (
+                  <div className="flex items-center gap-1.5 select-none shrink-0 font-sans text-xl">
+                    <span className="text-[#4D148C] font-black tracking-tight">Fed</span>
+                    <span className="text-[#FF6600] font-black tracking-tight -ml-1">Ex</span>
+                  </div>
+                )
+              },
+              {
+                logo: (
+                  <div className="flex items-center gap-1.5 select-none shrink-0 font-sans text-xl">
+                    <span className="text-[#113f36] font-black tracking-tight">USend</span>
+                    <span className="text-[#cca073] font-black tracking-tight -ml-1">Fleet</span>
+                  </div>
+                )
+              },
+              {
+                logo: (
+                  <div className="flex flex-col select-none shrink-0 font-sans relative pt-1">
+                    <span className="text-black font-black text-xl tracking-tight leading-none">amazon</span>
+                    <div className="w-14 h-1.5 bg-[#FF9900] rounded-full -mt-0.5 ml-1 self-start animate-pulse"></div>
+                  </div>
+                )
+              }
+            ].concat([
+              {
+                logo: (
+                  <div className="flex items-center gap-1.5 select-none shrink-0 font-sans">
+                    <span className="text-[#E31B23] font-black text-2xl tracking-tighter italic">aramex</span>
+                  </div>
+                )
+              },
+              {
+                logo: (
+                  <div className="flex items-center gap-1.5 select-none shrink-0 font-sans">
+                    <div className="bg-[#feee00] text-black font-extrabold text-lg px-3.5 py-1.5 rounded-lg tracking-tighter">
+                      noon
+                    </div>
+                  </div>
+                )
+              },
+              {
+                logo: (
+                  <div className="flex items-center gap-1.5 select-none shrink-0 font-sans">
+                    <div className="bg-[#ffcc00] text-[#d00000] font-black italic text-xl px-4 py-1.5 rounded-lg tracking-tight">
+                      DHL
+                    </div>
+                  </div>
+                )
+              },
+              {
+                logo: (
+                  <div className="flex items-center gap-1.5 select-none shrink-0 font-sans text-xl">
+                    <span className="text-[#4D148C] font-black tracking-tight">Fed</span>
+                    <span className="text-[#FF6600] font-black tracking-tight -ml-1">Ex</span>
+                  </div>
+                )
+              },
+              {
+                logo: (
+                  <div className="flex items-center gap-1.5 select-none shrink-0 font-sans text-xl">
+                    <span className="text-[#113f36] font-black tracking-tight">USend</span>
+                    <span className="text-[#cca073] font-black tracking-tight -ml-1">Fleet</span>
+                  </div>
+                )
+              },
+              {
+                logo: (
+                  <div className="flex flex-col select-none shrink-0 font-sans relative pt-1">
+                    <span className="text-black font-black text-xl tracking-tight leading-none">amazon</span>
+                    <div className="w-14 h-1.5 bg-[#FF9900] rounded-full -mt-0.5 ml-1 self-start animate-pulse"></div>
+                  </div>
+                )
+              }
+            ]).concat([
+              {
+                logo: (
+                  <div className="flex items-center gap-1.5 select-none shrink-0 font-sans">
+                    <span className="text-[#E31B23] font-black text-2xl tracking-tighter italic">aramex</span>
+                  </div>
+                )
+              },
+              {
+                logo: (
+                  <div className="flex items-center gap-1.5 select-none shrink-0 font-sans">
+                    <div className="bg-[#feee00] text-black font-extrabold text-lg px-3.5 py-1.5 rounded-lg tracking-tighter">
+                      noon
+                    </div>
+                  </div>
+                )
+              },
+              {
+                logo: (
+                  <div className="flex items-center gap-1.5 select-none shrink-0 font-sans">
+                    <div className="bg-[#ffcc00] text-[#d00000] font-black italic text-xl px-4 py-1.5 rounded-lg tracking-tight">
+                      DHL
+                    </div>
+                  </div>
+                )
+              },
+              {
+                logo: (
+                  <div className="flex items-center gap-1.5 select-none shrink-0 font-sans text-xl">
+                    <span className="text-[#4D148C] font-black tracking-tight">Fed</span>
+                    <span className="text-[#FF6600] font-black tracking-tight -ml-1">Ex</span>
+                  </div>
+                )
+              },
+              {
+                logo: (
+                  <div className="flex items-center gap-1.5 select-none shrink-0 font-sans text-xl">
+                    <span className="text-[#113f36] font-black tracking-tight">USend</span>
+                    <span className="text-[#cca073] font-black tracking-tight -ml-1">Fleet</span>
+                  </div>
+                )
+              },
+              {
+                logo: (
+                  <div className="flex flex-col select-none shrink-0 font-sans relative pt-1">
+                    <span className="text-black font-black text-xl tracking-tight leading-none">amazon</span>
+                    <div className="w-14 h-1.5 bg-[#FF9900] rounded-full -mt-0.5 ml-1 self-start animate-pulse"></div>
+                  </div>
+                )
+              }
+            ]).map((logoItem, idx) => (
+              <div key={idx} className="flex items-center gap-2 select-none shrink-0 opacity-60 hover:opacity-100 transition-all duration-300 transform hover:scale-105 filter hover:grayscale-0 grayscale bg-white px-8 py-4 rounded-2xl border border-slate-100 shadow-xs">
+                {logoItem.logo}
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
