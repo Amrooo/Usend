@@ -413,26 +413,30 @@ const [botOpen, setBotOpen] = useState(false);
       
       
       
-      {/* ── HEADER (ABOVE SLIDER) ── */}
-      <header className={`w-full bg-white flex items-center justify-between sticky top-0 z-50 transition-all duration-300 px-6 md:px-16 ${
+      {/* ── HEADER (FLOATING & OVERLAY) ── */}
+      <header className={`z-50 transition-all duration-300 ${
         isScrolled 
-          ? 'py-2.5 shadow-md bg-white/95 backdrop-blur-md border-b border-zinc-100' 
-          : 'py-5 bg-white'
+          ? 'fixed top-0 inset-x-0 py-2.5 shadow-md bg-white/95 backdrop-blur-md border-b border-zinc-100 text-slate-900 px-6 md:px-16 flex items-center justify-between' 
+          : 'absolute top-8 left-12 md:left-24 right-12 md:right-24 bg-transparent text-white px-0 py-0 flex items-center justify-between'
       }`}>
         {/* Logo */}
         <div
           className="flex items-center gap-3.5 cursor-pointer select-none"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         >
-          <LogoIcon className="h-13 w-auto transition-transform duration-300" variant="dark" />
+          <LogoIcon className={`h-13 w-auto transition-all duration-300 ${!isScrolled ? 'brightness-0 invert' : ''}`} />
           <div className="flex flex-col">
-            <span className="text-xl font-black text-slate-900 tracking-tight leading-none">USend</span>
-            <span className="text-[10px] font-mono font-bold uppercase text-[#113f36] tracking-wider leading-none mt-1.5">Smart Shipping</span>
+            <span className={`text-xl font-black tracking-tight leading-none transition-colors duration-300 ${isScrolled ? 'text-slate-900' : 'text-white'}`}>USend</span>
+            <span className={`text-[10px] font-mono font-bold uppercase tracking-wider leading-none mt-1.5 transition-colors duration-300 ${isScrolled ? 'text-[#113f36]' : 'text-[#cca073]'}`}>Smart Shipping</span>
           </div>
         </div>
         
         {/* Navigation Links */}
-        <div className="hidden md:flex items-center gap-6 text-[13px] font-medium text-slate-700 bg-slate-50 border border-slate-200/60 px-8 py-3 rounded-full">
+        <div className={`hidden md:flex items-center gap-6 text-[13px] font-medium transition-all duration-300 px-8 py-3 rounded-full ${
+          isScrolled 
+            ? 'text-slate-700 bg-slate-50 border border-slate-200/60' 
+            : 'text-white bg-white/10 backdrop-blur-md border border-white/20'
+        }`}>
           <a href="#landing-root" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-[#cca073] transition-colors">{isRTL ? 'الرئيسية' : 'Home'}</a>
           <a href="#services"  onClick={(e) => handleScrollTo(e, 'services')}  className="hover:text-[#cca073] transition-colors">{isRTL ? 'الخدمات' : 'Services'}</a>
           <a href="#solutions" onClick={(e) => handleScrollTo(e, 'solutions')} className="hover:text-[#cca073] transition-colors">{isRTL ? 'الحلول' : 'Resources'}</a>
@@ -444,7 +448,11 @@ const [botOpen, setBotOpen] = useState(false);
         <div className="flex items-center gap-4">
           <button
             onClick={() => { setLoginRole('user'); setLoginModalOpen(true); }}
-            className="px-6 py-2.5 rounded-lg bg-[#113f36] hover:bg-[#0d3029] text-white font-bold transition-all cursor-pointer shadow-sm text-[13px] flex items-center gap-2"
+            className={`px-6 py-2.5 rounded-lg font-bold transition-all cursor-pointer shadow-sm text-[13px] flex items-center gap-2 ${
+              isScrolled 
+                ? 'bg-[#113f36] hover:bg-[#0d3029] text-white' 
+                : 'bg-white hover:bg-slate-100 text-zinc-950 shadow-md'
+            }`}
           >
             {isRTL ? 'طلب تسعيرة' : 'Get Started'}
             <ArrowUpRight className="w-4 h-4" />
@@ -541,18 +549,174 @@ const [botOpen, setBotOpen] = useState(false);
         </div>
 
         {/* Partners Section */}
-        <div className="w-full bg-white py-14 flex flex-col items-center">
-          <p className="text-slate-500 font-medium text-[15px] mb-10">{isRTL ? 'شركاء الشركات العالمية الرائدة' : 'Partners of world leading companies'}</p>
-          <div className="flex flex-wrap items-center justify-center gap-10 md:gap-20 opacity-70 grayscale select-none">
-            <span className="text-3xl font-black tracking-tighter text-slate-800">Ferrari</span>
-            <span className="text-3xl font-black tracking-tighter text-slate-800 flex items-center gap-2">
-               <Globe2 className="w-8 h-8"/> TOYOTA
-            </span>
-            <span className="text-3xl font-black tracking-widest text-slate-800">T E S L A</span>
-            <span className="text-3xl font-black italic text-slate-800">HIGER</span>
-            <span className="text-3xl font-bold text-slate-800">Marcopolo</span>
+        <section className="w-full py-12 bg-white flex flex-col items-center justify-center relative select-none overflow-hidden border-b border-slate-100">
+          <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
+          <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
+          
+          <p className="text-slate-500 font-medium text-[15px] mb-8">
+            {isRTL ? 'شركاء الشركات العالمية الرائدة' : 'Partners of world leading shipping companies'}
+          </p>
+
+          <div className="w-full overflow-hidden flex whitespace-nowrap">
+            <div className="flex items-center gap-8 animate-marquee whitespace-nowrap py-2 pr-8">
+              {[
+                {
+                  logo: (
+                    <div className="flex items-center gap-1.5 font-sans select-none shrink-0">
+                      <span className="text-[#E31B23] font-black text-2xl tracking-tighter italic">aramex</span>
+                    </div>
+                  )
+                },
+                {
+                  logo: (
+                    <div className="flex items-center gap-1.5 font-sans select-none shrink-0">
+                      <div className="bg-[#feee00] text-black font-extrabold text-lg px-3.5 py-1.5 rounded-lg tracking-tighter">
+                        noon
+                      </div>
+                    </div>
+                  )
+                },
+                {
+                  logo: (
+                    <div className="flex items-center gap-1.5 font-sans select-none shrink-0">
+                      <div className="bg-[#ffcc00] text-[#d00000] font-black italic text-xl px-4 py-1.5 rounded-lg tracking-tight">
+                        DHL
+                      </div>
+                    </div>
+                  )
+                },
+                {
+                  logo: (
+                    <div className="flex items-center gap-1.5 font-sans select-none shrink-0 text-xl">
+                      <span className="text-[#4D148C] font-black tracking-tight">Fed</span>
+                      <span className="text-[#FF6600] font-black tracking-tight -ml-1">Ex</span>
+                    </div>
+                  )
+                },
+                {
+                  logo: (
+                    <div className="flex items-center gap-1.5 font-sans select-none shrink-0 text-xl">
+                      <span className="text-[#113f36] font-black tracking-tight">USend</span>
+                      <span className="text-[#cca073] font-black tracking-tight -ml-1">Fleet</span>
+                    </div>
+                  )
+                },
+                {
+                  logo: (
+                    <div className="flex flex-col font-sans select-none shrink-0 relative pt-1">
+                      <span className="text-black font-black text-xl tracking-tight leading-none">amazon</span>
+                      <div className="w-14 h-1.5 bg-[#FF9900] rounded-full -mt-0.5 ml-1 self-start animate-pulse"></div>
+                    </div>
+                  )
+                }
+              ].concat([
+                {
+                  logo: (
+                    <div className="flex items-center gap-1.5 font-sans select-none shrink-0">
+                      <span className="text-[#E31B23] font-black text-2xl tracking-tighter italic">aramex</span>
+                    </div>
+                  )
+                },
+                {
+                  logo: (
+                    <div className="flex items-center gap-1.5 font-sans select-none shrink-0">
+                      <div className="bg-[#feee00] text-black font-extrabold text-lg px-3.5 py-1.5 rounded-lg tracking-tighter">
+                        noon
+                      </div>
+                    </div>
+                  )
+                },
+                {
+                  logo: (
+                    <div className="flex items-center gap-1.5 font-sans select-none shrink-0">
+                      <div className="bg-[#ffcc00] text-[#d00000] font-black italic text-xl px-4 py-1.5 rounded-lg tracking-tight">
+                        DHL
+                      </div>
+                    </div>
+                  )
+                },
+                {
+                  logo: (
+                    <div className="flex items-center gap-1.5 font-sans select-none shrink-0 text-xl">
+                      <span className="text-[#4D148C] font-black tracking-tight">Fed</span>
+                      <span className="text-[#FF6600] font-black tracking-tight -ml-1">Ex</span>
+                    </div>
+                  )
+                },
+                {
+                  logo: (
+                    <div className="flex items-center gap-1.5 font-sans select-none shrink-0 text-xl">
+                      <span className="text-[#113f36] font-black tracking-tight">USend</span>
+                      <span className="text-[#cca073] font-black tracking-tight -ml-1">Fleet</span>
+                    </div>
+                  )
+                },
+                {
+                  logo: (
+                    <div className="flex flex-col font-sans select-none shrink-0 relative pt-1">
+                      <span className="text-black font-black text-xl tracking-tight leading-none">amazon</span>
+                      <div className="w-14 h-1.5 bg-[#FF9900] rounded-full -mt-0.5 ml-1 self-start animate-pulse"></div>
+                    </div>
+                  )
+                }
+              ]).concat([
+                {
+                  logo: (
+                    <div className="flex items-center gap-1.5 font-sans select-none shrink-0">
+                      <span className="text-[#E31B23] font-black text-2xl tracking-tighter italic">aramex</span>
+                    </div>
+                  )
+                },
+                {
+                  logo: (
+                    <div className="flex items-center gap-1.5 font-sans select-none shrink-0">
+                      <div className="bg-[#feee00] text-black font-extrabold text-lg px-3.5 py-1.5 rounded-lg tracking-tighter">
+                        noon
+                      </div>
+                    </div>
+                  )
+                },
+                {
+                  logo: (
+                    <div className="flex items-center gap-1.5 font-sans select-none shrink-0">
+                      <div className="bg-[#ffcc00] text-[#d00000] font-black italic text-xl px-4 py-1.5 rounded-lg tracking-tight">
+                        DHL
+                      </div>
+                    </div>
+                  )
+                },
+                {
+                  logo: (
+                    <div className="flex items-center gap-1.5 font-sans select-none shrink-0 text-xl">
+                      <span className="text-[#4D148C] font-black tracking-tight">Fed</span>
+                      <span className="text-[#FF6600] font-black tracking-tight -ml-1">Ex</span>
+                    </div>
+                  )
+                },
+                {
+                  logo: (
+                    <div className="flex items-center gap-1.5 font-sans select-none shrink-0 text-xl">
+                      <span className="text-[#113f36] font-black tracking-tight">USend</span>
+                      <span className="text-[#cca073] font-black tracking-tight -ml-1">Fleet</span>
+                    </div>
+                  )
+                },
+                {
+                  logo: (
+                    <div className="flex flex-col font-sans select-none shrink-0 relative pt-1">
+                      <span className="text-black font-black text-xl tracking-tight leading-none">amazon</span>
+                      <div className="w-14 h-1.5 bg-[#FF9900] rounded-full -mt-0.5 ml-1 self-start animate-pulse"></div>
+                    </div>
+                  )
+                }
+              ]).map((logoItem, idx) => (
+                <div key={idx} className="flex items-center gap-2 select-none shrink-0 bg-white px-8 py-3.5 rounded-2xl border border-slate-100 shadow-xs transition-transform duration-300 hover:scale-105">
+                  {logoItem.logo}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        </section>
 
         {/* Guest Order Wizard Styled for Theme */}
         <div className="w-full bg-slate-50/30 py-24 px-4 md:px-8 relative z-20 border-t border-b border-slate-100/50" id="order-wizard">

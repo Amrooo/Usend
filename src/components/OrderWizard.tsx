@@ -127,7 +127,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
     description: '', 
     quantity: '1', 
     photo: null as string | null, 
-    courier: 'noon' as 'usend' | 'aramex' | 'noon', 
+    courier: 'usend' as 'usend' | 'aramex' | 'noon', 
     declaredValue: '',
     codAmount: '150',
     receiverPaymentMode: 'cod' as 'cod' | 'card'
@@ -206,24 +206,21 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
   };
 
   const calculateTotal = () => {
-    const courierId = shipmentData.courier || 'noon';
-    const userType = isGuest ? 'guest' : (user?.role === 'merchant' || user?.email?.toLowerCase().includes('merchant') ? 'merchant' : 'user');
-    
-    const config = courierConfigs?.[courierId];
-    if (config && config.rates && config.rates[userType]) {
-      const rate = config.rates[userType];
-      const baseFee = rate.baseFee;
-      const additionalWeight = Math.max(0, parseFloat(shipmentData.weight || '1') - 1); // standard threshold: 1kg
-      const weightFee = additionalWeight * rate.perKgRate;
-      const codFee = shipmentData.receiverPaymentMode === 'cod' ? rate.codFee : 0;
-      const distanceFee = rate.perKmRate * 15; // Assume 15km average for base calculation
-      
-      return baseFee + weightFee + codFee + distanceFee;
+    let baseFee = 30;
+    if (shipmentData.courier === 'aramex') {
+      baseFee = 35;
+    } else if (shipmentData.courier === 'noon') {
+      baseFee = 28;
+    } else {
+      baseFee = 30; // usend
     }
 
-    const baseFee = shipmentType === 'international' ? 120 : 30;
+    if (shipmentType === 'international') {
+      baseFee = 120;
+    }
+
     const additionalWeight = Math.max(0, parseFloat(shipmentData.weight || '1') - 5);
-    const weightFee = additionalWeight * 5;
+    const weightFee = additionalWeight * 5; // 5 AED per kg above 5kg
     return baseFee + weightFee;
   };
 
@@ -610,21 +607,57 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
                   </label>
                 </div>
                 
-                {!isGuest && (
-                  <div className="space-y-4 md:col-span-2 pt-4 border-t border-zinc-100">
-                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Advanced Courier Routing</label>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <label className={`p-4 rounded-xl border-2 cursor-pointer ${shipmentData.courier === 'usend' ? 'border-brand bg-brand/5' : 'border-zinc-200'}`}>
-                        <input type="radio" value="usend" checked={shipmentData.courier === 'usend'} onChange={() => setShipmentData(p =>({...p, courier: 'usend'}))} className="hidden"/>
-                        <h4 className="font-bold text-sm">USend Fleet Delivery</h4>
-                      </label>
-                      <label className={`p-4 rounded-xl border-2 cursor-pointer ${shipmentData.courier === 'aramex' ? 'border-red-600 bg-red-600/5' : 'border-zinc-200'}`}>
-                        <input type="radio" value="aramex" checked={shipmentData.courier === 'aramex'} onChange={() => setShipmentData(p =>({...p, courier: 'aramex'}))} className="hidden"/>
-                        <h4 className="font-bold text-sm">Aramex B2B Gateway</h4>
-                      </label>
-                    </div>
+                <div className="space-y-4 md:col-span-2 pt-4 border-t border-zinc-100">
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Select Courier & Shipping Speed</label>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    
+                    {/* USend Fleet Option */}
+                    <label className={`flex flex-col justify-between p-5 rounded-2xl border-2 cursor-pointer transition-all ${shipmentData.courier === 'usend' ? 'border-brand bg-brand/5 shadow-md shadow-brand/5' : 'border-zinc-200 bg-white hover:border-zinc-300'}`}>
+                      <input type="radio" value="usend" checked={shipmentData.courier === 'usend'} onChange={() => setShipmentData(p =>({...p, courier: 'usend'}))} className="hidden"/>
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-1.5 font-sans select-none text-base">
+                          <span className="text-[#113f36] font-black tracking-tight">USend</span>
+                          <span className="text-[#cca073] font-black tracking-tight -ml-1">Fleet</span>
+                        </div>
+                        <div>
+                          <span className="font-black text-xl text-brand">30 AED</span>
+                          <p className="text-[10px] text-zinc-500 font-bold uppercase mt-1">Instant Delivery</p>
+                        </div>
+                      </div>
+                    </label>
+
+                    {/* Aramex Option */}
+                    <label className={`flex flex-col justify-between p-5 rounded-2xl border-2 cursor-pointer transition-all ${shipmentData.courier === 'aramex' ? 'border-[#E31B23] bg-red-500/5 shadow-md shadow-red-500/5' : 'border-zinc-200 bg-white hover:border-zinc-300'}`}>
+                      <input type="radio" value="aramex" checked={shipmentData.courier === 'aramex'} onChange={() => setShipmentData(p =>({...p, courier: 'aramex'}))} className="hidden"/>
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-1.5 font-sans select-none shrink-0">
+                          <span className="text-[#E31B23] font-black text-xl tracking-tighter italic">aramex</span>
+                        </div>
+                        <div>
+                          <span className="font-black text-xl text-[#E31B23]">35 AED</span>
+                          <p className="text-[10px] text-zinc-500 font-bold uppercase mt-1">Next-Day Delivery</p>
+                        </div>
+                      </div>
+                    </label>
+
+                    {/* Noon Option */}
+                    <label className={`flex flex-col justify-between p-5 rounded-2xl border-2 cursor-pointer transition-all ${shipmentData.courier === 'noon' ? 'border-[#feee00] bg-yellow-500/5 shadow-md shadow-yellow-500/5' : 'border-zinc-200 bg-white hover:border-zinc-300'}`}>
+                      <input type="radio" value="noon" checked={shipmentData.courier === 'noon'} onChange={() => setShipmentData(p =>({...p, courier: 'noon'}))} className="hidden"/>
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-1.5 font-sans select-none shrink-0">
+                          <div className="bg-[#feee00] text-black font-extrabold text-xs px-2 py-1 rounded tracking-tighter">
+                            noon
+                          </div>
+                        </div>
+                        <div>
+                          <span className="font-black text-xl text-zinc-950">28 AED</span>
+                          <p className="text-[10px] text-zinc-500 font-bold uppercase mt-1">Eco-Saver Delivery</p>
+                        </div>
+                      </div>
+                    </label>
+
                   </div>
-                )}
+                </div>
               </div>
               <div className="flex gap-4 pt-6"><button type="button" onClick={handlePrevStep} className="px-8 py-3.5 rounded-xl border border-zinc-300 text-zinc-600 font-bold uppercase tracking-widest text-xs">Back</button><button type="submit" className="flex-1 py-3.5 rounded-xl bg-brand text-white font-bold uppercase tracking-widest text-xs shadow-lg">Next</button></div>
             </form>
@@ -644,14 +677,68 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
             <div className="space-y-8 mt-16 pb-4">
               <h3 className="text-xl font-bold mb-2 uppercase tracking-tight">{isRTL ? "مراجعة الطلب" : "Summary & Payment"}</h3>
               
-              <div className="bg-slate-50 border border-slate-200 rounded-3xl p-6 mb-6">
-                 <div className="flex justify-between items-center pb-4 border-b border-slate-200 mb-4">
-                   <div><p className="text-[10px] uppercase font-bold text-zinc-500">From</p><p className="font-bold text-sm">{shipperData.city}</p></div>
-                   <ArrowRight className="text-zinc-300 w-5 h-5"/>
-                   <div className="text-right"><p className="text-[10px] uppercase font-bold text-zinc-500">To</p><p className="font-bold text-sm">{receiverData.city}</p></div>
-                 </div>
-                 <div className="flex justify-between items-center text-sm font-semibold mb-2"><span>Base Rate</span><span>{shipmentType === 'international' ? '120' : '30'} AED</span></div>
-              <div className="flex justify-between items-center text-xl font-black text-brand pt-4 border-t border-slate-200"><span>Total</span><span>{calculateTotal()} AED</span></div>
+              <div className="bg-white border border-slate-200 rounded-[2rem] p-6 lg:p-8 space-y-6 shadow-xs mb-6 text-left rtl:text-right">
+                
+                {/* Visual Route */}
+                <div className="bg-slate-50 rounded-2xl p-5 flex items-center justify-between border border-slate-100">
+                  <div>
+                    <span className="text-[9px] uppercase font-black text-zinc-400 tracking-wider block">Pickup</span>
+                    <p className="font-bold text-sm text-zinc-800">{shipperData.city || 'Dubai'}</p>
+                    <p className="text-[11px] text-zinc-500 font-semibold">{shipperData.name} ({shipperData.phone})</p>
+                  </div>
+                  <div className="flex flex-col items-center justify-center px-4">
+                    <ArrowRight className="text-brand w-5 h-5 animate-pulse" />
+                    <span className="text-[8px] uppercase font-bold text-zinc-400 mt-1 tracking-widest">{shipmentType === 'international' ? 'Air Cargo' : 'Land Transport'}</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[9px] uppercase font-black text-zinc-400 tracking-wider block">Dropoff</span>
+                    <p className="font-bold text-sm text-zinc-800">{receiverData.city || 'Abu Dhabi'}</p>
+                    <p className="text-[11px] text-zinc-500 font-semibold">{receiverData.name} ({receiverData.phone})</p>
+                  </div>
+                </div>
+
+                {/* Package Details */}
+                <div className="grid grid-cols-2 gap-4 text-xs font-semibold text-zinc-600 border-b border-zinc-100 pb-4">
+                  <div>
+                    <span className="text-[9px] uppercase font-black text-zinc-400 tracking-wider block">Package Type</span>
+                    <span className="text-zinc-800 font-bold">{shipmentData.description || 'Package Shipment'}</span>
+                  </div>
+                  <div>
+                    <span className="text-[9px] uppercase font-black text-zinc-400 tracking-wider block">Weight & Qty</span>
+                    <span className="text-zinc-800 font-bold">{shipmentData.weight} kg / {shipmentData.quantity} Units</span>
+                  </div>
+                </div>
+
+                {/* Pricing Details */}
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between items-center text-zinc-500 font-medium">
+                    <span>Selected Courier ({shipmentData.courier === 'aramex' ? 'Aramex' : shipmentData.courier === 'noon' ? 'Noon' : 'USend Fleet'})</span>
+                    <span className="font-semibold text-zinc-800">
+                      {shipmentData.courier === 'aramex' ? '35' : shipmentData.courier === 'noon' ? '28' : '30'} AED
+                    </span>
+                  </div>
+                  
+                  {parseFloat(shipmentData.weight || '0') > 5 && (
+                    <div className="flex justify-between items-center text-zinc-500 font-medium">
+                      <span>Weight Surcharge ({Math.max(0, parseFloat(shipmentData.weight || '0') - 5)} kg extra)</span>
+                      <span className="font-semibold text-zinc-800">
+                        {Math.max(0, parseFloat(shipmentData.weight || '0') - 5) * 5} AED
+                      </span>
+                    </div>
+                  )}
+
+                  {shipmentType === 'international' && (
+                    <div className="flex justify-between items-center text-zinc-500 font-medium">
+                      <span>International Base Markup</span>
+                      <span className="font-semibold text-zinc-800">90 AED</span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between items-center text-xl font-black text-brand pt-4 border-t border-slate-100 mt-4">
+                    <span>Total Cost</span>
+                    <span>{calculateTotal()} AED</span>
+                  </div>
+                </div>
               </div>
               
               {isGuest && (

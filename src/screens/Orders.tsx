@@ -3,6 +3,7 @@ import { Package, ChevronRight, Clock, CheckCircle2, Filter, Search } from 'luci
 import { Screen } from '../types';
 import BottomNav from '../components/BottomNav';
 import { useLanguage } from '../context/LanguageContext';
+import { useApp } from '../context/AppContext';
 
 interface OrdersProps {
   key?: string;
@@ -11,13 +12,23 @@ interface OrdersProps {
 
 export default function Orders({ onNavigate }: OrdersProps) {
   const { t, isRTL } = useLanguage();
+  const { activeRequests, user } = useApp();
 
-  const orders = [
-    { id: 'TRSH-9921-X', status: 'in_transit', date: 'Today, 14:20', items: 'King Size Bed', price: 'AED 120.00', active: true },
-    { id: 'TRSH-8842-Y', status: 'delivered', date: 'Yesterday, 10:15', items: 'Office Desk + Chair', price: 'AED 85.00', active: false },
-    { id: 'TRSH-7712-Z', status: 'delivered', date: '12 Mar, 16:40', items: 'Kitchen Appliances', price: 'AED 210.00', active: false },
-    { id: 'TRSH-6541-A', status: 'delivered', date: '05 Mar, 09:20', items: 'Living Room Sofa', price: 'AED 350.00', active: false },
-  ];
+  const storedGuestData = JSON.parse(localStorage.getItem('guestOrders') || '[]');
+  const storedGuestIds = storedGuestData.map((g: any) => g.id);
+  const myRequests = activeRequests.filter((req: any) => 
+    (user?.uid && (req.userId === user.uid || req.phone === user.phoneNumber || storedGuestIds.includes(req.id))) || 
+    (!user?.uid && (req.applicantType === 'Individual User' || req.applicantType === 'User' || storedGuestIds.includes(req.id)))
+  );
+
+  const orders = myRequests.map((r: any) => ({
+    id: r.id,
+    status: r.status,
+    date: r.date || 'Today',
+    items: r.itemType || r.description || 'Package Shipment',
+    price: `${parseFloat(String(r.orderAmount || '30').replace(/[^0-9.]/g, ''))} AED`,
+    active: r.status !== 'delivered' && r.status !== 'Rejected'
+  }));
 
   return (
     <motion.div
