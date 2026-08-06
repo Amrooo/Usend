@@ -1326,22 +1326,6 @@ const [botOpen, setBotOpen] = useState(false);
 
           <div className="max-w-7xl mx-auto space-y-16 relative z-10">
             
-            {/* Footer main banner */}
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 pb-12 border-b border-white/10">
-              <div className="space-y-2 text-left">
-                <h3 className="text-xl md:text-3xl font-black uppercase tracking-tight">{content.footerLead}</h3>
-                <p className="text-slate-400 text-xs md:text-sm font-semibold">{content.footerLeadDesc}</p>
-              </div>
-              <div className="flex gap-4">
-                <button 
-                  onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="px-6 py-3.5 bg-white text-slate-950 text-[12px] font-black uppercase tracking-widest rounded-full hover:bg-[#113f36] hover:text-white transition-all shadow-md cursor-pointer"
-                >
-                  Launch Platform
-                </button>
-              </div>
-            </div>
-
             <div className="grid grid-cols-1 md:grid-cols-4 gap-12 text-left">
               
               <div className="space-y-6 md:col-span-2">
