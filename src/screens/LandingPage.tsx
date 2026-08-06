@@ -46,19 +46,19 @@ const landingTranslations = {
     hubAccess: 'Hub Access',
     heroBadge: 'Multi-Courier E-Commerce Shipping Gateway',
     heroTitle: 'Unified Courier HubFor E-Commerce',
-    heroDesc: 'SwiftMove is a central hub connecting online merchants and users with last-mile couriers to deliver products and items seamlessly. Provide recipient details, designate item prices, and choose payment modes in one unified dashboard. Easily dispatch via sandbox channels like Aramex or use our active on-demand local drivers on the SwiftMove driver app.',
+    heroDesc: 'USend is a central hub connecting online merchants and users with last-mile couriers to deliver products and items seamlessly. Provide recipient details, designate item prices, and choose payment modes in one unified dashboard. Easily dispatch via sandbox channels like Aramex or use our active on-demand local drivers on the USend driver app.',
     btnDownloadApp: 'Download App',
     btnLearnMore: 'Get Pricing Estimate',
-    aboutCaption: 'About SwiftMove Gateway',
+    aboutCaption: 'About USend Gateway',
     aboutTitle: 'Connect Online Shops & Custom API Dispatches to UAE Courier Networks.',
-    aboutDesc: 'Enter receiver parameters, set the exact payment value you want to collect, and determine options for cash or card. Integrated services like Aramex automatically route jobs to external carriers, while other dispatches are handled immediately by local SwiftMove drivers using the Driver App.',
+    aboutDesc: 'Enter receiver parameters, set the exact payment value you want to collect, and determine options for cash or card. Integrated services like Aramex automatically route jobs to external carriers, while other dispatches are handled immediately by local USend drivers using the Driver App.',
     aboutAchievement: '98.5% On-Time Delivery Across UAE Domestic Networks',
     statIndigenous: '15K+ Active Store Merchants',
     statTons: '5M+ Waybills Generated',
     statClients: '98%+ Courier SLA Met',
     servicesBadge: 'Unified Gateway',
     servicesTitle: 'One integration. Connected courier channels.',
-    servicesDesc: 'From establishing customer delivery addresses and collecting custom cash payouts to on-demand driver dispatch, SwiftMove powers the complete logistics loop.',
+    servicesDesc: 'From establishing customer delivery addresses and collecting custom cash payouts to on-demand driver dispatch, USend powers the complete logistics loop.',
     portalsBadge: 'All-In-One Unified Ecosystem',
     portalsTitle: 'Connected Ports For UAE E-Commerce Deliveries',
     portalsDesc: 'Gain direct access to respective interfaces built precisely for portal merchants, active driver fleets, retail customers, and country-wide administrators.',
@@ -90,10 +90,10 @@ const landingTranslations = {
     howStep1Desc: 'Input recipient credentials, delivery destinations, and specify package price details and optimal payout methods for COD/Prepaid.',
     howStep2Num: '02',
     howStep2Title: 'Integrated Courier Selection',
-    howStep2Desc: 'Choose the courier that fits. Selecting Aramex utilizes external sandbox tracking, and other options assign directly to the SwiftMove driver pool.',
+    howStep2Desc: 'Choose the courier that fits. Selecting Aramex utilizes external sandbox tracking, and other options assign directly to the USend driver pool.',
     howStep3Num: '03',
     howStep3Title: 'On-Demand Local Driver Assignment',
-    howStep3Desc: 'Private driver fleets accept pending SwiftMove orders via the Driver Companion App, initiating optimized navigation and live tracking.',
+    howStep3Desc: 'Private driver fleets accept pending USend orders via the Driver Companion App, initiating optimized navigation and live tracking.',
     howStep4Num: '04',
     howStep4Title: 'Instant COD Settlement',
     howStep4Desc: 'Cash-on-Delivery collections are automatically updated on your merchant ledger. Settle and withdraw payments straight to your bank account.',
@@ -103,7 +103,7 @@ const landingTranslations = {
     teamSlogan: 'Skilled Experts in Logistics and E-Commerce Integration. Delivering GCC Domestic Excellence.',
     faqBadge: 'Common Questions',
     faqTitle: 'Frequently Answered Questions',
-    faq1Q: 'How does SwiftMove integrate with my existing online store?',
+    faq1Q: 'How does USend integrate with my existing online store?',
     faq1A: 'We support one-click API integrations for WooCommerce, Shopify, Magento, and Wix. Once connected, orders are synced in real-time, allowing immediate waybill generation.',
     faq2Q: 'Do you support international parcel shipping?',
     faq2A: 'International shipping across GCC states (Riyadh, Doha, Bahrain, Muscat) and worldwide is currently under construction and is marked as "Coming Soon" with live trials launching next quarter.',
@@ -113,14 +113,14 @@ const landingTranslations = {
     faq4A: 'Our smart wallet tracks driver feedback instantly. Once the receiver confirms signature and pays, the amount is credited to your Merchant Wallet to withdraw anytime.',
     footerLead: 'Accelerate E-Commerce Deliveries & Settle Payments Instantly',
     footerLeadDesc: 'Link your store with our multi-courier aggregator and optimize your delivery operational speed.',
-    copyright: '© 2026 SWIFTMOVE SYSTEMS (SHIPLIFIER GATEWAY AGENCY). REGULATION COMPLIANT IN UAE.',
-    botGreeting: 'Hello! I am SwiftMove AI Assistant. Enter any Order Number (e.g., REQ-1001) to track your delivery, or ask about our e-commerce integrations.',
+    copyright: '© 2026 USEND SYSTEMS (SHIPLIFIER GATEWAY AGENCY). REGULATION COMPLIANT IN UAE.',
+    botGreeting: 'Hello! I am USend AI Assistant. Enter any Order Number (e.g., REQ-1001) to track your delivery, or ask about our e-commerce integrations.',
     smartSolutionsTitle: 'Smart Solutions',
     smartSolutionsForShipping: 'for Shipping',
-    smartSolutionsDesc: 'SwiftMove offers shipping tools that simplify logistics for modern businesses',
+    smartSolutionsDesc: 'USend offers shipping tools that simplify logistics for modern businesses',
     startNowBtn: 'Start Now',
     talkToSalesBtn: 'Talk to Sales',
-    aboutUsCaption: 'About SwiftMove Gateway',
+    aboutUsCaption: 'About USend Gateway',
     aboutUsTitle: 'About Us',
     successRate: 'Success Rate In On-Time Product Delivery',
   },
@@ -205,10 +205,10 @@ const landingTranslations = {
     botGreeting: 'مرحباً! أنا مساعد سويفت موف الذكي للربط اللوجستي والتتبع. أدخل كود شحنتك (Req-1XXX) لمراجعة موقع الطرد.',
     smartSolutionsTitle: 'حلول ذكية لـ',
     smartSolutionsForShipping: 'عمليات الشحن',
-    smartSolutionsDesc: 'تقدم شركة SwiftMove أدوات شحن تبسط العمليات اللوجستية للشركات الحديثة',
+    smartSolutionsDesc: 'تقدم شركة USend أدوات شحن تبسط العمليات اللوجستية للشركات الحديثة',
     startNowBtn: 'ابدأ الآن',
     talkToSalesBtn: 'تحدث إلى المبيعات',
-    aboutUsCaption: 'حـول منصــة SwiftMove',
+    aboutUsCaption: 'حـول منصــة USend',
     aboutUsTitle: 'من نحن',
     successRate: 'نسبة النجاح في توصيل المنتجات في الوقت المحدد',
   }
@@ -222,7 +222,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
   // Unified Login Modal State
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [loginRole, setLoginRole] = useState<'merchant' | 'user' | 'driver' | 'admin'>('merchant');
-  const [loginEmail, setLoginEmail] = useState('merchant@swiftmove.com');
+  const [loginEmail, setLoginEmail] = useState('merchant@usend.com');
   const [loginPassword, setLoginPassword] = useState('password');
   const [loginError, setLoginError] = useState<string | null>(null);
   const [loginLoading, setLoginLoading] = useState(false);
@@ -388,7 +388,7 @@ const [botOpen, setBotOpen] = useState(false);
   return (
     <div 
       id="landing-root"
-      className="min-h-screen bg-white text-slate-900 font-sans selection:bg-[#3a4a2c]/20 overflow-x-hidden relative flex flex-col w-full" 
+      className="min-h-screen bg-white text-slate-900 font-sans selection:bg-[#113f36]/20 overflow-x-hidden relative flex flex-col w-full" 
       dir={isRTL ? "rtl" : "ltr"} 
       ref={targetRef}
     >
@@ -405,7 +405,7 @@ const [botOpen, setBotOpen] = useState(false);
             <motion.img
               key={heroSlideIdx}
               src={heroSlides[heroSlideIdx].image}
-              alt="SwiftMove Freight"
+              alt="USend Freight"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -430,18 +430,18 @@ const [botOpen, setBotOpen] = useState(false);
             
             {/* Pill Links */}
             <div className="hidden md:flex items-center gap-6 text-[13px] font-medium text-white bg-white/10 backdrop-blur-md px-8 py-3 rounded-full border border-white/20">
-              <a href="#landing-root" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-[#fbbf24] transition-colors">{isRTL ? 'الرئيسية' : 'Home'}</a>
-              <a href="#services"  onClick={(e) => handleScrollTo(e, 'services')}  className="hover:text-[#fbbf24] transition-colors">{isRTL ? 'الخدمات' : 'Services'}</a>
-              <a href="#solutions" onClick={(e) => handleScrollTo(e, 'solutions')} className="hover:text-[#fbbf24] transition-colors">{isRTL ? 'الحلول' : 'Resources'}</a>
-              <a href="#about"     onClick={(e) => handleScrollTo(e, 'about')}     className="hover:text-[#fbbf24] transition-colors">{isRTL ? 'من نحن' : 'About'}</a>
-              <a href="#faq"       onClick={(e) => handleScrollTo(e, 'faq')}       className="hover:text-[#fbbf24] transition-colors">{isRTL ? 'اتصل بنا' : 'Contact'}</a>
+              <a href="#landing-root" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-[#cca073] transition-colors">{isRTL ? 'الرئيسية' : 'Home'}</a>
+              <a href="#services"  onClick={(e) => handleScrollTo(e, 'services')}  className="hover:text-[#cca073] transition-colors">{isRTL ? 'الخدمات' : 'Services'}</a>
+              <a href="#solutions" onClick={(e) => handleScrollTo(e, 'solutions')} className="hover:text-[#cca073] transition-colors">{isRTL ? 'الحلول' : 'Resources'}</a>
+              <a href="#about"     onClick={(e) => handleScrollTo(e, 'about')}     className="hover:text-[#cca073] transition-colors">{isRTL ? 'من نحن' : 'About'}</a>
+              <a href="#faq"       onClick={(e) => handleScrollTo(e, 'faq')}       className="hover:text-[#cca073] transition-colors">{isRTL ? 'اتصل بنا' : 'Contact'}</a>
             </div>
 
             {/* Right CTA */}
             <div className="flex items-center gap-4">
               <button
                 onClick={() => { setLoginRole('user'); setLoginModalOpen(true); }}
-                className="px-6 py-2.5 rounded-lg bg-[#3a4a2c] hover:bg-[#29351e] text-white font-bold transition-all cursor-pointer shadow-sm text-[13px] flex items-center gap-2"
+                className="px-6 py-2.5 rounded-lg bg-[#113f36] hover:bg-[#0d3029] text-white font-bold transition-all cursor-pointer shadow-sm text-[13px] flex items-center gap-2"
               >
                 {isRTL ? 'طلب تسعيرة' : 'Get Started'}
                 <ArrowUpRight className="w-4 h-4" />
@@ -469,14 +469,14 @@ const [botOpen, setBotOpen] = useState(false);
                 <div className="flex flex-wrap items-center gap-4 mt-10">
                   <button
                     onClick={() => { setLoginRole('user'); setLoginModalOpen(true); }}
-                    className="bg-[#3a4a2c] hover:bg-[#29351e] text-white px-7 py-3.5 rounded-xl font-bold text-sm flex items-center gap-3 transition-colors shadow-lg cursor-pointer"
+                    className="bg-[#113f36] hover:bg-[#0d3029] text-white px-7 py-3.5 rounded-xl font-bold text-sm flex items-center gap-3 transition-colors shadow-lg cursor-pointer"
                   >
                     {isRTL ? 'ابدأ طلبك الآن' : 'Ship Now'}
                     <ArrowUpRight className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => setBotOpen(true)}
-                    className="bg-[#fbbf24] hover:bg-[#f59e0b] text-slate-900 px-7 py-3.5 rounded-xl font-bold text-sm flex items-center gap-3 transition-colors shadow-lg cursor-pointer"
+                    className="bg-[#cca073] hover:bg-[#b78b5c] text-slate-900 px-7 py-3.5 rounded-xl font-bold text-sm flex items-center gap-3 transition-colors shadow-lg cursor-pointer"
                   >
                     {isRTL ? 'تتبع الشحنة' : 'Live Tracking'}
                     <ArrowUpRight className="w-4 h-4" />
@@ -491,7 +491,7 @@ const [botOpen, setBotOpen] = useState(false);
                 <button
                   key={idx}
                   onClick={() => setHeroSlideIdx(idx)}
-                  className={`w-12 h-1.5 rounded-full transition-all cursor-pointer ${idx === heroSlideIdx ? 'bg-[#3a4a2c]' : 'bg-white/30 hover:bg-white/50'}`}
+                  className={`w-12 h-1.5 rounded-full transition-all cursor-pointer ${idx === heroSlideIdx ? 'bg-[#113f36]' : 'bg-white/30 hover:bg-white/50'}`}
                   aria-label={`Go to slide ${idx + 1}`}
                 />
               ))}
@@ -547,8 +547,8 @@ const [botOpen, setBotOpen] = useState(false);
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 relative z-10">
               {/* Node 1 */}
               <div className="flex flex-col items-center text-center space-y-3">
-                <div className="w-9 h-9 rounded-full bg-white border border-[#3a4a2c]/20 shadow-sm flex items-center justify-center text-[#3a4a2c] font-bold z-10">
-                  <span className="w-2.5 h-2.5 bg-[#3a4a2c] rounded-full"></span>
+                <div className="w-9 h-9 rounded-full bg-white border border-[#113f36]/20 shadow-sm flex items-center justify-center text-[#113f36] font-bold z-10">
+                  <span className="w-2.5 h-2.5 bg-[#113f36] rounded-full"></span>
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-3xl font-black text-slate-900 tracking-tight">30k+</h3>
@@ -559,8 +559,8 @@ const [botOpen, setBotOpen] = useState(false);
 
               {/* Node 2 */}
               <div className="flex flex-col items-center text-center space-y-3">
-                <div className="w-9 h-9 rounded-full bg-white border border-[#3a4a2c]/20 shadow-sm flex items-center justify-center text-[#3a4a2c] font-bold z-10">
-                  <span className="w-2.5 h-2.5 bg-[#3a4a2c] rounded-full"></span>
+                <div className="w-9 h-9 rounded-full bg-white border border-[#113f36]/20 shadow-sm flex items-center justify-center text-[#113f36] font-bold z-10">
+                  <span className="w-2.5 h-2.5 bg-[#113f36] rounded-full"></span>
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-3xl font-black text-slate-900 tracking-tight">2.9k</h3>
@@ -571,8 +571,8 @@ const [botOpen, setBotOpen] = useState(false);
 
               {/* Node 3 */}
               <div className="flex flex-col items-center text-center space-y-3">
-                <div className="w-9 h-9 rounded-full bg-white border border-[#3a4a2c]/20 shadow-sm flex items-center justify-center text-[#3a4a2c] font-bold z-10">
-                  <span className="w-2.5 h-2.5 bg-[#3a4a2c] rounded-full"></span>
+                <div className="w-9 h-9 rounded-full bg-white border border-[#113f36]/20 shadow-sm flex items-center justify-center text-[#113f36] font-bold z-10">
+                  <span className="w-2.5 h-2.5 bg-[#113f36] rounded-full"></span>
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-3xl font-black text-slate-900 tracking-tight">1,245</h3>
@@ -583,8 +583,8 @@ const [botOpen, setBotOpen] = useState(false);
 
               {/* Node 4 */}
               <div className="flex flex-col items-center text-center space-y-3">
-                <div className="w-9 h-9 rounded-full bg-white border border-[#3a4a2c]/20 shadow-sm flex items-center justify-center text-[#3a4a2c] font-bold z-10">
-                  <span className="w-2.5 h-2.5 bg-[#3a4a2c] rounded-full"></span>
+                <div className="w-9 h-9 rounded-full bg-white border border-[#113f36]/20 shadow-sm flex items-center justify-center text-[#113f36] font-bold z-10">
+                  <span className="w-2.5 h-2.5 bg-[#113f36] rounded-full"></span>
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-3xl font-black text-slate-900 tracking-tight">5,875</h3>
@@ -645,7 +645,7 @@ const [botOpen, setBotOpen] = useState(false);
               TRUSTED BY THE<br/>WORLD'S BEST BRANDS
             </h2>
             <div className="flex gap-2 pb-2">
-              <div className="w-8 h-1.5 bg-[#3a4a2c] rounded-full"></div>
+              <div className="w-8 h-1.5 bg-[#113f36] rounded-full"></div>
               <div className="w-4 h-1.5 bg-slate-200 rounded-full"></div>
               <div className="w-4 h-1.5 bg-slate-200 rounded-full"></div>
             </div>
@@ -658,10 +658,10 @@ const [botOpen, setBotOpen] = useState(false);
                 {[1,2,3,4,5].map(s => <Star key={s} className="w-4 h-4 fill-orange-400 text-orange-400" />)}
               </div>
               <p className="text-slate-600 text-[13px] font-medium leading-relaxed mb-8">
-                "SwiftMove reduced our freight costs by 23% in the first quarter. Their real-time tracking platform is genuinely best-in-class — our ops team can finally sleep at night."
+                "USend reduced our freight costs by 23% in the first quarter. Their real-time tracking platform is genuinely best-in-class — our ops team can finally sleep at night."
               </p>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[#3a4a2c]/10 flex items-center justify-center text-[#3a4a2c] font-bold text-xs">MC</div>
+                <div className="w-10 h-10 rounded-full bg-[#113f36]/10 flex items-center justify-center text-[#113f36] font-bold text-xs">MC</div>
                 <div>
                   <h4 className="font-bold text-slate-900 text-sm">Marcus Chen</h4>
                   <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">VP Supply Chain, NovaTech Industries</p>
@@ -675,7 +675,7 @@ const [botOpen, setBotOpen] = useState(false);
                 {[1,2,3,4,5].map(s => <Star key={s} className="w-4 h-4 fill-orange-400 text-orange-400" />)}
               </div>
               <p className="text-slate-600 text-[13px] font-medium leading-relaxed mb-8">
-                "Switching to SwiftMove was the best logistics decision we made in 2024. Peak season no longer terrifies us — they scale with us flawlessly."
+                "Switching to USend was the best logistics decision we made in 2024. Peak season no longer terrifies us — they scale with us flawlessly."
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">SR</div>
@@ -719,7 +719,7 @@ const [botOpen, setBotOpen] = useState(false);
               <p className="text-white/90 text-sm font-semibold tracking-wide mb-8">Get a custom freight quote in minutes.</p>
               
               <button 
-                className="px-8 py-3.5 bg-[#3a4a2c] hover:bg-[#29351e] text-white rounded-full font-black text-[12px] uppercase tracking-wider flex items-center gap-2 transition-all shadow-xl cursor-pointer"
+                className="px-8 py-3.5 bg-[#113f36] hover:bg-[#0d3029] text-white rounded-full font-black text-[12px] uppercase tracking-wider flex items-center gap-2 transition-all shadow-xl cursor-pointer"
               >
                 <span>Request a Quote</span>
                 <ArrowRight className="w-4 h-4" />
@@ -737,7 +737,7 @@ const [botOpen, setBotOpen] = useState(false);
           {logos.concat(logos).map((logoItem, idx) => (
             <div key={idx} className="flex items-center gap-2 select-none shrink-0 opacity-55 hover:opacity-100 transition-opacity">
               <span className="text-slate-800 font-black text-[13px] uppercase tracking-widest">{logoItem.name}</span>
-              <span className="w-1.5 h-1.5 bg-[#3a4a2c] rounded-full"></span>
+              <span className="w-1.5 h-1.5 bg-[#113f36] rounded-full"></span>
             </div>
           ))}
         </div>
@@ -750,7 +750,7 @@ const [botOpen, setBotOpen] = useState(false);
             
             {/* Left Column: text content */}
             <div className="lg:col-span-6 text-left space-y-8">
-              <p className="text-[11px] font-black uppercase text-[#3a4a2c] tracking-wider block">
+              <p className="text-[11px] font-black uppercase text-[#113f36] tracking-wider block">
                 {content.aboutUsCaption}
               </p>
               <h2 className="text-3xl md:text-[2.6rem] font-bold text-slate-950 tracking-tight leading-none font-sans uppercase">
@@ -763,7 +763,7 @@ const [botOpen, setBotOpen] = useState(false);
               {/* 2x2 Feature Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
                 <div className="flex gap-4">
-                  <div className="w-10 h-10 rounded-full bg-[#3a4a2c]/10 text-[#3a4a2c] border border-[#3a4a2c]/20 flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-[#113f36]/10 text-[#113f36] border border-[#113f36]/20 flex items-center justify-center shrink-0">
                     <Zap className="w-5 h-5" />
                   </div>
                   <div>
@@ -773,7 +773,7 @@ const [botOpen, setBotOpen] = useState(false);
                 </div>
 
                 <div className="flex gap-4">
-                  <div className="w-10 h-10 rounded-full bg-[#3a4a2c]/10 text-[#3a4a2c] border border-[#3a4a2c]/20 flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-[#113f36]/10 text-[#113f36] border border-[#113f36]/20 flex items-center justify-center shrink-0">
                     <Shield className="w-5 h-5" />
                   </div>
                   <div>
@@ -783,7 +783,7 @@ const [botOpen, setBotOpen] = useState(false);
                 </div>
 
                 <div className="flex gap-4">
-                  <div className="w-10 h-10 rounded-full bg-[#3a4a2c]/10 text-[#3a4a2c] border border-[#3a4a2c]/20 flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-[#113f36]/10 text-[#113f36] border border-[#113f36]/20 flex items-center justify-center shrink-0">
                     <Globe2 className="w-5 h-5" />
                   </div>
                   <div>
@@ -793,7 +793,7 @@ const [botOpen, setBotOpen] = useState(false);
                 </div>
 
                 <div className="flex gap-4">
-                  <div className="w-10 h-10 rounded-full bg-[#3a4a2c]/10 text-[#3a4a2c] border border-[#3a4a2c]/20 flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-[#113f36]/10 text-[#113f36] border border-[#113f36]/20 flex items-center justify-center shrink-0">
                     <Award className="w-5 h-5" />
                   </div>
                   <div>
@@ -806,7 +806,7 @@ const [botOpen, setBotOpen] = useState(false);
               <div className="pt-4">
                 <button 
                   onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="px-8 py-3.5 bg-[#3a4a2c] hover:bg-[#29351e] text-white rounded-full font-black text-[12px] uppercase tracking-wider flex items-center gap-2 transition-all shadow-md cursor-pointer"
+                  className="px-8 py-3.5 bg-[#113f36] hover:bg-[#0d3029] text-white rounded-full font-black text-[12px] uppercase tracking-wider flex items-center gap-2 transition-all shadow-md cursor-pointer"
                 >
                   <span>Explore Our Platform</span>
                   <ArrowRight className="w-4 h-4" />
@@ -859,7 +859,7 @@ const [botOpen, setBotOpen] = useState(false);
             <div className="flex shrink-0">
               <button 
                 onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}
-                className="px-6 py-3 bg-[#3a4a2c] hover:bg-[#29351e] text-white rounded-full font-black text-[11px] uppercase tracking-wider flex items-center gap-2 transition-all shadow-md cursor-pointer"
+                className="px-6 py-3 bg-[#113f36] hover:bg-[#0d3029] text-white rounded-full font-black text-[11px] uppercase tracking-wider flex items-center gap-2 transition-all shadow-md cursor-pointer"
               >
                 <span>All Services</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -873,7 +873,7 @@ const [botOpen, setBotOpen] = useState(false);
             {/* Card 1 */}
             <div className="bg-[#F8FAFC] border border-slate-100 rounded-[2rem] p-8 flex flex-col justify-between h-[280px] shadow-xs text-left">
               <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-full bg-[#3a4a2c]/10 text-[#3a4a2c] border border-[#3a4a2c]/25 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-full bg-[#113f36]/10 text-[#113f36] border border-[#113f36]/25 flex items-center justify-center shrink-0">
                   <Truck className="w-5 h-5" />
                 </div>
                 <span className="px-4 py-1 rounded-full bg-slate-200/50 text-slate-600 text-[10px] font-black uppercase tracking-wider">
@@ -896,7 +896,7 @@ const [botOpen, setBotOpen] = useState(false);
             {/* Card 2 */}
             <div className="bg-[#F8FAFC] border border-slate-100 rounded-[2rem] p-8 flex flex-col justify-between h-[280px] shadow-xs text-left">
               <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-full bg-[#3a4a2c]/10 text-[#3a4a2c] border border-[#3a4a2c]/25 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-full bg-[#113f36]/10 text-[#113f36] border border-[#113f36]/25 flex items-center justify-center shrink-0">
                   <Anchor className="w-5 h-5" />
                 </div>
                 <span className="px-4 py-1 rounded-full bg-slate-200/50 text-slate-600 text-[10px] font-black uppercase tracking-wider">
@@ -919,7 +919,7 @@ const [botOpen, setBotOpen] = useState(false);
             {/* Card 3 (Highlighted) */}
             <div className="bg-[#F8FAFC] border border-slate-100 rounded-[2rem] p-8 flex flex-col justify-between h-[280px] shadow-xs text-left">
               <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-full bg-[#3a4a2c]/10 text-[#3a4a2c] border border-[#3a4a2c]/25 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-full bg-[#113f36]/10 text-[#113f36] border border-[#113f36]/25 flex items-center justify-center shrink-0">
                   <Zap className="w-5 h-5" />
                 </div>
                 <span className="px-4 py-1 rounded-full bg-slate-200/50 text-slate-600 text-[10px] font-black uppercase tracking-wider">
@@ -933,7 +933,7 @@ const [botOpen, setBotOpen] = useState(false);
                 </p>
               </div>
               <div className="pt-4">
-                <button onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })} className="px-4 py-2 bg-[#3a4a2c] hover:bg-[#29351e] text-white rounded-full font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-sm cursor-pointer">
+                <button onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })} className="px-4 py-2 bg-[#113f36] hover:bg-[#0d3029] text-white rounded-full font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-sm cursor-pointer">
                   Learn More <ArrowRight className="w-3 h-3" />
                 </button>
               </div>
@@ -942,7 +942,7 @@ const [botOpen, setBotOpen] = useState(false);
             {/* Card 4 */}
             <div className="bg-[#F8FAFC] border border-slate-100 rounded-[2rem] p-8 flex flex-col justify-between h-[280px] shadow-xs text-left">
               <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-full bg-[#3a4a2c]/10 text-[#3a4a2c] border border-[#3a4a2c]/25 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-full bg-[#113f36]/10 text-[#113f36] border border-[#113f36]/25 flex items-center justify-center shrink-0">
                   <Warehouse className="w-5 h-5" />
                 </div>
                 <span className="px-4 py-1 rounded-full bg-slate-200/50 text-slate-600 text-[10px] font-black uppercase tracking-wider">
@@ -1002,7 +1002,7 @@ const [botOpen, setBotOpen] = useState(false);
                 ].map((sector, idx) => (
                   <div 
                     key={idx} 
-                    className="flex items-center justify-between py-3 cursor-pointer hover:text-[#3a4a2c] transition-colors"
+                    className="flex items-center justify-between py-3 cursor-pointer hover:text-[#113f36] transition-colors"
                     onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}
                   >
                     <span className="tracking-wide">{sector}</span>
@@ -1036,7 +1036,7 @@ const [botOpen, setBotOpen] = useState(false);
                 <select 
                   value={estSource}
                   onChange={(e) => setEstSource(e.target.value)}
-                  className="w-full h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:border-[#3a4a2c] outline-none transition-all cursor-pointer"
+                  className="w-full h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:border-[#113f36] outline-none transition-all cursor-pointer"
                 >
                   <option value="DXB" className="bg-[#060B26] text-white">Dubai Hub (DXB)</option>
                   <option value="AUH" className="bg-[#060B26] text-white">Abu Dhabi Terminal (AUH)</option>
@@ -1051,7 +1051,7 @@ const [botOpen, setBotOpen] = useState(false);
                 <select 
                   value={estTarget}
                   onChange={(e) => setEstTarget(e.target.value)}
-                  className="w-full h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:border-[#3a4a2c] outline-none transition-all cursor-pointer"
+                  className="w-full h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:border-[#113f36] outline-none transition-all cursor-pointer"
                 >
                   <option value="DXB" className="bg-[#060B26] text-white">Dubai Hub (DXB)</option>
                   <option value="AUH" className="bg-[#060B26] text-white">Abu Dhabi Terminal (AUH)</option>
@@ -1071,7 +1071,7 @@ const [botOpen, setBotOpen] = useState(false);
                   type="number"
                   value={estWeight}
                   onChange={(e) => setEstWeight(Number(e.target.value))}
-                  className="w-full h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:border-[#3a4a2c] outline-none transition-all"
+                  className="w-full h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:border-[#113f36] outline-none transition-all"
                 />
               </div>
               <div>
@@ -1080,7 +1080,7 @@ const [botOpen, setBotOpen] = useState(false);
                   type="number"
                   value={estWidth}
                   onChange={(e) => setEstWidth(Number(e.target.value))}
-                  className="w-full h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:border-[#3a4a2c] outline-none transition-all"
+                  className="w-full h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:border-[#113f36] outline-none transition-all"
                 />
               </div>
               <div>
@@ -1089,7 +1089,7 @@ const [botOpen, setBotOpen] = useState(false);
                   type="number"
                   value={estLength}
                   onChange={(e) => setEstLength(Number(e.target.value))}
-                  className="w-full h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:border-[#3a4a2c] outline-none transition-all"
+                  className="w-full h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:border-[#113f36] outline-none transition-all"
                 />
               </div>
             </div>
@@ -1114,7 +1114,7 @@ const [botOpen, setBotOpen] = useState(false);
                   });
                 }, 1200);
               }}
-              className="w-full h-13 bg-[#3a4a2c] hover:bg-[#29351e] text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-md mt-8 flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full h-13 bg-[#113f36] hover:bg-[#0d3029] text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-md mt-8 flex items-center justify-center gap-2 cursor-pointer"
             >
               {calculating ? (
                 <>
@@ -1171,11 +1171,11 @@ const [botOpen, setBotOpen] = useState(false);
                   {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}
                 </div>
                 <p className="text-slate-600 text-[13px] md:text-sm font-semibold leading-relaxed">
-                  "SwiftMove has reduced our freight spend by 22% in the first quarter. Their real-time tracking platform is game-changing — our ops team can finally breathe easy."
+                  "USend has reduced our freight spend by 22% in the first quarter. Their real-time tracking platform is game-changing — our ops team can finally breathe easy."
                 </p>
               </div>
               <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
-                <div className="w-10 h-10 rounded-full bg-[#3a4a2c]/10 text-[#3a4a2c] flex items-center justify-center font-bold text-xs">
+                <div className="w-10 h-10 rounded-full bg-[#113f36]/10 text-[#113f36] flex items-center justify-center font-bold text-xs">
                   MC
                 </div>
                 <div>
@@ -1196,7 +1196,7 @@ const [botOpen, setBotOpen] = useState(false);
                 </p>
               </div>
               <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
-                <div className="w-10 h-10 rounded-full bg-[#3a4a2c]/10 text-[#3a4a2c] flex items-center justify-center font-bold text-xs">
+                <div className="w-10 h-10 rounded-full bg-[#113f36]/10 text-[#113f36] flex items-center justify-center font-bold text-xs">
                   SR
                 </div>
                 <div>
@@ -1217,7 +1217,7 @@ const [botOpen, setBotOpen] = useState(false);
                 </p>
               </div>
               <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
-                <div className="w-10 h-10 rounded-full bg-[#3a4a2c]/10 text-[#3a4a2c] flex items-center justify-center font-bold text-xs">
+                <div className="w-10 h-10 rounded-full bg-[#113f36]/10 text-[#113f36] flex items-center justify-center font-bold text-xs">
                   DV
                 </div>
                 <div>
@@ -1254,7 +1254,7 @@ const [botOpen, setBotOpen] = useState(false);
               <div className="pt-4">
                 <button 
                   onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="px-8 py-4 bg-[#3a4a2c] hover:bg-[#29351e] text-white text-[13px] font-black uppercase tracking-widest rounded-full transition-all shadow-lg shadow-emerald-900/20 cursor-pointer"
+                  className="px-8 py-4 bg-[#113f36] hover:bg-[#0d3029] text-white text-[13px] font-black uppercase tracking-widest rounded-full transition-all shadow-lg shadow-emerald-900/20 cursor-pointer"
                 >
                   {isRTL ? 'احصل على عرض سعر مجاني' : 'Get a Free Quote'}
                 </button>
@@ -1267,7 +1267,7 @@ const [botOpen, setBotOpen] = useState(false);
         <section id="faq" className="w-full py-24 bg-[#FAFBFD] relative border-t border-slate-100">
           <div className="max-w-4xl mx-auto px-4 space-y-12">
             <div className="text-center space-y-4">
-              <span className="px-4.5 py-1.5 rounded-full bg-[#3a4a2c]/10 text-[#3a4a2c] text-[11px] font-black uppercase tracking-widest inline-block">
+              <span className="px-4.5 py-1.5 rounded-full bg-[#113f36]/10 text-[#113f36] text-[11px] font-black uppercase tracking-widest inline-block">
                 {content.faqBadge}
               </span>
               <h2 className="text-3xl md:text-[2.6rem] font-black uppercase text-slate-900 tracking-tight leading-none">
@@ -1291,7 +1291,7 @@ const [botOpen, setBotOpen] = useState(false);
                     className="w-full p-6 text-left flex items-center justify-between gap-4 focus:outline-hidden cursor-pointer"
                   >
                     <span className="font-extrabold text-[13px] md:text-sm text-slate-900 tracking-tight">{item.q}</span>
-                    <span className={`w-6 h-6 rounded-full bg-[#3a4a2c]/10 text-[#3a4a2c] flex items-center justify-center shrink-0 transition-transform duration-300 ${activeFaq === idx ? 'rotate-180' : ''}`}>
+                    <span className={`w-6 h-6 rounded-full bg-[#113f36]/10 text-[#113f36] flex items-center justify-center shrink-0 transition-transform duration-300 ${activeFaq === idx ? 'rotate-180' : ''}`}>
                       <ChevronDown className="w-3.5 h-3.5" />
                     </span>
                   </button>
@@ -1320,7 +1320,7 @@ const [botOpen, setBotOpen] = useState(false);
           {/* Large transparent watermark background logo */}
           <div className="absolute inset-x-0 bottom-4 text-center select-none pointer-events-none z-0">
             <span className="text-[15vw] font-black tracking-widest text-white/[0.015] uppercase leading-none block font-sans">
-              SWIFTMOVE
+              USEND
             </span>
           </div>
 
@@ -1335,7 +1335,7 @@ const [botOpen, setBotOpen] = useState(false);
               <div className="flex gap-4">
                 <button 
                   onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="px-6 py-3.5 bg-white text-slate-950 text-[12px] font-black uppercase tracking-widest rounded-full hover:bg-[#3a4a2c] hover:text-white transition-all shadow-md cursor-pointer"
+                  className="px-6 py-3.5 bg-white text-slate-950 text-[12px] font-black uppercase tracking-widest rounded-full hover:bg-[#113f36] hover:text-white transition-all shadow-md cursor-pointer"
                 >
                   Launch Platform
                 </button>
@@ -1349,7 +1349,7 @@ const [botOpen, setBotOpen] = useState(false);
                   <LogoIcon className="h-12 w-auto" variant="dark" />
                   <div className="flex flex-col">
                     <span className="text-sm font-black tracking-widest text-white uppercase leading-none">USend</span>
-                    <span className="text-[12px] font-mono font-bold uppercase text-[#3a4a2c] tracking-[0.25em]">Smart Shipping</span>
+                    <span className="text-[12px] font-mono font-bold uppercase text-[#113f36] tracking-[0.25em]">Smart Shipping</span>
                   </div>
                 </div>
                 <p className="text-[12px] text-slate-400 leading-relaxed max-w-md font-semibold font-sans">
@@ -1362,10 +1362,10 @@ const [botOpen, setBotOpen] = useState(false);
                 <ul className="space-y-2 text-[13px] font-bold text-slate-350 font-sans">
                   <li>
                     <span 
-                      className="hover:text-[#3a4a2c] transition-colors cursor-pointer" 
+                      className="hover:text-[#113f36] transition-colors cursor-pointer" 
                       onClick={() => {
                         setLoginRole('user');
-                        setLoginEmail('user@swiftmove.com');
+                        setLoginEmail('user@usend.com');
                         setLoginModalOpen(true);
                       }}
                     >
@@ -1374,10 +1374,10 @@ const [botOpen, setBotOpen] = useState(false);
                   </li>
                   <li>
                     <span 
-                      className="hover:text-[#3a4a2c] transition-colors cursor-pointer" 
+                      className="hover:text-[#113f36] transition-colors cursor-pointer" 
                       onClick={() => {
                         setLoginRole('merchant');
-                        setLoginEmail('merchant@swiftmove.com');
+                        setLoginEmail('merchant@usend.com');
                         setLoginModalOpen(true);
                       }}
                     >
@@ -1390,9 +1390,9 @@ const [botOpen, setBotOpen] = useState(false);
               <div className="space-y-4">
                 <h4 className="text-[13px] font-black uppercase text-slate-500 tracking-widest font-sans">Corporate Parameters</h4>
                 <ul className="space-y-2 text-[13px] font-bold text-slate-350 font-sans">
-                  <li><span className="hover:text-[#3a4a2c] transition-colors cursor-pointer" onClick={() => { setLoginRole('admin'); setLoginModalOpen(true); }}>Zonal Admin Portal</span></li>
-                  <li><a href="#" className="hover:text-[#3a4a2c] transition-colors">Safety Logs</a></li>
-                  <li><a href="#" className="hover:text-[#3a4a2c] transition-colors">API Keys</a></li>
+                  <li><span className="hover:text-[#113f36] transition-colors cursor-pointer" onClick={() => { setLoginRole('admin'); setLoginModalOpen(true); }}>Zonal Admin Portal</span></li>
+                  <li><a href="#" className="hover:text-[#113f36] transition-colors">Safety Logs</a></li>
+                  <li><a href="#" className="hover:text-[#113f36] transition-colors">API Keys</a></li>
                 </ul>
               </div>
 
@@ -1401,15 +1401,15 @@ const [botOpen, setBotOpen] = useState(false);
             <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-12 border-t border-white/10 text-[13px] font-black text-slate-500 uppercase tracking-widest font-sans">
               <p>{content.copyright}</p>
               <div className="flex items-center gap-8">
-                <a href="#" className="hover:text-[#3a4a2c] transition-colors">Privacy Policy</a>
-                <a href="#" className="hover:text-[#3a4a2c] transition-colors">Service Terms</a>
+                <a href="#" className="hover:text-[#113f36] transition-colors">Privacy Policy</a>
+                <a href="#" className="hover:text-[#113f36] transition-colors">Service Terms</a>
               </div>
             </div>
 
           </div>
         </footer>
 
-      {/* FLOAT CHATBOT DIALOGUE - SwiftMove AI */}
+      {/* FLOAT CHATBOT DIALOGUE - USend AI */}
       <AnimatePresence>
         {botOpen && (
           <motion.div
@@ -1421,11 +1421,11 @@ const [botOpen, setBotOpen] = useState(false);
              {/* Header */}
              <div className="bg-slate-900 p-5 text-white flex justify-between items-center border-b border-slate-800">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[#3a4a2c]/10 flex items-center justify-center border border-[#3a4a2c]/20 text-[#3a4a2c] animate-bounce">
+                  <div className="w-8 h-8 rounded-full bg-[#113f36]/10 flex items-center justify-center border border-[#113f36]/20 text-[#113f36] animate-bounce">
                     <AiFace3DIcon className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="font-extrabold text-xs uppercase tracking-wide font-sans">SwiftMove AI Support</h3>
+                    <h3 className="font-extrabold text-xs uppercase tracking-wide font-sans">USend AI Support</h3>
                     <p className="text-[12px] text-cyan-400 font-bold uppercase tracking-widest font-mono">Status: active</p>
                   </div>
                 </div>
@@ -1441,7 +1441,7 @@ const [botOpen, setBotOpen] = useState(false);
                    <div 
                      className={`p-3.5 rounded-2xl max-w-[85%] text-xs font-semibold leading-relaxed ${
                        msg.sender === 'user' 
-                         ? 'bg-[#3a4a2c] text-white rounded-br-none' 
+                         ? 'bg-[#113f36] text-white rounded-br-none' 
                          : 'bg-white border border-slate-200 text-slate-800 rounded-bl-none shadow-xs'
                      }`}
                      style={{ whiteSpace: 'pre-line' }}
@@ -1459,9 +1459,9 @@ const [botOpen, setBotOpen] = useState(false);
                   value={botInput}
                   onChange={(e) => setBotInput(e.target.value)}
                   placeholder="Enter order REQ-... or ask standard rates"
-                  className="flex-1 outline-none text-xs bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:border-[#3a4a2c] transition-all font-semibold"
+                  className="flex-1 outline-none text-xs bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:border-[#113f36] transition-all font-semibold"
                 />
-                <button type="submit" className="w-11 h-11 bg-slate-900 hover:bg-[#3a4a2c] text-white rounded-xl flex items-center justify-center shadow-lg transition-colors shrink-0">
+                <button type="submit" className="w-11 h-11 bg-slate-900 hover:bg-[#113f36] text-white rounded-xl flex items-center justify-center shadow-lg transition-colors shrink-0">
                   <ArrowRight className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />
                 </button>
              </form>
@@ -1475,7 +1475,7 @@ const [botOpen, setBotOpen] = useState(false);
         {/* Toggle bot button */}
         <button
           onClick={() => setBotOpen(!botOpen)}
-          className="px-5 py-3 rounded-full bg-slate-900 hover:bg-[#3a4a2c] text-white border border-slate-700 shadow-xl items-center gap-2.5 transition-all text-[13px] font-black uppercase tracking-widest flex hover:-translate-y-0.5 active:translate-y-0 select-none cursor-pointer"
+          className="px-5 py-3 rounded-full bg-slate-900 hover:bg-[#113f36] text-white border border-slate-700 shadow-xl items-center gap-2.5 transition-all text-[13px] font-black uppercase tracking-widest flex hover:-translate-y-0.5 active:translate-y-0 select-none cursor-pointer"
           id="docked-bot-trigger"
         >
           <AiFace3DIcon className="w-6 h-6 text-[#6d8c55] rotate-12" />
@@ -1489,7 +1489,7 @@ const [botOpen, setBotOpen] = useState(false);
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.6 }}
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="w-11 h-11 rounded-full bg-white border border-slate-200 shadow-md text-slate-850 flex items-center justify-center hover:bg-[#3a4a2c] hover:text-white transition-all select-none cursor-pointer"
+              className="w-11 h-11 rounded-full bg-white border border-slate-200 shadow-md text-slate-850 flex items-center justify-center hover:bg-[#113f36] hover:text-white transition-all select-none cursor-pointer"
               title="Back To Top"
               id="back-to-top-btn"
             >

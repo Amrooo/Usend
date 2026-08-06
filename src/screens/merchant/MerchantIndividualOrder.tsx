@@ -398,7 +398,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
       
       <main className="flex-1 p-6 lg:p-10 h-full overflow-y-auto relative">
         {/* Abstract Background Decoration */}
-        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#3a4a2c]/5 rounded-full blur-[100px] -translate-y-1/3 translate-x-1/3 pointer-events-none z-0"></div>
+        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#113f36]/5 rounded-full blur-[100px] -translate-y-1/3 translate-x-1/3 pointer-events-none z-0"></div>
 
         <motion.div
           key={isGetQuoteMode ? "quote_mode" : "order_mode"}
@@ -409,7 +409,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
           {/* Header Segment */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200/60 pb-6">
             <div>
-              <span className="text-[#3a4a2c] font-bold text-[12px] uppercase tracking-[0.4em]">
+              <span className="text-[#113f36] font-bold text-[12px] uppercase tracking-[0.4em]">
                 {isGetQuoteMode ? 'Pricing Engine' : 'Express Delivery'}
               </span>
               <h1 className="text-3xl font-display font-medium text-zinc-900 uppercase tracking-tight mt-1">
@@ -454,7 +454,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                 {/* Customer Information Cards */}
                 <div className="bg-white dark:bg-zinc-950 border border-[#EBEFE9] dark:border-zinc-800/60 rounded-[2.5rem] p-8 shadow-[0_8px_30px_rgb(220,225,235,0.45)] dark:shadow-none space-y-7">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-[#3a4a2c]/10 text-[#546a40] flex items-center justify-center">
+                    <div className="w-9 h-9 rounded-xl bg-[#113f36]/10 text-[#546a40] flex items-center justify-center">
                       <User className="w-[18px] h-[18px]" />
                     </div>
                     <h2 className="font-bold text-lg text-slate-800 dark:text-zinc-250">Customer Details</h2>
@@ -679,7 +679,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                       </div>
                       <h2 className="font-bold text-lg text-zinc-800 dark:text-zinc-200">Package Parameters & Details</h2>
                     </div>
-                    <span className="text-[13px] font-bold text-[#3a4a2c] dark:text-[#6d8c55] bg-[#3a4a2c]/10 px-2 py-1 rounded-md">
+                    <span className="text-[13px] font-bold text-[#113f36] dark:text-[#6d8c55] bg-[#113f36]/10 px-2 py-1 rounded-md">
                       AI Auto-recognition Enabled
                     </span>
                   </div>
@@ -708,7 +708,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                         }
                       }}
                       placeholder="e.g. 1x Mac Studio, 2x Keyboard Accessories" 
-                      className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200/60 focus:border-[#3a4a2c] rounded-xl px-4 py-3 outline-none text-zinc-900 dark:text-zinc-100 font-medium text-sm resize-none"
+                      className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200/60 focus:border-[#113f36] rounded-xl px-4 py-3 outline-none text-zinc-900 dark:text-zinc-100 font-medium text-sm resize-none"
                     />
                   </div>
 
@@ -719,7 +719,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                     </div>
                     <div 
                       onClick={() => fileInputRef.current?.click()}
-                      className="w-full h-32 border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-[#3a4a2c] hover:bg-[#3a4a2c]/5 dark:hover:bg-zinc-900/20 transition-all text-zinc-500"
+                      className="w-full h-32 border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-[#113f36] hover:bg-[#113f36]/5 dark:hover:bg-zinc-900/20 transition-all text-zinc-500"
                     >
                       {merchantPhoto ? (
                         <div className="relative w-full h-full p-2">
@@ -807,7 +807,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                       value={formData.notes}
                       onChange={(e) => setFormData({...formData, notes: e.target.value})}
                       placeholder="e.g. Leave with security guard, fragile contents" 
-                      className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200/60 focus:border-[#3a4a2c] rounded-xl px-4 py-3 outline-none text-zinc-900 dark:text-zinc-100 font-medium text-sm resize-none"
+                      className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200/60 focus:border-[#113f36] rounded-xl px-4 py-3 outline-none text-zinc-900 dark:text-zinc-100 font-medium text-sm resize-none"
                     />
                   </div>
                 </div>
@@ -833,7 +833,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                         value={formData.amount}
                         onChange={(e) => setFormData({...formData, amount: e.target.value})}
                         placeholder="0.00" 
-                        className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200/60 focus:border-[#3a4a2c] rounded-xl pl-14 pr-4 py-3 outline-none text-zinc-900 dark:text-zinc-100 font-bold transition-colors font-mono"
+                        className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200/60 focus:border-[#113f36] rounded-xl pl-14 pr-4 py-3 outline-none text-zinc-900 dark:text-zinc-100 font-bold transition-colors font-mono"
                       />
                     </div>
                   </div>
@@ -851,7 +851,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                           onClick={() => setFormData({...formData, paymentType: type.key})}
                           className={`flex items-start justify-between p-4 rounded-xl border-2 text-left transition-all ${
                             formData.paymentType === type.key 
-                              ? 'border-[#3a4a2c] bg-[#3a4a2c]/5/20 text-[#3a4a2c]' 
+                              ? 'border-[#113f36] bg-[#113f36]/5/20 text-[#113f36]' 
                               : 'border-transparent bg-zinc-50'
                           }`}
                         >
@@ -860,7 +860,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                             <span className="text-[12px] text-zinc-400">{type.desc}</span>
                           </div>
                           {formData.paymentType === type.key && (
-                            <div className="w-2 h-2 rounded-full bg-[#3a4a2c] mt-1" />
+                            <div className="w-2 h-2 rounded-full bg-[#113f36] mt-1" />
                           )}
                         </button>
                       ))}
@@ -975,7 +975,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
               <div className="lg:col-span-2 space-y-6">
                 <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-8 border border-zinc-200/80 shadow-sm space-y-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-[#3a4a2c]/10 text-[#3a4a2c] flex items-center justify-center">
+                    <div className="w-9 h-9 rounded-xl bg-[#113f36]/10 text-[#113f36] flex items-center justify-center">
                       <Calculator className="w-[18px] h-[18px]" />
                     </div>
                     <h2 className="font-bold text-lg text-zinc-800 dark:text-zinc-200">Routing Parameters</h2>
@@ -991,7 +991,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                             setIsMapOpenQuoteTarget('pickup');
                             setIsMapOpen(true);
                           }}
-                          className="text-[13px] font-bold text-[#3a4a2c] bg-zinc-100 hover:bg-zinc-200 px-2 py-1 flex items-center gap-1 rounded-md transition-colors"
+                          className="text-[13px] font-bold text-[#113f36] bg-zinc-100 hover:bg-zinc-200 px-2 py-1 flex items-center gap-1 rounded-md transition-colors"
                         >
                           <Map className="w-3 h-3" /> Select Map
                         </button>
@@ -1037,7 +1037,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                                 }}
                                 className="w-full text-left px-6 py-3 text-xs text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex items-center gap-2 border-b border-zinc-100 dark:border-zinc-800/50 last:border-0"
                               >
-                                <MapPin className="w-3.5 h-3.5 text-[#3a4a2c] shrink-0" />
+                                <MapPin className="w-3.5 h-3.5 text-[#113f36] shrink-0" />
                                 <span className="truncate">{item.name}</span>
                               </button>
                             ))}
@@ -1172,7 +1172,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                         onClick={() => setQuoteData({...quoteData, serviceLevel: tier.key})}
                         className={`p-5 rounded-2xl border-2 text-left transition-all flex flex-col justify-between h-36 ${
                           quoteData.serviceLevel === tier.key 
-                            ? 'border-[#3a4a2c] bg-[#3a4a2c]/5/15 text-[#3a4a2c] font-semibold' 
+                            ? 'border-[#113f36] bg-[#113f36]/5/15 text-[#113f36] font-semibold' 
                             : 'border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-650'
                         }`}
                       >
@@ -1180,12 +1180,12 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                           <div className="flex items-center justify-between">
                             <span className="font-bold text-sm text-zinc-900 block">{tier.label}</span>
                             {quoteData.serviceLevel === tier.key && (
-                              <div className="w-1.5 h-1.5 rounded-full bg-[#3a4a2c]" />
+                              <div className="w-1.5 h-1.5 rounded-full bg-[#113f36]" />
                             )}
                           </div>
                           <span className="text-[13px] text-zinc-500 mt-1 block">{tier.delay}</span>
                         </div>
-                        <span className="text-[12px] font-black uppercase tracking-wider text-[#3a4a2c] bg-[#3a4a2c]/5/70 px-2 py-1 rounded-md self-start">
+                        <span className="text-[12px] font-black uppercase tracking-wider text-[#113f36] bg-[#113f36]/5/70 px-2 py-1 rounded-md self-start">
                           {tier.fee}
                         </span>
                       </button>

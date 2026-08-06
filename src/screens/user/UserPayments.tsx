@@ -388,7 +388,7 @@ export default function UserPayments({ onNavigate }: UserPaymentsProps) {
               <div key={card.id} className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 relative overflow-hidden group shadow-sm hover:shadow-md transition-shadow">
                 {card.isDefault && (
                   <div className={`absolute top-4 ${isRTL ? 'left-4' : 'right-4'}`}>
-                    <span className="bg-[#3a4a2c]/5 dark:bg-blue-950/40 text-[#3a4a2c] dark:text-[#6d8c55] px-3 py-1 text-[11px] font-black uppercase tracking-wider rounded-full flex items-center gap-1.5 border border-[#3a4a2c]/10 dark:border-blue-900/30">
+                    <span className="bg-[#113f36]/5 dark:bg-blue-950/40 text-[#113f36] dark:text-[#6d8c55] px-3 py-1 text-[11px] font-black uppercase tracking-wider rounded-full flex items-center gap-1.5 border border-[#113f36]/10 dark:border-blue-900/30">
                       <CheckCircle2 className="w-3" />
                       Primary Card
                     </span>
@@ -477,10 +477,10 @@ export default function UserPayments({ onNavigate }: UserPaymentsProps) {
                       <td className="py-3.5 px-4">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold leading-none ${
                           payment.status === 'Completed' || payment.status === 'paid'
-                            ? 'bg-[#3a4a2c]/5 dark:bg-green-950/30 text-[#3a4a2c] dark:text-green-400 border border-[#3a4a2c]/10 dark:border-blue-900/40' 
+                            ? 'bg-[#113f36]/5 dark:bg-green-950/30 text-[#113f36] dark:text-green-400 border border-[#113f36]/10 dark:border-blue-900/40' 
                             : 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/40'
                         }`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${payment.status === 'Completed' || payment.status === 'paid' ? 'bg-[#3a4a2c]' : 'bg-amber-500'}`} />
+                          <span className={`w-1.5 h-1.5 rounded-full ${payment.status === 'Completed' || payment.status === 'paid' ? 'bg-[#113f36]' : 'bg-amber-500'}`} />
                           {payment.status === 'Completed' || payment.status === 'paid' ? 'Paid' : 'Unconfirmed'}
                         </span>
                       </td>

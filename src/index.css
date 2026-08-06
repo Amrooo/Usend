@@ -5,9 +5,10 @@
 @theme {
   --font-sans: var(--primary-font), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--display-font), sans-serif;
-  --color-brand: #3a4a2c;
-  --color-brand-vibrant: #546a40;
-  --color-brand-deep: #060B26;
+  --color-brand: #113f36;
+  --color-brand-vibrant: #10b981;
+  --color-brand-deep: #0b1715;
+  --color-brand-accent: #cca073;
 }
 
 @custom-variant dark (&:where(.dark, .dark *));

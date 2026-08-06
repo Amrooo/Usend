@@ -110,7 +110,7 @@ export default function PhoneAuth({ onNavigate }: PhoneAuthProps) {
                   placeholder="50 123 4567"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value.replace(/[^0-9]/g, ''))}
-                  className="w-full h-16 pl-24 pr-4 rounded-3xl bg-zinc-50 dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800 focus:border-[#3a4a2c] outline-none text-lg font-bold tracking-wider transition-all placeholder:font-medium"
+                  className="w-full h-16 pl-24 pr-4 rounded-3xl bg-zinc-50 dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800 focus:border-[#113f36] outline-none text-lg font-bold tracking-wider transition-all placeholder:font-medium"
                 />
               </div>
 
@@ -142,7 +142,7 @@ export default function PhoneAuth({ onNavigate }: PhoneAuthProps) {
                     maxLength={1}
                     value={digit}
                     onChange={(e) => handleOtpChange(i, e.target.value)}
-                    className="w-16 h-20 text-center text-3xl font-black rounded-2xl bg-zinc-50 dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800 focus:border-[#3a4a2c] outline-none transition-all"
+                    className="w-16 h-20 text-center text-3xl font-black rounded-2xl bg-zinc-50 dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800 focus:border-[#113f36] outline-none transition-all"
                   />
                 ))}
               </div>
@@ -151,7 +151,7 @@ export default function PhoneAuth({ onNavigate }: PhoneAuthProps) {
                 <button 
                   onClick={() => { setCountdown(30); setOtp(['','','','']); }}
                   disabled={countdown > 0}
-                  className="text-xs font-bold text-[#3a4a2c] dark:text-[#3a4a2c] uppercase tracking-widest disabled:opacity-50"
+                  className="text-xs font-bold text-[#113f36] dark:text-[#113f36] uppercase tracking-widest disabled:opacity-50"
                 >
                   Resend Code
                 </button>
@@ -169,8 +169,8 @@ export default function PhoneAuth({ onNavigate }: PhoneAuthProps) {
               animate={{ scale: 1, opacity: 1 }}
               className="flex flex-col items-center gap-6"
             >
-              <div className="w-20 h-20 rounded-full border-4 border-[#3a4a2c] border-t-transparent animate-spin flex items-center justify-center">
-                 <CheckCircle2 className="w-8 h-8 text-[#3a4a2c] animate-pulse" />
+              <div className="w-20 h-20 rounded-full border-4 border-[#113f36] border-t-transparent animate-spin flex items-center justify-center">
+                 <CheckCircle2 className="w-8 h-8 text-[#113f36] animate-pulse" />
               </div>
               <p className="font-bold text-zinc-900 dark:text-zinc-100 animate-pulse">Authenticating...</p>
             </motion.div>

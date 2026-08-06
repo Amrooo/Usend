@@ -35,7 +35,7 @@ export default function Orders({ onNavigate }: OrdersProps) {
               </h1>
               <p className="text-zinc-500 text-sm mt-1">Track and manage your deliveries</p>
             </div>
-            <div className="w-12 h-12 rounded-2xl bg-[#3a4a2c]/5 flex items-center justify-center text-[#3a4a2c]">
+            <div className="w-12 h-12 rounded-2xl bg-[#113f36]/5 flex items-center justify-center text-[#113f36]">
               <Package className="w-6 h-6" />
             </div>
           </div>
@@ -62,13 +62,13 @@ export default function Orders({ onNavigate }: OrdersProps) {
               onClick={() => order.active && onNavigate('tracking')}
               className={`w-full bg-white rounded-3xl p-5 shadow-sm transition-all active:scale-[0.98] text-left rtl:text-right group ${
                 order.active 
-                  ? 'border-2 border-[#3a4a2c] shadow-md shadow-green-500/10' 
-                  : 'border border-zinc-100 hover:border-[#3a4a2c]/30'
+                  ? 'border-2 border-[#113f36] shadow-md shadow-green-500/10' 
+                  : 'border border-zinc-100 hover:border-[#113f36]/30'
               }`}
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex gap-4 items-center">
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${order.active ? 'bg-[#3a4a2c] text-white shadow-lg shadow-green-500/20' : 'bg-zinc-50 text-zinc-500 group-hover:bg-zinc-100 transition-colors'}`}>
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${order.active ? 'bg-[#113f36] text-white shadow-lg shadow-green-500/20' : 'bg-zinc-50 text-zinc-500 group-hover:bg-zinc-100 transition-colors'}`}>
                     <Package className="w-6 h-6" />
                   </div>
                   <div>
@@ -77,7 +77,7 @@ export default function Orders({ onNavigate }: OrdersProps) {
                 </div>
                 <div className={`px-3 py-1.5 rounded-full text-[12px] font-bold tracking-wider uppercase flex items-center gap-1.5 shrink-0 ${
                   order.active 
-                    ? 'bg-[#3a4a2c]/10 text-[#3a4a2c]' 
+                    ? 'bg-[#113f36]/10 text-[#113f36]' 
                     : 'bg-zinc-100 text-zinc-500'
                 }`}>
                   {order.active ? <Clock className="w-3.5 h-3.5" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
@@ -89,7 +89,7 @@ export default function Orders({ onNavigate }: OrdersProps) {
                 <span className="text-sm font-medium text-zinc-500">{order.date}</span>
                 <div className="flex items-center gap-2">
                   <span className="font-black text-lg text-zinc-900">{order.price}</span>
-                  <ChevronRight className={`w-5 h-5 text-zinc-300 group-hover:text-[#3a4a2c] transition-colors ${isRTL ? 'rotate-180' : ''}`} />
+                  <ChevronRight className={`w-5 h-5 text-zinc-300 group-hover:text-[#113f36] transition-colors ${isRTL ? 'rotate-180' : ''}`} />
                 </div>
               </div>
             </button>

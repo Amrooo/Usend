@@ -50,9 +50,9 @@ export default function Hub({ onNavigate }: HubProps) {
       title: t('hub_personal') || 'Customer Terminal',
       subtitle: 'RETAIL SHIPPING & TRACKING',
       desc: t('hub_personal_desc') || 'Instantly dispatch light packages across UAE cities, track live driver locations on full-screen maps, and coordinate custom delivery parameters.',
-      icon: <User className="w-6 h-6 text-[#3a4a2c]" />,
-      colorClass: 'from-blue-500/10 to-blue-500/10 hover:border-[#3a4a2c]/30',
-      tagColor: 'bg-[#3a4a2c]/5 text-[#3a4a2c] dark:bg-zinc-900 dark:text-[#8da379]',
+      icon: <User className="w-6 h-6 text-[#113f36]" />,
+      colorClass: 'from-blue-500/10 to-blue-500/10 hover:border-[#113f36]/30',
+      tagColor: 'bg-[#113f36]/5 text-[#113f36] dark:bg-zinc-900 dark:text-[#6e938c]',
       badgeText: 'INDIVIDUAL DISPATCH',
       image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=600',
       metricLabel: 'Dispatch Time',
@@ -64,7 +64,7 @@ export default function Hub({ onNavigate }: HubProps) {
       title: t('hub_business') || 'Merchant Terminal',
       subtitle: 'ENTERPRISE INTEGRATION',
       desc: t('hub_business_desc') || 'Ingest bulk CSV directories, customize Cash on Delivery (COD) collection guidelines, access Sandbox Aramex waybill systems, and settle store ledgers instantly.',
-      icon: <Briefcase className="w-6 h-6 text-[#3a4a2c]" />,
+      icon: <Briefcase className="w-6 h-6 text-[#113f36]" />,
       colorClass: 'from-blue-500/10 to-indigo-500/10 hover:border-indigo-500/30',
       tagColor: 'bg-indigo-50 text-indigo-800 dark:bg-zinc-900 dark:text-indigo-300',
       badgeText: 'E-COMMERCE MERCHANT',
@@ -155,7 +155,7 @@ export default function Hub({ onNavigate }: HubProps) {
                     <p className="text-[13px] font-extrabold text-zinc-400 tracking-widest uppercase">
                       {terminal.subtitle}
                     </p>
-                    <h2 className="text-lg font-black text-zinc-950 flex items-center gap-1 group-hover:text-[#3a4a2c] transition-colors duration-300">
+                    <h2 className="text-lg font-black text-zinc-950 flex items-center gap-1 group-hover:text-[#113f36] transition-colors duration-300">
                       {terminal.title}
                       <ArrowUpRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                     </h2>
@@ -184,7 +184,7 @@ export default function Hub({ onNavigate }: HubProps) {
                     </div>
                   </div>
 
-                  <div className="inline-flex items-center gap-1 text-[12px] font-black uppercase tracking-wider text-zinc-400 group-hover:text-[#3a4a2c] duration-300">
+                  <div className="inline-flex items-center gap-1 text-[12px] font-black uppercase tracking-wider text-zinc-400 group-hover:text-[#113f36] duration-300">
                     Connect Portal
                     <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 duration-300" />
                   </div>
@@ -220,9 +220,9 @@ export default function Hub({ onNavigate }: HubProps) {
                <div>
                   <h4 className="text-zinc-900 font-extrabold text-[13px] uppercase tracking-[0.3em] mb-6 opacity-40">Resources</h4>
                   <ul className="space-y-3 text-zinc-600 text-xs font-bold">
-                    <li><a href="#" className="hover:text-[#3a4a2c] transition-colors">API Docs</a></li>
-                    <li><a href="#" className="hover:text-[#3a4a2c] transition-colors">Governance</a></li>
-                    <li><a href="#" className="hover:text-[#3a4a2c] transition-colors">Careers</a></li>
+                    <li><a href="#" className="hover:text-[#113f36] transition-colors">API Docs</a></li>
+                    <li><a href="#" className="hover:text-[#113f36] transition-colors">Governance</a></li>
+                    <li><a href="#" className="hover:text-[#113f36] transition-colors">Careers</a></li>
                   </ul>
                </div>
             </div>
@@ -230,12 +230,12 @@ export default function Hub({ onNavigate }: HubProps) {
 
          <div className="max-w-[1400px] mx-auto pt-10 border-t border-zinc-100 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="text-[13px] font-black text-zinc-400 uppercase tracking-[0.4em]">
-              © 2026 SWIFTMOVE SYSTEMS. ARCHITECTED IN UAE.
+              © 2026 USEND SYSTEMS. ARCHITECTED IN UAE.
             </div>
             
             <div className="flex items-center gap-8 text-[13px] font-black text-zinc-400 uppercase tracking-[0.4em]">
-               <a href="#" className="hover:text-[#3a4a2c] transition-colors">Privacy</a>
-               <a href="#" className="hover:text-[#3a4a2c] transition-colors">Terms</a>
+               <a href="#" className="hover:text-[#113f36] transition-colors">Privacy</a>
+               <a href="#" className="hover:text-[#113f36] transition-colors">Terms</a>
             </div>
          </div>
       </footer>

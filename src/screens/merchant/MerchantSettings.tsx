@@ -59,15 +59,15 @@ export default function MerchantSettings({ onNavigate }: MerchantSettingsProps) 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label className="text-xs font-bold uppercase tracking-wider text-zinc-500">{t('store_name') || 'Store Name'}</label>
-                      <input type="text" defaultValue="USend Electronic Store" className="w-full bg-zinc-50 border-2 border-transparent focus:border-[#3a4a2c] rounded-xl px-4 py-3 outline-none text-zinc-900" />
+                      <input type="text" defaultValue="USend Electronic Store" className="w-full bg-zinc-50 border-2 border-transparent focus:border-[#113f36] rounded-xl px-4 py-3 outline-none text-zinc-900" />
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold uppercase tracking-wider text-zinc-500">{t('phone')}</label>
-                      <input type="text" defaultValue="+971 50 123 4567" className="w-full bg-zinc-50 border-2 border-transparent focus:border-[#3a4a2c] rounded-xl px-4 py-3 outline-none text-zinc-900" />
+                      <input type="text" defaultValue="+971 50 123 4567" className="w-full bg-zinc-50 border-2 border-transparent focus:border-[#113f36] rounded-xl px-4 py-3 outline-none text-zinc-900" />
                     </div>
                     <div className="space-y-2 md:col-span-2">
                       <label className="text-xs font-bold uppercase tracking-wider text-zinc-500">{t('address') || 'Business Address'}</label>
-                      <input type="text" defaultValue="Dubai Silicon Oasis, UAE" className="w-full bg-zinc-50 border-2 border-transparent focus:border-[#3a4a2c] rounded-xl px-4 py-3 outline-none text-zinc-900" />
+                      <input type="text" defaultValue="Dubai Silicon Oasis, UAE" className="w-full bg-zinc-50 border-2 border-transparent focus:border-[#113f36] rounded-xl px-4 py-3 outline-none text-zinc-900" />
                     </div>
                   </div>
                   <div className="mt-6 flex justify-end">
@@ -80,7 +80,7 @@ export default function MerchantSettings({ onNavigate }: MerchantSettingsProps) 
             {activeTab === 'kyc' && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
                 <div className="bg-white p-6 rounded-3xl border border-zinc-200 shadow-sm flex flex-col items-center justify-center text-center py-12">
-                   <div className="w-16 h-16 bg-[#3a4a2c]/10 text-[#3a4a2c] rounded-full flex items-center justify-center mb-4">
+                   <div className="w-16 h-16 bg-[#113f36]/10 text-[#113f36] rounded-full flex items-center justify-center mb-4">
                      <CheckCircle2 className="w-8 h-8" />
                    </div>
                    <h3 className="text-xl font-bold text-zinc-900 mb-2">{t('kyc_verified') || 'Account Verified'}</h3>
@@ -93,7 +93,7 @@ export default function MerchantSettings({ onNavigate }: MerchantSettingsProps) 
                          <h4 className="font-bold text-zinc-900">{t('commercial_license') || 'Commercial License'}</h4>
                          <p className="text-xs text-zinc-500 mt-1">Uploaded on 12 Jan 2026</p>
                       </div>
-                      <div className="text-[#3a4a2c] flex items-center gap-1 text-sm font-bold bg-[#3a4a2c]/10 px-3 py-1.5 rounded-lg">
+                      <div className="text-[#113f36] flex items-center gap-1 text-sm font-bold bg-[#113f36]/10 px-3 py-1.5 rounded-lg">
                          <CheckCircle2 className="w-4 h-4" /> Verified
                       </div>
                    </div>
@@ -102,7 +102,7 @@ export default function MerchantSettings({ onNavigate }: MerchantSettingsProps) 
                          <h4 className="font-bold text-zinc-900">{t('owner_id') || 'Emirates ID (Owner)'}</h4>
                          <p className="text-xs text-zinc-500 mt-1">Uploaded on 12 Jan 2026</p>
                       </div>
-                      <div className="text-[#3a4a2c] flex items-center gap-1 text-sm font-bold bg-[#3a4a2c]/10 px-3 py-1.5 rounded-lg">
+                      <div className="text-[#113f36] flex items-center gap-1 text-sm font-bold bg-[#113f36]/10 px-3 py-1.5 rounded-lg">
                          <CheckCircle2 className="w-4 h-4" /> Verified
                       </div>
                    </div>
@@ -117,23 +117,23 @@ export default function MerchantSettings({ onNavigate }: MerchantSettingsProps) 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2 md:col-span-2">
                       <label className="text-xs font-bold uppercase tracking-wider text-zinc-500">{t('bank_name') || 'Bank Name'}</label>
-                      <input type="text" defaultValue="Emirates NBD" className="w-full bg-zinc-50 border-2 border-transparent focus:border-[#3a4a2c] rounded-xl px-4 py-3 outline-none text-zinc-900" />
+                      <input type="text" defaultValue="Emirates NBD" className="w-full bg-zinc-50 border-2 border-transparent focus:border-[#113f36] rounded-xl px-4 py-3 outline-none text-zinc-900" />
                     </div>
                     <div className="space-y-2 md:col-span-2">
                       <label className="text-xs font-bold uppercase tracking-wider text-zinc-500">{t('account_name') || 'Account Holder Name'}</label>
-                      <input type="text" defaultValue="USend Electronic LLC" className="w-full bg-zinc-50 border-2 border-transparent focus:border-[#3a4a2c] rounded-xl px-4 py-3 outline-none text-zinc-900" />
+                      <input type="text" defaultValue="USend Electronic LLC" className="w-full bg-zinc-50 border-2 border-transparent focus:border-[#113f36] rounded-xl px-4 py-3 outline-none text-zinc-900" />
                     </div>
                     <div className="space-y-2 md:col-span-2">
                       <label className="text-xs font-bold uppercase tracking-wider text-zinc-500">{t('iban') || 'IBAN'}</label>
-                      <input type="text" defaultValue="AE00 0000 0000 0000 0000 000" className="w-full bg-zinc-50 border-2 border-transparent focus:border-[#3a4a2c] rounded-xl px-4 py-3 outline-none text-zinc-900 font-mono" />
+                      <input type="text" defaultValue="AE00 0000 0000 0000 0000 000" className="w-full bg-zinc-50 border-2 border-transparent focus:border-[#113f36] rounded-xl px-4 py-3 outline-none text-zinc-900 font-mono" />
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold uppercase tracking-wider text-zinc-500">{t('swift_code') || 'SWIFT Code'}</label>
-                      <input type="text" defaultValue="EBIZAEAD" className="w-full bg-zinc-50 border-2 border-transparent focus:border-[#3a4a2c] rounded-xl px-4 py-3 outline-none text-zinc-900 font-mono" />
+                      <input type="text" defaultValue="EBIZAEAD" className="w-full bg-zinc-50 border-2 border-transparent focus:border-[#113f36] rounded-xl px-4 py-3 outline-none text-zinc-900 font-mono" />
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold uppercase tracking-wider text-zinc-500">{t('account_number') || 'Account Number'}</label>
-                      <input type="text" defaultValue="1010101010" className="w-full bg-zinc-50 border-2 border-transparent focus:border-[#3a4a2c] rounded-xl px-4 py-3 outline-none text-zinc-900 font-mono" />
+                      <input type="text" defaultValue="1010101010" className="w-full bg-zinc-50 border-2 border-transparent focus:border-[#113f36] rounded-xl px-4 py-3 outline-none text-zinc-900 font-mono" />
                     </div>
                   </div>
                   <div className="mt-6 flex justify-end">

@@ -18,15 +18,15 @@ export default function Onboarding({ onNavigate }: OnboardingProps) {
       title: t('onboarding_title_1'),
       description: t('onboarding_desc_1'),
       icon: Scan,
-      color: "text-[#3a4a2c]",
-      bgColor: "bg-[#3a4a2c]/10"
+      color: "text-[#113f36]",
+      bgColor: "bg-[#113f36]/10"
     },
     {
       title: t('onboarding_title_2'),
       description: t('onboarding_desc_2'),
       icon: Banknote,
-      color: "text-[#3a4a2c]",
-      bgColor: "bg-[#3a4a2c]/10"
+      color: "text-[#113f36]",
+      bgColor: "bg-[#113f36]/10"
     },
     {
       title: t('onboarding_title_3'),

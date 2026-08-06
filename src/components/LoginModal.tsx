@@ -129,7 +129,7 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
             className="bg-white text-slate-900 border border-slate-200 rounded-[2.5rem] w-full max-w-md p-8 shadow-2xl relative overflow-hidden z-10 select-none animate-in fade-in zoom-in duration-200"
           >
             {/* Elegant Background Light Accent */}
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#3a4a2c]/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#113f36]/10 rounded-full blur-3xl pointer-events-none" />
 
             {/* Header close button */}
             <button 
@@ -141,7 +141,7 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
 
             {/* Title block */}
             <div className="space-y-2 mb-8">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#3a4a2c]/5 border border-[#3a4a2c]/10 text-[#3a4a2c] text-[12px] font-black uppercase tracking-widest font-sans">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#113f36]/5 border border-[#113f36]/10 text-[#113f36] text-[12px] font-black uppercase tracking-widest font-sans">
                 USend Shipping Portal
               </span>
               <h3 className="text-xl md:text-2xl font-bold tracking-tight text-zinc-900">
@@ -158,14 +158,14 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
                 <button
                   type="button"
                   onClick={() => setSelectedRole('merchant')}
-                  className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all ${selectedRole === 'merchant' ? 'bg-white text-[#3a4a2c] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                  className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all ${selectedRole === 'merchant' ? 'bg-white text-[#113f36] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                 >
                   Merchant
                 </button>
                 <button
                   type="button"
                   onClick={() => setSelectedRole('user')}
-                  className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all ${selectedRole === 'user' ? 'bg-white text-[#3a4a2c] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                  className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all ${selectedRole === 'user' ? 'bg-white text-[#113f36] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                 >
                   User
                 </button>
@@ -185,7 +185,7 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="user@usend.com"
-                    className="w-full h-12.5 bg-slate-50 border border-slate-200 text-slate-900 rounded-xl pl-11 pr-4 focus:ring-2 focus:ring-[#3a4a2c] focus:outline-hidden tracking-normal text-xs font-semibold transition-all"
+                    className="w-full h-12.5 bg-slate-50 border border-slate-200 text-slate-900 rounded-xl pl-11 pr-4 focus:ring-2 focus:ring-[#113f36] focus:outline-hidden tracking-normal text-xs font-semibold transition-all"
                   />
                 </div>
               </div>
@@ -202,10 +202,10 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full h-12.5 bg-slate-50 border border-slate-200 text-slate-900 rounded-xl pl-11 pr-4 focus:ring-2 focus:ring-[#3a4a2c] focus:outline-hidden tracking-widest text-xs font-semibold transition-all"
+                    className="w-full h-12.5 bg-slate-50 border border-slate-200 text-slate-900 rounded-xl pl-11 pr-4 focus:ring-2 focus:ring-[#113f36] focus:outline-hidden tracking-widest text-xs font-semibold transition-all"
                   />
                 </div>
-                <div className="text-[12px] text-[#3a4a2c] font-medium pt-1 text-right">
+                <div className="text-[12px] text-[#113f36] font-medium pt-1 text-right">
                   Default Demo Password: <span className="font-bold underline">password</span>
                 </div>
               </div>
@@ -225,7 +225,7 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-13 mt-6 bg-[#3a4a2c] hover:bg-slate-900 disabled:bg-slate-300 text-white transition-all duration-300 font-extrabold uppercase tracking-widest text-[13px] rounded-xl flex items-center justify-center gap-2 shadow-md hover:shadow-[#3a4a2c]/20 active:scale-98 cursor-pointer"
+                className="w-full h-13 mt-6 bg-[#113f36] hover:bg-slate-900 disabled:bg-slate-300 text-white transition-all duration-300 font-extrabold uppercase tracking-widest text-[13px] rounded-xl flex items-center justify-center gap-2 shadow-md hover:shadow-[#113f36]/20 active:scale-98 cursor-pointer"
               >
                 {loading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -245,7 +245,7 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
                   onClose();
                   onNavigate('portal_register');
                 }}
-                className="text-[#3a4a2c] hover:text-[#3a4a2c]/80 hover:underline uppercase transition-all"
+                className="text-[#113f36] hover:text-[#113f36]/80 hover:underline uppercase transition-all"
               >
                 Create Account
               </button>

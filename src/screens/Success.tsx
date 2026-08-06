@@ -38,12 +38,12 @@ export default function Success({ onNavigate }: SuccessProps) {
         }}
         className="w-32 h-32 bg-white rounded-full flex items-center justify-center mb-8 relative"
       >
-        <CheckCircle2 className="w-16 h-16 text-[#3a4a2c]" />
+        <CheckCircle2 className="w-16 h-16 text-[#113f36]" />
         <motion.div 
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.6, type: "spring" }}
-          className={`absolute -bottom-2 ${isRTL ? '-left-2' : '-right-2'} w-12 h-12 bg-zinc-900 rounded-full flex items-center justify-center border-4 border-[#3a4a2c]`}
+          className={`absolute -bottom-2 ${isRTL ? '-left-2' : '-right-2'} w-12 h-12 bg-zinc-900 rounded-full flex items-center justify-center border-4 border-[#113f36]`}
         >
           <Package className="w-5 h-5 text-white" />
         </motion.div>

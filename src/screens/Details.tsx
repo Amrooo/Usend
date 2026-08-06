@@ -61,7 +61,7 @@ function AddressAutocomplete({ placeholder, initialValue, onChange }: { placehol
           onBlur={() => setTimeout(() => setIsOpen(false), 200)}
           className="w-full text-sm font-semibold text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-300 dark:placeholder:text-zinc-600 focus:outline-none bg-transparent transition-colors duration-300 text-left rtl:text-right"
         />
-        {isLoading && <div className={`w-3 h-3 border-2 border-[#3a4a2c] border-t-transparent rounded-full animate-spin ${isRTL ? 'mr-2' : 'ml-2'}`}></div>}
+        {isLoading && <div className={`w-3 h-3 border-2 border-[#113f36] border-t-transparent rounded-full animate-spin ${isRTL ? 'mr-2' : 'ml-2'}`}></div>}
       </div>
       {isOpen && results.length > 0 && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-zinc-800 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)] border border-zinc-100 dark:border-zinc-700 overflow-hidden z-50 max-h-60 overflow-y-auto">
@@ -265,7 +265,7 @@ export default function Details({ onNavigate }: DetailsProps) {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 transition-colors duration-300">{t('smart_scan')}</h3>
-            <span className="px-2.5 py-1 rounded-full bg-[#3a4a2c]/10 text-[#3a4a2c] dark:text-[#3a4a2c] text-[12px] font-bold tracking-wider uppercase flex items-center gap-1">
+            <span className="px-2.5 py-1 rounded-full bg-[#113f36]/10 text-[#113f36] dark:text-[#113f36] text-[12px] font-bold tracking-wider uppercase flex items-center gap-1">
               <Sparkles className="w-3 h-3" />
               {t('ai_powered')}
             </span>
@@ -329,8 +329,8 @@ export default function Details({ onNavigate }: DetailsProps) {
               <div className="flex items-center justify-between mb-2">
                 <p className="text-[12px] font-bold tracking-widest text-zinc-400 dark:text-zinc-500 uppercase text-left rtl:text-right">{t('describe_manually')}</p>
                 {isListening && (
-                  <span className="text-[12px] font-bold text-[#3a4a2c] animate-pulse uppercase tracking-wider flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#3a4a2c]"></span>
+                  <span className="text-[12px] font-bold text-[#113f36] animate-pulse uppercase tracking-wider flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#113f36]"></span>
                     Listening...
                   </span>
                 )}
@@ -340,7 +340,7 @@ export default function Details({ onNavigate }: DetailsProps) {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder={t('describe_placeholder')}
-                  className={`w-full h-24 bg-zinc-50 dark:bg-zinc-950/50 rounded-2xl p-4 pr-12 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 resize-none border transition-all duration-300 text-left rtl:text-right ${micError ? 'border-red-500' : isListening ? 'border-[#3a4a2c] ring-2 ring-green-500/10' : 'border-zinc-200 dark:border-zinc-800'}`}
+                  className={`w-full h-24 bg-zinc-50 dark:bg-zinc-950/50 rounded-2xl p-4 pr-12 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 resize-none border transition-all duration-300 text-left rtl:text-right ${micError ? 'border-red-500' : isListening ? 'border-[#113f36] ring-2 ring-green-500/10' : 'border-zinc-200 dark:border-zinc-800'}`}
                 ></textarea>
                 <button
                   onClick={toggleListening}
@@ -414,12 +414,12 @@ export default function Details({ onNavigate }: DetailsProps) {
               <p className="text-[12px] font-bold tracking-widest text-zinc-400 dark:text-zinc-500 uppercase mb-2 text-left rtl:text-right">{t('ai_suggested')}</p>
               <div className="flex flex-wrap gap-2">
                 {weight && (
-                  <span className="px-3 py-1.5 rounded-full border border-[#3a4a2c]/30 text-[#3a4a2c] dark:text-[#6d8c55] text-xs font-semibold bg-[#3a4a2c]/5 flex items-center gap-1.5 transition-colors duration-300">
+                  <span className="px-3 py-1.5 rounded-full border border-[#113f36]/30 text-[#113f36] dark:text-[#6d8c55] text-xs font-semibold bg-[#113f36]/5 flex items-center gap-1.5 transition-colors duration-300">
                     <Package className="w-3.5 h-3.5" />
                     ~{weight} kg
                   </span>
                 )}
-                <span className="px-3 py-1.5 rounded-full border border-[#3a4a2c]/30 text-[#3a4a2c] dark:text-[#6d8c55] text-xs font-semibold bg-[#3a4a2c]/5 flex items-center gap-1.5 transition-colors duration-300">
+                <span className="px-3 py-1.5 rounded-full border border-[#113f36]/30 text-[#113f36] dark:text-[#6d8c55] text-xs font-semibold bg-[#113f36]/5 flex items-center gap-1.5 transition-colors duration-300">
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   {packageType}
                 </span>
@@ -448,7 +448,7 @@ export default function Details({ onNavigate }: DetailsProps) {
             <div className={`absolute ${isRTL ? 'right-[33px]' : 'left-[33px]'} top-[45px] bottom-[45px] w-[2px] bg-zinc-100 dark:bg-zinc-800 transition-colors duration-300`}></div>
 
             <div className="flex gap-4 mb-6 relative z-10">
-              <div className="w-6 h-6 rounded-full border-[3px] border-[#3a4a2c] bg-white dark:bg-zinc-900 flex-shrink-0 mt-1 transition-colors duration-300"></div>
+              <div className="w-6 h-6 rounded-full border-[3px] border-[#113f36] bg-white dark:bg-zinc-900 flex-shrink-0 mt-1 transition-colors duration-300"></div>
               <div className={`flex-1 border-b border-zinc-100 dark:border-zinc-800 pb-4 transition-colors duration-300 text-left rtl:text-right`}>
                 <p className="text-[12px] font-bold tracking-widest text-zinc-400 dark:text-zinc-500 uppercase mb-1">{t('pickup_address')}</p>
                 <button 
@@ -480,7 +480,7 @@ export default function Details({ onNavigate }: DetailsProps) {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 transition-colors duration-300">{t('schedule')}</h3>
-            <button className="text-xs font-bold text-[#3a4a2c] dark:text-[#3a4a2c] tracking-wider uppercase">{t('asap')}</button>
+            <button className="text-xs font-bold text-[#113f36] dark:text-[#113f36] tracking-wider uppercase">{t('asap')}</button>
           </div>
           
           <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-2 -mx-6 px-6">
@@ -494,7 +494,7 @@ export default function Details({ onNavigate }: DetailsProps) {
                 key={i}
                 className={`flex-shrink-0 w-20 py-4 rounded-2xl flex flex-col items-center gap-1 transition-all duration-300 active:scale-95 ${
                   d.active 
-                    ? 'bg-[#3a4a2c] text-white shadow-lg shadow-green-700/30 dark:shadow-none' 
+                    ? 'bg-[#113f36] text-white shadow-lg shadow-green-700/30 dark:shadow-none' 
                     : 'bg-white dark:bg-zinc-900 text-zinc-400 dark:text-zinc-500 border border-zinc-100 dark:border-zinc-800'
                 }`}
               >
@@ -564,7 +564,7 @@ export default function Details({ onNavigate }: DetailsProps) {
                     setPickupAddress(addr.address);
                     setIsPickupSheetOpen(false);
                   }}
-                  className="w-full flex items-center gap-4 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800 hover:border-[#3a4a2c] dark:hover:border-[#3a4a2c] hover:bg-[#3a4a2c]/5 dark:hover:bg-zinc-900/10 transition-colors text-left rtl:text-right"
+                  className="w-full flex items-center gap-4 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800 hover:border-[#113f36] dark:hover:border-[#113f36] hover:bg-[#113f36]/5 dark:hover:bg-zinc-900/10 transition-colors text-left rtl:text-right"
                 >
                   <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-500 dark:text-zinc-400">
                     {addr.icon}
@@ -574,7 +574,7 @@ export default function Details({ onNavigate }: DetailsProps) {
                     <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">{addr.address}</p>
                   </div>
                   {pickupAddress === addr.address && (
-                    <CheckCircle2 className="w-5 h-5 text-[#3a4a2c] dark:text-[#3a4a2c]" />
+                    <CheckCircle2 className="w-5 h-5 text-[#113f36] dark:text-[#113f36]" />
                   )}
                 </button>
               ))}
