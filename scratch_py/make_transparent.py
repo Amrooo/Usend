@@ -21,5 +21,6 @@ def make_white_transparent(img_path, output_path, threshold=245):
     print(f"Saved transparent logo to {output_path}")
 
 if __name__ == "__main__":
-    logo_path = "/Users/amro/Desktop/Amro's PC/Usend/src/assets/usend-logo.png"
-    make_white_transparent(logo_path, logo_path, threshold=250)
+    new_logo_path = "/Users/amro/.gemini/antigravity-ide/brain/75560c3a-9891-43ce-9120-25eaf8c94052/media__1785998001261.png"
+    output_path = "/Users/amro/Desktop/Amro's PC/Usend/src/assets/usend-logo.png"
+    make_white_transparent(new_logo_path, output_path, threshold=250)
