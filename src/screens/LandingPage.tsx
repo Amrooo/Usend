@@ -16,6 +16,8 @@ import { useApp } from '../context/AppContext';
 import LogoIcon from '../components/LogoIcon';
 import LoginModal from '../components/LoginModal';
 import OrderWizard from '../components/OrderWizard';
+import uaeFlag from '../assets/uae-flag.jpg';
+import heroVideo from '../assets/hero-video.mp4';
 
 const heroTruck = 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1920&q=80';
 const shipmentImg = 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1920&q=80';
@@ -217,6 +219,7 @@ const landingTranslations = {
 const LandingPage = ({ onNavigate }: LandingPageProps) => {
   const targetRef = useRef<HTMLDivElement>(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const { language, setLanguage, isRTL } = useLanguage();
   
   // Unified Login Modal State
@@ -298,11 +301,29 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
     target: targetRef,
     offset: ['start start', 'end start']
   });
+  const yParallax = useTransform(scrollY, [0, 800], [0, 200]);
 
     const [heroSlideIdx, setHeroSlideIdx] = useState(0);
   
   const heroSlides = [
     {
+      type: 'image',
+      image: uaeFlag,
+      titleEn: 'Proudly serving businesses across all of the UAE',
+      titleAr: 'نفخر بخدمة الشركات في جميع أنحاء دولة الإمارات العربية المتحدة',
+      descEn: 'With state-of-the-art logistics infrastructure, we make the impossible possible.',
+      descAr: 'من خلال البنية التحتية اللوجستية الحديثة، نجعل المستحيل ممكناً.',
+    },
+    {
+      type: 'video',
+      video: heroVideo,
+      titleEn: 'Smart shipping infrastructure built for tomorrow',
+      titleAr: 'بنية تحتية للشحن الذكي مبنية للمستقبل',
+      descEn: 'Optimize your logistics lifecycle with direct API and driver-companion connections.',
+      descAr: 'حسن دورة حياة الخدمات اللوجستية الخاصة بك مع الاتصال المباشر للواجهة البرمجية والسائق.',
+    },
+    {
+      type: 'image',
       image: ctaCargoShip,
       titleEn: 'Taking your cargo further, faster, and more securely',
       titleAr: 'نأخذ شحنتك إلى أبعد من ذلك، أسرع، وبأمان أكبر',
@@ -310,6 +331,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
       descAr: 'نحن شريكك الموثوق به لتسليم أغراضك الثمينة وضمان وصول منتجاتك إلى وجهتها بأمان.',
     },
     {
+      type: 'image',
       image: shipmentImg,
       titleEn: 'Seamless Inter-Emirate Delivery Network',
       titleAr: 'شبكة توصيل سلسة بين الإمارات',
@@ -360,6 +382,8 @@ const [botOpen, setBotOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
+      if (window.scrollY > 30) setIsScrolled(true);
+      else setIsScrolled(false);
       if (window.scrollY > 400) setShowBackToTop(true);
       else setShowBackToTop(false);
     };
@@ -398,14 +422,21 @@ const [botOpen, setBotOpen] = useState(false);
       
       
       {/* ── HEADER (ABOVE SLIDER) ── */}
-      <header className="w-full bg-white border-b border-zinc-100 py-4 px-6 md:px-12 flex items-center justify-between sticky top-0 z-50 shadow-xs">
+      <header className={`w-full bg-white flex items-center justify-between sticky top-0 z-50 transition-all duration-300 px-6 md:px-16 ${
+        isScrolled 
+          ? 'py-2.5 shadow-md bg-white/95 backdrop-blur-md border-b border-zinc-100' 
+          : 'py-5 bg-white'
+      }`}>
         {/* Logo */}
         <div
-          className="flex items-center gap-2 cursor-pointer select-none"
+          className="flex items-center gap-3.5 cursor-pointer select-none"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         >
-          <LogoIcon className="h-10 w-auto" variant="dark" />
-          <span className="text-lg font-black text-slate-900 tracking-tight">USend</span>
+          <LogoIcon className="h-13 w-auto transition-transform duration-300" variant="dark" />
+          <div className="flex flex-col">
+            <span className="text-xl font-black text-slate-900 tracking-tight leading-none">USend</span>
+            <span className="text-[10px] font-mono font-bold uppercase text-[#113f36] tracking-wider leading-none mt-1.5">Smart Shipping</span>
+          </div>
         </div>
         
         {/* Navigation Links */}
@@ -434,16 +465,34 @@ const [botOpen, setBotOpen] = useState(false);
         <div className="relative w-full h-[600px] md:h-[750px] rounded-[2rem] overflow-hidden shadow-sm">
           {/* Background Slider */}
           <AnimatePresence mode="wait">
-            <motion.img
-              key={heroSlideIdx}
-              src={heroSlides[heroSlideIdx].image}
-              alt="USend Freight"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 1.0, ease: 'easeOut' }}
-              className="absolute inset-0 w-full h-full object-cover select-none"
-            />
+            {heroSlides[heroSlideIdx].type === 'video' ? (
+              <motion.video
+                key={heroSlideIdx}
+                src={heroSlides[heroSlideIdx].video}
+                autoPlay
+                loop
+                muted
+                playsInline
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 1.0, ease: 'easeOut' }}
+                style={{ y: yParallax }}
+                className="absolute -top-[10%] inset-x-0 w-full h-[120%] object-cover select-none"
+              />
+            ) : (
+              <motion.img
+                key={heroSlideIdx}
+                src={heroSlides[heroSlideIdx].image}
+                alt="USend Freight"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 1.0, ease: 'easeOut' }}
+                style={{ y: yParallax }}
+                className="absolute -top-[10%] inset-x-0 w-full h-[120%] object-cover select-none"
+              />
+            )}
           </AnimatePresence>
           
           {/* Overlay Gradients */}
