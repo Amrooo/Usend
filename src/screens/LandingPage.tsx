@@ -397,8 +397,40 @@ const [botOpen, setBotOpen] = useState(false);
       
       
       
-            {/* ─── HERO ─── */}
-      <div className="w-full relative z-10 bg-white p-2 md:p-4 pb-0">
+      {/* ── HEADER (ABOVE SLIDER) ── */}
+      <header className="w-full bg-white border-b border-zinc-100 py-4 px-6 md:px-12 flex items-center justify-between sticky top-0 z-50 shadow-xs">
+        {/* Logo */}
+        <div
+          className="flex items-center gap-2 cursor-pointer select-none"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        >
+          <LogoIcon className="h-10 w-auto" variant="dark" />
+          <span className="text-lg font-black text-slate-900 tracking-tight">USend</span>
+        </div>
+        
+        {/* Navigation Links */}
+        <div className="hidden md:flex items-center gap-6 text-[13px] font-medium text-slate-700 bg-slate-50 border border-slate-200/60 px-8 py-3 rounded-full">
+          <a href="#landing-root" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-[#cca073] transition-colors">{isRTL ? 'الرئيسية' : 'Home'}</a>
+          <a href="#services"  onClick={(e) => handleScrollTo(e, 'services')}  className="hover:text-[#cca073] transition-colors">{isRTL ? 'الخدمات' : 'Services'}</a>
+          <a href="#solutions" onClick={(e) => handleScrollTo(e, 'solutions')} className="hover:text-[#cca073] transition-colors">{isRTL ? 'الحلول' : 'Resources'}</a>
+          <a href="#about"     onClick={(e) => handleScrollTo(e, 'about')}     className="hover:text-[#cca073] transition-colors">{isRTL ? 'من نحن' : 'About'}</a>
+          <a href="#faq"       onClick={(e) => handleScrollTo(e, 'faq')}       className="hover:text-[#cca073] transition-colors">{isRTL ? 'اتصل بنا' : 'Contact'}</a>
+        </div>
+
+        {/* Right CTA */}
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => { setLoginRole('user'); setLoginModalOpen(true); }}
+            className="px-6 py-2.5 rounded-lg bg-[#113f36] hover:bg-[#0d3029] text-white font-bold transition-all cursor-pointer shadow-sm text-[13px] flex items-center gap-2"
+          >
+            {isRTL ? 'طلب تسعيرة' : 'Get Started'}
+            <ArrowUpRight className="w-4 h-4" />
+          </button>
+        </div>
+      </header>
+
+      {/* ─── HERO SLIDER ─── */}
+      <div className="w-full relative z-10 bg-white px-6 md:px-16 py-4 pb-0">
         <div className="relative w-full h-[600px] md:h-[750px] rounded-[2rem] overflow-hidden shadow-sm">
           {/* Background Slider */}
           <AnimatePresence mode="wait">
@@ -416,38 +448,6 @@ const [botOpen, setBotOpen] = useState(false);
           
           {/* Overlay Gradients */}
           <div className="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-900/40 to-transparent pointer-events-none"></div>
-          
-          {/* ── FLOATING NAV ── */}
-          <nav className="absolute top-0 inset-x-0 z-50 flex items-center justify-between px-6 md:px-12 py-6">
-            {/* Logo */}
-            <div
-              className="flex items-center gap-2 cursor-pointer select-none"
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            >
-              <LogoIcon className="h-10 w-auto" variant="light" />
-              <span className="text-lg font-black text-white tracking-tight">USend</span>
-            </div>
-            
-            {/* Pill Links */}
-            <div className="hidden md:flex items-center gap-6 text-[13px] font-medium text-white bg-white/10 backdrop-blur-md px-8 py-3 rounded-full border border-white/20">
-              <a href="#landing-root" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-[#cca073] transition-colors">{isRTL ? 'الرئيسية' : 'Home'}</a>
-              <a href="#services"  onClick={(e) => handleScrollTo(e, 'services')}  className="hover:text-[#cca073] transition-colors">{isRTL ? 'الخدمات' : 'Services'}</a>
-              <a href="#solutions" onClick={(e) => handleScrollTo(e, 'solutions')} className="hover:text-[#cca073] transition-colors">{isRTL ? 'الحلول' : 'Resources'}</a>
-              <a href="#about"     onClick={(e) => handleScrollTo(e, 'about')}     className="hover:text-[#cca073] transition-colors">{isRTL ? 'من نحن' : 'About'}</a>
-              <a href="#faq"       onClick={(e) => handleScrollTo(e, 'faq')}       className="hover:text-[#cca073] transition-colors">{isRTL ? 'اتصل بنا' : 'Contact'}</a>
-            </div>
-
-            {/* Right CTA */}
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => { setLoginRole('user'); setLoginModalOpen(true); }}
-                className="px-6 py-2.5 rounded-lg bg-[#113f36] hover:bg-[#0d3029] text-white font-bold transition-all cursor-pointer shadow-sm text-[13px] flex items-center gap-2"
-              >
-                {isRTL ? 'طلب تسعيرة' : 'Get Started'}
-                <ArrowUpRight className="w-4 h-4" />
-              </button>
-            </div>
-          </nav>
 
           {/* ── Hero Content ── */}
           <div className="absolute inset-0 flex flex-col justify-center px-6 md:px-24 z-10 max-w-5xl pt-16">
