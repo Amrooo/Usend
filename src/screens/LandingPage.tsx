@@ -8,17 +8,19 @@ import {
   Bot, Star, Users, Calculator, Check, MapPin, Play, Plus, Building, 
   ArrowUpRight, Phone, Award, ShieldAlert, HelpCircle, Lock, Mail, Loader2, Anchor
 } from 'lucide-react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebase';
+import { signInWithEmailAndPassword, signInAnonymously } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import { auth, db } from '../firebase';
 import { useLanguage } from '../context/LanguageContext';
 import { useApp } from '../context/AppContext';
 import LogoIcon from '../components/LogoIcon';
 import LoginModal from '../components/LoginModal';
 import OrderWizard from '../components/OrderWizard';
 
-import heroTruck from '../assets/hero-truck.png';
-import sectorContainer from '../assets/sector-container.png';
-import ctaCargoShip from '../assets/cta-cargo-ship.png';
+const heroTruck = 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1920&q=80';
+const shipmentImg = 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1920&q=80';
+const sectorContainer = 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1920&q=80';
+const ctaCargoShip = 'https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?auto=format&fit=crop&w=1920&q=80';
 
 const AiFace3DIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
   <svg viewBox="0 0 44 44" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
@@ -43,7 +45,7 @@ const landingTranslations = {
     adminAccess: 'Admin Portal',
     hubAccess: 'Hub Access',
     heroBadge: 'Multi-Courier E-Commerce Shipping Gateway',
-    heroTitle: 'Unified Courier Hub\nFor E-Commerce',
+    heroTitle: 'Unified Courier HubFor E-Commerce',
     heroDesc: 'SwiftMove is a central hub connecting online merchants and users with last-mile couriers to deliver products and items seamlessly. Provide recipient details, designate item prices, and choose payment modes in one unified dashboard. Easily dispatch via sandbox channels like Aramex or use our active on-demand local drivers on the SwiftMove driver app.',
     btnDownloadApp: 'Download App',
     btnLearnMore: 'Get Pricing Estimate',
@@ -131,7 +133,7 @@ const landingTranslations = {
     adminAccess: 'بوابة الإدارة العامة',
     hubAccess: 'الوصول للمنصة',
     heroBadge: 'بوابة الشحن الموحدة للتجارة الإلكترونية وشبكة السائقين',
-    heroTitle: 'منصة شحن متكاملة\nللتجارة الإلكترونية',
+    heroTitle: 'منصة شحن متكاملةللتجارة الإلكترونية',
     heroDesc: 'سويفت موف هي منصة لوجستية مركزية لربط المتاجر والعملاء بالسائقين بهدف توصيل المنتجات والطرود من موقع لآخر بسلاسة وسهولة. حدد تفاصيل المستلم وسعر المنتج المراد تحصيله وخيارات الدفع المفضلة في واجهة موحدة. يمكنك توجيه الطلبات تلقائياً لأرامكس عبر سائقيهم، أو إسنادها فوراً لسائقين محليين عبر تطبيق السائق الخاص بسويفت موف.',
     btnDownloadApp: 'تحميل التطبيق',
     btnLearnMore: 'احصل على تسعيرة شحن',
@@ -249,6 +251,11 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
         if (loginEmail.toLowerCase().includes('admin') || loginEmail.toLowerCase() === 'octman.sam@gmail.com') targetRole = 'admin';
         else if (loginEmail.toLowerCase().includes('driver') || loginEmail.toLowerCase().includes('user')) targetRole = 'user';
         
+        // Correctly match the redirectScreen with targetRole
+        let fallbackRedirectScreen: Screen = 'merchant_dashboard';
+        if (targetRole === 'admin') fallbackRedirectScreen = 'admin_dashboard';
+        else if (targetRole === 'user' || (targetRole as string) === 'driver') fallbackRedirectScreen = 'user_dashboard';
+
         setUser({
           uid: 'demo-fallback-uid',
           email: loginEmail,
@@ -257,7 +264,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
         });
         
         setLoginModalOpen(false);
-        onNavigate(redirectScreen);
+        onNavigate(fallbackRedirectScreen);
       } else {
         setLoginError(err.message || 'Authentication failed. Please check your credentials.');
       }
@@ -292,7 +299,33 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
     offset: ['start start', 'end start']
   });
 
-  const [botOpen, setBotOpen] = useState(false);
+    const [heroSlideIdx, setHeroSlideIdx] = useState(0);
+  
+  const heroSlides = [
+    {
+      image: ctaCargoShip,
+      titleEn: 'Taking your cargo further, faster, and more securely',
+      titleAr: 'نأخذ شحنتك إلى أبعد من ذلك، أسرع، وبأمان أكبر',
+      descEn: 'We are your dependable partner for delivering your precious items and ensuring your products reach their destination safely.',
+      descAr: 'نحن شريكك الموثوق به لتسليم أغراضك الثمينة وضمان وصول منتجاتك إلى وجهتها بأمان.',
+    },
+    {
+      image: shipmentImg,
+      titleEn: 'Seamless Inter-Emirate Delivery Network',
+      titleAr: 'شبكة توصيل سلسة بين الإمارات',
+      descEn: 'Fast and reliable domestic shipping across all seven Emirates.',
+      descAr: 'شحن محلي سريع وموثوق عبر جميع الإمارات السبع.',
+    }
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setHeroSlideIdx(prev => (prev + 1) % heroSlides.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+const [botOpen, setBotOpen] = useState(false);
   const [botMessages, setBotMessages] = useState<{sender: 'bot'|'user', text: string}[]>([
     { sender: 'bot', text: content.botGreeting }
   ]);
@@ -314,9 +347,9 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
       
       if (matchOrder) {
         const orderNum = matchOrder[0].toUpperCase();
-        reply = `Status for ${orderNum}: \n\n• Current Location: Dubai Al Quoz Sorting Facility\n• Shipping Line: Aramex Express (Sandbox)\n• Expected Delivery: Next Business Day before 6:00 PM\n• Payout Mode: Cash on Delivery (320.00 AED)`;
+        reply = `Status for ${orderNum}: • Current Location: Dubai Al Quoz Sorting Facility• Shipping Line: Aramex Express (Sandbox)• Expected Delivery: Next Business Day before 6:00 PM• Payout Mode: Cash on Delivery (320.00 AED)`;
       } else if (userMsg.toLowerCase().includes('rate') || userMsg.toLowerCase().includes('price') || userMsg.toLowerCase().includes('cost')) {
-        reply = "Our standard UAE domestic rates:\n\n• Dubai to Abu Dhabi (Express Road): Starting at 25 AED base\n• Local messengers (Same Day): 15 AED flat rate\n• Extra Weight tariff: 1.5 AED per extra KG\n\nUse the Live Shipping Calculator on our home page to compare exact tariffs.";
+        reply = "Our standard UAE domestic rates:• Dubai to Abu Dhabi (Express Road): Starting at 25 AED base• Local messengers (Same Day): 15 AED flat rate• Extra Weight tariff: 1.5 AED per extra KGUse the Live Shipping Calculator on our home page to compare exact tariffs.";
       } else {
         reply = "Thanks for reaching out! I can track any 'REQ-' code in our UAE sandbox. Enter an order code or type 'rates' to see our current shipping prices.";
       }
@@ -355,123 +388,152 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
   return (
     <div 
       id="landing-root"
-      className="min-h-screen bg-white text-slate-900 font-sans selection:bg-[#2563EB]/20 overflow-x-hidden relative flex flex-col w-full" 
+      className="min-h-screen bg-white text-slate-900 font-sans selection:bg-[#3a4a2c]/20 overflow-x-hidden relative flex flex-col w-full" 
       dir={isRTL ? "rtl" : "ltr"} 
       ref={targetRef}
     >
       
-      {/* ─── HERO ─── Sky outer wrapper + rounded blue card inside (matching reference) */}
-      <div
-        className="w-full relative z-10"
-        style={{
-          background: 'linear-gradient(180deg, #9ecde8 0%, #72b2d8 35%, #4d98c4 70%, #3483b2 100%)',
-          padding: '20px 20px 0 20px',
-        }}
-      >
-        {/* Rounded blue gradient card */}
-        <div
-          className="w-full rounded-[2rem] overflow-hidden relative text-white"
-          style={{ background: 'linear-gradient(180deg, #1a5fb4 0%, #1d4ed8 50%, #1e3a8a 100%)' }}
-        >
-          {/* Subtle grid texture overlay */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              backgroundImage:
-                'linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px)',
-              backgroundSize: '40px 40px',
-            }}
-          />
-
-          {/* ── NAV inside card ── */}
-          <nav className="relative z-50 flex items-center justify-between px-6 md:px-10 py-5 border-b border-white/10">
+      
+      
+      
+      
+            {/* ─── HERO ─── */}
+      <div className="w-full relative z-10 bg-white p-2 md:p-4 pb-0">
+        <div className="relative w-full h-[600px] md:h-[750px] rounded-[2rem] overflow-hidden shadow-sm">
+          {/* Background Slider */}
+          <AnimatePresence mode="wait">
+            <motion.img
+              key={heroSlideIdx}
+              src={heroSlides[heroSlideIdx].image}
+              alt="SwiftMove Freight"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1.0, ease: 'easeOut' }}
+              className="absolute inset-0 w-full h-full object-cover select-none"
+            />
+          </AnimatePresence>
+          
+          {/* Overlay Gradients */}
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-900/40 to-transparent pointer-events-none"></div>
+          
+          {/* ── FLOATING NAV ── */}
+          <nav className="absolute top-0 inset-x-0 z-50 flex items-center justify-between px-6 md:px-12 py-6">
             {/* Logo */}
             <div
               className="flex items-center gap-2 cursor-pointer select-none"
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             >
-              <LogoIcon className="h-7 w-auto" variant="dark" />
-              <span className="text-lg font-bold text-white tracking-tight">SwiftMove</span>
+              <LogoIcon className="h-10 w-auto" variant="light" />
+              <span className="text-lg font-black text-white tracking-tight">USend</span>
             </div>
-
-            {/* Links */}
-            <div className="hidden md:flex items-center gap-7 text-[13px] font-medium text-white/80">
-              <a href="#landing-root" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="text-white font-semibold">{isRTL ? 'الرئيسية' : 'Home'}</a>
-              <a href="#services"  onClick={(e) => handleScrollTo(e, 'services')}  className="hover:text-white transition-colors">{isRTL ? 'الخدمات' : 'Services'}</a>
-              <a href="#solutions" onClick={(e) => handleScrollTo(e, 'solutions')} className="hover:text-white transition-colors">{isRTL ? 'الحلول' : 'Solutions'}</a>
-              <a href="#sectors"   onClick={(e) => handleScrollTo(e, 'sectors')}   className="hover:text-white transition-colors">{isRTL ? 'الشبكة' : 'Network'}</a>
-              <a href="#about"     onClick={(e) => handleScrollTo(e, 'about')}     className="hover:text-white transition-colors">{isRTL ? 'من نحن' : 'About'}</a>
-              <a href="#faq"       onClick={(e) => handleScrollTo(e, 'faq')}       className="hover:text-white transition-colors">{isRTL ? 'اتصل بنا' : 'Contact'}</a>
+            
+            {/* Pill Links */}
+            <div className="hidden md:flex items-center gap-6 text-[13px] font-medium text-white bg-white/10 backdrop-blur-md px-8 py-3 rounded-full border border-white/20">
+              <a href="#landing-root" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-[#fbbf24] transition-colors">{isRTL ? 'الرئيسية' : 'Home'}</a>
+              <a href="#services"  onClick={(e) => handleScrollTo(e, 'services')}  className="hover:text-[#fbbf24] transition-colors">{isRTL ? 'الخدمات' : 'Services'}</a>
+              <a href="#solutions" onClick={(e) => handleScrollTo(e, 'solutions')} className="hover:text-[#fbbf24] transition-colors">{isRTL ? 'الحلول' : 'Resources'}</a>
+              <a href="#about"     onClick={(e) => handleScrollTo(e, 'about')}     className="hover:text-[#fbbf24] transition-colors">{isRTL ? 'من نحن' : 'About'}</a>
+              <a href="#faq"       onClick={(e) => handleScrollTo(e, 'faq')}       className="hover:text-[#fbbf24] transition-colors">{isRTL ? 'اتصل بنا' : 'Contact'}</a>
             </div>
 
             {/* Right CTA */}
-            <div className="flex items-center gap-4 text-[13px]">
+            <div className="flex items-center gap-4">
               <button
-                onClick={() => setBotOpen(true)}
-                className="hidden sm:block text-white/80 hover:text-white transition-colors cursor-pointer font-medium"
+                onClick={() => { setLoginRole('user'); setLoginModalOpen(true); }}
+                className="px-6 py-2.5 rounded-lg bg-[#3a4a2c] hover:bg-[#29351e] text-white font-bold transition-all cursor-pointer shadow-sm text-[13px] flex items-center gap-2"
               >
-                {isRTL ? 'تتبع الشحنة' : 'Track Shipment'}
-              </button>
-              <button
-                onClick={() => setGuestModalOpen(true)}
-                className="px-5 py-2 rounded-full bg-white text-blue-700 hover:bg-blue-50 font-bold transition-all cursor-pointer shadow-sm"
-              >
-                {isRTL ? 'طلب تسعيرة' : 'Get a Quote'}
+                {isRTL ? 'طلب تسعيرة' : 'Get Started'}
+                <ArrowUpRight className="w-4 h-4" />
               </button>
             </div>
           </nav>
 
-          {/* SWIFTMOVE giant watermark behind content */}
-          <div className="absolute inset-x-0 bottom-0 text-center select-none pointer-events-none z-0 overflow-hidden leading-none">
-            <span
-              className="text-[22vw] font-black tracking-widest uppercase block font-sans"
-              style={{ color: 'rgba(255,255,255,0.07)' }}
-            >
-              SWIFTMOVE
+          {/* ── Hero Content ── */}
+          <div className="absolute inset-0 flex flex-col justify-center px-6 md:px-24 z-10 max-w-5xl pt-16">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={heroSlideIdx}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.8, ease: 'easeOut' }}
+              >
+                <h1 className="text-4xl sm:text-5xl md:text-[5rem] font-light text-white leading-[1.05] tracking-tight font-sans drop-shadow-lg">
+                  {isRTL ? heroSlides[heroSlideIdx].titleAr : heroSlides[heroSlideIdx].titleEn}
+                </h1>
+                <p className="mt-6 text-white font-bold text-base md:text-xl max-w-2xl drop-shadow-md">
+                  {isRTL ? heroSlides[heroSlideIdx].descAr : heroSlides[heroSlideIdx].descEn}
+                </p>
+                
+                <div className="flex flex-wrap items-center gap-4 mt-10">
+                  <button
+                    onClick={() => { setLoginRole('user'); setLoginModalOpen(true); }}
+                    className="bg-[#3a4a2c] hover:bg-[#29351e] text-white px-7 py-3.5 rounded-xl font-bold text-sm flex items-center gap-3 transition-colors shadow-lg cursor-pointer"
+                  >
+                    {isRTL ? 'ابدأ طلبك الآن' : 'Ship Now'}
+                    <ArrowUpRight className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setBotOpen(true)}
+                    className="bg-[#fbbf24] hover:bg-[#f59e0b] text-slate-900 px-7 py-3.5 rounded-xl font-bold text-sm flex items-center gap-3 transition-colors shadow-lg cursor-pointer"
+                  >
+                    {isRTL ? 'تتبع الشحنة' : 'Live Tracking'}
+                    <ArrowUpRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+            
+            {/* Slider Dots */}
+            <div className="absolute bottom-10 left-6 md:left-24 flex items-center gap-2 z-20">
+              {heroSlides.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setHeroSlideIdx(idx)}
+                  className={`w-12 h-1.5 rounded-full transition-all cursor-pointer ${idx === heroSlideIdx ? 'bg-[#3a4a2c]' : 'bg-white/30 hover:bg-white/50'}`}
+                  aria-label={`Go to slide ${idx + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Partners Section */}
+        <div className="w-full bg-white py-14 flex flex-col items-center">
+          <p className="text-slate-500 font-medium text-[15px] mb-10">{isRTL ? 'شركاء الشركات العالمية الرائدة' : 'Partners of world leading companies'}</p>
+          <div className="flex flex-wrap items-center justify-center gap-10 md:gap-20 opacity-70 grayscale select-none">
+            <span className="text-3xl font-black tracking-tighter text-slate-800">Ferrari</span>
+            <span className="text-3xl font-black tracking-tighter text-slate-800 flex items-center gap-2">
+               <Globe2 className="w-8 h-8"/> TOYOTA
             </span>
+            <span className="text-3xl font-black tracking-widest text-slate-800">T E S L A</span>
+            <span className="text-3xl font-black italic text-slate-800">HIGER</span>
+            <span className="text-3xl font-bold text-slate-800">Marcopolo</span>
           </div>
+        </div>
 
-          {/* ── Hero body ── */}
-          <div className="relative z-10 flex flex-col items-center text-center px-6 md:px-10 pt-12 pb-0">
-            <h1 className="text-3xl sm:text-4xl md:text-[2.75rem] font-bold leading-[1.2] tracking-tight max-w-3xl mx-auto font-sans">
-              {isRTL
-                ? 'حلول مخصصة لمتطلبات عملك — النقل البري والجوي والبحري موحد على منصة ذكية واحدة.'
-                : 'Tailored solutions for your business requirements — road, air, and ocean freight unified on a single intelligent platform.'}
-            </h1>
-
-            {/* Buttons */}
-            <div className="flex flex-wrap items-center justify-center gap-4 mt-8">
-              <button
-                onClick={() => setGuestModalOpen(true)}
-                className="px-7 py-3.5 bg-[#2563EB] hover:bg-blue-500 text-white text-[13px] font-bold rounded-full transition-all flex items-center gap-2 shadow-lg cursor-pointer border border-blue-400/40"
-              >
-                {isRTL ? 'ابدأ الشحن' : 'Start Shipping'}
-                <ArrowRight className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setBotOpen(true)}
-                className="px-7 py-3.5 bg-white/15 hover:bg-white/25 text-white text-[13px] font-bold rounded-full transition-all flex items-center gap-2 border border-white/30 cursor-pointer"
-              >
-                {isRTL ? 'تواصل معنا' : 'Contact Us'}
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Truck image — mix-blend-mode:multiply removes white bg on blue gradient */}
-            <div className="w-full max-w-4xl mx-auto mt-10 relative z-10">
-              <img
-                src={heroTruck}
-                alt="SwiftMove Cargo Delivery Truck"
-                className="w-full h-auto block select-none"
-                style={{ mixBlendMode: 'multiply' }}
-              />
+        {/* Guest Order Wizard Styled for Theme */}
+        <div className="w-full bg-white py-16 px-4 md:px-8 relative z-20" id="order-wizard">
+          <div className="max-w-5xl mx-auto flex flex-col items-center">
+            
+            {/* Guest Order Wizard container */}
+            
+            {/* Actually, let's keep the Order Wizard here but wrap it nicely */}
+            <div className="w-full bg-slate-50/50 rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden relative mt-8">
+              <div className="p-2 md:p-6">
+                <OrderWizard 
+                  onNavigate={onNavigate} 
+                  isGuest={true} 
+                  onRequestLogin={() => { setLoginRole('user'); setLoginModalOpen(true); }} 
+                />
+              </div>
             </div>
           </div>
+        </div>
+      </div>
 
-        </div>{/* end rounded card */}
-      </div>{/* end sky wrapper */}
-
-      {/* TIMELINE SECTION - Full Width */}
+        {/* TIMELINE SECTION - Full Width */}
       <section className="w-full bg-white py-16 px-4 md:px-8 border-b border-slate-100 relative z-20">
         <div className="max-w-7xl mx-auto">
           <p className="text-[11px] font-black uppercase text-slate-400 tracking-[0.2em] text-center mb-12">
@@ -480,13 +542,13 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
           
           {/* Horizontal Timeline */}
           <div className="relative max-w-5xl mx-auto">
-            <div className="absolute top-[18px] left-[12%] right-[12%] h-[1.5px] bg-slate-100 z-0"></div>
+            <div className="absolute top-[18px] left-[12%] right-[12%] h-[1.5px] bg-slate-200 z-0"></div>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 relative z-10">
               {/* Node 1 */}
               <div className="flex flex-col items-center text-center space-y-3">
-                <div className="w-9 h-9 rounded-full bg-white border-2 border-slate-100 shadow-sm flex items-center justify-center text-blue-600 font-bold z-10">
-                  <span className="w-3 h-3 bg-[#2563EB] rounded-full"></span>
+                <div className="w-9 h-9 rounded-full bg-white border border-[#3a4a2c]/20 shadow-sm flex items-center justify-center text-[#3a4a2c] font-bold z-10">
+                  <span className="w-2.5 h-2.5 bg-[#3a4a2c] rounded-full"></span>
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-3xl font-black text-slate-900 tracking-tight">30k+</h3>
@@ -497,8 +559,8 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
 
               {/* Node 2 */}
               <div className="flex flex-col items-center text-center space-y-3">
-                <div className="w-9 h-9 rounded-full bg-white border-2 border-slate-100 shadow-sm flex items-center justify-center text-blue-600 font-bold z-10">
-                  <span className="w-3 h-3 bg-[#2563EB] rounded-full"></span>
+                <div className="w-9 h-9 rounded-full bg-white border border-[#3a4a2c]/20 shadow-sm flex items-center justify-center text-[#3a4a2c] font-bold z-10">
+                  <span className="w-2.5 h-2.5 bg-[#3a4a2c] rounded-full"></span>
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-3xl font-black text-slate-900 tracking-tight">2.9k</h3>
@@ -509,8 +571,8 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
 
               {/* Node 3 */}
               <div className="flex flex-col items-center text-center space-y-3">
-                <div className="w-9 h-9 rounded-full bg-white border-2 border-slate-100 shadow-sm flex items-center justify-center text-blue-600 font-bold z-10">
-                  <span className="w-3 h-3 bg-[#2563EB] rounded-full"></span>
+                <div className="w-9 h-9 rounded-full bg-white border border-[#3a4a2c]/20 shadow-sm flex items-center justify-center text-[#3a4a2c] font-bold z-10">
+                  <span className="w-2.5 h-2.5 bg-[#3a4a2c] rounded-full"></span>
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-3xl font-black text-slate-900 tracking-tight">1,245</h3>
@@ -521,8 +583,8 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
 
               {/* Node 4 */}
               <div className="flex flex-col items-center text-center space-y-3">
-                <div className="w-9 h-9 rounded-full bg-white border-2 border-slate-100 shadow-sm flex items-center justify-center text-blue-600 font-bold z-10">
-                  <span className="w-3 h-3 bg-[#2563EB] rounded-full"></span>
+                <div className="w-9 h-9 rounded-full bg-white border border-[#3a4a2c]/20 shadow-sm flex items-center justify-center text-[#3a4a2c] font-bold z-10">
+                  <span className="w-2.5 h-2.5 bg-[#3a4a2c] rounded-full"></span>
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-3xl font-black text-slate-900 tracking-tight">5,875</h3>
@@ -535,125 +597,139 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
         </div>
       </section>
 
-      {/* ALL SET FOR SEAMLESS TRANSPORTATION SECTION - Full Width */}
-      <section id="services" className="w-full bg-white py-24 px-4 md:px-8 border-b border-slate-100">
-        <div className="max-w-7xl mx-auto space-y-12">
-          
-          {/* Heading row */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div className="space-y-4 text-left">
-              <h2 className="text-3xl md:text-[2.6rem] font-black uppercase text-slate-950 tracking-tight leading-none font-sans">
-                {isRTL ? 'جاهزون لجميع عمليات النقل السلسة' : 'ALL SET FOR SEAMLESS TRANSPORTATION'}
+      
+      {/* SECTORS SECTION */}
+      <section id="sectors" className="w-full bg-white py-16 px-4 md:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="rounded-[2rem] overflow-hidden relative min-h-[500px] shadow-sm">
+            <img src={sectorContainer} alt="Sectors Background" className="absolute inset-0 w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent to-slate-900/80"></div>
+            <div className="absolute top-0 right-0 w-full md:w-[55%] h-full flex flex-col justify-center p-8 md:p-16 text-white z-10">
+              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight leading-none mb-6 font-sans drop-shadow-md">
+                SERVING BUSINESSES<br/>ACROSS SECTORS
               </h2>
-              <div className="flex flex-wrap gap-2 pt-2">
-                <span className="px-5 py-2 bg-[#2563EB] text-white text-[11px] font-black uppercase tracking-wider rounded-full shadow-sm">
-                  Road, Sea, Rail
-                </span>
-                <span className="px-5 py-2 bg-slate-100 text-slate-500 text-[11px] font-black uppercase tracking-wider rounded-full hover:bg-slate-200 transition-all cursor-pointer">
-                  Next-flight-out
-                </span>
-                <span className="px-5 py-2 bg-slate-100 text-slate-500 text-[11px] font-black uppercase tracking-wider rounded-full hover:bg-slate-200 transition-all cursor-pointer">
-                  FCL, LCL, Bulk
-                </span>
-              </div>
-            </div>
-            <div className="flex shrink-0">
-              <button 
-                onClick={() => setGuestModalOpen(true)}
-                className="px-6 py-3 border border-slate-200 hover:border-slate-400 text-slate-800 hover:text-black rounded-full font-black text-[11px] uppercase tracking-wider flex items-center gap-2 transition-all bg-white shadow-sm cursor-pointer"
-              >
-                <span>All Services</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-
-          {/* Two-card layout grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
-            
-            {/* Left Column: Image of container cargo ship */}
-            <div className="rounded-[2rem] overflow-hidden shadow-md border border-slate-100 relative min-h-[360px] bg-slate-100">
-              <img 
-                src={ctaCargoShip} 
-                alt="Global Freight Multimodal" 
-                className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-700"
-              />
-            </div>
-
-            {/* Right Column: Soft lavender/blueish Card */}
-            <div className="bg-[#F1F5F9] rounded-[2rem] border border-slate-100 p-8 md:p-12 flex flex-col justify-between shadow-sm text-left">
-              <div className="space-y-6">
-                <h3 className="text-2xl md:text-3xl font-black text-slate-950 tracking-tight">
-                  Global Freight Multimodal
-                </h3>
-                <p className="text-slate-500 font-medium leading-relaxed text-sm md:text-base">
-                  Complete door-to-door solutions across every major corridor, seamlessly connecting road, rail, and ocean.
-                </p>
-                <ul className="space-y-4 pt-4 text-slate-700 font-semibold text-sm">
-                  {[
-                    'Dedicated account manager',
-                    'Real-time shipment tracking',
-                    'Full customs clearance support',
-                    'Insurance included'
-                  ].map((bullet, idx) => (
-                    <li key={idx} className="flex items-center gap-3">
-                      <span className="w-2 h-2 rounded-full bg-[#2563EB] shrink-0" />
-                      <span>{bullet}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="pt-8">
-                <button 
-                  onClick={() => setGuestModalOpen(true)}
-                  className="px-8 py-3.5 bg-[#2563EB] hover:bg-blue-600 text-white rounded-full font-black text-[12px] uppercase tracking-wider flex items-center gap-2 transition-all shadow-md cursor-pointer"
-                >
-                  <span>Request a Quote</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-          </div>
-
-          {/* Bottom 3-Card Row */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
-            {/* Card 1 */}
-            <div className="rounded-[2rem] overflow-hidden relative h-[240px] group cursor-pointer border border-slate-100 shadow-sm" onClick={() => setGuestModalOpen(true)}>
-              <img src={sectorContainer} alt="Global Freight Multimodal" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
-              <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between text-white">
-                <span className="text-sm font-black uppercase tracking-wider">Global Freight Multimodal</span>
-                <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white"><ArrowUpRight className="w-4 h-4" /></div>
-              </div>
-            </div>
-
-            {/* Card 2 */}
-            <div className="rounded-[2rem] overflow-hidden relative h-[240px] group cursor-pointer border border-slate-100 shadow-sm" onClick={() => setGuestModalOpen(true)}>
-              <img src={ctaCargoShip} alt="Air Freight Express" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
-              <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between text-white">
-                <span className="text-sm font-black uppercase tracking-wider">Air Freight Express</span>
-                <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white"><ArrowUpRight className="w-4 h-4" /></div>
-              </div>
-            </div>
-
-            {/* Card 3 */}
-            <div className="rounded-[2rem] overflow-hidden relative h-[240px] group cursor-pointer border border-slate-100 shadow-sm" onClick={() => setGuestModalOpen(true)}>
-              <img src={heroTruck} alt="Ocean & Port Logistics" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
-              <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between text-white">
-                <span className="text-sm font-black uppercase tracking-wider">Ocean & Port Logistics</span>
-                <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white"><ArrowUpRight className="w-4 h-4" /></div>
-              </div>
+              <p className="text-white/90 text-sm md:text-base font-medium mb-10 max-w-lg leading-relaxed">
+                From heavy manufacturing to high-velocity e-commerce, our logistics infrastructure adapts to the unique demands of every industry.
+              </p>
+              
+              <ul className="space-y-0">
+                {[
+                  'Manufacturing',
+                  'Healthcare & Pharmaceuticals',
+                  'Retail & E-Commerce',
+                  'Manufacturing Technology',
+                  'Agriculture & Environments',
+                  'Automotive & Industrial'
+                ].map((sector, i) => (
+                  <li key={i} className="flex items-center justify-between py-3 border-b border-white/20 hover:border-white/50 transition-colors cursor-pointer group">
+                    <div className="flex items-center gap-3">
+                      <div className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                        <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                      </div>
+                      <span className="font-semibold text-sm tracking-wide">{sector}</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-white/50 group-hover:text-white transition-colors" />
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
-
         </div>
       </section>
 
-      {/* BRAND TICKER MARQUEE - Vignette Slate Branding (Full Width) */}
+      {/* TESTIMONIALS SECTION */}
+      <section className="w-full bg-white pb-16 px-4 md:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+            <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-slate-950 max-w-md font-sans leading-[1.1]">
+              TRUSTED BY THE<br/>WORLD'S BEST BRANDS
+            </h2>
+            <div className="flex gap-2 pb-2">
+              <div className="w-8 h-1.5 bg-[#3a4a2c] rounded-full"></div>
+              <div className="w-4 h-1.5 bg-slate-200 rounded-full"></div>
+              <div className="w-4 h-1.5 bg-slate-200 rounded-full"></div>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Review 1 */}
+            <div className="bg-white border border-slate-200 rounded-[1.5rem] p-8 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex gap-1 mb-6">
+                {[1,2,3,4,5].map(s => <Star key={s} className="w-4 h-4 fill-orange-400 text-orange-400" />)}
+              </div>
+              <p className="text-slate-600 text-[13px] font-medium leading-relaxed mb-8">
+                "SwiftMove reduced our freight costs by 23% in the first quarter. Their real-time tracking platform is genuinely best-in-class — our ops team can finally sleep at night."
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-[#3a4a2c]/10 flex items-center justify-center text-[#3a4a2c] font-bold text-xs">MC</div>
+                <div>
+                  <h4 className="font-bold text-slate-900 text-sm">Marcus Chen</h4>
+                  <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">VP Supply Chain, NovaTech Industries</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Review 2 */}
+            <div className="bg-white border border-slate-200 rounded-[1.5rem] p-8 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex gap-1 mb-6">
+                {[1,2,3,4,5].map(s => <Star key={s} className="w-4 h-4 fill-orange-400 text-orange-400" />)}
+              </div>
+              <p className="text-slate-600 text-[13px] font-medium leading-relaxed mb-8">
+                "Switching to SwiftMove was the best logistics decision we made in 2024. Peak season no longer terrifies us — they scale with us flawlessly."
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">SR</div>
+                <div>
+                  <h4 className="font-bold text-slate-900 text-sm">Sophia Reyes</h4>
+                  <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Director of Operations, Apex Retail</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Review 3 */}
+            <div className="bg-white border border-slate-200 rounded-[1.5rem] p-8 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex gap-1 mb-6">
+                {[1,2,3,4,5].map(s => <Star key={s} className="w-4 h-4 fill-orange-400 text-orange-400" />)}
+              </div>
+              <p className="text-slate-600 text-[13px] font-medium leading-relaxed mb-8">
+                "Their customs brokerage team saved us $180k in a single quarter. The documentation accuracy is remarkable — zero clearance delays in 18 months."
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-xs">DV</div>
+                <div>
+                  <h4 className="font-bold text-slate-900 text-sm">Dmitri Volkov</h4>
+                  <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">CEO, EastBridge Manufacturing</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA SECTION */}
+      <section className="w-full bg-white pb-24 px-4 md:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="rounded-[2rem] overflow-hidden relative min-h-[400px] shadow-sm flex items-end" onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}>
+            <img src={ctaCargoShip} alt="Cargo Ship" className="absolute inset-0 w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-700" />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent pointer-events-none"></div>
+            <div className="relative z-10 p-10 md:p-14 w-full">
+              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-white font-sans leading-none drop-shadow-lg mb-4">
+                READY TO MOVE<br/>YOUR CARGO?
+              </h2>
+              <p className="text-white/90 text-sm font-semibold tracking-wide mb-8">Get a custom freight quote in minutes.</p>
+              
+              <button 
+                className="px-8 py-3.5 bg-[#3a4a2c] hover:bg-[#29351e] text-white rounded-full font-black text-[12px] uppercase tracking-wider flex items-center gap-2 transition-all shadow-xl cursor-pointer"
+              >
+                <span>Request a Quote</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+{/* BRAND TICKER MARQUEE - Vignette Slate Branding (Full Width) */}
       <section className="w-full py-12 bg-white border-b border-slate-100 flex flex-col items-center justify-center relative select-none overflow-hidden">
         <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-white to-transparent z-10" />
         <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-white to-transparent z-10" />
@@ -661,7 +737,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
           {logos.concat(logos).map((logoItem, idx) => (
             <div key={idx} className="flex items-center gap-2 select-none shrink-0 opacity-55 hover:opacity-100 transition-opacity">
               <span className="text-slate-800 font-black text-[13px] uppercase tracking-widest">{logoItem.name}</span>
-              <span className="w-1.5 h-1.5 bg-[#2563EB] rounded-full"></span>
+              <span className="w-1.5 h-1.5 bg-[#3a4a2c] rounded-full"></span>
             </div>
           ))}
         </div>
@@ -674,7 +750,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
             
             {/* Left Column: text content */}
             <div className="lg:col-span-6 text-left space-y-8">
-              <p className="text-[11px] font-black uppercase text-[#2563EB] tracking-wider block">
+              <p className="text-[11px] font-black uppercase text-[#3a4a2c] tracking-wider block">
                 {content.aboutUsCaption}
               </p>
               <h2 className="text-3xl md:text-[2.6rem] font-bold text-slate-950 tracking-tight leading-none font-sans uppercase">
@@ -687,7 +763,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
               {/* 2x2 Feature Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
                 <div className="flex gap-4">
-                  <div className="w-10 h-10 rounded-full bg-blue-50 text-[#2563EB] border border-blue-100 flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-[#3a4a2c]/10 text-[#3a4a2c] border border-[#3a4a2c]/20 flex items-center justify-center shrink-0">
                     <Zap className="w-5 h-5" />
                   </div>
                   <div>
@@ -697,7 +773,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 </div>
 
                 <div className="flex gap-4">
-                  <div className="w-10 h-10 rounded-full bg-blue-50 text-[#2563EB] border border-blue-100 flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-[#3a4a2c]/10 text-[#3a4a2c] border border-[#3a4a2c]/20 flex items-center justify-center shrink-0">
                     <Shield className="w-5 h-5" />
                   </div>
                   <div>
@@ -707,7 +783,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 </div>
 
                 <div className="flex gap-4">
-                  <div className="w-10 h-10 rounded-full bg-blue-50 text-[#2563EB] border border-blue-100 flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-[#3a4a2c]/10 text-[#3a4a2c] border border-[#3a4a2c]/20 flex items-center justify-center shrink-0">
                     <Globe2 className="w-5 h-5" />
                   </div>
                   <div>
@@ -717,7 +793,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 </div>
 
                 <div className="flex gap-4">
-                  <div className="w-10 h-10 rounded-full bg-blue-50 text-[#2563EB] border border-blue-100 flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-[#3a4a2c]/10 text-[#3a4a2c] border border-[#3a4a2c]/20 flex items-center justify-center shrink-0">
                     <Award className="w-5 h-5" />
                   </div>
                   <div>
@@ -729,8 +805,8 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
 
               <div className="pt-4">
                 <button 
-                  onClick={() => setGuestModalOpen(true)}
-                  className="px-8 py-3.5 bg-[#2563EB] hover:bg-blue-600 text-white rounded-full font-black text-[12px] uppercase tracking-wider flex items-center gap-2 transition-all shadow-md cursor-pointer"
+                  onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="px-8 py-3.5 bg-[#3a4a2c] hover:bg-[#29351e] text-white rounded-full font-black text-[12px] uppercase tracking-wider flex items-center gap-2 transition-all shadow-md cursor-pointer"
                 >
                   <span>Explore Our Platform</span>
                   <ArrowRight className="w-4 h-4" />
@@ -751,8 +827,8 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 <img src={heroTruck} alt="Logistics delivery truck" className="w-full h-full object-cover" />
               </div>
 
-              <div className="col-span-12 sm:col-span-6 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2rem] p-6 text-white flex flex-col justify-between h-[190px] shadow-lg shadow-blue-500/15 text-left">
-                <span className="text-[11px] font-black uppercase tracking-widest text-blue-200">System Accuracy</span>
+              <div className="col-span-12 sm:col-span-6 bg-gradient-to-br from-[#9fb19b] to-[#859c81] rounded-[2rem] p-6 text-white flex flex-col justify-between h-[190px] shadow-lg shadow-emerald-900/15 text-left">
+                <span className="text-[11px] font-black uppercase tracking-widest text-[#a5b994]">System Accuracy</span>
                 <div className="space-y-2">
                   <p className="text-5xl font-black tracking-tight">97.6%</p>
                   <p className="text-[11px] uppercase tracking-wider text-slate-200 font-extrabold">On-Time Delivery</p>
@@ -782,8 +858,8 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
             </div>
             <div className="flex shrink-0">
               <button 
-                onClick={() => setGuestModalOpen(true)}
-                className="px-6 py-3 bg-[#2563EB] hover:bg-blue-600 text-white rounded-full font-black text-[11px] uppercase tracking-wider flex items-center gap-2 transition-all shadow-md cursor-pointer"
+                onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}
+                className="px-6 py-3 bg-[#3a4a2c] hover:bg-[#29351e] text-white rounded-full font-black text-[11px] uppercase tracking-wider flex items-center gap-2 transition-all shadow-md cursor-pointer"
               >
                 <span>All Services</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -797,7 +873,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
             {/* Card 1 */}
             <div className="bg-[#F8FAFC] border border-slate-100 rounded-[2rem] p-8 flex flex-col justify-between h-[280px] shadow-xs text-left">
               <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-full bg-[#2563EB]/10 text-[#2563EB] border border-[#2563EB]/25 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-full bg-[#3a4a2c]/10 text-[#3a4a2c] border border-[#3a4a2c]/25 flex items-center justify-center shrink-0">
                   <Truck className="w-5 h-5" />
                 </div>
                 <span className="px-4 py-1 rounded-full bg-slate-200/50 text-slate-600 text-[10px] font-black uppercase tracking-wider">
@@ -811,7 +887,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 </p>
               </div>
               <div className="pt-4">
-                <button onClick={() => setGuestModalOpen(true)} className="px-4 py-2 border border-slate-200 hover:border-slate-400 text-slate-700 hover:text-black rounded-full font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all bg-white cursor-pointer">
+                <button onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })} className="px-4 py-2 border border-slate-200 hover:border-slate-400 text-slate-700 hover:text-black rounded-full font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all bg-white cursor-pointer">
                   Learn More <ArrowRight className="w-3 h-3" />
                 </button>
               </div>
@@ -820,7 +896,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
             {/* Card 2 */}
             <div className="bg-[#F8FAFC] border border-slate-100 rounded-[2rem] p-8 flex flex-col justify-between h-[280px] shadow-xs text-left">
               <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-full bg-[#2563EB]/10 text-[#2563EB] border border-[#2563EB]/25 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-full bg-[#3a4a2c]/10 text-[#3a4a2c] border border-[#3a4a2c]/25 flex items-center justify-center shrink-0">
                   <Anchor className="w-5 h-5" />
                 </div>
                 <span className="px-4 py-1 rounded-full bg-slate-200/50 text-slate-600 text-[10px] font-black uppercase tracking-wider">
@@ -834,7 +910,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 </p>
               </div>
               <div className="pt-4">
-                <button onClick={() => setGuestModalOpen(true)} className="px-4 py-2 border border-slate-200 hover:border-slate-400 text-slate-700 hover:text-black rounded-full font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all bg-white cursor-pointer">
+                <button onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })} className="px-4 py-2 border border-slate-200 hover:border-slate-400 text-slate-700 hover:text-black rounded-full font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all bg-white cursor-pointer">
                   Learn More <ArrowRight className="w-3 h-3" />
                 </button>
               </div>
@@ -843,21 +919,21 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
             {/* Card 3 (Highlighted) */}
             <div className="bg-[#F8FAFC] border border-slate-100 rounded-[2rem] p-8 flex flex-col justify-between h-[280px] shadow-xs text-left">
               <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-full bg-[#2563EB]/10 text-[#2563EB] border border-[#2563EB]/25 flex items-center justify-center shrink-0">
-                  <Plane className="w-5 h-5" />
+                <div className="w-10 h-10 rounded-full bg-[#3a4a2c]/10 text-[#3a4a2c] border border-[#3a4a2c]/25 flex items-center justify-center shrink-0">
+                  <Zap className="w-5 h-5" />
                 </div>
                 <span className="px-4 py-1 rounded-full bg-slate-200/50 text-slate-600 text-[10px] font-black uppercase tracking-wider">
                   Express
                 </span>
               </div>
               <div className="space-y-2 mt-4">
-                <h3 className="text-lg font-black text-slate-900">Air Freight</h3>
+                <h3 className="text-lg font-black text-slate-900">Express Delivery</h3>
                 <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                  Express and standard air cargo solutions across our global active networks, built for time-critical shipments.
+                  Super-fast local courier and premium inter-emirate delivery solutions built for time-critical business items.
                 </p>
               </div>
               <div className="pt-4">
-                <button onClick={() => setGuestModalOpen(true)} className="px-4 py-2 bg-[#2563EB] hover:bg-blue-600 text-white rounded-full font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-sm cursor-pointer">
+                <button onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })} className="px-4 py-2 bg-[#3a4a2c] hover:bg-[#29351e] text-white rounded-full font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-sm cursor-pointer">
                   Learn More <ArrowRight className="w-3 h-3" />
                 </button>
               </div>
@@ -866,7 +942,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
             {/* Card 4 */}
             <div className="bg-[#F8FAFC] border border-slate-100 rounded-[2rem] p-8 flex flex-col justify-between h-[280px] shadow-xs text-left">
               <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-full bg-[#2563EB]/10 text-[#2563EB] border border-[#2563EB]/25 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-full bg-[#3a4a2c]/10 text-[#3a4a2c] border border-[#3a4a2c]/25 flex items-center justify-center shrink-0">
                   <Warehouse className="w-5 h-5" />
                 </div>
                 <span className="px-4 py-1 rounded-full bg-slate-200/50 text-slate-600 text-[10px] font-black uppercase tracking-wider">
@@ -880,7 +956,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 </p>
               </div>
               <div className="pt-4">
-                <button onClick={() => setGuestModalOpen(true)} className="px-4 py-2 border border-slate-200 hover:border-slate-400 text-slate-700 hover:text-black rounded-full font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all bg-white cursor-pointer">
+                <button onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })} className="px-4 py-2 border border-slate-200 hover:border-slate-400 text-slate-700 hover:text-black rounded-full font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all bg-white cursor-pointer">
                   Learn More <ArrowRight className="w-3 h-3" />
                 </button>
               </div>
@@ -926,8 +1002,8 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 ].map((sector, idx) => (
                   <div 
                     key={idx} 
-                    className="flex items-center justify-between py-3 cursor-pointer hover:text-[#2563EB] transition-colors"
-                    onClick={() => setGuestModalOpen(true)}
+                    className="flex items-center justify-between py-3 cursor-pointer hover:text-[#3a4a2c] transition-colors"
+                    onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}
                   >
                     <span className="tracking-wide">{sector}</span>
                     <ChevronRight className="w-4 h-4 text-white/50" />
@@ -943,7 +1019,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
       {/* SOLUTIONS/ESTIMATOR SECTION - Full Width */}
       <section id="solutions" className="w-full py-24 bg-[#060B26] text-white relative">
         <div className="max-w-7xl mx-auto px-4 md:px-8 space-y-12 relative z-10 text-center">
-          <span className="px-4.5 py-1.5 rounded-full bg-white/5 border border-white/10 text-blue-400 text-[11px] font-black uppercase tracking-widest inline-block">
+          <span className="px-4.5 py-1.5 rounded-full bg-white/5 border border-white/10 text-[#6d8c55] text-[11px] font-black uppercase tracking-widest inline-block">
             {content.estimatorBadge}
           </span>
           <h2 className="text-3xl md:text-[2.60rem] font-black uppercase tracking-tight max-w-2xl mx-auto leading-none">
@@ -960,7 +1036,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 <select 
                   value={estSource}
                   onChange={(e) => setEstSource(e.target.value)}
-                  className="w-full h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:border-[#2563EB] outline-none transition-all cursor-pointer"
+                  className="w-full h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:border-[#3a4a2c] outline-none transition-all cursor-pointer"
                 >
                   <option value="DXB" className="bg-[#060B26] text-white">Dubai Hub (DXB)</option>
                   <option value="AUH" className="bg-[#060B26] text-white">Abu Dhabi Terminal (AUH)</option>
@@ -975,7 +1051,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 <select 
                   value={estTarget}
                   onChange={(e) => setEstTarget(e.target.value)}
-                  className="w-full h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:border-[#2563EB] outline-none transition-all cursor-pointer"
+                  className="w-full h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:border-[#3a4a2c] outline-none transition-all cursor-pointer"
                 >
                   <option value="DXB" className="bg-[#060B26] text-white">Dubai Hub (DXB)</option>
                   <option value="AUH" className="bg-[#060B26] text-white">Abu Dhabi Terminal (AUH)</option>
@@ -995,7 +1071,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                   type="number"
                   value={estWeight}
                   onChange={(e) => setEstWeight(Number(e.target.value))}
-                  className="w-full h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:border-[#2563EB] outline-none transition-all"
+                  className="w-full h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:border-[#3a4a2c] outline-none transition-all"
                 />
               </div>
               <div>
@@ -1004,7 +1080,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                   type="number"
                   value={estWidth}
                   onChange={(e) => setEstWidth(Number(e.target.value))}
-                  className="w-full h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:border-[#2563EB] outline-none transition-all"
+                  className="w-full h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:border-[#3a4a2c] outline-none transition-all"
                 />
               </div>
               <div>
@@ -1013,7 +1089,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                   type="number"
                   value={estLength}
                   onChange={(e) => setEstLength(Number(e.target.value))}
-                  className="w-full h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:border-[#2563EB] outline-none transition-all"
+                  className="w-full h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:border-[#3a4a2c] outline-none transition-all"
                 />
               </div>
             </div>
@@ -1038,7 +1114,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                   });
                 }, 1200);
               }}
-              className="w-full h-13 bg-[#2563EB] hover:bg-blue-600 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-md mt-8 flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full h-13 bg-[#3a4a2c] hover:bg-[#29351e] text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-md mt-8 flex items-center justify-center gap-2 cursor-pointer"
             >
               {calculating ? (
                 <>
@@ -1062,7 +1138,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                   className="mt-8 pt-8 border-t border-white/10 grid grid-cols-1 md:grid-cols-2 gap-6 text-white"
                 >
                   <div className="space-y-3">
-                    <span className="text-[11px] font-black uppercase text-blue-400 tracking-wider">Calculated Results</span>
+                    <span className="text-[11px] font-black uppercase text-[#6d8c55] tracking-wider">Calculated Results</span>
                     <h4 className="text-2xl font-black">{estimateResult.totalPrice.toFixed(2)} AED</h4>
                     <p className="text-xs font-bold text-slate-450">{estimateResult.duration}</p>
                   </div>
@@ -1099,7 +1175,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 </p>
               </div>
               <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
-                <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs">
+                <div className="w-10 h-10 rounded-full bg-[#3a4a2c]/10 text-[#3a4a2c] flex items-center justify-center font-bold text-xs">
                   MC
                 </div>
                 <div>
@@ -1120,7 +1196,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 </p>
               </div>
               <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
-                <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs">
+                <div className="w-10 h-10 rounded-full bg-[#3a4a2c]/10 text-[#3a4a2c] flex items-center justify-center font-bold text-xs">
                   SR
                 </div>
                 <div>
@@ -1141,7 +1217,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 </p>
               </div>
               <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
-                <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs">
+                <div className="w-10 h-10 rounded-full bg-[#3a4a2c]/10 text-[#3a4a2c] flex items-center justify-center font-bold text-xs">
                   DV
                 </div>
                 <div>
@@ -1170,15 +1246,15 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
 
             <div className="relative z-10 max-w-3xl mx-auto px-6 py-12 space-y-6">
               <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tight max-w-3xl mx-auto leading-tight font-sans">
-                {isRTL ? 'جاهز لنقل شحنتك؟' : 'READY TO MOVE\nYOUR CARGO?'}
+                {isRTL ? 'جاهز لنقل شحنتك؟' : 'READY TO MOVEYOUR CARGO?'}
               </h2>
               <p className="text-slate-350 font-medium leading-relaxed text-xs md:text-sm max-w-xl mx-auto font-sans">
                 Get a custom freight quote in under 2 minutes. No commitments, no hidden fees — just fast, transparent pricing from a network that delivers.
               </p>
               <div className="pt-4">
                 <button 
-                  onClick={() => setGuestModalOpen(true)}
-                  className="px-8 py-4 bg-[#2563EB] hover:bg-blue-600 text-white text-[13px] font-black uppercase tracking-widest rounded-full transition-all shadow-lg shadow-blue-500/20 cursor-pointer"
+                  onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="px-8 py-4 bg-[#3a4a2c] hover:bg-[#29351e] text-white text-[13px] font-black uppercase tracking-widest rounded-full transition-all shadow-lg shadow-emerald-900/20 cursor-pointer"
                 >
                   {isRTL ? 'احصل على عرض سعر مجاني' : 'Get a Free Quote'}
                 </button>
@@ -1191,7 +1267,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
         <section id="faq" className="w-full py-24 bg-[#FAFBFD] relative border-t border-slate-100">
           <div className="max-w-4xl mx-auto px-4 space-y-12">
             <div className="text-center space-y-4">
-              <span className="px-4.5 py-1.5 rounded-full bg-blue-50 text-blue-600 text-[11px] font-black uppercase tracking-widest inline-block">
+              <span className="px-4.5 py-1.5 rounded-full bg-[#3a4a2c]/10 text-[#3a4a2c] text-[11px] font-black uppercase tracking-widest inline-block">
                 {content.faqBadge}
               </span>
               <h2 className="text-3xl md:text-[2.6rem] font-black uppercase text-slate-900 tracking-tight leading-none">
@@ -1215,7 +1291,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                     className="w-full p-6 text-left flex items-center justify-between gap-4 focus:outline-hidden cursor-pointer"
                   >
                     <span className="font-extrabold text-[13px] md:text-sm text-slate-900 tracking-tight">{item.q}</span>
-                    <span className={`w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 transition-transform duration-300 ${activeFaq === idx ? 'rotate-180' : ''}`}>
+                    <span className={`w-6 h-6 rounded-full bg-[#3a4a2c]/10 text-[#3a4a2c] flex items-center justify-center shrink-0 transition-transform duration-300 ${activeFaq === idx ? 'rotate-180' : ''}`}>
                       <ChevronDown className="w-3.5 h-3.5" />
                     </span>
                   </button>
@@ -1258,8 +1334,8 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
               </div>
               <div className="flex gap-4">
                 <button 
-                  onClick={() => setGuestModalOpen(true)}
-                  className="px-6 py-3.5 bg-white text-slate-950 text-[12px] font-black uppercase tracking-widest rounded-full hover:bg-[#2563EB] hover:text-white transition-all shadow-md cursor-pointer"
+                  onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="px-6 py-3.5 bg-white text-slate-950 text-[12px] font-black uppercase tracking-widest rounded-full hover:bg-[#3a4a2c] hover:text-white transition-all shadow-md cursor-pointer"
                 >
                   Launch Platform
                 </button>
@@ -1270,10 +1346,10 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
               
               <div className="space-y-6 md:col-span-2">
                 <div className="flex items-center gap-3">
-                  <LogoIcon className="h-10 w-auto" variant="dark" />
+                  <LogoIcon className="h-12 w-auto" variant="dark" />
                   <div className="flex flex-col">
-                    <span className="text-sm font-black tracking-widest text-white uppercase leading-none">SwiftMove</span>
-                    <span className="text-[12px] font-mono font-bold uppercase text-[#2563EB] tracking-[0.25em]">Smart Shipping</span>
+                    <span className="text-sm font-black tracking-widest text-white uppercase leading-none">USend</span>
+                    <span className="text-[12px] font-mono font-bold uppercase text-[#3a4a2c] tracking-[0.25em]">Smart Shipping</span>
                   </div>
                 </div>
                 <p className="text-[12px] text-slate-400 leading-relaxed max-w-md font-semibold font-sans">
@@ -1286,7 +1362,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 <ul className="space-y-2 text-[13px] font-bold text-slate-350 font-sans">
                   <li>
                     <span 
-                      className="hover:text-[#2563EB] transition-colors cursor-pointer" 
+                      className="hover:text-[#3a4a2c] transition-colors cursor-pointer" 
                       onClick={() => {
                         setLoginRole('user');
                         setLoginEmail('user@swiftmove.com');
@@ -1298,7 +1374,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                   </li>
                   <li>
                     <span 
-                      className="hover:text-[#2563EB] transition-colors cursor-pointer" 
+                      className="hover:text-[#3a4a2c] transition-colors cursor-pointer" 
                       onClick={() => {
                         setLoginRole('merchant');
                         setLoginEmail('merchant@swiftmove.com');
@@ -1314,9 +1390,9 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
               <div className="space-y-4">
                 <h4 className="text-[13px] font-black uppercase text-slate-500 tracking-widest font-sans">Corporate Parameters</h4>
                 <ul className="space-y-2 text-[13px] font-bold text-slate-350 font-sans">
-                  <li><span className="hover:text-[#2563EB] transition-colors cursor-pointer" onClick={() => { setLoginRole('admin'); setLoginModalOpen(true); }}>Zonal Admin Portal</span></li>
-                  <li><a href="#" className="hover:text-[#2563EB] transition-colors">Safety Logs</a></li>
-                  <li><a href="#" className="hover:text-[#2563EB] transition-colors">API Keys</a></li>
+                  <li><span className="hover:text-[#3a4a2c] transition-colors cursor-pointer" onClick={() => { setLoginRole('admin'); setLoginModalOpen(true); }}>Zonal Admin Portal</span></li>
+                  <li><a href="#" className="hover:text-[#3a4a2c] transition-colors">Safety Logs</a></li>
+                  <li><a href="#" className="hover:text-[#3a4a2c] transition-colors">API Keys</a></li>
                 </ul>
               </div>
 
@@ -1325,43 +1401,13 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
             <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-12 border-t border-white/10 text-[13px] font-black text-slate-500 uppercase tracking-widest font-sans">
               <p>{content.copyright}</p>
               <div className="flex items-center gap-8">
-                <a href="#" className="hover:text-[#2563EB] transition-colors">Privacy Policy</a>
-                <a href="#" className="hover:text-[#2563EB] transition-colors">Service Terms</a>
+                <a href="#" className="hover:text-[#3a4a2c] transition-colors">Privacy Policy</a>
+                <a href="#" className="hover:text-[#3a4a2c] transition-colors">Service Terms</a>
               </div>
             </div>
 
           </div>
         </footer>
-
-      {/* GUEST ORDER WIZARD MODAL */}
-      <AnimatePresence>
-        {guestModalOpen && (
-          <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-950/65 backdrop-blur-sm">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-3xl bg-white rounded-[2.5rem] overflow-hidden shadow-2xl relative flex flex-col max-h-[90vh]"
-            >
-              {/* Header */}
-              <div className="p-6 bg-slate-900 text-white flex justify-between items-center shrink-0">
-                <div className="flex items-center gap-2">
-                  <LogoIcon className="h-7 w-auto" variant="dark" />
-                  <span className="text-sm font-black uppercase tracking-wider">SwiftMove Guest Dispatch</span>
-                </div>
-                <button onClick={() => setGuestModalOpen(false)} className="text-slate-400 hover:text-white transition-colors cursor-pointer">
-                  <XCircle className="w-6 h-6" />
-                </button>
-              </div>
-              
-              {/* Content */}
-              <div className="flex-1 p-6 md:p-10 overflow-y-auto hide-scrollbar">
-                <OrderWizard onNavigate={onNavigate} isGuest={true} />
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
 
       {/* FLOAT CHATBOT DIALOGUE - SwiftMove AI */}
       <AnimatePresence>
@@ -1375,7 +1421,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
              {/* Header */}
              <div className="bg-slate-900 p-5 text-white flex justify-between items-center border-b border-slate-800">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/20 text-[#2563EB] animate-bounce">
+                  <div className="w-8 h-8 rounded-full bg-[#3a4a2c]/10 flex items-center justify-center border border-[#3a4a2c]/20 text-[#3a4a2c] animate-bounce">
                     <AiFace3DIcon className="w-6 h-6" />
                   </div>
                   <div>
@@ -1395,7 +1441,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                    <div 
                      className={`p-3.5 rounded-2xl max-w-[85%] text-xs font-semibold leading-relaxed ${
                        msg.sender === 'user' 
-                         ? 'bg-[#2563EB] text-white rounded-br-none' 
+                         ? 'bg-[#3a4a2c] text-white rounded-br-none' 
                          : 'bg-white border border-slate-200 text-slate-800 rounded-bl-none shadow-xs'
                      }`}
                      style={{ whiteSpace: 'pre-line' }}
@@ -1413,9 +1459,9 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                   value={botInput}
                   onChange={(e) => setBotInput(e.target.value)}
                   placeholder="Enter order REQ-... or ask standard rates"
-                  className="flex-1 outline-none text-xs bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:border-[#2563EB] transition-all font-semibold"
+                  className="flex-1 outline-none text-xs bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:border-[#3a4a2c] transition-all font-semibold"
                 />
-                <button type="submit" className="w-11 h-11 bg-slate-900 hover:bg-[#2563EB] text-white rounded-xl flex items-center justify-center shadow-lg transition-colors shrink-0">
+                <button type="submit" className="w-11 h-11 bg-slate-900 hover:bg-[#3a4a2c] text-white rounded-xl flex items-center justify-center shadow-lg transition-colors shrink-0">
                   <ArrowRight className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />
                 </button>
              </form>
@@ -1429,10 +1475,10 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
         {/* Toggle bot button */}
         <button
           onClick={() => setBotOpen(!botOpen)}
-          className="px-5 py-3 rounded-full bg-slate-900 hover:bg-[#2563EB] text-white border border-slate-700 shadow-xl items-center gap-2.5 transition-all text-[13px] font-black uppercase tracking-widest flex hover:-translate-y-0.5 active:translate-y-0 select-none cursor-pointer"
+          className="px-5 py-3 rounded-full bg-slate-900 hover:bg-[#3a4a2c] text-white border border-slate-700 shadow-xl items-center gap-2.5 transition-all text-[13px] font-black uppercase tracking-widest flex hover:-translate-y-0.5 active:translate-y-0 select-none cursor-pointer"
           id="docked-bot-trigger"
         >
-          <AiFace3DIcon className="w-6 h-6 text-blue-400 rotate-12" />
+          <AiFace3DIcon className="w-6 h-6 text-[#6d8c55] rotate-12" />
         </button>
 
         {/* Back To Top Button */}
@@ -1443,7 +1489,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.6 }}
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="w-11 h-11 rounded-full bg-white border border-slate-200 shadow-md text-slate-850 flex items-center justify-center hover:bg-[#2563EB] hover:text-white transition-all select-none cursor-pointer"
+              className="w-11 h-11 rounded-full bg-white border border-slate-200 shadow-md text-slate-850 flex items-center justify-center hover:bg-[#3a4a2c] hover:text-white transition-all select-none cursor-pointer"
               title="Back To Top"
               id="back-to-top-btn"
             >

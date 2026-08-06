@@ -122,7 +122,7 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
   const TimelinePart: FC<{ dot: ReactNode, title: string, desc: string, active?: boolean, last?: boolean }> = ({ dot, title, desc, active, last }) => (
     <div className="flex gap-4 min-h-[60px]">
        <div className="flex flex-col items-center">
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center z-10 ${active ? 'bg-gradient-to-r from-blue-700 to-blue-500 text-white shadow-lg shadow-blue-500/30' : 'bg-zinc-100 text-zinc-400'}`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center z-10 ${active ? 'bg-gradient-to-r from-blue-700 to-blue-500 text-white shadow-lg shadow-[#3a4a2c]/30' : 'bg-zinc-100 text-zinc-400'}`}>
              {dot}
           </div>
           {!last && <div className={`w-0.5 flex-1 ${active ? 'bg-gradient-to-r from-blue-700 to-blue-500' : 'bg-zinc-200'}`}></div>}
@@ -193,7 +193,7 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                  onClick={() => setFilter(tab.id)}
                  className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${
                    filter === tab.id 
-                     ? 'bg-gradient-to-r from-blue-700 to-blue-500 text-white shadow-lg shadow-blue-500/20' 
+                     ? 'bg-gradient-to-r from-blue-700 to-blue-500 text-white shadow-lg shadow-[#3a4a2c]/20' 
                      : 'bg-white text-zinc-500 border border-zinc-200 hover:bg-zinc-50'
                  }`}
                >
@@ -230,7 +230,7 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                 </MapContainer>
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-8 h-8 border-4 border-[#3a4a2c] border-t-transparent rounded-full animate-spin"></div>
                 </div>
               )}
             </div>
@@ -238,7 +238,7 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
             <div className="bg-white rounded-3xl shadow-sm border border-zinc-200 flex flex-col min-h-[400px] lg:h-[600px] transition-colors">
               <div className="p-6 border-b border-zinc-200">
                 <h2 className="text-xl font-bold text-zinc-900 flex items-center gap-3">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                  <div className="w-2 h-2 bg-[#3a4a2c] rounded-full animate-pulse"></div>
                   {t('active_orders') || 'Active Orders'} ({filteredOrders.length})
                 </h2>
               </div>
@@ -249,11 +249,11 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                   <button 
                     key={order.id} 
                     onClick={() => setSelectedOrder(order)}
-                    className={`w-full text-left bg-zinc-50 hover:bg-zinc-100 rounded-2xl p-4 border transition-all relative overflow-hidden group ${selectedOrder?.id === order.id ? 'border-blue-500 ring-4 ring-blue-500/10 translate-x-1 shadow-md' : 'border-zinc-200 hover:border-zinc-300 hover:shadow-sm'} ${isRTL ? 'text-right' : 'text-left'} ${isRejected ? 'opacity-50 grayscale' : ''}`}
+                    className={`w-full text-left bg-zinc-50 hover:bg-zinc-100 rounded-2xl p-4 border transition-all relative overflow-hidden group ${selectedOrder?.id === order.id ? 'border-[#3a4a2c] ring-4 ring-blue-500/10 translate-x-1 shadow-md' : 'border-zinc-200 hover:border-zinc-300 hover:shadow-sm'} ${isRTL ? 'text-right' : 'text-left'} ${isRejected ? 'opacity-50 grayscale' : ''}`}
                   >
                     <div className={`absolute top-0 bottom-0 ${isRTL ? 'right-0' : 'left-0'} w-1.5 ${
                       isRejected ? 'bg-red-500' :
-                      order.status === 'in_transit' ? 'bg-blue-500' :
+                      order.status === 'in_transit' ? 'bg-[#3a4a2c]' :
                       order.status === 'Approved' ? 'bg-purple-500' :
                       'bg-orange-500'
                     }`} />
@@ -272,7 +272,7 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                         </div>
                         <div className="flex flex-col items-end gap-1">
                            <span className={`px-2 py-0.5 rounded-lg text-[13px] font-black tracking-wider uppercase ${
-                             order.status === 'in_transit' ? 'bg-blue-50 text-blue-600' :
+                             order.status === 'in_transit' ? 'bg-[#3a4a2c]/5 text-[#3a4a2c]' :
                              order.status === 'Approved' ? 'bg-purple-50 text-purple-600' :
                              'bg-orange-50 text-orange-600'
                            }`}>
@@ -383,11 +383,11 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                         
                         <div className="flex gap-3 relative z-10">
                            <div className="flex flex-col items-center pt-1">
-                              <div className="w-3 h-3 rounded-full border-2 border-blue-500 bg-blue-50" />
+                              <div className="w-3 h-3 rounded-full border-2 border-[#3a4a2c] bg-[#3a4a2c]/5" />
                               <div className="w-0.5 h-10 bg-zinc-200" />
                            </div>
                            <div>
-                              <p className="text-[13px] font-black text-blue-600 tracking-widest uppercase">Pickup Location</p>
+                              <p className="text-[13px] font-black text-[#3a4a2c] tracking-widest uppercase">Pickup Location</p>
                               <p className="text-sm font-semibold text-zinc-900 line-clamp-2">
                                 {selectedOrder.pickupAddress || selectedOrder.fromDestination || 'Dubai, Main Warehouse'}
                               </p>
@@ -396,10 +396,10 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                         
                         <div className="flex gap-3 relative z-10">
                            <div className="flex flex-col items-center pt-1">
-                              <div className="w-3 h-3 rounded-full border-2 border-blue-500 bg-blue-50" />
+                              <div className="w-3 h-3 rounded-full border-2 border-[#3a4a2c] bg-[#3a4a2c]/5" />
                            </div>
                            <div>
-                              <p className="text-[13px] font-black text-blue-600 tracking-widest uppercase">Drop-off Location</p>
+                              <p className="text-[13px] font-black text-[#3a4a2c] tracking-widest uppercase">Drop-off Location</p>
                               <p className="text-sm font-semibold text-zinc-900 line-clamp-2">
                                 {selectedOrder.toDestination || selectedOrder.address || 'Loading...'}
                               </p>
@@ -414,7 +414,7 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
                        <div className="flex items-center gap-2">
-                          <div className="w-1 h-4 bg-blue-500 rounded-full" />
+                          <div className="w-1 h-4 bg-[#3a4a2c] rounded-full" />
                           <h3 className="text-sm font-bold text-zinc-900">{t('current_status') || 'Current Status'}</h3>
                        </div>
                     </div>

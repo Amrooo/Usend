@@ -65,7 +65,7 @@ const dbAdmin = firebaseConfig.firestoreDatabaseId
   : getFirestore(appInstance);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 app.get("/api/health", (req, res) => {
   res.json({ 

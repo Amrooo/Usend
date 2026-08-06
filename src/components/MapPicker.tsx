@@ -78,7 +78,7 @@ export default function MapPicker({ onSelect, onClose, initialPosition, initialA
         </button>
         <button
           onClick={handleConfirm}
-          className="py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold tracking-widest transition-colors uppercase cursor-pointer"
+          className="py-3.5 rounded-xl bg-[#4d623b] hover:bg-[#3a4a2c] text-white font-bold tracking-widest transition-colors uppercase cursor-pointer"
         >
           Confirm Location
         </button>

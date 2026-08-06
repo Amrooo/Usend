@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Mail, Lock, X, ShieldAlert, Loader2, ArrowRight } from 'lucide-react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { signInWithEmailAndPassword, signInAnonymously } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { Screen } from '../types';
 import { useApp } from '../context/AppContext';
@@ -17,6 +17,7 @@ interface LoginModalProps {
 export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }: LoginModalProps) {
   const { setUser } = useApp();
   const [email, setEmail] = useState('');
+  const [selectedRole, setSelectedRole] = useState(defaultRole);
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -24,19 +25,25 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
   // Auto-fill values for easiest evaluation but secure validation
   React.useEffect(() => {
     if (isOpen) {
+      setSelectedRole(defaultRole);
+    }
+  }, [isOpen, defaultRole]);
+
+  React.useEffect(() => {
+    if (isOpen) {
       setError(null);
       setPassword('');
-      if (defaultRole === 'admin') {
+      if (selectedRole === 'admin') {
         setEmail('admin@usend.com');
-      } else if (defaultRole === 'merchant') {
+      } else if (selectedRole === 'merchant') {
         setEmail('merchant@usend.com');
-      } else if (defaultRole === 'user') {
+      } else if (selectedRole === 'user') {
         setEmail('user@usend.com');
-      } else if (defaultRole === 'driver') {
+      } else if (selectedRole === 'driver') {
         setEmail('driver@usend.com');
       }
     }
-  }, [isOpen, defaultRole]);
+  }, [isOpen, selectedRole]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +58,7 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
       const userDocRef = doc(db, 'users', cred.user.uid);
       const userDocSnap = await getDoc(userDocRef);
       
-      let targetRole = defaultRole;
+      let targetRole = selectedRole;
       if (userDocSnap.exists()) {
         const data = userDocSnap.data();
         if (data.role) {
@@ -74,7 +81,7 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
       console.warn("Firebase Auth fallback check: ", err.message);
       // Demo fallback if connection completely fails (not password errors)
       if (password === 'password') {
-        let targetRole = defaultRole;
+        let targetRole = selectedRole;
         if (email.toLowerCase().includes('admin') || email.toLowerCase() === 'octman.sam@gmail.com') targetRole = 'admin';
         else if (email.toLowerCase().includes('merchant')) targetRole = 'merchant';
         else if (email.toLowerCase().includes('driver') || email.toLowerCase().includes('user')) targetRole = 'user';
@@ -122,7 +129,7 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
             className="bg-white text-slate-900 border border-slate-200 rounded-[2.5rem] w-full max-w-md p-8 shadow-2xl relative overflow-hidden z-10 select-none animate-in fade-in zoom-in duration-200"
           >
             {/* Elegant Background Light Accent */}
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#2563EB]/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#3a4a2c]/10 rounded-full blur-3xl pointer-events-none" />
 
             {/* Header close button */}
             <button 
@@ -134,7 +141,7 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
 
             {/* Title block */}
             <div className="space-y-2 mb-8">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-[#2563EB] text-[12px] font-black uppercase tracking-widest font-sans">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#3a4a2c]/5 border border-[#3a4a2c]/10 text-[#3a4a2c] text-[12px] font-black uppercase tracking-widest font-sans">
                 USend Shipping Portal
               </span>
               <h3 className="text-xl md:text-2xl font-bold tracking-tight text-zinc-900">
@@ -145,7 +152,26 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
               </p>
             </div>
 
-            {/* Login Form */}
+            
+            {selectedRole !== 'admin' && (
+              <div className="flex items-center gap-2 mb-6 p-1 bg-slate-100 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => setSelectedRole('merchant')}
+                  className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all ${selectedRole === 'merchant' ? 'bg-white text-[#3a4a2c] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  Merchant
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedRole('user')}
+                  className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all ${selectedRole === 'user' ? 'bg-white text-[#3a4a2c] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  User
+                </button>
+              </div>
+            )}
+{/* Login Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1.5">
                 <label className="text-[12px] font-black text-slate-500 uppercase tracking-wider pl-1.5 block text-zinc-400">
@@ -159,7 +185,7 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="user@usend.com"
-                    className="w-full h-12.5 bg-slate-50 border border-slate-200 text-slate-900 rounded-xl pl-11 pr-4 focus:ring-2 focus:ring-[#2563EB] focus:outline-hidden tracking-normal text-xs font-semibold transition-all"
+                    className="w-full h-12.5 bg-slate-50 border border-slate-200 text-slate-900 rounded-xl pl-11 pr-4 focus:ring-2 focus:ring-[#3a4a2c] focus:outline-hidden tracking-normal text-xs font-semibold transition-all"
                   />
                 </div>
               </div>
@@ -176,10 +202,10 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full h-12.5 bg-slate-50 border border-slate-200 text-slate-900 rounded-xl pl-11 pr-4 focus:ring-2 focus:ring-[#2563EB] focus:outline-hidden tracking-widest text-xs font-semibold transition-all"
+                    className="w-full h-12.5 bg-slate-50 border border-slate-200 text-slate-900 rounded-xl pl-11 pr-4 focus:ring-2 focus:ring-[#3a4a2c] focus:outline-hidden tracking-widest text-xs font-semibold transition-all"
                   />
                 </div>
-                <div className="text-[12px] text-[#2563EB] font-medium pt-1 text-right">
+                <div className="text-[12px] text-[#3a4a2c] font-medium pt-1 text-right">
                   Default Demo Password: <span className="font-bold underline">password</span>
                 </div>
               </div>
@@ -199,7 +225,7 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-13 mt-6 bg-[#2563EB] hover:bg-slate-900 disabled:bg-slate-300 text-white transition-all duration-300 font-extrabold uppercase tracking-widest text-[13px] rounded-xl flex items-center justify-center gap-2 shadow-md hover:shadow-blue-500/20 active:scale-98 cursor-pointer"
+                className="w-full h-13 mt-6 bg-[#3a4a2c] hover:bg-slate-900 disabled:bg-slate-300 text-white transition-all duration-300 font-extrabold uppercase tracking-widest text-[13px] rounded-xl flex items-center justify-center gap-2 shadow-md hover:shadow-[#3a4a2c]/20 active:scale-98 cursor-pointer"
               >
                 {loading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -219,7 +245,7 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
                   onClose();
                   onNavigate('portal_register');
                 }}
-                className="text-[#2563EB] hover:text-[#2563EB]/80 hover:underline uppercase transition-all"
+                className="text-[#3a4a2c] hover:text-[#3a4a2c]/80 hover:underline uppercase transition-all"
               >
                 Create Account
               </button>

@@ -316,7 +316,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
               id: u.uid,
               uid: u.uid,
               name: u.displayName || 'Anonymous User',
-              email: u.email,
+              email: u.email || 'guest@usend.com',
               photoUrl: u.photoURL,
               role: finalRole,
               status: 'Active',
@@ -392,7 +392,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
           console.warn("Failed to sync guest orders to account:", err);
         }
       } else {
-        setUser(null);
+        setUser((prev: any) => {
+          if (prev?.uid === 'demo-fallback-uid' || prev?.id === 'demo-fallback-uid') {
+            return prev;
+          }
+          return null;
+        });
       }
     });
     return () => {
@@ -473,36 +478,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     };
   }, [user?.uid]);
 
-  useEffect(() => {
-    // SSE Event Source for live Aramex webhook notifications
-    const eventSource = new EventSource('/api/events');
-    eventSource.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === 'WEBHOOK_UPDATE') {
-           // For demo visibility alert the user
-           const updateTitle = `🚚 Live Courier Update (${data.trackingNumber})`;
-           const updateBody = `[${data.updateCode}] ${data.updateDescription} at ${data.location}`;
-           // We can just log or push an alert for now
-           console.log(updateTitle, updateBody);
-           
-           // Optionally, find the matching request and update it in-memory
-           setActiveRequests(prev => prev.map(r => 
-             r.externalTrackingNumber === data.trackingNumber 
-               ? { ...r, status: data.updateCode === 'SH012' ? 'delivered' : 'in_transit' } // Basic mock mapping
-               : r
-           ));
-           
-           // Simple alert if window is in focus
-           const evt = new CustomEvent('app_toast', { detail: { title: updateTitle, message: updateBody } });
-           window.dispatchEvent(evt);
-        }
-      } catch (e) {
-        console.error("SSE parse error", e);
-      }
-    };
-    return () => eventSource.close();
-  }, []);
+
 
   const signIn = async () => {
     await signInWithGoogle();

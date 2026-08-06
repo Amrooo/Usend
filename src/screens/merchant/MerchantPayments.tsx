@@ -244,7 +244,7 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
           {/* Page Headers */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 pb-5">
             <div>
-              <span className="text-blue-600 font-bold text-[12px] uppercase tracking-[0.4em] block">
+              <span className="text-[#3a4a2c] font-bold text-[12px] uppercase tracking-[0.4em] block">
                 Financial Operations Ledger
               </span>
               <h1 className="text-3xl font-display font-medium text-zinc-900 uppercase tracking-tight mt-1">
@@ -351,7 +351,7 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
                         <span className="text-[12px] text-zinc-400 font-mono">IBAN: AE24 0220 0000 1234 5678 901</span>
                       </div>
                     </div>
-                    <span className="text-[12px] bg-blue-50 text-blue-600 font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full">Primary</span>
+                    <span className="text-[12px] bg-[#3a4a2c]/5 text-[#3a4a2c] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full">Primary</span>
                   </div>
                 </div>
               </div>
@@ -379,7 +379,7 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
                       </div>
                       <div className="flex justify-between">
                         <span>Expected Arrival speed</span>
-                        <span className="text-blue-600 font-bold">Instant to AED bank</span>
+                        <span className="text-[#3a4a2c] font-bold">Instant to AED bank</span>
                       </div>
                     </div>
                   </div>
@@ -400,7 +400,7 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
                       )}
                     </button>
                   ) : (
-                    <div className="p-4 bg-blue-50 text-blue-700 text-center font-bold text-xs rounded-xl mt-6">
+                    <div className="p-4 bg-[#3a4a2c]/5 text-[#3a4a2c] text-center font-bold text-xs rounded-xl mt-6">
                       Successfully withdrawn! Ledger cleared.
                     </div>
                   )}
@@ -431,11 +431,11 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
                 </div>
                 <div className="flex justify-between py-2 border-b border-zinc-50 font-semibold">
                   <span>YTD Deductible Input VAT (Logistics Services)</span>
-                  <span className="font-mono text-blue-600">-AED 62.25</span>
+                  <span className="font-mono text-[#3a4a2c]">-AED 62.25</span>
                 </div>
                 <div className="flex justify-between py-2 text-sm font-bold text-zinc-900 pt-3">
                   <span>Net VAT Payable / (Refund due)</span>
-                  <span className="text-blue-600">AED 1,182.75</span>
+                  <span className="text-[#3a4a2c]">AED 1,182.75</span>
                 </div>
               </div>
 
@@ -476,7 +476,7 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
                           <td className="p-4">
                             <div className="flex justify-center">
                               <span className={`px-2.5 py-1 rounded-full text-[13px] font-black uppercase tracking-widest ${
-                                inv.status === 'Invoice Cleared' ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600 animate-pulse'
+                                inv.status === 'Invoice Cleared' ? 'bg-[#3a4a2c]/5 text-[#3a4a2c]' : 'bg-orange-50 text-orange-600 animate-pulse'
                               }`}>
                                 {inv.status}
                               </span>
@@ -508,7 +508,7 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
           >
             {stripeShowReceipt ? (
               <div className="text-center space-y-5 py-2">
-                <div className="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center mx-auto border border-blue-100">
+                <div className="w-14 h-14 bg-[#3a4a2c]/5 rounded-full flex items-center justify-center mx-auto border border-[#3a4a2c]/10">
                   <span className="text-2xl">✓</span>
                 </div>
                 <div className="space-y-1">
@@ -523,7 +523,7 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
                   </div>
                   <div className="flex justify-between">
                     <span className="text-zinc-500">Payment Gateway:</span>
-                    <span className="font-semibold text-blue-600">Stripe UAE (Secure card)</span>
+                    <span className="font-semibold text-[#3a4a2c]">Stripe UAE (Secure card)</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-zinc-500">Transaction Ref:</span>
@@ -550,7 +550,7 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
               <div className="text-center py-10 space-y-4">
                 <div className="relative w-12 h-12 mx-auto">
                   <div className="absolute inset-0 rounded-full border-4 border-zinc-100 animate-pulse" />
-                  <div className="absolute inset-0 rounded-full border-4 border-blue-600 border-t-transparent animate-spin" />
+                  <div className="absolute inset-0 rounded-full border-4 border-[#3a4a2c] border-t-transparent animate-spin" />
                 </div>
                 <div className="space-y-1">
                   <h4 className="font-bold text-sm text-zinc-800">Processing Stripe UAE Gateway Settle...</h4>
@@ -561,7 +561,7 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-black text-zinc-900">Top-up Wallet Portal</h3>
-                  <span className="px-2 py-0.5 rounded-full text-[12px] font-black uppercase bg-blue-50 text-blue-600 border border-blue-100 font-mono">stripe.com</span>
+                  <span className="px-2 py-0.5 rounded-full text-[12px] font-black uppercase bg-[#3a4a2c]/5 text-[#3a4a2c] border border-[#3a4a2c]/10 font-mono">stripe.com</span>
                 </div>
 
                 <div className="space-y-4 text-left">
@@ -599,7 +599,7 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
                         onClick={() => setStripeMethod('stripe_card')}
                         className={`p-3 rounded-xl border flex flex-col items-center gap-1.5 font-bold transition-all cursor-pointer text-center ${
                           stripeMethod !== 'standard'
-                            ? 'bg-blue-50 border-blue-350 text-blue-800'
+                            ? 'bg-[#3a4a2c]/5 border-blue-350 text-[#3a4a2c]'
                             : 'bg-zinc-50 hover:bg-zinc-100 text-zinc-600 border-zinc-200'
                         }`}
                       >
@@ -610,9 +610,9 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
                   </div>
 
                   {stripeMethod !== 'standard' && !stripeClientSecret && (
-                    <div className="p-4 bg-blue-50 border border-blue-100 rounded-2xl text-xs text-blue-600 font-bold flex items-center justify-between">
+                    <div className="p-4 bg-[#3a4a2c]/5 border border-[#3a4a2c]/10 rounded-2xl text-xs text-[#3a4a2c] font-bold flex items-center justify-between">
                       <span>Stripe secure gateway ready</span>
-                      <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                      <span className="w-2 h-2 bg-[#3a4a2c] rounded-full animate-pulse" />
                     </div>
                   )}
 
@@ -637,7 +637,7 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
                         type="button"
                         onClick={(e) => handleTopupSubmit(e as any)}
                         disabled={stripeIsProcessing}
-                        className="flex-[2] py-3 font-bold bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-lg transition-all cursor-pointer text-center"
+                        className="flex-[2] py-3 font-bold bg-[#4d623b] hover:bg-[#3a4a2c] text-white rounded-xl shadow-lg transition-all cursor-pointer text-center"
                       >
                         {stripeIsProcessing ? 'Initializing...' : (stripeMethod !== 'standard' ? 'Proceed to Secure Pay' : 'Authorize Card Settle')}
                       </button>

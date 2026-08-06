@@ -212,7 +212,7 @@ export default function Tracking({ onNavigate }: TrackingProps) {
           <div className="flex items-end justify-between mb-6">
             <div className="text-left rtl:text-right">
               {isDelivered ? (
-                <h2 className="text-3xl font-black text-blue-600 dark:text-blue-500">{t('order_delivered')}</h2>
+                <h2 className="text-3xl font-black text-[#3a4a2c] dark:text-[#3a4a2c]">{t('order_delivered')}</h2>
               ) : (
                 <>
                   <h2 className="text-3xl font-black text-zinc-900 dark:text-zinc-100">{etaMinutes} {t('min')}</h2>
@@ -268,24 +268,24 @@ export default function Tracking({ onNavigate }: TrackingProps) {
 
           <div className={`flex items-start gap-4 p-4 rounded-2xl border ${
             isDelivered 
-              ? 'bg-blue-50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900/30' 
+              ? 'bg-[#3a4a2c]/5 dark:bg-zinc-900/10 border-[#3a4a2c]/10 dark:border-blue-900/30' 
               : 'bg-orange-50 dark:bg-orange-900/10 border-orange-100 dark:border-orange-900/30'
           }`}>
             <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
               isDelivered
-                ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                ? 'bg-[#3a4a2c]/10 dark:bg-zinc-900/30 text-[#3a4a2c] dark:text-[#6d8c55]'
                 : 'bg-orange-100 dark:bg-orange-900/30 text-[#f5502c] dark:text-[#f5502c]'
             }`}>
               <Package className="w-4 h-4" />
             </div>
             <div className="text-left rtl:text-right">
               <h4 className={`text-sm font-bold mb-1 ${
-                isDelivered ? 'text-blue-900 dark:text-blue-100' : 'text-orange-900 dark:text-orange-100'
+                isDelivered ? 'text-[#3a4a2c] dark:text-zinc-100' : 'text-orange-900 dark:text-orange-100'
               }`}>
                 {isDelivered ? t('order_delivered') : t('picked_up')}
               </h4>
               <p className={`text-xs ${
-                isDelivered ? 'text-blue-700/70 dark:text-blue-300/70' : 'text-orange-700/70 dark:text-orange-300/70'
+                isDelivered ? 'text-[#3a4a2c]/70 dark:text-[#8da379]/70' : 'text-orange-700/70 dark:text-orange-300/70'
               }`}>
                 {isDelivered ? 'Your package has been successfully delivered.' : t('driver_on_way')}
               </p>

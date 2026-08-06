@@ -1,14 +1,6 @@
 const fs = require('fs');
+const path = 'src/screens/LandingPage.tsx';
+let content = fs.readFileSync(path, 'utf8');
 
-let file = fs.readFileSync('src/screens/user/UserOrders.tsx', 'utf8');
-
-file = file.replace(
-  `            ))}
-          </div>`,
-  `            )) : (
-              <div className="col-span-full p-20 text-center text-zinc-400 italic">No previous orders found.</div>
-            )}
-          </div>`
-);
-
-fs.writeFileSync('src/screens/user/UserOrders.tsx', file);
+// The main div 'landing-root' might have been closed too early. 
+// Let's check line 535 area again where we added '</div>'.

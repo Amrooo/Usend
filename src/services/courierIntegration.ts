@@ -523,7 +523,7 @@ export const courierIntegrationService = {
       return {
         success: false,
         trackingNumber: cleanNum,
-        error: `No active shipping sequence found matches reference "${cleanNum}". To track a package successfully, you must first generate a waybill using the "Generate Air Waybill" panel in the third tab above.`,
+        error: `No active shipping sequence found matches reference "${cleanNum}". To track a package successfully, you must first generate a waybill using the "Generate Domestic Waybill" panel in the third tab above.`,
         steps: [],
         requestPayload: {
           WSDLLookup: {

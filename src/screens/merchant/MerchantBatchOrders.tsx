@@ -250,7 +250,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
         insurance: 120.00,
         grandTotal: Number((baseCost * 0.75 + 920).toFixed(2)),
         carrier: 'Maersk Liner Services',
-        transitTime: '36 Hours (Combined Port-to-Air multimodal)',
+        transitTime: '36 Hours (Combined Port-to-Land multimodal)',
         hazClass: freightData.cargoType === 'electronics_dangerous' ? 'Class 9 Dangerous Hazard' : 'General dry cargo status'
       });
       setIsRequestingFreightQuote(false);
@@ -305,7 +305,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
           {/* Section Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 pb-5">
             <div>
-              <span className="text-blue-600 font-bold text-[12px] uppercase tracking-[0.4em] block">
+              <span className="text-[#3a4a2c] font-bold text-[12px] uppercase tracking-[0.4em] block">
                 {isFreightMode || isFreightQuoteMode ? 'Container Freight & Port Services' : 'Enterprise Bulk Shipping'}
               </span>
               <h1 className="text-3xl font-display font-medium text-zinc-900 uppercase tracking-tight mt-1">
@@ -362,7 +362,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
               {/* Top Template Bar */}
               <div className="bg-white rounded-[2rem] p-8 border border-zinc-200/80 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
                 <div className="flex items-center gap-4 text-left">
-                  <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-2xl bg-[#3a4a2c]/10 text-[#3a4a2c] flex items-center justify-center">
                     <Download className="w-5 h-5" />
                   </div>
                   <div>
@@ -379,7 +379,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
                   </button>
                   <button 
                     onClick={() => fileInputRef.current?.click()}
-                    className="flex-1 md:flex-none bg-blue-600 hover:bg-blue-500 text-white font-bold px-5 py-3 rounded-xl text-xs uppercase tracking-wider transition-all whitespace-nowrap"
+                    className="flex-1 md:flex-none bg-[#4d623b] hover:bg-[#3a4a2c] text-white font-bold px-5 py-3 rounded-xl text-xs uppercase tracking-wider transition-all whitespace-nowrap"
                   >
                     Select File & Import
                   </button>
@@ -449,7 +449,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
                               onChange={(e) => updateOrder(order.id, 'customer', e.target.value)}
                               placeholder="Customer Name"
                               className={`w-full bg-transparent px-3 py-2 border rounded-lg text-xs outline-none ${
-                                errors[order.id]?.customer ? 'border-red-500 bg-red-50/30' : 'border-zinc-200 focus:border-blue-500'
+                                errors[order.id]?.customer ? 'border-red-500 bg-red-50/30' : 'border-zinc-200 focus:border-[#3a4a2c]'
                               }`}
                             />
                           </td>
@@ -459,7 +459,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
                               value={order.phone} 
                               onChange={(e) => updatePhone(order.id, e.target.value)}
                               placeholder="+971 50 1234567"
-                              className={`w-full bg-transparent px-3 py-2 border rounded-lg text-xs outline-none font-mono tracking-widest ${errors[order.id]?.phone ? 'border-red-500 bg-red-50/30' : 'border-zinc-200 focus:border-blue-500'}`}
+                              className={`w-full bg-transparent px-3 py-2 border rounded-lg text-xs outline-none font-mono tracking-widest ${errors[order.id]?.phone ? 'border-red-500 bg-red-50/30' : 'border-zinc-200 focus:border-[#3a4a2c]'}`}
                               dir="ltr"
                             />
                             {errors[order.id]?.phone && (
@@ -473,7 +473,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
                               onChange={(e) => updateOrder(order.id, 'address', e.target.value)}
                               placeholder="Dubai Marina / Downtown Boulevard"
                               className={`w-full bg-transparent px-3 py-2 border rounded-lg text-xs outline-none ${
-                                errors[order.id]?.address ? 'border-red-500 bg-red-50/30' : 'border-zinc-200 focus:border-blue-500'
+                                errors[order.id]?.address ? 'border-red-500 bg-red-50/30' : 'border-zinc-200 focus:border-[#3a4a2c]'
                               }`}
                             />
                           </td>
@@ -484,7 +484,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
                               onChange={(e) => updateOrder(order.id, 'amount', e.target.value)}
                               placeholder="120.00"
                               className={`w-full bg-transparent px-3 py-2 border rounded-lg text-xs outline-none ${
-                                errors[order.id]?.amount ? 'border-red-500 bg-red-50/30' : 'border-zinc-200 focus:border-blue-500'
+                                errors[order.id]?.amount ? 'border-red-500 bg-red-50/30' : 'border-zinc-200 focus:border-[#3a4a2c]'
                               }`}
                             />
                           </td>
@@ -492,7 +492,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
                             <select 
                               value={order.paymentType} 
                               onChange={(e) => updateOrder(order.id, 'paymentType', e.target.value)}
-                              className="bg-transparent px-3 py-2 border border-zinc-200 rounded-lg text-xs outline-none focus:border-blue-500 font-bold"
+                              className="bg-transparent px-3 py-2 border border-zinc-200 rounded-lg text-xs outline-none focus:border-[#3a4a2c] font-bold"
                             >
                               <option value="card">Prepaid (Card)</option>
                               <option value="cash">Cash collect (COD)</option>
@@ -521,7 +521,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
                   <button
                     onClick={handleDispatchCSV}
                     disabled={isSubmittingCSV}
-                    className="bg-blue-600 hover:bg-blue-500 text-white font-bold h-12 px-8 rounded-xl text-xs uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center gap-2 disabled:opacity-50"
+                    className="bg-[#4d623b] hover:bg-[#3a4a2c] text-white font-bold h-12 px-8 rounded-xl text-xs uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center gap-2 disabled:opacity-50"
                   >
                     {isSubmittingCSV ? (
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -541,7 +541,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
               <div className="lg:col-span-2 space-y-6">
                 <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-8 border border-zinc-200/85 shadow-sm space-y-6">
                   <div className="flex items-center gap-3 border-b border-zinc-100 pb-4">
-                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-[#3a4a2c]/10 text-[#3a4a2c] flex items-center justify-center">
                       <Truck className="w-5 h-5" />
                     </div>
                     <div>
@@ -629,7 +629,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
                 <div className="bg-white border border-zinc-200 rounded-[2.5rem] p-8 shadow-md flex flex-col justify-between">
                   <div>
                     <div className="flex items-center gap-2 mb-6">
-                      <Compass className="w-5 h-5 text-blue-600" />
+                      <Compass className="w-5 h-5 text-[#3a4a2c]" />
                       <h2 className="font-bold text-base text-zinc-900">Intermodal Dispatch Desk</h2>
                     </div>
 
@@ -665,7 +665,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
                             <span>Surcharge hazard category</span>
                             <span className="text-zinc-900">AED {freightQuoteResponse.portDues}</span>
                           </div>
-                          <div className="flex justify-between text-blue-600 font-black border-t border-zinc-50 pt-3">
+                          <div className="flex justify-between text-[#3a4a2c] font-black border-t border-zinc-50 pt-3">
                             <span>ETA Arrival lock</span>
                             <span>{freightQuoteResponse.transitTime}</span>
                           </div>
@@ -678,7 +678,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
                     <button
                       onClick={handleDispatchFreight}
                       disabled={dispatchStatus === 'dispatching'}
-                      className="w-full mt-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20"
+                      className="w-full mt-8 py-4 bg-[#4d623b] hover:bg-[#3a4a2c] text-white font-bold text-xs uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#3a4a2c]/20"
                     >
                       {dispatchStatus === 'dispatching' ? (
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -709,14 +709,14 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
               <div className="grid grid-cols-2 gap-4">
                 <button 
                   onClick={() => setFreightData({...freightData, containerSize: '20gp'})}
-                  className={`p-5 rounded-2xl border-2 text-left transition-all ${freightData.containerSize === '20gp' ? 'border-blue-500 bg-blue-50/10' : 'border-zinc-200'}`}
+                  className={`p-5 rounded-2xl border-2 text-left transition-all ${freightData.containerSize === '20gp' ? 'border-[#3a4a2c] bg-[#3a4a2c]/5/10' : 'border-zinc-200'}`}
                 >
                   <span className="font-black text-xs text-zinc-800 block">Class 20GP container</span>
                   <span className="text-[12px] text-zinc-400 mt-1 block">Standard Dry cargo locker</span>
                 </button>
                 <button 
                   onClick={() => setFreightData({...freightData, containerSize: '40hc'})}
-                  className={`p-5 rounded-2xl border-2 text-left transition-all ${freightData.containerSize === '40hc' ? 'border-blue-500 bg-blue-50/10' : 'border-zinc-200'}`}
+                  className={`p-5 rounded-2xl border-2 text-left transition-all ${freightData.containerSize === '40hc' ? 'border-[#3a4a2c] bg-[#3a4a2c]/5/10' : 'border-zinc-200'}`}
                 >
                   <span className="font-black text-xs text-zinc-800 block">Class 40HC container</span>
                   <span className="text-[12px] text-zinc-400 mt-1 block">Extra high volume dry container</span>
@@ -738,7 +738,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
                 </div>
                 <div className="flex justify-between py-2 text-base font-bold text-zinc-800 pt-3">
                   <span>Fixed Broker clearance</span>
-                  <span className="text-blue-600">AED 920.00</span>
+                  <span className="text-[#3a4a2c]">AED 920.00</span>
                 </div>
               </div>
 

@@ -31,9 +31,9 @@ export default function Completed({ onNavigate }: CompletedProps) {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", stiffness: 200, damping: 20, delay: 0.2 }}
-            className="w-20 h-20 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-4"
+            className="w-20 h-20 bg-[#3a4a2c]/10 dark:bg-zinc-900/30 rounded-full flex items-center justify-center mb-4"
           >
-            <CheckCircle2 className="w-10 h-10 text-blue-600 dark:text-blue-500" />
+            <CheckCircle2 className="w-10 h-10 text-[#3a4a2c] dark:text-[#3a4a2c]" />
           </motion.div>
           <h1 className="text-2xl font-black text-zinc-900 dark:text-zinc-100 mb-2">{t('order_delivered')}</h1>
           <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center">{t('how_was_delivery')}</p>
@@ -61,7 +61,7 @@ export default function Completed({ onNavigate }: CompletedProps) {
 
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0"></div>
+              <div className="w-2 h-2 rounded-full bg-[#3a4a2c] flex-shrink-0"></div>
               <p className="text-xs font-medium text-zinc-700 dark:text-zinc-300 truncate">241 Tech Plaza, San Francisco</p>
             </div>
             <div className="flex items-center gap-3">

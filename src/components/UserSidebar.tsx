@@ -117,7 +117,7 @@ export default function UserSidebar({ currentScreen, onNavigate }: SidebarProps)
     <>
       <div className={`md:hidden flex items-center justify-between p-4 bg-white text-zinc-800 sticky top-0 z-40 border-b border-[#e2e8f0] shadow-sm`}>
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => handleItemClick('user_dashboard')}>
-          <div className="w-8 h-8 rounded-xl bg-[#3b82f6]/10 border border-[#3b82f6]/20 flex items-center justify-center text-[#3b82f6]">
+          <div className="w-8 h-8 rounded-xl bg-[#546a40]/10 border border-[#546a40]/20 flex items-center justify-center text-[#546a40]">
             <Anchor className="w-4 h-4" />
           </div>
           <span className="font-bold text-xs tracking-widest uppercase text-zinc-900">USend Consumer</span>

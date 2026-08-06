@@ -39,7 +39,7 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
       <UserSidebar currentScreen="user_dashboard" onNavigate={onNavigate} />
       
       <main className="flex-1 p-8 lg:p-12 h-full overflow-y-auto hide-scrollbar overflow-x-hidden relative">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-100/30 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none z-0"></div>
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#3a4a2c]/10/30 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none z-0"></div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -173,12 +173,12 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
           </div>
 
           {/* Recent Orders Table */}
-          <div className="bg-white border border-[#E9EFF6] rounded-[2.5rem] overflow-hidden shadow-[0_8px_30px_rgb(220,225,235,0.45)]">
-            <div className="p-10 border-b border-[#E9EFF6] flex items-center justify-between bg-white">
+          <div className="bg-white border border-[#EBEFE9] rounded-[2.5rem] overflow-hidden shadow-[0_8px_30px_rgb(220,225,235,0.45)]">
+            <div className="p-10 border-b border-[#EBEFE9] flex items-center justify-between bg-white">
               <h2 className="text-xl font-display font-semibold uppercase tracking-tight text-slate-900">{t('recent_orders') || 'Recent Orders'}</h2>
               <button 
                 onClick={() => onNavigate('user_tracking')}
-                className="text-[#3b82f6] font-bold text-[12px] uppercase tracking-widest hover:opacity-75 transition-opacity"
+                className="text-[#546a40] font-bold text-[12px] uppercase tracking-widest hover:opacity-75 transition-opacity"
               >
                 {t('view_all_orders') || 'View All Orders'}
               </button>
@@ -186,7 +186,7 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
             <div className="overflow-x-auto">
               <table className={`w-full ${isRTL ? 'text-right' : 'text-left'} border-collapse min-w-[800px]`}>
                 <thead>
-                  <tr className="bg-slate-50 text-zinc-400 text-[12px] font-black uppercase tracking-widest border-b border-[#E9EFF6]">
+                  <tr className="bg-slate-50 text-zinc-400 text-[12px] font-black uppercase tracking-widest border-b border-[#EBEFE9]">
                     <th className="p-8 font-bold">{t('order_id') || 'Order ID'}</th>
                     <th className="p-8 font-bold">{t('recipient') || 'Recipient'}</th>
                     <th className="p-8 font-bold">{t('status') || 'Status'}</th>
@@ -196,13 +196,13 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
                 </thead>
                 <tbody className="text-sm font-medium">
                   {myRequests.length > 0 ? myRequests.map((order, i) => (
-                    <tr key={i} className="border-b border-[#E9EFF6] last:border-0 hover:bg-slate-50/50 transition-colors group">
+                    <tr key={i} className="border-b border-[#EBEFE9] last:border-0 hover:bg-slate-50/50 transition-colors group">
                       <td className="p-8 text-zinc-900 font-bold">{order.id}</td>
                       <td className="p-8 text-zinc-500">{order.name}</td>
                       <td className="p-8">
                         <span className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[12px] font-bold uppercase tracking-widest ${
-                          order.status === 'delivered' ? 'bg-blue-50 text-blue-600' :
-                          order.status === 'in_transit' || order.status === 'En-route' ? 'bg-blue-50 text-[#3b82f6]' :
+                          order.status === 'delivered' ? 'bg-[#3a4a2c]/5 text-[#3a4a2c]' :
+                          order.status === 'in_transit' || order.status === 'En-route' ? 'bg-[#3a4a2c]/5 text-[#546a40]' :
                           'bg-orange-50 text-orange-655'
                         }`}>
                           {order.status === 'delivered' && <CheckCircle2 className="w-3 h-3" />}
@@ -237,7 +237,7 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
             <div className="flex justify-between items-center bg-zinc-50 p-4 rounded-2xl">
               <div>
                 <p className="text-[12px] font-black text-zinc-400 uppercase tracking-widest leading-none mb-1">Status</p>
-                <p className="text-blue-600 font-black uppercase text-xs tracking-widest">Delivered Successfully</p>
+                <p className="text-[#3a4a2c] font-black uppercase text-xs tracking-widest">Delivered Successfully</p>
               </div>
               <div className="text-right">
                 <p className="text-[12px] font-black text-zinc-400 uppercase tracking-widest leading-none mb-1">Amount</p>

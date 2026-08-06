@@ -19,6 +19,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLanguage } from '../context/LanguageContext';
 import { useApp } from '../context/AppContext';
+import LogoIcon from './LogoIcon';
 
 interface PortalSidebarProps {
   currentScreen: Screen;
@@ -62,8 +63,8 @@ export default function PortalSidebar({ currentScreen, onNavigate }: PortalSideb
     <div className="flex flex-col h-full bg-[#EFF3EE]/95 text-zinc-800 select-none border-r border-[#E2ECE0]">
       <div className="p-6 pb-5 flex items-center justify-between">
         <div className="flex items-center gap-3 cursor-pointer" onClick={() => handleItemClick(isMerchant ? 'merchant_dashboard' : 'user_dashboard')}>
-          <div className="w-10 h-10 rounded-2xl bg-[#D5E2D2] border border-[#CBD7C9] flex items-center justify-center text-[#344633] leading-none shrink-0 shadow-sm">
-            <Anchor className="w-5 h-5 animate-pulse" />
+          <div className="w-10 h-10 flex items-center justify-center shrink-0">
+            <LogoIcon className="w-9 h-9" />
           </div>
           <div>
             <h1 className="text-[13px] font-black uppercase tracking-wider text-[#344633] leading-none">USend Portal</h1>
@@ -131,8 +132,8 @@ export default function PortalSidebar({ currentScreen, onNavigate }: PortalSideb
     <>
       <div className={`md:hidden flex items-center justify-between p-4 bg-white text-zinc-800 sticky top-0 z-40 border-b border-[#e2e8f0] shadow-sm`}>
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => handleItemClick(isMerchant ? 'merchant_dashboard' : 'user_dashboard')}>
-          <div className="w-8 h-8 rounded-xl bg-[#3b82f6]/10 border border-[#3b82f6]/20 flex items-center justify-center text-[#3b82f6]">
-            <Anchor className="w-4 h-4" />
+          <div className="w-8 h-8 flex items-center justify-center shrink-0">
+            <LogoIcon className="w-7 h-7" />
           </div>
           <span className="font-bold text-xs tracking-widest uppercase text-zinc-900">{isMerchant ? 'USend Merchant' : 'USend Consumer'}</span>
         </div>
