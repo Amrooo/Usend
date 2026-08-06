@@ -413,35 +413,58 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
   };
 
   return (
-    <div className={`w-full bg-white border border-slate-200 rounded-[2.5rem] ${isGuest ? 'shadow-2xl' : 'shadow-none'} p-6 md:p-10 text-slate-800`} dir={isRTL ? "rtl" : "ltr"}>
+    <div className={`w-full bg-white border border-slate-100 rounded-[2.5rem] ${isGuest ? 'shadow-xs' : 'shadow-none'} p-6 md:p-10 text-slate-800`} dir={isRTL ? "rtl" : "ltr"}>
       <Modal isOpen={isMapOpen} onClose={() => setIsMapOpen(false)} title="Select Location on Map">
          <MapPicker onSelect={handleMapSelect} onClose={() => setIsMapOpen(false)} />
       </Modal>
 
-      <div className={`text-center space-y-4 mb-4 ${wizardStep !== 0 ? 'hidden' : ''}`}>
-        <h3 className="text-2xl md:text-3xl font-black uppercase text-brand tracking-tight">
-          {isRTL ? "إنشاء طلب شحن جديد" : (isGuest ? "Fast Guest Send" : "New Dispatch Order")}
+      <div className={`text-center space-y-3 mb-8 ${wizardStep !== 0 ? 'hidden' : ''}`}>
+        <h3 className="text-xl md:text-2xl font-black uppercase text-brand tracking-tight">
+          {isRTL ? "اختر نوع الشحنة" : "Select Shipment Type"}
         </h3>
-        <p className="text-sm font-semibold text-brand">
-          {isRTL ? "قم بإدخال تفاصيل شحنتك المباشرة" : "Book your delivery dynamically via UI or map."}
+        <p className="text-[13px] font-semibold text-zinc-400">
+          {isRTL ? "يرجى تحديد ما إذا كانت الشحنة محلية داخل الإمارات أو دولية خارجها" : "Choose whether you are sending packages domestically or globally."}
         </p>
       </div>
 
       {wizardStep === 0 && (
         <div className="py-2 animate-in fade-in duration-300">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto mt-8">
-            <button onClick={() => handleSelectType('domestic')} className="bg-white border-[3px] border-zinc-100 hover:border-brand active:bg-zinc-50 rounded-3xl p-10 flex flex-col items-center justify-center gap-6 shadow-sm transition-all group">
-              <Truck className="w-16 h-16 text-zinc-400 group-hover:text-brand transition-colors stroke-[1.5]" />
-              <div className="text-center">
-                <h3 className="text-lg font-bold text-zinc-600 group-hover:text-zinc-900">{isRTL ? "شحنة محلية" : "Domestic"}</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto mt-4">
+            
+            {/* Domestic button card */}
+            <button 
+              onClick={() => handleSelectType('domestic')} 
+              className="bg-white border-[3px] border-zinc-100 hover:border-brand hover:shadow-xl active:bg-zinc-50 rounded-3xl p-10 flex flex-col items-center justify-center gap-6 shadow-sm transition-all group relative overflow-hidden cursor-pointer"
+            >
+              <div className="w-20 h-20 rounded-full bg-brand/5 group-hover:bg-brand/10 flex items-center justify-center transition-all duration-300 transform group-hover:scale-110">
+                <Truck className="w-10 h-10 text-brand transition-colors stroke-[1.5]" />
               </div>
-            </button>
-            <button onClick={() => handleSelectType('international')} className="bg-white border-[3px] border-zinc-100 hover:border-brand active:bg-zinc-50 rounded-3xl p-10 flex flex-col items-center justify-center gap-6 shadow-sm transition-all group">
-              <Plane className="w-16 h-16 text-zinc-400 group-hover:text-brand transition-colors stroke-[1.5]" />
-              <div className="text-center">
-                <h3 className="text-lg font-bold text-zinc-600 group-hover:text-zinc-900">{isRTL ? "شحنة دولية" : "International"}</h3>
+              <div className="text-center space-y-1">
+                <h3 className="text-lg font-black text-zinc-800 uppercase tracking-tight">{isRTL ? "شحنة محلية" : "Domestic Shipment"}</h3>
+                <p className="text-xs text-zinc-400 font-medium">{isRTL ? "توصيل سريع بين جميع إمارات الدولة" : "Within UAE 7 Emirates"}</p>
               </div>
+              <span className="absolute top-3 right-3 bg-brand/10 text-brand text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md">
+                {isRTL ? "خلال 24 ساعة" : "Next-Day Delivery"}
+              </span>
             </button>
+            
+            {/* International button card */}
+            <button 
+              onClick={() => handleSelectType('international')} 
+              className="bg-white border-[3px] border-zinc-100 hover:border-brand hover:shadow-xl active:bg-zinc-50 rounded-3xl p-10 flex flex-col items-center justify-center gap-6 shadow-sm transition-all group relative overflow-hidden cursor-pointer"
+            >
+              <div className="w-20 h-20 rounded-full bg-[#cca073]/5 group-hover:bg-[#cca073]/10 flex items-center justify-center transition-all duration-300 transform group-hover:scale-110">
+                <Plane className="w-10 h-10 text-[#cca073] transition-colors stroke-[1.5]" />
+              </div>
+              <div className="text-center space-y-1">
+                <h3 className="text-lg font-black text-zinc-800 uppercase tracking-tight">{isRTL ? "شحنة دولية" : "International"}</h3>
+                <p className="text-xs text-zinc-400 font-medium">{isRTL ? "شحن سريع إلى جميع أنحاء العالم" : "Global courier dispatch"}</p>
+              </div>
+              <span className="absolute top-3 right-3 bg-[#cca073]/10 text-[#cca073] text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md">
+                {isRTL ? "قريباً" : "Coming Soon"}
+              </span>
+            </button>
+            
           </div>
         </div>
       )}

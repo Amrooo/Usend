@@ -563,14 +563,29 @@ const [botOpen, setBotOpen] = useState(false);
         </div>
 
         {/* Guest Order Wizard Styled for Theme */}
-        <div className="w-full bg-white py-16 px-4 md:px-8 relative z-20" id="order-wizard">
-          <div className="max-w-5xl mx-auto flex flex-col items-center">
+        <div className="w-full bg-slate-50/30 py-24 px-4 md:px-8 relative z-20 border-t border-b border-slate-100/50" id="order-wizard">
+          {/* Subtle decorative glow */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-[#113f36]/5 rounded-full blur-[120px] pointer-events-none"></div>
+          
+          <div className="max-w-5xl mx-auto flex flex-col items-center relative z-10">
             
-            {/* Guest Order Wizard container */}
+            {/* Header Block */}
+            <div className="text-center space-y-4 max-w-2xl mb-12">
+              <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#113f36]/10 text-[#113f36] text-[11px] font-black uppercase tracking-widest">
+                <Zap className="w-3.5 h-3.5 text-[#cca073]" />
+                {isRTL ? 'شحن فوري بدون حساب' : 'Instant Checkout Flow'}
+              </span>
+              <h2 className="text-3xl md:text-[2.8rem] font-black uppercase tracking-tight text-slate-900 leading-none">
+                {isRTL ? 'شحن فوري وسهل للجميع' : 'Fast Guest Send'}
+              </h2>
+              <p className="text-sm font-semibold text-slate-500 max-w-md mx-auto leading-relaxed">
+                {isRTL ? 'أرسل شحناتك فوراً وبدون الحاجة لتسجيل حساب. احسب السعر والوقت وابدأ فوراً.' : 'Dispatch single parcels instantly without creating an account. Compare rates, set COD parameters, and pay in one step.'}
+              </p>
+            </div>
             
             {/* Actually, let's keep the Order Wizard here but wrap it nicely */}
-            <div className="w-full bg-slate-50/50 rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden relative mt-8">
-              <div className="p-2 md:p-6">
+            <div className="w-full bg-white rounded-[2.5rem] shadow-xl border border-slate-100 overflow-hidden relative">
+              <div className="p-4 md:p-10">
                 <OrderWizard 
                   onNavigate={onNavigate} 
                   isGuest={true} 
