@@ -29,7 +29,7 @@ interface PortalSidebarProps {
 export default function PortalSidebar({ currentScreen, onNavigate }: PortalSidebarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { t, language, setLanguage, isRTL } = useLanguage();
-  const { user } = useApp();
+  const { user, signOut } = useApp();
   
   const isMerchant = user?.role === 'merchant';
 
@@ -62,7 +62,7 @@ export default function PortalSidebar({ currentScreen, onNavigate }: PortalSideb
   const SidebarContent = () => (
     <div className="flex flex-col h-full bg-[#EFF3EE]/95 text-zinc-800 select-none border-r border-[#E2ECE0]">
       <div className="p-6 pb-5 flex items-center justify-between">
-        <div className="flex items-center gap-3 cursor-pointer" onClick={() => handleItemClick(isMerchant ? 'merchant_dashboard' : 'user_dashboard')}>
+        <div className="flex items-center gap-3 cursor-pointer" onClick={() => handleItemClick('landing_page')}>
           <div className="w-10 h-10 flex items-center justify-center shrink-0">
             <LogoIcon className="w-9 h-9" />
           </div>
@@ -118,7 +118,10 @@ export default function PortalSidebar({ currentScreen, onNavigate }: PortalSideb
           <span>{language === 'en' ? 'العربية' : 'English'}</span>
         </button>
         <button
-          onClick={() => handleItemClick('landing_page')}
+          onClick={async () => {
+            await signOut();
+            handleItemClick('landing_page');
+          }}
           className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-rose-600 hover:text-rose-700 hover:bg-rose-50/50 text-[11px] font-bold uppercase tracking-widest transition-all"
         >
           <LogOut className="w-4 h-4" />
@@ -131,7 +134,7 @@ export default function PortalSidebar({ currentScreen, onNavigate }: PortalSideb
   return (
     <>
       <div className={`md:hidden flex items-center justify-between p-4 bg-white text-zinc-800 sticky top-0 z-40 border-b border-[#e2e8f0] shadow-sm`}>
-        <div className="flex items-center gap-2 cursor-pointer" onClick={() => handleItemClick(isMerchant ? 'merchant_dashboard' : 'user_dashboard')}>
+        <div className="flex items-center gap-2 cursor-pointer" onClick={() => handleItemClick('landing_page')}>
           <div className="w-8 h-8 flex items-center justify-center shrink-0">
             <LogoIcon className="w-7 h-7" />
           </div>

@@ -6,7 +6,7 @@ import {
   ArrowRight, Globe2, ChevronDown, ArrowUp, Zap, Smartphone, Shield, 
   ChevronLeft, ChevronRight, XCircle, Truck, Package, Plane, Warehouse, 
   Bot, Star, Users, Calculator, Check, MapPin, Play, Plus, Building, 
-  ArrowUpRight, Phone, Award, ShieldAlert, HelpCircle, Lock, Mail, Loader2, Anchor, LogOut
+  ArrowUpRight, Phone, Award, ShieldAlert, HelpCircle, Lock, Mail, Loader2, Anchor, LogOut, Bell
 } from 'lucide-react';
 import { signInWithEmailAndPassword, signInAnonymously } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
@@ -136,12 +136,12 @@ const landingTranslations = {
     hubAccess: 'الوصول للمنصة',
     heroBadge: 'بوابة الشحن الموحدة للتجارة الإلكترونية وشبكة السائقين',
     heroTitle: 'منصة شحن متكاملةللتجارة الإلكترونية',
-    heroDesc: 'سويفت موف هي منصة لوجستية مركزية لربط المتاجر والعملاء بالسائقين بهدف توصيل المنتجات والطرود من موقع لآخر بسلاسة وسهولة. حدد تفاصيل المستلم وسعر المنتج المراد تحصيله وخيارات الدفع المفضلة في واجهة موحدة. يمكنك توجيه الطلبات تلقائياً لأرامكس عبر سائقيهم، أو إسنادها فوراً لسائقين محليين عبر تطبيق السائق الخاص بسويفت موف.',
+    heroDesc: 'يو سند هي منصة لوجستية مركزية لربط المتاجر والعملاء بالسائقين بهدف توصيل المنتجات والطرود من موقع لآخر بسلاسة وسهولة. حدد تفاصيل المستلم وسعر المنتج المراد تحصيله وخيارات الدفع المفضلة في واجهة موحدة. يمكنك توجيه الطلبات تلقائياً لأرامكس عبر سائقيهم، أو إسنادها فوراً لسائقين محليين عبر تطبيق السائق الخاص بيو سند.',
     btnDownloadApp: 'تحميل التطبيق',
     btnLearnMore: 'احصل على تسعيرة شحن',
-    aboutCaption: 'لمحة عن منصة سويفت موف',
+    aboutCaption: 'لمحة عن منصة يو سند',
     aboutTitle: 'ربط لوجستي متكامل يجمع المتاجر والعملاء ومندوبي التوصيل بالإمارات.',
-    aboutDesc: 'سجل بيانات المستلم، حدد السعر المطلوب تحصيله، واختر طريقة الدفع المفضلة. توفر لك المنصة خيارات توجيه ذكية لأرامكس (توصيل خارجي) أو إسناد ذكي مباشر لمندوبيك عبر تطبيق السائقين الخاص بنا.',
+    aboutDesc: 'سجل بيانات المستلم، حدد السعر المطلوب تحصيله، واختر طريقة الدفع المفضلة. توفر لك المنصة خيارات توجيه ذكية لأرامكس (توصيل خارجي) أو إسناد ذكي مباشر لمندوبيك عبر تطبيق السائقين الخاص بيو سند.',
     aboutAchievement: 'ربط لوجستي بنسبة نجاح 98.5٪ في دولة الإمارات العربية المتحدة',
     statIndigenous: 'أكثر من ١٥ ألف متجر تجزئة نشط',
     statTons: 'أكثر من ٥ ملايين بوليصة شحن مطبوعة',
@@ -193,18 +193,18 @@ const landingTranslations = {
     teamSlogan: 'خبراء متمرسون في اللوجستيات ودمج التجارة الإلكترونية، يضمنون أعلى مستويات الجودة محلياً وإقليمياً.',
     faqBadge: 'الأسئلة المتكررة',
     faqTitle: 'استفسارات وحلول لوجستية ذكية',
-    faq1Q: 'كيف تتكامل منصة سويفت موف مع تجارتي الحالية؟',
+    faq1Q: 'كيف تتكامل منصة يو سند مع تجارتي الحالية؟',
     faq1A: 'نحن ندعم الربط التلقائي بضغطة زر لمنصات شوبيفاي، ووكومرس، ماجنتو، وويكس. بمجرد الربط، ستُسحب الطلبات وتُصدر بوليصات الشحن تلقائياً.',
     faq2Q: 'هل توفرون خيارات شحن دولي وعبر الحدود؟',
     faq2A: 'الشحن الدولي لدول مجلس التعاون الخليجي (الرياض، الدوحة، المنامة، مسقط) والعالم قيد التطوير ومدرج كـ "قريباً" مع إطلاق تجريبي في الربع القادم.',
     faq3Q: 'كيف أتتبع دقة توصيل طردي محلياً؟',
-    faq3A: 'يُصدر نظامنا روابط تتبع حية للمستلم النهائي. أو ببساطة أدخل كود الطلب الذي يبدأ بـ "REQ-" مباشرة في مساعد سويفت موف الذكي للمحادثة.',
+    faq3A: 'يُصدر نظامنا روابط تتبع حية للمستلم النهائي. أو ببساطة أدخل كود الطلب الذي يبدأ بـ "REQ-" مباشرة في مساعد يو سند الذكي للمحادثة.',
     faq4Q: 'كيف تتم تسوية مبالغ الدفع عند الاستلام (COD)؟',
     faq4A: 'تقوم محفظتنا الذكية برصد إفادات المندوب فور التوصيل الفعلي وتوقيع العميل، ليتم تقييد المبلغ تلقائياً في محفظة التاجر لسحبها في أي وقت.',
     footerLead: 'سرّع وتيرة شحن مبيعاتك وسدد الأموال فورياً دون انتظار',
     footerLeadDesc: 'اربط عمليات البيع والشحن بمستقبل لوجستياتنا الرقمية اليوم.',
-    copyright: '© ٢٠٢٦ سويفت موف للشحن ومزامنة التجارة الإلكترونية. خاضعة للأنظمة المعتمدة بدولة الإمارات العربية المتحدة.',
-    botGreeting: 'مرحباً! أنا مساعد سويفت موف الذكي للربط اللوجستي والتتبع. أدخل كود شحنتك (Req-1XXX) لمراجعة موقع الطرد.',
+    copyright: '© ٢٠٢٦ يو سند للشحن وأنظمة النقل الرقمي للتجارة الإلكترونية. خاضعة للأنظمة المعتمدة بدولة الإمارات العربية المتحدة.',
+    botGreeting: 'مرحباً! أنا مساعد يو سند الذكي للربط اللوجستي والتتبع. أدخل كود شحنتك (Req-1XXX) لمراجعة موقع الطرد.',
     smartSolutionsTitle: 'حلول ذكية لـ',
     smartSolutionsForShipping: 'عمليات الشحن',
     smartSolutionsDesc: 'تقدم شركة USend أدوات شحن تبسط العمليات اللوجستية للشركات الحديثة',
@@ -232,6 +232,70 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
 
   // Guest Order Modal State
   const [guestModalOpen, setGuestModalOpen] = useState(false);
+
+  // Notifications State & Logic
+  const [notifications, setNotifications] = useState([
+    {
+      id: 1,
+      titleEn: 'Order Dispatched',
+      titleAr: 'تم إرسال الطلب',
+      descEn: 'Order #US-4829 has been dispatched via Noon Express.',
+      descAr: 'تم إرسال الطلب #US-4829 عبر نون إكسبريس.',
+      timeEn: '2 mins ago',
+      timeAr: 'منذ دقيقتين',
+      read: false,
+      type: 'order'
+    },
+    {
+      id: 2,
+      titleEn: 'Wallet Credited',
+      titleAr: 'تم شحن المحفظة',
+      descEn: 'Wallet recharged: +1,250.00 AED added successfully.',
+      descAr: 'تم شحن المحفظة: +1,250.00 درهم إماراتي بنجاح.',
+      timeEn: '1 hour ago',
+      timeAr: 'منذ ساعة',
+      read: false,
+      type: 'wallet'
+    },
+    {
+      id: 3,
+      titleEn: 'API Integration Active',
+      titleAr: 'تنشيط الربط البرمجي',
+      descEn: 'Webhook status: Noon API integration active.',
+      descAr: 'حالة الربط البرمجي: ربط Noon API نشط الآن.',
+      timeEn: '3 hours ago',
+      timeAr: 'منذ 3 ساعات',
+      read: false,
+      type: 'api'
+    },
+    {
+      id: 4,
+      titleEn: 'Courier Assigned',
+      titleAr: 'تعيين مندوب التوصيل',
+      descEn: 'Aramex courier assigned to route DXB-04.',
+      descAr: 'تم تعيين مندوب أرامكس للمسار المحلي DXB-04.',
+      timeEn: '5 hours ago',
+      timeAr: 'منذ 5 ساعات',
+      read: true,
+      type: 'courier'
+    }
+  ]);
+  const [notifDropdownOpen, setNotifDropdownOpen] = useState(false);
+
+  const markAllNotifsAsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
+
+  const toggleNotifRead = (id: number) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: !n.read } : n));
+  };
+
+  const clearAllNotifications = () => {
+    setNotifications([]);
+  };
+
+  const unreadNotifsCount = notifications.filter(n => !n.read).length;
+
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -425,9 +489,9 @@ const [botOpen, setBotOpen] = useState(false);
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         >
           <LogoIcon className={`h-13 w-auto transition-all duration-300 ${!isScrolled ? 'brightness-0 invert' : ''}`} />
-          <div className="flex flex-col">
-            <span className={`text-xl font-black tracking-tight leading-none transition-colors duration-300 ${isScrolled ? 'text-slate-900' : 'text-white'}`}>USend</span>
-            <span className={`text-[10px] font-mono font-bold uppercase tracking-wider leading-none mt-1.5 transition-colors duration-300 ${isScrolled ? 'text-[#113f36]' : 'text-[#cca073]'}`}>Smart Shipping</span>
+          <div className="flex flex-col text-start">
+            <span className={`text-xl font-black tracking-tight leading-none transition-colors duration-300 ${isScrolled ? 'text-slate-900' : 'text-white'}`}>{isRTL ? 'يو سند' : 'USend'}</span>
+            <span className={`text-[10px] font-bold uppercase tracking-wider leading-none mt-1.5 transition-colors duration-300 ${isScrolled ? 'text-[#113f36]' : 'text-[#cca073]'}`}>{isRTL ? 'الشحن الذكي' : 'Smart Shipping'}</span>
           </div>
         </div>
         
@@ -445,7 +509,148 @@ const [botOpen, setBotOpen] = useState(false);
         </div>
 
         {/* Right CTA / Logged in User Menu */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 md:gap-4 relative">
+          
+          {/* Language Switcher */}
+          <button
+            onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
+            className={`px-3 py-1.5 rounded-lg border font-bold text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2 ${
+              isScrolled 
+                ? 'border-zinc-200 text-[#113f36] hover:bg-[#113f36]/5' 
+                : 'border-white/20 text-white hover:bg-white/10'
+            }`}
+            title={language === 'en' ? 'تغيير اللغة إلى العربية' : 'Switch Language to English'}
+          >
+            <span className="text-sm select-none leading-none">
+              {language === 'en' ? '🇦🇪' : '🇬🇧'}
+            </span>
+            <span>{language === 'en' ? 'العربية' : 'EN'}</span>
+          </button>
+
+          {/* Notification Bell Icon & Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setNotifDropdownOpen(!notifDropdownOpen)}
+              className={`p-2 rounded-lg transition-all relative cursor-pointer border flex items-center justify-center ${
+                isScrolled 
+                  ? 'border-zinc-200 text-zinc-500 hover:text-[#113f36] hover:bg-zinc-50' 
+                  : 'border-white/20 text-white/80 hover:text-white hover:bg-white/10'
+              }`}
+              title={isRTL ? 'الإشعارات' : 'Notifications'}
+            >
+              <Bell className="w-4 h-4" />
+              {unreadNotifsCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center animate-pulse">
+                  {unreadNotifsCount}
+                </span>
+              )}
+            </button>
+
+            <AnimatePresence>
+              {notifDropdownOpen && (
+                <>
+                  {/* Click outside backdrop to close */}
+                  <div 
+                    className="fixed inset-0 z-40" 
+                    onClick={() => setNotifDropdownOpen(false)}
+                  />
+                  
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className={`absolute mt-2.5 w-[320px] sm:w-[380px] bg-white border border-slate-200/80 rounded-2xl shadow-2xl p-4 z-50 overflow-hidden ${
+                      isRTL ? 'left-0 origin-top-left' : 'right-0 origin-top-right'
+                    }`}
+                  >
+                    {/* Header */}
+                    <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="font-sans font-black text-sm uppercase text-slate-900">
+                          {isRTL ? 'مركز الإشعارات' : 'Notifications'}
+                        </span>
+                        {unreadNotifsCount > 0 && (
+                          <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-700 text-[10px] font-black">
+                            {unreadNotifsCount} {isRTL ? 'جديد' : 'new'}
+                          </span>
+                        )}
+                      </div>
+                      {notifications.length > 0 && (
+                        <button
+                          onClick={markAllNotifsAsRead}
+                          className="text-[10px] font-black text-[#113f36] hover:text-[#0d3029] uppercase tracking-wider cursor-pointer bg-none border-none outline-none"
+                        >
+                          {isRTL ? 'تحديد الكل كمقروء' : 'Mark all read'}
+                        </button>
+                      )}
+                    </div>
+
+                    {/* List */}
+                    <div className="max-h-[300px] overflow-y-auto space-y-2 pr-1 scrollbar-thin">
+                      {notifications.length === 0 ? (
+                        <div className="py-8 text-center text-slate-400 text-xs font-semibold">
+                          {isRTL ? 'لا توجد إشعارات حالياً' : 'No new notifications'}
+                        </div>
+                      ) : (
+                        notifications.map((notif) => {
+                          const IconComponent = notif.type === 'order' ? Truck : notif.type === 'wallet' ? Calculator : notif.type === 'api' ? Bot : Shield;
+                          return (
+                            <div
+                              key={notif.id}
+                              onClick={() => toggleNotifRead(notif.id)}
+                              className={`flex gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                                notif.read
+                                  ? 'bg-slate-50/50 border-slate-100 text-slate-500'
+                                  : 'bg-emerald-50/20 border-emerald-100/50 hover:bg-emerald-50/40 text-slate-800'
+                              }`}
+                            >
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                                notif.read 
+                                  ? 'bg-slate-200/50 text-slate-500' 
+                                  : 'bg-[#113f36]/10 text-[#113f36]'
+                              }`}>
+                                <IconComponent className="w-4 h-4" />
+                              </div>
+                              <div className="space-y-1 text-start flex-1 min-w-0">
+                                <div className="flex items-center justify-between gap-2">
+                                  <h4 className="font-sans font-black text-[11px] uppercase tracking-wide truncate">
+                                    {isRTL ? notif.titleAr : notif.titleEn}
+                                  </h4>
+                                  <span className="text-[9px] text-slate-400 font-semibold shrink-0">
+                                    {isRTL ? notif.timeAr : notif.timeEn}
+                                  </span>
+                                </div>
+                                <p className="text-[11px] leading-relaxed font-medium line-clamp-2">
+                                  {isRTL ? notif.descAr : notif.descEn}
+                                </p>
+                              </div>
+                              {!notif.read && (
+                                <div className="w-2 h-2 rounded-full bg-emerald-500 self-center shrink-0" />
+                              )}
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+
+                    {/* Footer */}
+                    {notifications.length > 0 && (
+                      <div className="pt-3 mt-3 border-t border-slate-100 flex justify-end">
+                        <button
+                          onClick={clearAllNotifications}
+                          className="text-[10px] font-black text-red-500 hover:text-red-700 uppercase tracking-wider cursor-pointer"
+                        >
+                          {isRTL ? 'مسح الكل' : 'Clear All'}
+                        </button>
+                      </div>
+                    )}
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+          </div>
+
           {user ? (
             <div className="flex items-center gap-3">
               <span className={`text-[12px] font-bold transition-colors hidden sm:inline-block ${isScrolled ? 'text-zinc-700' : 'text-slate-100'}`}>
@@ -490,13 +695,13 @@ const [botOpen, setBotOpen] = useState(false);
           ) : (
             <button
               onClick={() => { setLoginRole('user'); setLoginModalOpen(true); }}
-              className={`px-6 py-2.5 rounded-lg font-bold transition-all cursor-pointer shadow-sm text-[13px] flex items-center gap-2 ${
+              className={`px-5 py-2.5 rounded-lg font-bold transition-all cursor-pointer shadow-sm text-[13px] flex items-center gap-2 ${
                 isScrolled 
                   ? 'bg-[#113f36] hover:bg-[#0d3029] text-white' 
                   : 'bg-white hover:bg-slate-100 text-zinc-950 shadow-md'
               }`}
             >
-              {isRTL ? 'طلب تسعيرة' : 'Get Started'}
+              {isRTL ? 'ابدأ الآن' : 'Get Started'}
               <ArrowUpRight className="w-4 h-4" />
             </button>
           )}
@@ -521,7 +726,7 @@ const [botOpen, setBotOpen] = useState(false);
                 exit={{ opacity: 0 }}
                 transition={{ duration: 1.0, ease: 'easeOut' }}
                 style={{ y: yParallax }}
-                className="absolute -top-[10%] inset-x-0 w-full h-[120%] object-cover select-none"
+                className="absolute -top-[5%] inset-x-0 w-full h-[115%] object-cover object-top select-none"
               />
             ) : (
               <motion.img
@@ -533,13 +738,17 @@ const [botOpen, setBotOpen] = useState(false);
                 exit={{ opacity: 0 }}
                 transition={{ duration: 1.0, ease: 'easeOut' }}
                 style={{ y: yParallax }}
-                className="absolute -top-[10%] inset-x-0 w-full h-[120%] object-cover select-none"
+                className="absolute -top-[5%] inset-x-0 w-full h-[115%] object-cover object-top select-none"
               />
             )}
           </AnimatePresence>
           
           {/* Overlay Gradients */}
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-900/40 to-transparent pointer-events-none"></div>
+          <div className={`absolute inset-0 ${
+            isRTL 
+              ? 'bg-gradient-to-l from-slate-950/80 via-slate-900/40 to-transparent' 
+              : 'bg-gradient-to-r from-slate-950/80 via-slate-900/40 to-transparent'
+          } pointer-events-none`}></div>
 
           {/* ── Hero Content ── */}
           <div className="absolute inset-0 flex flex-col justify-center px-6 md:px-24 z-10 max-w-5xl pt-16">
@@ -600,8 +809,8 @@ const [botOpen, setBotOpen] = useState(false);
             {isRTL ? 'شركاء الشركات العالمية الرائدة' : 'Partners of world leading shipping companies'}
           </p>
 
-          <div className="w-full overflow-hidden flex whitespace-nowrap">
-            <div className="flex items-center gap-8 animate-marquee whitespace-nowrap py-2 pr-8">
+          <div className="w-full overflow-hidden flex whitespace-nowrap" dir="ltr">
+            <div className={`flex items-center gap-8 ${isRTL ? 'animate-marquee-rtl' : 'animate-marquee'} whitespace-nowrap py-2 pr-8`}>
               {[
                 {
                   logo: (
@@ -639,8 +848,8 @@ const [botOpen, setBotOpen] = useState(false);
                 {
                   logo: (
                     <div className="flex items-center gap-1.5 font-sans select-none shrink-0 text-xl">
-                      <span className="text-[#113f36] font-black tracking-tight">USend</span>
-                      <span className="text-[#cca073] font-black tracking-tight -ml-1">Fleet</span>
+                      <span className="text-[#113f36] font-black tracking-tight">{isRTL ? 'يوسند' : 'USend'}</span>
+                      <span className="text-[#cca073] font-black tracking-tight -ml-1">{isRTL ? 'فليت' : 'Fleet'}</span>
                     </div>
                   )
                 },
@@ -689,8 +898,8 @@ const [botOpen, setBotOpen] = useState(false);
                 {
                   logo: (
                     <div className="flex items-center gap-1.5 font-sans select-none shrink-0 text-xl">
-                      <span className="text-[#113f36] font-black tracking-tight">USend</span>
-                      <span className="text-[#cca073] font-black tracking-tight -ml-1">Fleet</span>
+                      <span className="text-[#113f36] font-black tracking-tight">{isRTL ? 'يوسند' : 'USend'}</span>
+                      <span className="text-[#cca073] font-black tracking-tight -ml-1">{isRTL ? 'فليت' : 'Fleet'}</span>
                     </div>
                   )
                 },
@@ -739,8 +948,8 @@ const [botOpen, setBotOpen] = useState(false);
                 {
                   logo: (
                     <div className="flex items-center gap-1.5 font-sans select-none shrink-0 text-xl">
-                      <span className="text-[#113f36] font-black tracking-tight">USend</span>
-                      <span className="text-[#cca073] font-black tracking-tight -ml-1">Fleet</span>
+                      <span className="text-[#113f36] font-black tracking-tight">{isRTL ? 'يوسند' : 'USend'}</span>
+                      <span className="text-[#cca073] font-black tracking-tight -ml-1">{isRTL ? 'فليت' : 'Fleet'}</span>
                     </div>
                   )
                 },
@@ -906,7 +1115,7 @@ const [botOpen, setBotOpen] = useState(false);
           
           {/* Header row */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div className="space-y-4 text-left">
+            <div className="space-y-4 text-start">
               <h2 className="text-3xl md:text-[2.6rem] font-black uppercase text-slate-950 tracking-tight leading-none font-sans">
                 {isRTL ? 'خدمات النقل والخدمات اللوجستية المتكاملة' : 'END-TO-END LOGISTICS SOLUTIONS'}
               </h2>
@@ -928,7 +1137,7 @@ const [botOpen, setBotOpen] = useState(false);
             {/* Card 1: Inter-Emirate Delivery */}
             <div 
               onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}
-              className="group relative bg-white border border-slate-200/60 rounded-[2rem] p-8 flex flex-col justify-between h-[300px] shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-500 overflow-hidden text-left cursor-pointer"
+              className="group relative bg-white border border-slate-200/60 rounded-[2rem] p-8 flex flex-col justify-between h-[300px] shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-500 overflow-hidden text-start cursor-pointer"
             >
               {/* Fade-in & Scale Background Image */}
               <div 
@@ -966,7 +1175,7 @@ const [botOpen, setBotOpen] = useState(false);
             {/* Card 2: Same-Day Local Express */}
             <div 
               onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}
-              className="group relative bg-white border border-slate-200/60 rounded-[2rem] p-8 flex flex-col justify-between h-[300px] shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-500 overflow-hidden text-left cursor-pointer"
+              className="group relative bg-white border border-slate-200/60 rounded-[2rem] p-8 flex flex-col justify-between h-[300px] shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-500 overflow-hidden text-start cursor-pointer"
             >
               {/* Fade-in & Scale Background Image */}
               <div 
@@ -1004,7 +1213,7 @@ const [botOpen, setBotOpen] = useState(false);
             {/* Card 3: Merchant E-commerce Logistics */}
             <div 
               onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}
-              className="group relative bg-white border border-slate-200/60 rounded-[2rem] p-8 flex flex-col justify-between h-[300px] shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-500 overflow-hidden text-left cursor-pointer"
+              className="group relative bg-white border border-slate-200/60 rounded-[2rem] p-8 flex flex-col justify-between h-[300px] shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-500 overflow-hidden text-start cursor-pointer"
             >
               {/* Fade-in & Scale Background Image */}
               <div 
@@ -1042,7 +1251,7 @@ const [botOpen, setBotOpen] = useState(false);
             {/* Card 4: GCC Land Cargo */}
             <div 
               onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}
-              className="group relative bg-white border border-slate-200/60 rounded-[2rem] p-8 flex flex-col justify-between h-[300px] shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-500 overflow-hidden text-left cursor-pointer"
+              className="group relative bg-white border border-slate-200/60 rounded-[2rem] p-8 flex flex-col justify-between h-[300px] shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-500 overflow-hidden text-start cursor-pointer"
             >
               {/* Fade-in & Scale Background Image */}
               <div 
@@ -1104,182 +1313,6 @@ const [botOpen, setBotOpen] = useState(false);
         </div>
       </section>
 
-{/* BRAND TICKER MARQUEE - Vignette Slate Branding (Full Width) */}
-      <section className="w-full py-20 bg-slate-50/50 border-t border-b border-slate-100/60 flex flex-col items-center justify-center relative select-none overflow-hidden">
-        <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-slate-50/50 via-slate-50/20 to-transparent z-10 pointer-events-none" />
-        <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-slate-50/50 via-slate-50/20 to-transparent z-10 pointer-events-none" />
-        
-        {/* Partners Section Header */}
-        <div className="max-w-7xl mx-auto px-6 text-center mb-12 relative z-10">
-          <p className="text-[10px] font-black uppercase text-[#113f36] tracking-[0.25em] mb-3">
-            {isRTL ? 'الشركات المدعومة لخدمات الشحن السريع' : 'INTEGRATED EXPRESS SHIPPING NETWORKS'}
-          </p>
-          <h2 className="text-xl md:text-2xl font-black text-slate-900 uppercase tracking-tight">
-            {isRTL ? 'ندعم الشحن مع كبرى شركات التوصيل والمنصات' : 'Connected with Leading Carriers & Global Brands'}
-          </h2>
-        </div>
-
-        {/* Marquee Ticker */}
-        <div className="w-full overflow-hidden flex whitespace-nowrap">
-          <div className="flex items-center gap-8 animate-marquee whitespace-nowrap py-4 pr-8">
-            {[
-              {
-                logo: (
-                  <div className="flex items-center gap-1.5 select-none shrink-0 font-sans">
-                    <span className="text-[#E31B23] font-black text-2xl tracking-tighter italic">aramex</span>
-                  </div>
-                )
-              },
-              {
-                logo: (
-                  <div className="flex items-center gap-1.5 select-none shrink-0 font-sans">
-                    <div className="bg-[#feee00] text-black font-extrabold text-lg px-3.5 py-1.5 rounded-lg tracking-tighter">
-                      noon
-                    </div>
-                  </div>
-                )
-              },
-              {
-                logo: (
-                  <div className="flex items-center gap-1.5 select-none shrink-0 font-sans">
-                    <div className="bg-[#ffcc00] text-[#d00000] font-black italic text-xl px-4 py-1.5 rounded-lg tracking-tight">
-                      DHL
-                    </div>
-                  </div>
-                )
-              },
-              {
-                logo: (
-                  <div className="flex items-center gap-1.5 select-none shrink-0 font-sans text-xl">
-                    <span className="text-[#4D148C] font-black tracking-tight">Fed</span>
-                    <span className="text-[#FF6600] font-black tracking-tight -ml-1">Ex</span>
-                  </div>
-                )
-              },
-              {
-                logo: (
-                  <div className="flex items-center gap-1.5 select-none shrink-0 font-sans text-xl">
-                    <span className="text-[#113f36] font-black tracking-tight">USend</span>
-                    <span className="text-[#cca073] font-black tracking-tight -ml-1">Fleet</span>
-                  </div>
-                )
-              },
-              {
-                logo: (
-                  <div className="flex flex-col select-none shrink-0 font-sans relative pt-1">
-                    <span className="text-black font-black text-xl tracking-tight leading-none">amazon</span>
-                    <div className="w-14 h-1.5 bg-[#FF9900] rounded-full -mt-0.5 ml-1 self-start animate-pulse"></div>
-                  </div>
-                )
-              }
-            ].concat([
-              {
-                logo: (
-                  <div className="flex items-center gap-1.5 select-none shrink-0 font-sans">
-                    <span className="text-[#E31B23] font-black text-2xl tracking-tighter italic">aramex</span>
-                  </div>
-                )
-              },
-              {
-                logo: (
-                  <div className="flex items-center gap-1.5 select-none shrink-0 font-sans">
-                    <div className="bg-[#feee00] text-black font-extrabold text-lg px-3.5 py-1.5 rounded-lg tracking-tighter">
-                      noon
-                    </div>
-                  </div>
-                )
-              },
-              {
-                logo: (
-                  <div className="flex items-center gap-1.5 select-none shrink-0 font-sans">
-                    <div className="bg-[#ffcc00] text-[#d00000] font-black italic text-xl px-4 py-1.5 rounded-lg tracking-tight">
-                      DHL
-                    </div>
-                  </div>
-                )
-              },
-              {
-                logo: (
-                  <div className="flex items-center gap-1.5 select-none shrink-0 font-sans text-xl">
-                    <span className="text-[#4D148C] font-black tracking-tight">Fed</span>
-                    <span className="text-[#FF6600] font-black tracking-tight -ml-1">Ex</span>
-                  </div>
-                )
-              },
-              {
-                logo: (
-                  <div className="flex items-center gap-1.5 select-none shrink-0 font-sans text-xl">
-                    <span className="text-[#113f36] font-black tracking-tight">USend</span>
-                    <span className="text-[#cca073] font-black tracking-tight -ml-1">Fleet</span>
-                  </div>
-                )
-              },
-              {
-                logo: (
-                  <div className="flex flex-col select-none shrink-0 font-sans relative pt-1">
-                    <span className="text-black font-black text-xl tracking-tight leading-none">amazon</span>
-                    <div className="w-14 h-1.5 bg-[#FF9900] rounded-full -mt-0.5 ml-1 self-start animate-pulse"></div>
-                  </div>
-                )
-              }
-            ]).concat([
-              {
-                logo: (
-                  <div className="flex items-center gap-1.5 select-none shrink-0 font-sans">
-                    <span className="text-[#E31B23] font-black text-2xl tracking-tighter italic">aramex</span>
-                  </div>
-                )
-              },
-              {
-                logo: (
-                  <div className="flex items-center gap-1.5 select-none shrink-0 font-sans">
-                    <div className="bg-[#feee00] text-black font-extrabold text-lg px-3.5 py-1.5 rounded-lg tracking-tighter">
-                      noon
-                    </div>
-                  </div>
-                )
-              },
-              {
-                logo: (
-                  <div className="flex items-center gap-1.5 select-none shrink-0 font-sans">
-                    <div className="bg-[#ffcc00] text-[#d00000] font-black italic text-xl px-4 py-1.5 rounded-lg tracking-tight">
-                      DHL
-                    </div>
-                  </div>
-                )
-              },
-              {
-                logo: (
-                  <div className="flex items-center gap-1.5 select-none shrink-0 font-sans text-xl">
-                    <span className="text-[#4D148C] font-black tracking-tight">Fed</span>
-                    <span className="text-[#FF6600] font-black tracking-tight -ml-1">Ex</span>
-                  </div>
-                )
-              },
-              {
-                logo: (
-                  <div className="flex items-center gap-1.5 select-none shrink-0 font-sans text-xl">
-                    <span className="text-[#113f36] font-black tracking-tight">USend</span>
-                    <span className="text-[#cca073] font-black tracking-tight -ml-1">Fleet</span>
-                  </div>
-                )
-              },
-              {
-                logo: (
-                  <div className="flex flex-col select-none shrink-0 font-sans relative pt-1">
-                    <span className="text-black font-black text-xl tracking-tight leading-none">amazon</span>
-                    <div className="w-14 h-1.5 bg-[#FF9900] rounded-full -mt-0.5 ml-1 self-start animate-pulse"></div>
-                  </div>
-                )
-              }
-            ]).map((logoItem, idx) => (
-              <div key={idx} className="flex items-center gap-2 select-none shrink-0 opacity-60 hover:opacity-100 transition-all duration-300 transform hover:scale-105 filter hover:grayscale-0 grayscale bg-white px-8 py-4 rounded-2xl border border-slate-100 shadow-xs">
-                {logoItem.logo}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* TAILORED SOLUTIONS ABOUT BLOCK - Lavender rounded container - Full Width */}
       <section id="about" className="w-full py-24 bg-white px-4 md:px-8">
@@ -1287,7 +1320,7 @@ const [botOpen, setBotOpen] = useState(false);
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
             {/* Left Column: text content */}
-            <div className="lg:col-span-6 text-left space-y-8">
+            <div className="lg:col-span-6 text-start space-y-8">
               <p className="text-[11px] font-black uppercase text-[#113f36] tracking-wider block">
                 {content.aboutUsCaption}
               </p>
@@ -1365,7 +1398,7 @@ const [botOpen, setBotOpen] = useState(false);
                 <img src={heroTruck} alt="Logistics delivery truck" className="w-full h-full object-cover" />
               </div>
 
-              <div className="col-span-12 sm:col-span-6 bg-gradient-to-br from-[#9fb19b] to-[#859c81] rounded-[2rem] p-6 text-white flex flex-col justify-between h-[190px] shadow-lg shadow-emerald-900/15 text-left">
+              <div className="col-span-12 sm:col-span-6 bg-gradient-to-br from-[#9fb19b] to-[#859c81] rounded-[2rem] p-6 text-white flex flex-col justify-between h-[190px] shadow-lg shadow-emerald-900/15 text-start">
                 <span className="text-[11px] font-black uppercase tracking-widest text-[#a5b994]">System Accuracy</span>
                 <div className="space-y-2">
                   <p className="text-5xl font-black tracking-tight">97.6%</p>
@@ -1397,7 +1430,7 @@ const [botOpen, setBotOpen] = useState(false);
             {content.estimatorDesc}
           </p>
 
-          <div className="w-full max-w-3xl mx-auto bg-white/5 border border-white/10 p-8 rounded-3xl shadow-2xl backdrop-blur-md text-left">
+          <div className="w-full max-w-3xl mx-auto bg-white/5 border border-white/10 p-8 rounded-3xl shadow-2xl backdrop-blur-md text-start">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
                 <label className="text-[11px] uppercase tracking-wider text-slate-350 font-black block mb-2">{content.pricingSource}</label>
@@ -1550,7 +1583,7 @@ const [botOpen, setBotOpen] = useState(false);
                 >
                   <button 
                     onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
-                    className="w-full p-6 text-left flex items-center justify-between gap-4 focus:outline-hidden cursor-pointer"
+                    className="w-full p-6 text-start flex items-center justify-between gap-4 focus:outline-hidden cursor-pointer"
                   >
                     <span className="font-extrabold text-[13px] md:text-sm text-slate-900 tracking-tight">{item.q}</span>
                     <span className={`w-6 h-6 rounded-full bg-[#113f36]/10 text-[#113f36] flex items-center justify-center shrink-0 transition-transform duration-300 ${activeFaq === idx ? 'rotate-180' : ''}`}>
@@ -1582,29 +1615,31 @@ const [botOpen, setBotOpen] = useState(false);
           {/* Large transparent watermark background logo */}
           <div className="absolute inset-x-0 bottom-4 text-center select-none pointer-events-none z-0">
             <span className="text-[15vw] font-black tracking-widest text-white/[0.015] uppercase leading-none block font-sans">
-              USEND
+              {isRTL ? 'يوسند' : 'USEND'}
             </span>
           </div>
 
           <div className="max-w-7xl mx-auto space-y-16 relative z-10">
             
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-12 text-left">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-12 text-start">
               
               <div className="space-y-6 md:col-span-2">
                 <div className="flex items-center gap-3">
                   <LogoIcon className="h-12 w-auto" variant="dark" />
-                  <div className="flex flex-col">
-                    <span className="text-sm font-black tracking-widest text-white uppercase leading-none">USend</span>
-                    <span className="text-[12px] font-mono font-bold uppercase text-[#113f36] tracking-[0.25em]">Smart Shipping</span>
+                  <div className="flex flex-col text-start">
+                    <span className="text-sm font-black tracking-widest text-white uppercase leading-none">{isRTL ? 'يو سند' : 'USend'}</span>
+                    <span className="text-[12px] font-bold uppercase text-white tracking-wider leading-none mt-1">{isRTL ? 'الشحن الذكي' : 'Smart Shipping'}</span>
                   </div>
                 </div>
                 <p className="text-[12px] text-slate-400 leading-relaxed max-w-md font-semibold font-sans">
-                  Global logistics and transportation built for businesses that demand speed, precision, and real-time supply chain visibility.
+                  {isRTL 
+                    ? 'خدمات لوجستية ونقل متكاملة مبنية للشركات التي تطلب السرعة والدقة ومتابعة فورية لسلاسل الإمداد.' 
+                    : 'Global logistics and transportation built for businesses that demand speed, precision, and real-time supply chain visibility.'}
                 </p>
               </div>
 
               <div className="space-y-4">
-                <h4 className="text-[13px] font-black uppercase text-slate-500 tracking-widest font-sans">Connect Hubs</h4>
+                <h4 className="text-[13px] font-black uppercase text-slate-500 tracking-widest font-sans">{isRTL ? 'بوابات المنظومة' : 'Connect Hubs'}</h4>
                 <ul className="space-y-2 text-[13px] font-bold text-slate-350 font-sans">
                   <li>
                     <span 
@@ -1615,7 +1650,7 @@ const [botOpen, setBotOpen] = useState(false);
                         setLoginModalOpen(true);
                       }}
                     >
-                      Individual Terminal
+                      {isRTL ? 'بوابة الأفراد' : 'Individual Terminal'}
                     </span>
                   </li>
                   <li>
@@ -1627,18 +1662,18 @@ const [botOpen, setBotOpen] = useState(false);
                         setLoginModalOpen(true);
                       }}
                     >
-                      Merchant Control Panel
+                      {isRTL ? 'لوحة تحكم التجار' : 'Merchant Control Panel'}
                     </span>
                   </li>
                 </ul>
               </div>
 
               <div className="space-y-4">
-                <h4 className="text-[13px] font-black uppercase text-slate-500 tracking-widest font-sans">Corporate Parameters</h4>
+                <h4 className="text-[13px] font-black uppercase text-slate-500 tracking-widest font-sans">{isRTL ? 'بوابات الإدارة' : 'Corporate Parameters'}</h4>
                 <ul className="space-y-2 text-[13px] font-bold text-slate-350 font-sans">
-                  <li><span className="hover:text-[#113f36] transition-colors cursor-pointer" onClick={() => { setLoginRole('admin'); setLoginModalOpen(true); }}>Zonal Admin Portal</span></li>
-                  <li><a href="#" className="hover:text-[#113f36] transition-colors">Safety Logs</a></li>
-                  <li><a href="#" className="hover:text-[#113f36] transition-colors">API Keys</a></li>
+                  <li><span className="hover:text-[#113f36] transition-colors cursor-pointer" onClick={() => { setLoginRole('admin'); setLoginModalOpen(true); }}>{isRTL ? 'بوابة المسؤول الإقليمي' : 'Zonal Admin Portal'}</span></li>
+                  <li><a href="#" className="hover:text-[#113f36] transition-colors">{isRTL ? 'سجلات الأمان' : 'Safety Logs'}</a></li>
+                  <li><a href="#" className="hover:text-[#113f36] transition-colors">{isRTL ? 'مفاتيح الربط البرمجي (API)' : 'API Keys'}</a></li>
                 </ul>
               </div>
 
@@ -1647,8 +1682,8 @@ const [botOpen, setBotOpen] = useState(false);
             <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-12 border-t border-white/10 text-[13px] font-black text-slate-500 uppercase tracking-widest font-sans">
               <p>{content.copyright}</p>
               <div className="flex items-center gap-8">
-                <a href="#" className="hover:text-[#113f36] transition-colors">Privacy Policy</a>
-                <a href="#" className="hover:text-[#113f36] transition-colors">Service Terms</a>
+                <a href="#" className="hover:text-[#113f36] transition-colors">{isRTL ? 'سياسة الخصوصية' : 'Privacy Policy'}</a>
+                <a href="#" className="hover:text-[#113f36] transition-colors">{isRTL ? 'شروط الخدمة' : 'Service Terms'}</a>
               </div>
             </div>
 
@@ -1671,8 +1706,8 @@ const [botOpen, setBotOpen] = useState(false);
                     <AiFace3DIcon className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="font-extrabold text-xs uppercase tracking-wide font-sans">USend AI Support</h3>
-                    <p className="text-[12px] text-cyan-400 font-bold uppercase tracking-widest font-mono">Status: active</p>
+                    <h3 className="font-extrabold text-xs uppercase tracking-wide font-sans">{isRTL ? 'يو سند الدعم الفني' : 'USend AI Support'}</h3>
+                    <p className="text-[12px] text-cyan-400 font-bold uppercase tracking-widest font-mono">{isRTL ? 'الحالة: نشط' : 'Status: active'}</p>
                   </div>
                 </div>
                 <button onClick={() => setBotOpen(false)} className="hover:bg-white/10 p-1.5 rounded-full transition-colors text-slate-400 hover:text-white">
