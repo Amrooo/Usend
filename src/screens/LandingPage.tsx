@@ -6,7 +6,7 @@ import {
   ArrowRight, Globe2, ChevronDown, ArrowUp, Zap, Smartphone, Shield, 
   ChevronLeft, ChevronRight, XCircle, Truck, Package, Plane, Warehouse, 
   Bot, Star, Users, Calculator, Check, MapPin, Play, Plus, Building, 
-  ArrowUpRight, Phone, Award, ShieldAlert, HelpCircle, Lock, Mail, Loader2, Anchor
+  ArrowUpRight, Phone, Award, ShieldAlert, HelpCircle, Lock, Mail, Loader2, Anchor, LogOut
 } from 'lucide-react';
 import { signInWithEmailAndPassword, signInAnonymously } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
@@ -345,7 +345,7 @@ const [botOpen, setBotOpen] = useState(false);
   ]);
   const [botInput, setBotInput] = useState('');
 
-  const { activeRequests, signIn, setUser } = useApp();
+  const { activeRequests, signIn, setUser, user, signOut } = useApp();
 
   const handleBotSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -444,19 +444,62 @@ const [botOpen, setBotOpen] = useState(false);
           <a href="#faq"       onClick={(e) => handleScrollTo(e, 'faq')}       className="hover:text-[#cca073] transition-colors">{isRTL ? 'اتصل بنا' : 'Contact'}</a>
         </div>
 
-        {/* Right CTA */}
+        {/* Right CTA / Logged in User Menu */}
         <div className="flex items-center gap-4">
-          <button
-            onClick={() => { setLoginRole('user'); setLoginModalOpen(true); }}
-            className={`px-6 py-2.5 rounded-lg font-bold transition-all cursor-pointer shadow-sm text-[13px] flex items-center gap-2 ${
-              isScrolled 
-                ? 'bg-[#113f36] hover:bg-[#0d3029] text-white' 
-                : 'bg-white hover:bg-slate-100 text-zinc-950 shadow-md'
-            }`}
-          >
-            {isRTL ? 'طلب تسعيرة' : 'Get Started'}
-            <ArrowUpRight className="w-4 h-4" />
-          </button>
+          {user ? (
+            <div className="flex items-center gap-3">
+              <span className={`text-[12px] font-bold transition-colors hidden sm:inline-block ${isScrolled ? 'text-zinc-700' : 'text-slate-100'}`}>
+                {isRTL ? 'مرحباً، ' : 'Welcome, '}<span className="underline decoration-[#cca073] decoration-2">{user.name || user.email}</span>
+              </span>
+              
+              {/* Go to Portal Button */}
+              <button
+                onClick={() => {
+                  let dest: Screen = 'user_dashboard';
+                  if (user.email?.toLowerCase().includes('merchant') || user.role === 'merchant') {
+                    dest = 'merchant_dashboard';
+                  } else if (user.email?.toLowerCase().includes('admin') || user.role === 'admin' || user.email === 'octman.sam@gmail.com') {
+                    dest = 'admin_dashboard';
+                  }
+                  onNavigate(dest);
+                }}
+                className={`px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition-all cursor-pointer shadow-sm ${
+                  isScrolled 
+                    ? 'bg-[#113f36] hover:bg-[#0d3029] text-white' 
+                    : 'bg-white hover:bg-slate-100 text-zinc-950 shadow-md'
+                }`}
+              >
+                {isRTL ? 'لوحة التحكم' : 'Dashboard'}
+              </button>
+
+              {/* Logout Button */}
+              <button
+                onClick={async () => {
+                  await signOut();
+                }}
+                className={`p-2 rounded-lg transition-colors border cursor-pointer ${
+                  isScrolled 
+                    ? 'border-zinc-200 text-zinc-500 hover:text-red-600 hover:bg-red-50/50' 
+                    : 'border-white/20 text-white/80 hover:text-red-400 hover:bg-white/10'
+                }`}
+                title={isRTL ? 'تسجيل الخروج' : 'Logout'}
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => { setLoginRole('user'); setLoginModalOpen(true); }}
+              className={`px-6 py-2.5 rounded-lg font-bold transition-all cursor-pointer shadow-sm text-[13px] flex items-center gap-2 ${
+                isScrolled 
+                  ? 'bg-[#113f36] hover:bg-[#0d3029] text-white' 
+                  : 'bg-white hover:bg-slate-100 text-zinc-950 shadow-md'
+              }`}
+            >
+              {isRTL ? 'طلب تسعيرة' : 'Get Started'}
+              <ArrowUpRight className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </header>
 

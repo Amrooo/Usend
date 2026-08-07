@@ -207,12 +207,20 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
 
   const calculateTotal = () => {
     let baseFee = 30;
-    if (shipmentData.courier === 'aramex') {
-      baseFee = 35;
-    } else if (shipmentData.courier === 'noon') {
-      baseFee = 28;
+    const courierId = shipmentData.courier || 'usend';
+    const userRole = isGuest ? 'guest' : (user?.role === 'merchant' || user?.email?.toLowerCase().includes('merchant') ? 'merchant' : 'user');
+    
+    const config = courierConfigs?.[courierId];
+    if (config && config.rates && config.rates[userRole]) {
+      baseFee = config.rates[userRole].baseFee;
     } else {
-      baseFee = 30; // usend
+      if (courierId === 'aramex') {
+        baseFee = 35;
+      } else if (courierId === 'noon') {
+        baseFee = 28;
+      } else {
+        baseFee = 30; // usend
+      }
     }
 
     if (shipmentType === 'international') {
