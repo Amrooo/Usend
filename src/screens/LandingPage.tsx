@@ -900,71 +900,183 @@ const [botOpen, setBotOpen] = useState(false);
         </div>
       </section>
 
-      {/* TESTIMONIALS SECTION */}
-      <section className="w-full bg-white pb-16 px-4 md:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
-            <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-slate-950 max-w-md font-sans leading-[1.1]">
-              TRUSTED BY THE<br/>WORLD'S BEST BRANDS
-            </h2>
-            <div className="flex gap-2 pb-2">
-              <div className="w-8 h-1.5 bg-[#113f36] rounded-full"></div>
-              <div className="w-4 h-1.5 bg-slate-200 rounded-full"></div>
-              <div className="w-4 h-1.5 bg-slate-200 rounded-full"></div>
+      {/* END-TO-END LOGISTICS SOLUTIONS SECTION - 4 Card Grid - Full Width */}
+      <section id="services" className="w-full bg-[#FAFBFD] py-24 px-4 md:px-8 border-b border-slate-100">
+        <div className="max-w-7xl mx-auto space-y-12">
+          
+          {/* Header row */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="space-y-4 text-left">
+              <h2 className="text-3xl md:text-[2.6rem] font-black uppercase text-slate-950 tracking-tight leading-none font-sans">
+                {isRTL ? 'خدمات النقل والخدمات اللوجستية المتكاملة' : 'END-TO-END LOGISTICS SOLUTIONS'}
+              </h2>
+            </div>
+            <div className="flex shrink-0">
+              <button 
+                onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}
+                className="px-6 py-3 bg-[#113f36] hover:bg-[#0d3029] text-white rounded-full font-black text-[11px] uppercase tracking-wider flex items-center gap-2 transition-all shadow-md cursor-pointer"
+              >
+                <span>{isRTL ? 'جميع الخدمات' : 'All Services'}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Review 1 */}
-            <div className="bg-white border border-slate-200 rounded-[1.5rem] p-8 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex gap-1 mb-6">
-                {[1,2,3,4,5].map(s => <Star key={s} className="w-4 h-4 fill-orange-400 text-orange-400" />)}
-              </div>
-              <p className="text-slate-600 text-[13px] font-medium leading-relaxed mb-8">
-                "USend reduced our freight costs by 23% in the first quarter. Their real-time tracking platform is genuinely best-in-class — our ops team can finally sleep at night."
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[#113f36]/10 flex items-center justify-center text-[#113f36] font-bold text-xs">MC</div>
-                <div>
-                  <h4 className="font-bold text-slate-900 text-sm">Marcus Chen</h4>
-                  <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">VP Supply Chain, NovaTech Industries</p>
-                </div>
-              </div>
-            </div>
+
+          {/* 4 Cards Grid (2x2) - Focused on UAE Domestic Services with elegant background image hover effects */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6">
             
-            {/* Review 2 */}
-            <div className="bg-white border border-slate-200 rounded-[1.5rem] p-8 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex gap-1 mb-6">
-                {[1,2,3,4,5].map(s => <Star key={s} className="w-4 h-4 fill-orange-400 text-orange-400" />)}
-              </div>
-              <p className="text-slate-600 text-[13px] font-medium leading-relaxed mb-8">
-                "Switching to USend was the best logistics decision we made in 2024. Peak season no longer terrifies us — they scale with us flawlessly."
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">SR</div>
-                <div>
-                  <h4 className="font-bold text-slate-900 text-sm">Sophia Reyes</h4>
-                  <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Director of Operations, Apex Retail</p>
+            {/* Card 1: Inter-Emirate Delivery */}
+            <div 
+              onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}
+              className="group relative bg-white border border-slate-200/60 rounded-[2rem] p-8 flex flex-col justify-between h-[300px] shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-500 overflow-hidden text-left cursor-pointer"
+            >
+              {/* Fade-in & Scale Background Image */}
+              <div 
+                className="absolute inset-0 bg-cover bg-center opacity-[0.03] group-hover:opacity-[0.09] transition-all duration-700 pointer-events-none transform scale-100 group-hover:scale-105"
+                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=800&q=80')` }}
+              />
+              
+              <div className="relative z-10 flex items-center justify-between">
+                <div className="w-12 h-12 rounded-full bg-[#113f36]/10 text-[#113f36] group-hover:bg-[#113f36] group-hover:text-white border border-[#113f36]/25 flex items-center justify-center shrink-0 transition-all duration-500">
+                  <Truck className="w-5 h-5" />
                 </div>
+                <span className="px-4 py-1 rounded-full bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-wider group-hover:bg-[#cca073]/15 group-hover:text-[#cca073] transition-all duration-500">
+                  {isRTL ? 'داخل الإمارات' : 'UAE Domestic'}
+                </span>
+              </div>
+              
+              <div className="relative z-10 space-y-2 mt-4">
+                <h3 className="text-xl font-black text-slate-900 group-hover:text-[#113f36] transition-colors duration-300">
+                  {isRTL ? 'التوصيل بين الإمارات' : 'Inter-Emirate Delivery'}
+                </h3>
+                <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                  {isRTL 
+                    ? 'شحن بري سريع وآمن يربط بين جميع الإمارات السبع. نوفر خدمة النقل من الباب إلى الباب بين دبي، أبوظبي، والشارقة وباقي المدن خلال 24 ساعة.' 
+                    : 'Fast, secure, and reliable door-to-door freight distribution connecting all 7 Emirates with scheduled daily dispatches.'}
+                </p>
+              </div>
+              
+              <div className="relative z-10 pt-4">
+                <button className="px-4 py-2 border border-slate-200 hover:border-slate-400 text-slate-700 hover:text-black rounded-full font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all bg-white cursor-pointer shadow-xs">
+                  {isRTL ? 'احجز الآن' : 'Ship Now'} <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                </button>
               </div>
             </div>
-            
-            {/* Review 3 */}
-            <div className="bg-white border border-slate-200 rounded-[1.5rem] p-8 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex gap-1 mb-6">
-                {[1,2,3,4,5].map(s => <Star key={s} className="w-4 h-4 fill-orange-400 text-orange-400" />)}
-              </div>
-              <p className="text-slate-600 text-[13px] font-medium leading-relaxed mb-8">
-                "Their customs brokerage team saved us $180k in a single quarter. The documentation accuracy is remarkable — zero clearance delays in 18 months."
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-xs">DV</div>
-                <div>
-                  <h4 className="font-bold text-slate-900 text-sm">Dmitri Volkov</h4>
-                  <p className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">CEO, EastBridge Manufacturing</p>
+
+            {/* Card 2: Same-Day Local Express */}
+            <div 
+              onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}
+              className="group relative bg-white border border-slate-200/60 rounded-[2rem] p-8 flex flex-col justify-between h-[300px] shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-500 overflow-hidden text-left cursor-pointer"
+            >
+              {/* Fade-in & Scale Background Image */}
+              <div 
+                className="absolute inset-0 bg-cover bg-center opacity-[0.03] group-hover:opacity-[0.09] transition-all duration-700 pointer-events-none transform scale-100 group-hover:scale-105"
+                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80')` }}
+              />
+              
+              <div className="relative z-10 flex items-center justify-between">
+                <div className="w-12 h-12 rounded-full bg-[#113f36]/10 text-[#113f36] group-hover:bg-[#113f36] group-hover:text-white border border-[#113f36]/25 flex items-center justify-center shrink-0 transition-all duration-500">
+                  <Zap className="w-5 h-5" />
                 </div>
+                <span className="px-4 py-1 rounded-full bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-wider group-hover:bg-[#cca073]/15 group-hover:text-[#cca073] transition-all duration-500">
+                  {isRTL ? 'توصيل فوري' : 'Same-Day Delivery'}
+                </span>
+              </div>
+              
+              <div className="relative z-10 space-y-2 mt-4">
+                <h3 className="text-xl font-black text-slate-900 group-hover:text-[#113f36] transition-colors duration-300">
+                  {isRTL ? 'توصيل محلي سريع' : 'Same-Day Local Express'}
+                </h3>
+                <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                  {isRTL 
+                    ? 'خدمة توصيل سريعة من الباب إلى الباب للمستندات والطرود العاجلة داخل دبي وأبوظبي والشارقة في غضون ساعات قليلة.' 
+                    : 'On-demand point-to-point courier routes operating within major UAE city limits for time-sensitive cargo and documents.'}
+                </p>
+              </div>
+              
+              <div className="relative z-10 pt-4">
+                <button className="px-4 py-2 border border-slate-200 hover:border-slate-400 text-slate-700 hover:text-black rounded-full font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all bg-white cursor-pointer shadow-xs">
+                  {isRTL ? 'طلب سريع' : 'Book Express'} <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                </button>
               </div>
             </div>
+
+            {/* Card 3: Merchant E-commerce Logistics */}
+            <div 
+              onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}
+              className="group relative bg-white border border-slate-200/60 rounded-[2rem] p-8 flex flex-col justify-between h-[300px] shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-500 overflow-hidden text-left cursor-pointer"
+            >
+              {/* Fade-in & Scale Background Image */}
+              <div 
+                className="absolute inset-0 bg-cover bg-center opacity-[0.03] group-hover:opacity-[0.09] transition-all duration-700 pointer-events-none transform scale-100 group-hover:scale-105"
+                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=800&q=80')` }}
+              />
+              
+              <div className="relative z-10 flex items-center justify-between">
+                <div className="w-12 h-12 rounded-full bg-[#113f36]/10 text-[#113f36] group-hover:bg-[#113f36] group-hover:text-white border border-[#113f36]/25 flex items-center justify-center shrink-0 transition-all duration-500">
+                  <Building className="w-5 h-5" />
+                </div>
+                <span className="px-4 py-1 rounded-full bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-wider group-hover:bg-[#cca073]/15 group-hover:text-[#cca073] transition-all duration-500">
+                  {isRTL ? 'أعمال وتجارة' : 'B2B Logistics'}
+                </span>
+              </div>
+              
+              <div className="relative z-10 space-y-2 mt-4">
+                <h3 className="text-xl font-black text-slate-900 group-hover:text-[#113f36] transition-colors duration-300">
+                  {isRTL ? 'خدمات التجار والتجارة الإلكترونية' : 'Merchant E-commerce Logistics'}
+                </h3>
+                <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                  {isRTL 
+                    ? 'حلول شحن مخصصة لشركات التجارة الإلكترونية، تشمل تحصيل مبالغ الدفع عند الاستلام (COD) وإدارة المرتجعات والتسليم السريع.' 
+                    : 'Tailored merchant booking portals, automated API webhooks, bulk shipping channels, and comprehensive Cash on Delivery (COD) remittance.'}
+                </p>
+              </div>
+              
+              <div className="relative z-10 pt-4">
+                <button className="px-4 py-2 border border-slate-200 hover:border-slate-400 text-slate-700 hover:text-black rounded-full font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all bg-white cursor-pointer shadow-xs">
+                  {isRTL ? 'بوابة التجار' : 'Merchant Portal'} <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
+            </div>
+
+            {/* Card 4: GCC Land Cargo */}
+            <div 
+              onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}
+              className="group relative bg-white border border-slate-200/60 rounded-[2rem] p-8 flex flex-col justify-between h-[300px] shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-500 overflow-hidden text-left cursor-pointer"
+            >
+              {/* Fade-in & Scale Background Image */}
+              <div 
+                className="absolute inset-0 bg-cover bg-center opacity-[0.03] group-hover:opacity-[0.09] transition-all duration-700 pointer-events-none transform scale-100 group-hover:scale-105"
+                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=800&q=80')` }}
+              />
+              
+              <div className="relative z-10 flex items-center justify-between">
+                <div className="w-12 h-12 rounded-full bg-[#113f36]/10 text-[#113f36] group-hover:bg-[#113f36] group-hover:text-white border border-[#113f36]/25 flex items-center justify-center shrink-0 transition-all duration-500">
+                  <Globe2 className="w-5 h-5" />
+                </div>
+                <span className="px-4 py-1 rounded-full bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-wider group-hover:bg-[#cca073]/15 group-hover:text-[#cca073] transition-all duration-500">
+                  {isRTL ? 'الشحن البري الخليجي' : 'GCC Cross-Border'}
+                </span>
+              </div>
+              
+              <div className="relative z-10 space-y-2 mt-4">
+                <h3 className="text-xl font-black text-slate-900 group-hover:text-[#113f36] transition-colors duration-300">
+                  {isRTL ? 'الشحن البري لدول الخليج' : 'GCC Cross-Border Land Cargo'}
+                </h3>
+                <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                  {isRTL 
+                    ? 'شحن بري بحمولات كاملة (FCL) أو جزئية (LCL) يربط أعمالك من المركز الرئيسي في الإمارات إلى السعودية وعُمان وجميع دول الخليج.' 
+                    : 'Heavy cargo road transport networks linking your domestic UAE warehouses directly to Saudi Arabia, Oman, and regional GCC trade hubs.'}
+                </p>
+              </div>
+              
+              <div className="relative z-10 pt-4">
+                <button className="px-4 py-2 border border-slate-200 hover:border-slate-400 text-slate-700 hover:text-black rounded-full font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all bg-white cursor-pointer shadow-xs">
+                  {isRTL ? 'شحن إقليمي' : 'Cross-Border'} <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
@@ -1271,176 +1383,6 @@ const [botOpen, setBotOpen] = useState(false);
         </div>
       </section>
 
-      {/* END-TO-END LOGISTICS SOLUTIONS SECTION - 4 Card Grid - Full Width */}
-      <section className="w-full bg-[#FAFBFD] py-24 px-4 md:px-8 border-b border-slate-100">
-        <div className="max-w-7xl mx-auto space-y-12">
-          
-          {/* Header row */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div className="space-y-4 text-left">
-              <h2 className="text-3xl md:text-[2.6rem] font-black uppercase text-slate-950 tracking-tight leading-none font-sans">
-                END-TO-END LOGISTICS SOLUTIONS
-              </h2>
-            </div>
-            <div className="flex shrink-0">
-              <button 
-                onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}
-                className="px-6 py-3 bg-[#113f36] hover:bg-[#0d3029] text-white rounded-full font-black text-[11px] uppercase tracking-wider flex items-center gap-2 transition-all shadow-md cursor-pointer"
-              >
-                <span>All Services</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-
-          {/* 4 Cards Grid (2x2) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6">
-            
-            {/* Card 1 */}
-            <div className="bg-[#F8FAFC] border border-slate-100 rounded-[2rem] p-8 flex flex-col justify-between h-[280px] shadow-xs text-left">
-              <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-full bg-[#113f36]/10 text-[#113f36] border border-[#113f36]/25 flex items-center justify-center shrink-0">
-                  <Truck className="w-5 h-5" />
-                </div>
-                <span className="px-4 py-1 rounded-full bg-slate-200/50 text-slate-600 text-[10px] font-black uppercase tracking-wider">
-                  FCL - LCL
-                </span>
-              </div>
-              <div className="space-y-2 mt-4">
-                <h3 className="text-lg font-black text-slate-900">Road Freight</h3>
-                <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                  Flexible and secure domestic transport solutions across all major corridors, from first-mile pickup to final delivery.
-                </p>
-              </div>
-              <div className="pt-4">
-                <button onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })} className="px-4 py-2 border border-slate-200 hover:border-slate-400 text-slate-700 hover:text-black rounded-full font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all bg-white cursor-pointer">
-                  Learn More <ArrowRight className="w-3 h-3" />
-                </button>
-              </div>
-            </div>
-
-            {/* Card 2 */}
-            <div className="bg-[#F8FAFC] border border-slate-100 rounded-[2rem] p-8 flex flex-col justify-between h-[280px] shadow-xs text-left">
-              <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-full bg-[#113f36]/10 text-[#113f36] border border-[#113f36]/25 flex items-center justify-center shrink-0">
-                  <Anchor className="w-5 h-5" />
-                </div>
-                <span className="px-4 py-1 rounded-full bg-slate-200/50 text-slate-600 text-[10px] font-black uppercase tracking-wider">
-                  FCL - LCL
-                </span>
-              </div>
-              <div className="space-y-2 mt-4">
-                <h3 className="text-lg font-black text-slate-900">Ocean Freight</h3>
-                <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                  FCL and LCL ocean freight from all major global ports, with custom handling and container loading.
-                </p>
-              </div>
-              <div className="pt-4">
-                <button onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })} className="px-4 py-2 border border-slate-200 hover:border-slate-400 text-slate-700 hover:text-black rounded-full font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all bg-white cursor-pointer">
-                  Learn More <ArrowRight className="w-3 h-3" />
-                </button>
-              </div>
-            </div>
-
-            {/* Card 3 (Highlighted) */}
-            <div className="bg-[#F8FAFC] border border-slate-100 rounded-[2rem] p-8 flex flex-col justify-between h-[280px] shadow-xs text-left">
-              <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-full bg-[#113f36]/10 text-[#113f36] border border-[#113f36]/25 flex items-center justify-center shrink-0">
-                  <Zap className="w-5 h-5" />
-                </div>
-                <span className="px-4 py-1 rounded-full bg-slate-200/50 text-slate-600 text-[10px] font-black uppercase tracking-wider">
-                  Express
-                </span>
-              </div>
-              <div className="space-y-2 mt-4">
-                <h3 className="text-lg font-black text-slate-900">Express Delivery</h3>
-                <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                  Super-fast local courier and premium inter-emirate delivery solutions built for time-critical business items.
-                </p>
-              </div>
-              <div className="pt-4">
-                <button onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })} className="px-4 py-2 bg-[#113f36] hover:bg-[#0d3029] text-white rounded-full font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-sm cursor-pointer">
-                  Learn More <ArrowRight className="w-3 h-3" />
-                </button>
-              </div>
-            </div>
-
-            {/* Card 4 */}
-            <div className="bg-[#F8FAFC] border border-slate-100 rounded-[2rem] p-8 flex flex-col justify-between h-[280px] shadow-xs text-left">
-              <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-full bg-[#113f36]/10 text-[#113f36] border border-[#113f36]/25 flex items-center justify-center shrink-0">
-                  <Warehouse className="w-5 h-5" />
-                </div>
-                <span className="px-4 py-1 rounded-full bg-slate-200/50 text-slate-600 text-[10px] font-black uppercase tracking-wider">
-                  FCL - LCL
-                </span>
-              </div>
-              <div className="space-y-2 mt-4">
-                <h3 className="text-lg font-black text-slate-900">Warehousing & Distribution</h3>
-                <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                  Scalable 3PL fulfillment centers with automated inventory management and real-time visibility control.
-                </p>
-              </div>
-              <div className="pt-4">
-                <button onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })} className="px-4 py-2 border border-slate-200 hover:border-slate-400 text-slate-700 hover:text-black rounded-full font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all bg-white cursor-pointer">
-                  Learn More <ArrowRight className="w-3 h-3" />
-                </button>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* SERVING BUSINESSES ACROSS SECTORS - Full Width */}
-      <section id="sectors" className="w-full bg-white py-24 px-4 md:px-8 border-b border-slate-100">
-        <div className="max-w-7xl mx-auto">
-          {/* Suspended orange container layout container */}
-          <div className="rounded-[3rem] overflow-hidden shadow-2xl relative min-h-[480px] flex items-center justify-end">
-            
-            {/* Background Image */}
-            <div className="absolute inset-0 z-0 bg-slate-900">
-              <img 
-                src={sectorContainer} 
-                alt="Serving Businesses Across Sectors" 
-                className="w-full h-full object-cover opacity-80"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-slate-950/60 to-slate-950/90" />
-            </div>
-
-            {/* Sectors List Overlay Content on right */}
-            <div className="relative z-10 max-w-lg mr-8 md:mr-16 p-8 text-white text-left space-y-6">
-              <h2 className="text-3xl md:text-[2.6rem] font-black uppercase tracking-tight leading-none font-sans">
-                {isRTL ? 'خدمة الشركات عبر مختلف القطاعات' : 'SERVING BUSINESSES ACROSS SECTORS'}
-              </h2>
-              <p className="text-slate-300 font-medium leading-relaxed text-xs md:text-sm font-sans">
-                From heavy manufacturing to high-velocity e-commerce, our logistics infrastructure adapts to the unique demands of every industry.
-              </p>
-              
-              {/* Industry list with arrows */}
-              <div className="divide-y divide-white/10 pt-4 text-xs md:text-sm font-bold font-sans">
-                {[
-                  'Manufacturing',
-                  'Healthcare & Pharmaceuticals',
-                  'Retail & E-Commerce',
-                  'Manufacturing Technology',
-                  'Automotive & Aerospace'
-                ].map((sector, idx) => (
-                  <div 
-                    key={idx} 
-                    className="flex items-center justify-between py-3 cursor-pointer hover:text-[#113f36] transition-colors"
-                    onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}
-                  >
-                    <span className="tracking-wide">{sector}</span>
-                    <ChevronRight className="w-4 h-4 text-white/50" />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
 
       {/* SOLUTIONS/ESTIMATOR SECTION - Full Width */}
       <section id="solutions" className="w-full py-24 bg-[#060B26] text-white relative">
@@ -1580,114 +1522,8 @@ const [botOpen, setBotOpen] = useState(false);
         </div>
       </section>
 
-      {/* TRUSTED BY THE WORLD'S BEST BRANDS Section - Full Width */}
-      <section className="w-full bg-white py-24 px-4 md:px-8 border-b border-slate-100">
-        <div className="max-w-7xl mx-auto space-y-12 text-center">
-          <h2 className="text-3xl md:text-[2.6rem] font-black uppercase text-slate-950 tracking-tight leading-none">
-            TRUSTED BY THE WORLD'S BEST BRANDS
-          </h2>
-          
-          {/* 3-Column Reviews Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left pt-6">
-            
-            {/* Review 1 */}
-            <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-xs space-y-5 flex flex-col justify-between">
-              <div className="space-y-4">
-                <div className="flex items-center gap-1 text-orange-400">
-                  {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}
-                </div>
-                <p className="text-slate-600 text-[13px] md:text-sm font-semibold leading-relaxed">
-                  "USend has reduced our freight spend by 22% in the first quarter. Their real-time tracking platform is game-changing — our ops team can finally breathe easy."
-                </p>
-              </div>
-              <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
-                <div className="w-10 h-10 rounded-full bg-[#113f36]/10 text-[#113f36] flex items-center justify-center font-bold text-xs">
-                  MC
-                </div>
-                <div>
-                  <h4 className="text-xs font-black text-slate-900">Marcus Chen</h4>
-                  <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">VP Supply Chain, Oasis Distributors</p>
-                </div>
-              </div>
-            </div>
 
-            {/* Review 2 */}
-            <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-xs space-y-5 flex flex-col justify-between">
-              <div className="space-y-4">
-                <div className="flex items-center gap-1 text-orange-400">
-                  {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}
-                </div>
-                <p className="text-slate-600 text-[13px] md:text-sm font-semibold leading-relaxed">
-                  "Their API integration is the best we've seen. Parcel creation takes seconds now, and it scales with our volume without any hiccups."
-                </p>
-              </div>
-              <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
-                <div className="w-10 h-10 rounded-full bg-[#113f36]/10 text-[#113f36] flex items-center justify-center font-bold text-xs">
-                  SR
-                </div>
-                <div>
-                  <h4 className="text-xs font-black text-slate-900">Sophia Reyes</h4>
-                  <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Director of Operations, Apex Retail Group</p>
-                </div>
-              </div>
-            </div>
 
-            {/* Review 3 */}
-            <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-xs space-y-5 flex flex-col justify-between">
-              <div className="space-y-4">
-                <div className="flex items-center gap-1 text-orange-400">
-                  {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}
-                </div>
-                <p className="text-slate-600 text-[13px] md:text-sm font-semibold leading-relaxed">
-                  "Their customs clearance speed is unmatched. No more administrative delays or unexpected fees — just fast, reliable deliveries."
-                </p>
-              </div>
-              <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
-                <div className="w-10 h-10 rounded-full bg-[#113f36]/10 text-[#113f36] flex items-center justify-center font-bold text-xs">
-                  DV
-                </div>
-                <div>
-                  <h4 className="text-xs font-black text-slate-900">Dmitri Volkov</h4>
-                  <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">COO, EuroBridge Manufacturing</p>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </section>
-
-        {/* READY TO MOVE YOUR CARGO? - CTA Vessel Banner - Full Width */}
-        <section className="w-full py-24 px-4 md:px-8 bg-white">
-          <div className="max-w-7xl mx-auto rounded-[3rem] overflow-hidden border border-slate-100 shadow-2xl relative min-h-[420px] flex items-center justify-center text-center text-white bg-slate-900">
-            {/* Ocean Vessel background image */}
-            <div className="absolute inset-0 z-0">
-              <img 
-                src={ctaCargoShip} 
-                alt="Ready to Move Your Cargo" 
-                className="w-full h-full object-cover opacity-35"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-transparent"></div>
-            </div>
-
-            <div className="relative z-10 max-w-3xl mx-auto px-6 py-12 space-y-6">
-              <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tight max-w-3xl mx-auto leading-tight font-sans">
-                {isRTL ? 'جاهز لنقل شحنتك؟' : 'READY TO MOVEYOUR CARGO?'}
-              </h2>
-              <p className="text-slate-350 font-medium leading-relaxed text-xs md:text-sm max-w-xl mx-auto font-sans">
-                Get a custom freight quote in under 2 minutes. No commitments, no hidden fees — just fast, transparent pricing from a network that delivers.
-              </p>
-              <div className="pt-4">
-                <button 
-                  onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="px-8 py-4 bg-[#113f36] hover:bg-[#0d3029] text-white text-[13px] font-black uppercase tracking-widest rounded-full transition-all shadow-lg shadow-emerald-900/20 cursor-pointer"
-                >
-                  {isRTL ? 'احصل على عرض سعر مجاني' : 'Get a Free Quote'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* FAQ ACCORDION SECTION - Full Width */}
         <section id="faq" className="w-full py-24 bg-[#FAFBFD] relative border-t border-slate-100">
