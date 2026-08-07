@@ -4,6 +4,7 @@ import MerchantSidebar from '../../components/MerchantSidebar';
 import { Search, User, Phone, MapPin, Package, Clock, X, Mail, TrendingUp, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
+import { useApp } from '../../context/AppContext';
 
 interface MerchantCustomersProps {
   key?: string;
@@ -12,59 +13,41 @@ interface MerchantCustomersProps {
 
 export default function MerchantCustomers({ onNavigate }: MerchantCustomersProps) {
   const { t, isRTL } = useLanguage();
+  const { activeRequests, user } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState<any | null>(null);
 
-  const customers = [
-    {
-      id: 'CUST-001',
-      name: 'Alex Rivera',
-      email: 'alex.rivera@example.com',
-      phone: '+1 (555) 123-4567',
-      address: '123 Main St, Brooklyn, NY',
-      totalSpend: 1250.50,
-      totalOrders: 12,
-      lastOrder: '2024-03-24',
-      joinDate: '2023-11-10',
-      avgOrder: 104.20
-    },
-    {
-      id: 'CUST-002',
-      name: 'Sarah Chen',
-      email: 'sarah.c@example.com',
-      phone: '+1 (555) 987-6543',
-      address: '456 Park Ave, New York, NY',
-      totalSpend: 840.00,
-      totalOrders: 8,
-      lastOrder: '2024-03-22',
-      joinDate: '2023-12-15',
-      avgOrder: 105.00
-    },
-    {
-      id: 'CUST-003',
-      name: 'Mike Johnson',
-      email: 'mike.j@example.com',
-      phone: '+1 (555) 456-7890',
-      address: '789 Broadway, NY',
-      totalSpend: 2100.00,
-      totalOrders: 15,
-      lastOrder: '2024-03-20',
-      joinDate: '2023-10-05',
-      avgOrder: 140.00
-    },
-    {
-      id: 'CUST-004',
-      name: 'Emma Wilson',
-      email: 'emma.w@example.com',
-      phone: '+1 (555) 234-5678',
-      address: '321 Oak St, NY',
-      totalSpend: 450.75,
-      totalOrders: 4,
-      lastOrder: '2024-03-15',
-      joinDate: '2024-01-20',
-      avgOrder: 112.68
+  // Extract unique customer nodes from real active requests associated with this merchant session
+  const merchantRequests = activeRequests.filter(req => req.merchantId === user?.uid || req.merchantId === 'demo-fallback-uid');
+  
+  const customersMap = new Map();
+  merchantRequests.forEach(req => {
+    if (req.receiverName) {
+      const id = req.id ? `CUST-${req.id.replace(/\D/g, '') || '001'}` : 'CUST-GEN';
+      if (!customersMap.has(id)) {
+        customersMap.set(id, {
+          id,
+          name: req.receiverName,
+          email: `${req.receiverName.toLowerCase().replace(/\s+/g, '')}@example.com`,
+          phone: req.receiverPhone || req.phone || '+971 50 123 4567',
+          address: req.address || req.pickupAddress || 'Dubai, UAE',
+          totalSpend: parseFloat(req.deliveryFee?.replace(/[^0-9.]/g, '') || '0') || 30.00,
+          totalOrders: 1,
+          lastOrder: req.date || new Date().toLocaleDateString(),
+          joinDate: req.date || new Date().toLocaleDateString(),
+          avgOrder: parseFloat(req.deliveryFee?.replace(/[^0-9.]/g, '') || '0') || 30.00
+        });
+      } else {
+        const existing = customersMap.get(id);
+        const fee = parseFloat(req.deliveryFee?.replace(/[^0-9.]/g, '') || '0') || 30.00;
+        existing.totalSpend += fee;
+        existing.totalOrders += 1;
+        existing.avgOrder = existing.totalSpend / existing.totalOrders;
+      }
     }
-  ];
+  });
+
+  const customers = Array.from(customersMap.values());
 
   const filteredCustomers = customers.filter(cust => 
     cust.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -114,7 +97,13 @@ export default function MerchantCustomers({ onNavigate }: MerchantCustomersProps
                   </tr>
                 </thead>
                 <tbody className="text-sm">
-                  {filteredCustomers.map((customer) => (
+                  {filteredCustomers.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="p-8 text-center text-zinc-400 font-semibold">
+                        {isRTL ? "لم يتم العثور على عملاء" : "No customers found"}
+                      </td>
+                    </tr>
+                  ) : filteredCustomers.map((customer) => (
                     <tr 
                       key={customer.id} 
                       onClick={() => setSelectedCustomer(customer)}

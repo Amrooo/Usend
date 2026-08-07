@@ -31,23 +31,15 @@ export default function MerchantInventory({ onNavigate }: MerchantInventoryProps
   const { t, isRTL } = useLanguage();
   const { merchantActiveTab, setMerchantActiveTab } = useApp();
 
-  const [inventory, setInventory] = useState([
-    { id: 'PRD-001', name: 'Wireless AirPods Pro', description: 'Premium wireless earbuds with active noise cancellation and spatial audio.', category: 'Electronics', price: 'AED 249.00', costPrice: 'AED 150.00', weight: '0.2 kg', stock: 45, status: 'In Stock', image: 'https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=400&q=80' },
-    { id: 'PRD-002', name: 'Ergonomic Office Chair', description: 'Lumbar support office chair with adjustable armrests and mesh back.', category: 'Furniture', price: 'AED 199.99', costPrice: 'AED 80.00', weight: '15 kg', stock: 5, status: 'Low Stock', image: 'https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?w=400&q=80' },
-    { id: 'PRD-003', name: 'Mechanical Keyboard', description: 'RGB mechanical keyboard with tactile blue switches.', category: 'Electronics', price: 'AED 129.50', costPrice: 'AED 60.00', weight: '1.2 kg', stock: 0, status: 'Out of Stock', image: 'https://images.unsplash.com/photo-1595225476474-87563907a212?w=400&q=80' },
-    { id: 'PRD-004', name: 'Stainless Steel Water Bottle', description: 'Insulated water bottle that keeps drinks cold for 24 hours.', category: 'Accessories', price: 'AED 24.00', costPrice: 'AED 8.00', weight: '0.4 kg', stock: 120, status: 'In Stock', image: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=400&q=80' },
-  ]);
+  const [inventory, setInventory] = useState<any[]>([]);
 
   const [replenishData, setReplenishData] = useState({
-    productId: 'PRD-002',
+    productId: '',
     qty: '50',
     warehouse: 'Jebel Ali Zone A'
   });
 
-  const [replenishLogs, setReplenishLogs] = useState([
-    { id: 'TRF-901', date: 'Today, 09:12 AM', product: 'Wireless AirPods Pro', qty: 100, status: 'In Transit', target: 'Jebel Ali Zone A' },
-    { id: 'TRF-882', date: 'Yesterday', product: 'Stainless Steel Water Bottle', qty: 250, status: 'Completed', target: 'Warehouse Terminal 3' }
-  ]);
+  const [replenishLogs, setReplenishLogs] = useState<any[]>([]);
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [newProduct, setNewProduct] = useState({ name: '', category: 'Electronics', price: '', costPrice: '', weight: '', stock: '', description: '', image: '' });

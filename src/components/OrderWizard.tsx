@@ -129,6 +129,9 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
     photo: null as string | null, 
     courier: 'usend' as 'usend' | 'aramex' | 'noon', 
     declaredValue: '',
+    // Optional: cash amount to collect FROM customer at delivery (COD for customer)
+    collectCashFromCustomer: false,
+    collectAmount: '',
     codAmount: '150',
     receiverPaymentMode: 'cod' as 'cod' | 'card'
   });
@@ -205,7 +208,23 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
     }
   };
 
-  const calculateTotal = () => {
+  // Haversine distance between two GPS coordinates in km
+  const haversineKm = (a: [number, number] | null, b: [number, number] | null): number => {
+    if (!a || !b) return 0;
+    const R = 6371;
+    const dLat = (b[0] - a[0]) * Math.PI / 180;
+    const dLon = (b[1] - a[1]) * Math.PI / 180;
+    const s =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(a[0] * Math.PI / 180) * Math.cos(b[0] * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const km = R * 2 * Math.atan2(Math.sqrt(s), Math.sqrt(1 - s));
+    return Math.max(1, parseFloat(km.toFixed(1)));
+  };
+
+  const distanceKm = haversineKm(shipperData.position, receiverData.position);
+
+  const calculateBreakdown = () => {
     let baseFee = 30;
     const courierId = shipmentData.courier || 'usend';
     const userRole = isGuest ? 'guest' : (user?.role === 'merchant' || user?.email?.toLowerCase().includes('merchant') ? 'merchant' : 'user');
@@ -214,23 +233,32 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
     if (config && config.rates && config.rates[userRole]) {
       baseFee = config.rates[userRole].baseFee;
     } else {
-      if (courierId === 'aramex') {
-        baseFee = 35;
-      } else if (courierId === 'noon') {
-        baseFee = 28;
-      } else {
-        baseFee = 30; // usend
-      }
+      if (courierId === 'aramex') baseFee = 35;
+      else if (courierId === 'noon') baseFee = 28;
+      else baseFee = 30;
     }
-
-    if (shipmentType === 'international') {
-      baseFee = 120;
-    }
+    if (shipmentType === 'international') baseFee = 120;
 
     const additionalWeight = Math.max(0, parseFloat(shipmentData.weight || '1') - 5);
-    const weightFee = additionalWeight * 5; // 5 AED per kg above 5kg
-    return baseFee + weightFee;
+    const weightFee = parseFloat((additionalWeight * 5).toFixed(2));
+
+    // Distance-based fee: 2 AED/km for domestic (first 5km included in base)
+    const chargeableKm = shipmentType === 'domestic' ? Math.max(0, distanceKm - 5) : 0;
+    const distanceFee = parseFloat((chargeableKm * 2).toFixed(2));
+
+    // Platform service fee (5%)
+    const serviceFee = parseFloat(((baseFee + weightFee + distanceFee) * 0.05).toFixed(2));
+
+    // Optional COD collection fee (if merchant wants driver to collect cash from customer)
+    const codCollectFee = shipmentData.collectCashFromCustomer && parseFloat(shipmentData.collectAmount || '0') > 0
+      ? parseFloat((parseFloat(shipmentData.collectAmount) * 0.02).toFixed(2)) // 2% of collected amount
+      : 0;
+
+    const total = parseFloat((baseFee + weightFee + distanceFee + serviceFee + codCollectFee).toFixed(2));
+    return { baseFee, weightFee, distanceFee, chargeableKm, serviceFee, codCollectFee, total };
   };
+
+  const calculateTotal = () => calculateBreakdown().total;
 
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault();
@@ -320,6 +348,9 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
       paymentMethod: shipmentData.receiverPaymentMode === 'card' ? 'Card on Delivery' : 'Cash on Delivery',
       orderAmount: `${codVal} AED`,
       deliveryFee: `${totalAmount} AED`,
+      distanceKm: distanceKm > 0 ? distanceKm : undefined,
+      collectCashFromCustomer: shipmentData.collectCashFromCustomer || false,
+      collectAmount: shipmentData.collectCashFromCustomer ? parseFloat(shipmentData.collectAmount || '0') : 0,
       senderPaymentMethod: senderPaymentMethod === 'wallet' ? 'USend Wallet' : 'Credit Card (Stripe)',
       applicantType: isGuest ? 'Guest' as const : 'User' as const,
       etaTime: 'Pending',
@@ -379,10 +410,16 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
   };
 
   const handleMapSelect = (addr: string, pos: [number, number]) => {
+    // Try to extract city/emirate from address string (after last comma segment)
+    const parts = addr.split(',').map(s => s.trim());
+    const cityGuess = parts.find(p =>
+      ['Dubai', 'Abu Dhabi', 'Sharjah', 'Ajman', 'Fujairah', 'Ras Al Khaimah', 'Umm Al Quwain'].some(em => p.includes(em))
+    ) || parts[parts.length - 2] || parts[parts.length - 1];
+
     if (mapTarget === 'shipper') {
-      setShipperData(p => ({ ...p, street: addr, position: pos }));
+      setShipperData(p => ({ ...p, street: addr, position: pos, city: cityGuess || p.city }));
     } else {
-      setReceiverData(p => ({ ...p, street: addr, position: pos }));
+      setReceiverData(p => ({ ...p, street: addr, position: pos, city: cityGuess || p.city }));
     }
     setIsMapOpen(false);
   };
@@ -506,18 +543,15 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
                   <input required type="tel" value={shipperData.phone} onChange={handlePhoneChange(setShipperData, 'phone')} placeholder="+971 50 1234567" className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none font-mono tracking-widest transition-colors" dir="ltr" />
                 </div>
                 
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Country *</label>
-                  <select value={shipperData.country} onChange={e => setShipperData(p => ({...p, country: e.target.value, city: countriesAndCities[e.target.value as keyof typeof countriesAndCities]?.[0] || ''}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none">
-                    {Object.keys(countriesAndCities).filter(c => shipmentType === 'domestic' ? c === 'United Arab Emirates' : true).map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">City *</label>
-                  <select value={shipperData.city} onChange={e => setShipperData(p => ({...p, city: e.target.value}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none">
-                    {(countriesAndCities[shipperData.country as keyof typeof countriesAndCities] || []).map(city => <option key={city} value={city}>{city}</option>)}
-                  </select>
-                </div>
+                {shipmentType === 'international' && (
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Country *</label>
+                    <select value={shipperData.country} onChange={e => setShipperData(p => ({...p, country: e.target.value}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none">
+                      {Object.keys(countriesAndCities).map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                )}
+                {/* City is auto-detected from map picker — no dropdown needed */}
     
                 <div className="space-y-2 md:col-span-2 relative">
                   <div className="flex justify-between items-center">
@@ -554,18 +588,15 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
                   <input required type="tel" value={receiverData.phone} onChange={handlePhoneChange(setReceiverData, 'phone')} placeholder="+971 50 1234567" className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none font-mono tracking-widest" dir="ltr" />
                 </div>
                 
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Country *</label>
-                  <select value={receiverData.country} onChange={e => setReceiverData(p => ({...p, country: e.target.value, city: countriesAndCities[e.target.value as keyof typeof countriesAndCities]?.[0] || ''}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none">
-                    {Object.keys(countriesAndCities).filter(c => shipmentType === 'domestic' ? c === 'United Arab Emirates' : true).map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">City *</label>
-                  <select value={receiverData.city} onChange={e => setReceiverData(p => ({...p, city: e.target.value}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none">
-                    {(countriesAndCities[receiverData.country as keyof typeof countriesAndCities] || []).map(city => <option key={city} value={city}>{city}</option>)}
-                  </select>
-                </div>
+                {shipmentType === 'international' && (
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Country *</label>
+                    <select value={receiverData.country} onChange={e => setReceiverData(p => ({...p, country: e.target.value}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none">
+                      {Object.keys(countriesAndCities).map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                )}
+                {/* Emirate/city auto-detected from map picker — no dropdown needed */}
     
                 <div className="space-y-2 md:col-span-2">
                   <div className="flex justify-between items-center">
@@ -666,6 +697,46 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
 
                   </div>
                 </div>
+
+                {/* Optional: COD Collection from Customer */}
+                <div className="md:col-span-2 pt-4 border-t border-zinc-100 space-y-4">
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={shipmentData.collectCashFromCustomer}
+                      onChange={e => setShipmentData(p => ({...p, collectCashFromCustomer: e.target.checked}))}
+                      className="w-5 h-5 accent-brand rounded"
+                    />
+                    <span className="text-xs font-bold uppercase tracking-wider text-zinc-600">
+                      {isRTL ? 'تحصيل نقدي من العميل (اختياري)' : 'Collect Cash from Customer (COD) — Optional'}
+                    </span>
+                  </label>
+                  {shipmentData.collectCashFromCustomer && (
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">
+                        {isRTL ? 'مبلغ التحصيل (AED)' : 'Amount to Collect from Customer (AED)'}
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 font-bold text-sm">AED</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          placeholder="0.00"
+                          value={shipmentData.collectAmount}
+                          onChange={e => setShipmentData(p => ({...p, collectAmount: e.target.value}))}
+                          className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl pl-14 pr-4 py-3 outline-none font-mono"
+                          dir="ltr"
+                        />
+                      </div>
+                      <p className="text-[10px] text-zinc-400 font-medium">
+                        {isRTL
+                          ? 'سيقوم السائق بتحصيل هذا المبلغ من المستلم ويحوله إليك. رسوم التحصيل 2% من المبلغ.'
+                          : 'Driver will collect this amount from the recipient and transfer it to you. A 2% COD handling fee applies.'}
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="flex gap-4 pt-6"><button type="button" onClick={handlePrevStep} className="px-8 py-3.5 rounded-xl border border-zinc-300 text-zinc-600 font-bold uppercase tracking-widest text-xs">Back</button><button type="submit" className="flex-1 py-3.5 rounded-xl bg-brand text-white font-bold uppercase tracking-widest text-xs shadow-lg">Next</button></div>
             </form>
@@ -690,16 +761,19 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
                 {/* Visual Route */}
                 <div className="bg-slate-50 rounded-2xl p-5 flex items-center justify-between border border-slate-100">
                   <div>
-                    <span className="text-[9px] uppercase font-black text-zinc-400 tracking-wider block">Pickup</span>
+                    <span className="text-[9px] uppercase font-black text-zinc-400 tracking-wider block">{isRTL ? 'نقطة الاستلام' : 'Pickup'}</span>
                     <p className="font-bold text-sm text-zinc-800">{shipperData.city || 'Dubai'}</p>
                     <p className="text-[11px] text-zinc-500 font-semibold">{shipperData.name} ({shipperData.phone})</p>
                   </div>
                   <div className="flex flex-col items-center justify-center px-4">
                     <ArrowRight className="text-brand w-5 h-5 animate-pulse" />
-                    <span className="text-[8px] uppercase font-bold text-zinc-400 mt-1 tracking-widest">{shipmentType === 'international' ? 'Air Cargo' : 'Land Transport'}</span>
+                    {distanceKm > 0 && (
+                      <span className="text-[9px] uppercase font-black text-brand mt-1 tracking-widest">{distanceKm} km</span>
+                    )}
+                    <span className="text-[8px] uppercase font-bold text-zinc-400 mt-0.5 tracking-widest">{shipmentType === 'international' ? 'Air Cargo' : 'Land Transport'}</span>
                   </div>
                   <div className="text-right">
-                    <span className="text-[9px] uppercase font-black text-zinc-400 tracking-wider block">Dropoff</span>
+                    <span className="text-[9px] uppercase font-black text-zinc-400 tracking-wider block">{isRTL ? 'نقطة التسليم' : 'Dropoff'}</span>
                     <p className="font-bold text-sm text-zinc-800">{receiverData.city || 'Abu Dhabi'}</p>
                     <p className="text-[11px] text-zinc-500 font-semibold">{receiverData.name} ({receiverData.phone})</p>
                   </div>
@@ -708,45 +782,77 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
                 {/* Package Details */}
                 <div className="grid grid-cols-2 gap-4 text-xs font-semibold text-zinc-600 border-b border-zinc-100 pb-4">
                   <div>
-                    <span className="text-[9px] uppercase font-black text-zinc-400 tracking-wider block">Package Type</span>
+                    <span className="text-[9px] uppercase font-black text-zinc-400 tracking-wider block">{isRTL ? 'نوع الطرد' : 'Package Type'}</span>
                     <span className="text-zinc-800 font-bold">{shipmentData.description || 'Package Shipment'}</span>
                   </div>
                   <div>
-                    <span className="text-[9px] uppercase font-black text-zinc-400 tracking-wider block">Weight & Qty</span>
-                    <span className="text-zinc-800 font-bold">{shipmentData.weight} kg / {shipmentData.quantity} Units</span>
+                    <span className="text-[9px] uppercase font-black text-zinc-400 tracking-wider block">{isRTL ? 'الوزن والكمية' : 'Weight & Qty'}</span>
+                    <span className="text-zinc-800 font-bold">{shipmentData.weight} kg / {shipmentData.quantity} {isRTL ? 'وحدة' : 'Units'}</span>
                   </div>
-                </div>
-
-                {/* Pricing Details */}
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between items-center text-zinc-500 font-medium">
-                    <span>Selected Courier ({shipmentData.courier === 'aramex' ? 'Aramex' : shipmentData.courier === 'noon' ? 'Noon' : 'USend Fleet'})</span>
-                    <span className="font-semibold text-zinc-800">
-                      {shipmentData.courier === 'aramex' ? '35' : shipmentData.courier === 'noon' ? '28' : '30'} AED
-                    </span>
-                  </div>
-                  
-                  {parseFloat(shipmentData.weight || '0') > 5 && (
-                    <div className="flex justify-between items-center text-zinc-500 font-medium">
-                      <span>Weight Surcharge ({Math.max(0, parseFloat(shipmentData.weight || '0') - 5)} kg extra)</span>
-                      <span className="font-semibold text-zinc-800">
-                        {Math.max(0, parseFloat(shipmentData.weight || '0') - 5) * 5} AED
-                      </span>
+                  {distanceKm > 0 && (
+                    <div>
+                      <span className="text-[9px] uppercase font-black text-zinc-400 tracking-wider block">{isRTL ? 'المسافة' : 'Distance'}</span>
+                      <span className="text-brand font-bold">{distanceKm} km</span>
                     </div>
                   )}
-
-                  {shipmentType === 'international' && (
-                    <div className="flex justify-between items-center text-zinc-500 font-medium">
-                      <span>International Base Markup</span>
-                      <span className="font-semibold text-zinc-800">90 AED</span>
+                  {shipmentData.collectCashFromCustomer && parseFloat(shipmentData.collectAmount || '0') > 0 && (
+                    <div>
+                      <span className="text-[9px] uppercase font-black text-zinc-400 tracking-wider block">{isRTL ? 'تحصيل من العميل' : 'COD Collection'}</span>
+                      <span className="text-zinc-800 font-bold">{parseFloat(shipmentData.collectAmount).toFixed(2)} AED</span>
                     </div>
                   )}
-
-                  <div className="flex justify-between items-center text-xl font-black text-brand pt-4 border-t border-slate-100 mt-4">
-                    <span>Total Cost</span>
-                    <span>{calculateTotal()} AED</span>
-                  </div>
                 </div>
+
+                {/* Pricing Breakdown */}
+                {(() => {
+                  const bd = calculateBreakdown();
+                  return (
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between items-center text-zinc-500 font-medium">
+                        <span>{isRTL ? 'رسوم الناقل' : 'Courier Base Fee'} ({shipmentData.courier === 'aramex' ? 'Aramex' : shipmentData.courier === 'noon' ? 'Noon' : 'USend Fleet'})</span>
+                        <span className="font-semibold text-zinc-800">{bd.baseFee.toFixed(2)} AED</span>
+                      </div>
+
+                      {bd.weightFee > 0 && (
+                        <div className="flex justify-between items-center text-zinc-500 font-medium">
+                          <span>{isRTL ? 'رسوم الوزن الإضافي' : 'Weight Surcharge'} ({Math.max(0, parseFloat(shipmentData.weight || '0') - 5).toFixed(1)} kg extra)</span>
+                          <span className="font-semibold text-zinc-800">{bd.weightFee.toFixed(2)} AED</span>
+                        </div>
+                      )}
+
+                      {bd.distanceFee > 0 && (
+                        <div className="flex justify-between items-center text-zinc-500 font-medium">
+                          <span>{isRTL ? 'رسوم المسافة' : 'Distance Fee'} ({bd.chargeableKm.toFixed(1)} km × 2 AED)</span>
+                          <span className="font-semibold text-zinc-800">{bd.distanceFee.toFixed(2)} AED</span>
+                        </div>
+                      )}
+
+                      <div className="flex justify-between items-center text-zinc-500 font-medium">
+                        <span>{isRTL ? 'رسوم المنصة (5%)' : 'Platform Service Fee (5%)'}</span>
+                        <span className="font-semibold text-zinc-800">{bd.serviceFee.toFixed(2)} AED</span>
+                      </div>
+
+                      {bd.codCollectFee > 0 && (
+                        <div className="flex justify-between items-center text-zinc-500 font-medium">
+                          <span>{isRTL ? 'رسوم تحصيل النقدية (2%)' : 'COD Handling Fee (2%)'}</span>
+                          <span className="font-semibold text-zinc-800">{bd.codCollectFee.toFixed(2)} AED</span>
+                        </div>
+                      )}
+
+                      {shipmentType === 'international' && (
+                        <div className="flex justify-between items-center text-zinc-500 font-medium">
+                          <span>{isRTL ? 'رسوم الشحن الدولي' : 'International Air Cargo Markup'}</span>
+                          <span className="font-semibold text-zinc-800">90.00 AED</span>
+                        </div>
+                      )}
+
+                      <div className="flex justify-between items-center text-xl font-black text-brand pt-4 border-t border-slate-100 mt-4">
+                        <span>{isRTL ? 'الإجمالي' : 'Total Cost'}</span>
+                        <span>{bd.total.toFixed(2)} AED</span>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
               
               {isGuest && (

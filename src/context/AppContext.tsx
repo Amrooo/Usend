@@ -486,6 +486,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const signOutUser = async () => {
     await logout();
+    setUser(null);
   };
 
   const addRequest = async (req: USendRequest) => {
