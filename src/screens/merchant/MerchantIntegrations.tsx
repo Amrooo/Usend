@@ -26,7 +26,8 @@ import {
   X,
   ChevronDown,
   ShieldAlert,
-  Info
+  Info,
+  Lock
 } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useApp } from '../../context/AppContext';
@@ -1186,70 +1187,81 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                   {/* TAB 1: SETUP CREDENTIALS */}
                   {sandboxActiveTab === 'config' && (
                     <div className="space-y-6 text-left animate-in fade-in duration-200">
-                      <div className="p-4 bg-[#113f36]/5 dark:bg-blue-950/25 border border-[#113f36]/20/40 rounded-2xl flex items-start gap-3">
-                        <Info className="w-5 h-5 text-[#113f36] shrink-0 mt-0.5" />
+                      <div className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 rounded-2xl flex items-start gap-3">
+                        <Lock className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                         <div>
-                          <p className="text-xs font-bold text-[#113f36] dark:text-[#a5b994]">Interactive Sandbox Credentials Connected</p>
-                          <p className="text-[13px] text-[#113f36]/80 dark:text-[#6e938c]/80 mt-1 leading-relaxed">
-                            These endpoints simulate actual API behaviors of {selectedCourierForConfig.toUpperCase()} in our sandbox routing bridge. Modify parameters below to verify credentials payload matching.
+                          <p className="text-xs font-bold text-amber-800 dark:text-amber-400">Environment & Credentials Managed by Admin</p>
+                          <p className="text-[13px] text-amber-700/90 dark:text-amber-500/90 mt-1 leading-relaxed">
+                            🔒 API Credentials and Environment Mode are managed exclusively by the Portal Administrator. Merchant users operate under the globally assigned environment (Sandbox/Testing or Production/Live) and have read-only access to verify integrated behaviors.
                           </p>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 opacity-75">
                         <div className="space-y-1.5">
                           <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400">Account Number</label>
                           <input 
                             type="text"
+                            disabled
                             value={getActiveCreds(selectedCourierForConfig).accountNumber}
-                            onChange={(e) => handleUpdateCreds(selectedCourierForConfig, { accountNumber: e.target.value })}
-                            className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs font-bold text-zinc-905"
+                            className="w-full bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs font-bold text-zinc-500 cursor-not-allowed"
                           />
                         </div>
                         <div className="space-y-1.5">
                           <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400">Account PIN / Security Token</label>
                           <input 
                             type="text"
+                            disabled
                             value={getActiveCreds(selectedCourierForConfig).accountPin}
-                            onChange={(e) => handleUpdateCreds(selectedCourierForConfig, { accountPin: e.target.value })}
-                            className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs font-bold"
+                            className="w-full bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs font-bold text-zinc-500 cursor-not-allowed"
                           />
                         </div>
                         <div className="space-y-1.5">
                           <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400">Account Entity</label>
                           <input 
                             type="text"
+                            disabled
                             value={getActiveCreds(selectedCourierForConfig).accountEntity}
-                            onChange={(e) => handleUpdateCreds(selectedCourierForConfig, { accountEntity: e.target.value })}
-                            className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs font-bold"
+                            className="w-full bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs font-bold text-zinc-500 cursor-not-allowed"
                           />
                         </div>
                         <div className="space-y-1.5">
                           <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400">Country Code</label>
                           <input 
                             type="text"
+                            disabled
                             value={getActiveCreds(selectedCourierForConfig).accountCountryCode}
-                            onChange={(e) => handleUpdateCreds(selectedCourierForConfig, { accountCountryCode: e.target.value })}
-                            className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs font-bold"
+                            className="w-full bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs font-bold text-zinc-500 cursor-not-allowed"
                           />
                         </div>
                         <div className="space-y-1.5">
                           <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400">Developer Username</label>
                           <input 
                             type="text"
+                            disabled
                             value={getActiveCreds(selectedCourierForConfig).username}
-                            onChange={(e) => handleUpdateCreds(selectedCourierForConfig, { username: e.target.value })}
-                            className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs font-bold"
+                            className="w-full bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs font-bold text-zinc-500 cursor-not-allowed"
                           />
                         </div>
                         <div className="space-y-1.5">
                           <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400">Developer Password</label>
                           <input 
                             type="password"
+                            disabled
                             value={getActiveCreds(selectedCourierForConfig).password || ''}
-                            onChange={(e) => handleUpdateCreds(selectedCourierForConfig, { password: e.target.value })}
-                            className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs font-bold"
+                            className="w-full bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs font-bold text-zinc-500 cursor-not-allowed"
                           />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400">API Environment Mode</label>
+                          <select 
+                            disabled
+                            value={getActiveCreds(selectedCourierForConfig).apiEnv || 'sandbox'}
+                            className="w-full bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs font-bold text-zinc-500 cursor-not-allowed text-zinc-500 bg-zinc-100"
+                          >
+                            <option value="sandbox">Testing / Sandbox</option>
+                            <option value="production">Production / Live</option>
+                          </select>
                         </div>
                       </div>
 
@@ -1283,7 +1295,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                           }}
                           className="px-6 py-3 bg-[#113f36] text-white font-black text-xs uppercase tracking-widest rounded-xl hover:bg-zinc-950 dark:hover:bg-white dark:hover:text-zinc-950 transition-colors shadow-lg shadow-[#113f36]/10"
                         >
-                          Save Credentials & Continue &rarr;
+                          Acknowledge & Continue &rarr;
                         </button>
                       </div>
                     </div>

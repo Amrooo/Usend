@@ -446,7 +446,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
           lng: targetOrder.position?.[1] || 55.2738,
           contact_name: targetOrder.name || "Recipient Buyer",
           contact_phone_number: targetOrder.phone || "+971520000000",
-          country_code: "AE"
+          country_code: "ARE"
         },
         lat: targetOrder.position?.[0] || 25.1998,
         lng: targetOrder.position?.[1] || 55.2738,
@@ -541,7 +541,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
   };
 
   return (
-    <div className={`w-full bg-white rounded-[2.5rem] ${isGuest ? 'shadow-xs' : 'shadow-none'} p-6 md:p-10 text-slate-800`} dir={isRTL ? "rtl" : "ltr"}>
+    <div className={`w-full bg-white rounded-[2.5rem] ${isGuest ? 'shadow-xs' : 'shadow-none'} p-4 md:p-10 text-slate-800`} dir={isRTL ? "rtl" : "ltr"}>
       <Modal isOpen={isMapOpen} onClose={() => setIsMapOpen(false)} title="Select Location on Map">
          <MapPicker onSelect={handleMapSelect} onClose={() => setIsMapOpen(false)} />
       </Modal>
@@ -841,7 +841,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
             <div className="space-y-8 mt-16 pb-4">
               <h3 className="text-xl font-bold mb-2 uppercase tracking-tight">{isRTL ? "مراجعة الطلب" : "Summary & Payment"}</h3>
               
-              <div className="bg-white border border-slate-200 rounded-[2rem] p-6 lg:p-8 space-y-6 shadow-xs mb-6 text-left rtl:text-right">
+              <div className="bg-white border border-slate-200 rounded-[2rem] p-4 md:p-8 space-y-6 shadow-xs mb-6 text-left rtl:text-right">
                 
                 {/* Visual Route */}
                 <div className="bg-slate-50 rounded-2xl p-5 flex items-center justify-between border border-slate-100">

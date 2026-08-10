@@ -1,13 +1,14 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { Screen } from '../../types';
 import UserSidebar from '../../components/UserSidebar';
-import { Search, MapPin, Package, Clock, X, Phone, FileText, CheckCircle2, AlertCircle, Truck, Navigation, User } from 'lucide-react';
+import { Search, MapPin, Package, Clock, X, Phone, FileText, CheckCircle2, AlertCircle, Truck, Navigation, User, CreditCard, Hash, Check } from 'lucide-react';
 import { useState, useEffect, ReactNode, FC } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useApp, USendRequest } from '../../context/AppContext';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import Barcode from 'react-barcode';
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -499,7 +500,7 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                 animate={{ x: 0 }}
                 exit={{ x: isRTL ? '-100%' : '100%' }}
                 transition={{ type: 'spring', damping: 25, stiffness: 240 }}
-                className={`relative bg-white shadow-2xl w-full max-w-sm h-full overflow-hidden flex flex-col ${isRTL ? 'text-right' : 'text-left'}`}
+                className={`relative bg-white shadow-2xl w-[90%] md:w-full md:max-w-sm h-full overflow-hidden flex flex-col ${isRTL ? 'text-right' : 'text-left'}`}
               >
                 <div className="p-6 border-b border-zinc-200 flex items-center justify-between">
                   <div>
@@ -517,167 +518,156 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                 </div>
                 
                 <div className="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-hide">
-                  
-                  {/* Courier Assigment */}
-"                  {/* Courier & External Tracking Assignment */}
-                  <div className="bg-zinc-50 p-4 rounded-2xl border border-zinc-200 space-y-3">
-                     <div className="flex items-center justify-between">
-                        <span className="text-[12px] font-black uppercase text-zinc-500 tracking-widest">Handled By</span>
-                        {selectedOrder.externalTrackingNumber && (
-                           <span className="text-[10px] font-mono font-black bg-amber-100 text-amber-900 px-2 py-0.5 rounded border border-amber-200 uppercase">
-                              {selectedOrder.externalTrackingNumber}
-                           </span>
-                        )}
-                     </div>
-                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-900 flex items-center justify-center shrink-0">
-                           <Truck className="w-5 h-5" />
+                  {/* Status Progress Header */}
+                  <div className="flex items-center justify-between p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white shadow-lg ${
+                        liveSelectedOrder?.status === 'delivered' || liveSelectedOrder?.status === 'Completed' ? 'bg-[#113f36]' : 'bg-blue-600'
+                      }`}>
+                        {liveSelectedOrder?.status === 'delivered' || liveSelectedOrder?.status === 'Completed' ? <CheckCircle2 className="w-6 h-6" /> : <Clock className="w-6 h-6" />}
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest leading-none">Status</p>
+                        <h4 className="text-sm font-black text-zinc-900 uppercase mt-1">{liveSelectedOrder?.status || selectedOrder.status}</h4>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest leading-none">Arrival</p>
+                      <h4 className="text-sm font-black text-zinc-900 uppercase mt-1">{liveSelectedOrder?.etaTime || 'In Transit'}</h4>
+                    </div>
+                  </div>
+
+                  {/* Enhanced Waybill Stamp */}
+                  {selectedOrder.externalTrackingNumber && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="relative border-2 border-dashed border-zinc-200 rounded-3xl p-6 bg-zinc-50/30 overflow-hidden"
+                    >
+                      <div className="flex justify-between items-start mb-6 relative z-10">
+                        <div className="flex flex-col">
+                           <h3 className="text-xl font-black italic tracking-tighter text-zinc-900 uppercase">
+                             {(selectedOrder.courier || '').toLowerCase().includes('noon') ? 'noon' : (selectedOrder.courier || '').toLowerCase().includes('aramex') ? 'aramex' : 'usend'}
+                           </h3>
+                           <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Tracking Waybill</span>
+                        </div>
+                        <div className="bg-zinc-900 text-white px-3 py-1.5 rounded-xl flex flex-col items-end">
+                           <span className="text-[9px] font-black uppercase tracking-widest opacity-70">Carrier ID</span>
+                           <span className="text-xs font-black font-mono">{selectedOrder.externalTrackingNumber}</span>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-6 mb-8 relative z-10">
+                        <div>
+                          <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1.5">Shipper</p>
+                          <p className="text-xs font-black text-zinc-900 leading-tight">{selectedOrder.merchantName || 'Store'}</p>
                         </div>
                         <div>
-                           <p className="font-bold text-sm text-zinc-900">
-                             {selectedOrder.courier || (selectedOrder.channel === 'Merchant Portal' ? 'Aramex' : 'USend Fleet')}
-                           </p>
-                           <p className="text-[12px] text-zinc-500 font-bold uppercase tracking-wider">
-                             {(selectedOrder.courier || '').toLowerCase().includes('noon') ? 'Noon RoD Staging Gateway' : (selectedOrder.courier || '').toLowerCase().includes('aramex') ? 'Aramex B2B Gateway' : 'Internal Fleet Driver'}
-                           </p>
+                          <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1.5">Consignee</p>
+                          <p className="text-xs font-black text-zinc-900 leading-tight">{selectedOrder.name || user?.displayName}</p>
                         </div>
-                     </div>
-                  </div>
+                      </div>
 
-                  {/* Route Information */}
+                      <div className="flex flex-col items-center justify-center pt-6 border-t border-zinc-200 relative z-10">
+                        <div className="bg-white p-4 rounded-2xl shadow-sm border border-zinc-100">
+                          <Barcode 
+                            value={selectedOrder.externalTrackingNumber} 
+                            width={1.4} 
+                            height={45} 
+                            fontSize={12}
+                            background="transparent"
+                            lineColor="#18181b"
+                          />
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Package & Specifications */}
                   <div className="space-y-4">
-                     <div className="flex items-center gap-2">
-                        <div className="w-1 h-4 bg-orange-500 rounded-full" />
-                        <h3 className="text-sm font-bold text-zinc-900">Routing Details</h3>
-                     </div>
-                     <div className="bg-white p-4 rounded-2xl border border-zinc-200 space-y-4 relative overflow-hidden">
-                        
-                        <div className="flex gap-3 relative z-10">
-                           <div className="flex flex-col items-center pt-1">
-                              <div className="w-3 h-3 rounded-full border-2 border-[#113f36] bg-[#113f36]/5" />
-                              <div className="w-0.5 h-10 bg-zinc-200" />
-                           </div>
-                           <div>
-                              <p className="text-[13px] font-black text-[#113f36] tracking-widest uppercase">Pickup Location</p>
-                              <p className="text-sm font-semibold text-zinc-900 line-clamp-2">
-                                {selectedOrder.pickupAddress || selectedOrder.fromDestination || 'Dubai, Main Warehouse'}
-                              </p>
-                           </div>
-                        </div>
-                        
-                        <div className="flex gap-3 relative z-10">
-                           <div className="flex flex-col items-center pt-1">
-                              <div className="w-3 h-3 rounded-full border-2 border-[#113f36] bg-[#113f36]/5" />
-                           </div>
-                           <div>
-                              <p className="text-[13px] font-black text-[#113f36] tracking-widest uppercase">Drop-off Location</p>
-                              <p className="text-sm font-semibold text-zinc-900 line-clamp-2">
-                                {selectedOrder.toDestination || selectedOrder.address || 'Loading...'}
-                              </p>
-                           </div>
-                        </div>
-
-                        {/* Subtle background route graphic */}
-                        <Navigation className="absolute -right-4 -bottom-4 w-24 h-24 text-zinc-50 -z-0 pointer-events-none" />
-                     </div>
-                  </div>
-
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                       <div className="flex items-center gap-2">
-                          <div className="w-1 h-4 bg-[#113f36] rounded-full" />
-                          <h3 className="text-sm font-bold text-zinc-900">{t('current_status') || 'Current Status'}</h3>
+                    <h3 className="text-xs font-black text-zinc-900 uppercase tracking-widest flex items-center gap-2">
+                       <Package className="w-4 h-4 text-blue-600" />
+                       Shipment Specs
+                    </h3>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                       <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
+                          <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest block">Mass</span>
+                          <span className="text-sm font-black text-zinc-900 mt-1 block">{selectedOrder.weight || '5.0'} kg</span>
+                       </div>
+                       <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
+                          <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest block">Category</span>
+                          <span className="text-sm font-black text-zinc-900 mt-1 block truncate">{selectedOrder.itemType || 'General'}</span>
                        </div>
                     </div>
-                    <div className="space-y-1">
-                       {(selectedOrder.carrier || '').toLowerCase() === 'noon' ? (
-                          <>
-                            <TimelinePart 
-                              dot={<CheckCircle2 className="w-5 h-5" />} 
-                              title="Pending Assignment" 
-                              desc="Successfully queued on Noon Hyperlocal system" 
-                              active={true}
-                            />
-                            <TimelinePart 
-                              dot={<User className="w-5 h-5" />} 
-                              title="Rider Assigned" 
-                              desc={selectedOrder.externalTrackingNumber ? `Assigned to Noon Rider (${selectedOrder.externalTrackingNumber})` : "Awaiting Rider allocation"} 
-                              active={!!selectedOrder.externalTrackingNumber}
-                            />
-                            <TimelinePart 
-                              dot={<MapPin className="w-5 h-5" />} 
-                              title="Arrived at Pickup Location" 
-                              desc={(selectedOrder.status || '').toLowerCase() === 'picked_up' || (selectedOrder.status || '').toLowerCase() === 'in_transit' || (selectedOrder.status || '').toLowerCase() === 'en-route' || (selectedOrder.status || '').toLowerCase() === 'delivered' ? "Rider arrived at outlet warehouse" : "Rider en route to outlet"} 
-                              active={(selectedOrder.status || '').toLowerCase() === 'picked_up' || (selectedOrder.status || '').toLowerCase() === 'in_transit' || (selectedOrder.status || '').toLowerCase() === 'en-route' || (selectedOrder.status || '').toLowerCase() === 'delivered'}
-                            />
-                            <TimelinePart 
-                              dot={<Package className="w-5 h-5" />} 
-                              title="Picked Up" 
-                              desc={(selectedOrder.status || '').toLowerCase() === 'picked_up' || (selectedOrder.status || '').toLowerCase() === 'in_transit' || (selectedOrder.status || '').toLowerCase() === 'en-route' || (selectedOrder.status || '').toLowerCase() === 'delivered' ? "Parcel loaded by rider successfully" : "Awaiting dispatch hand-off"} 
-                              active={(selectedOrder.status || '').toLowerCase() === 'picked_up' || (selectedOrder.status || '').toLowerCase() === 'in_transit' || (selectedOrder.status || '').toLowerCase() === 'en-route' || (selectedOrder.status || '').toLowerCase() === 'delivered'}
-                            />
-                            <TimelinePart 
-                              dot={<MapPin className="w-5 h-5" />} 
-                              title="Arrived at Delivery" 
-                              desc={(selectedOrder.status || '').toLowerCase() === 'in_transit' || (selectedOrder.status || '').toLowerCase() === 'en-route' || (selectedOrder.status || '').toLowerCase() === 'delivered' ? "Rider reached recipient coordinates" : "Rider in transit to destination"} 
-                              active={(selectedOrder.status || '').toLowerCase() === 'in_transit' || (selectedOrder.status || '').toLowerCase() === 'en-route' || (selectedOrder.status || '').toLowerCase() === 'delivered'}
-                            />
-                            <TimelinePart 
-                              dot={<CheckCircle2 className="w-5 h-5" />} 
-                              title="Delivered" 
-                              desc={(selectedOrder.status || '').toLowerCase() === 'delivered' ? "Package handoff verified with proof" : "Awaiting final hand-off"} 
-                              active={(selectedOrder.status || '').toLowerCase() === 'delivered'}
-                              last
-                            />
-                          </>
-                        ) : aramexSteps.length > 0 ? (
-                          aramexSteps.map((step, idx) => (
-                             <TimelinePart 
-                                key={idx}
-                                dot={idx === 0 ? <CheckCircle2 className="w-5 h-5" /> : idx === aramexSteps.length - 1 ? <MapPin className="w-5 h-5" /> : <Package className="w-5 h-5" />}
-                                title={step.status || "Status Update"}
-                                desc={`${step.location || ""} • ${new Date(step.time).toLocaleString()}`}
-                                active={true}
-                                last={idx === aramexSteps.length - 1}
-                             />
-                          ))
-                       ) : (
-                         <>
-                           <TimelinePart 
-                              dot={<CheckCircle2 className="w-5 h-5" />} 
-                              title="Order Placed" 
-                              desc="Successfully placed and received by system" 
-                              active={true}
-                            />
-                            <TimelinePart 
-                              dot={<FileText className="w-5 h-5" />} 
-                              title="Courier Assigned" 
-                              desc={selectedOrder.externalTrackingNumber ? "AWB generated & assigned" : "Awaiting assignment"} 
-                              active={(selectedOrder.status || '').toLowerCase() !== 'pending' && (selectedOrder.status || '').toLowerCase() !== 'assigning'}
-                            />
-                            <TimelinePart 
-                              dot={<Package className="w-5 h-5" />} 
-                              title="Picked Up" 
-                              desc="Handed over to courier" 
-                              active={(selectedOrder.status || '').toLowerCase() !== 'pending' && (selectedOrder.status || '').toLowerCase() !== 'assigning' && (selectedOrder.status || '').toLowerCase() !== 'approved' && (selectedOrder.status || '').toLowerCase() !== 'created'}
-                            />
-                            <TimelinePart 
-                              dot={<Clock className="w-4 h-4" />} 
-                              title="In Transit" 
-                              desc="On the way to recipient" 
-                              active={(selectedOrder.status || '').toLowerCase() === 'in_transit' || (selectedOrder.status || '').toLowerCase() === 'en-route' || (selectedOrder.status || '').toLowerCase() === 'delivered'}
-                            />
-                            <TimelinePart 
-                              dot={<MapPin className="w-5 h-5" />} 
-                              title="Delivered" 
-                              desc="Successfully delivered" 
-                              active={(selectedOrder.status || '').toLowerCase() === 'delivered'}
-                              last
-                            />
-                         </>
-                       )}
+                  </div>
+
+                  {/* Routing Information */}
+                  <div className="space-y-4">
+                    <h3 className="text-xs font-black text-zinc-900 uppercase tracking-widest flex items-center gap-2">
+                       <MapPin className="w-4 h-4 text-blue-600" />
+                       Routing & Transit
+                    </h3>
+                    <div className="bg-white border border-zinc-200 rounded-3xl p-5 space-y-6">
+                       <div className="flex gap-4">
+                          <div className="flex flex-col items-center pt-1.5">
+                             <div className="w-3.5 h-3.5 rounded-full border-2 border-zinc-900 bg-white" />
+                             <div className="w-0.5 h-12 bg-zinc-100 my-1" />
+                          </div>
+                          <div>
+                             <p className="text-[11px] font-black text-zinc-400 uppercase tracking-widest mb-1">Origin</p>
+                             <p className="text-[13px] font-black text-zinc-900">{selectedOrder.pickupAddress || 'Verified Merchant Warehouse'}</p>
+                          </div>
+                       </div>
+                       <div className="flex gap-4">
+                          <div className="flex flex-col items-center pt-1.5">
+                             <div className="w-3.5 h-3.5 rounded-full border-2 border-zinc-900 bg-white" />
+                          </div>
+                          <div>
+                             <p className="text-[11px] font-black text-zinc-400 uppercase tracking-widest mb-1">Destination (Home)</p>
+                             <p className="text-[13px] font-black text-zinc-900">{selectedOrder.address || selectedOrder.toDestination}</p>
+                          </div>
+                       </div>
                     </div>
                   </div>
+
+                  {/* Settlement / Financials */}
+                  <div className="space-y-4">
+                    <h3 className="text-xs font-black text-zinc-900 uppercase tracking-widest flex items-center gap-2">
+                       <CreditCard className="w-4 h-4 text-blue-600" />
+                       Financial Settlement
+                    </h3>
+                    <div className="p-5 bg-zinc-900 rounded-[2rem] text-white space-y-4 shadow-xl">
+                       <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Payment Protocol</span>
+                          <span className="text-xs font-black uppercase bg-white/10 px-2 py-0.5 rounded">{selectedOrder.paymentMethod || 'Prepaid'}</span>
+                       </div>
+                       <div className="flex items-center justify-between border-t border-white/10 pt-4">
+                          <div>
+                             <span className="text-[10px] font-black uppercase tracking-widest opacity-60 block leading-none">Order Value</span>
+                             <span className="text-lg font-black mt-1 block tracking-tight">{selectedOrder.orderAmount || '0.00 AED'}</span>
+                          </div>
+                          <div className="text-right">
+                             <span className="text-[10px] font-black uppercase tracking-widest opacity-60 block leading-none">Payable at Door</span>
+                             <span className="text-lg font-black mt-1 block tracking-tight text-blue-400">{selectedOrder.paymentMethod === 'COD' ? selectedOrder.orderAmount : '0.00 AED'}</span>
+                          </div>
+                       </div>
+                    </div>
+                  </div>
+
+                  {/* Shipment Lifecycle */}
+                  <div className="space-y-4">
+                    <h3 className="text-xs font-black text-zinc-900 uppercase tracking-widest flex items-center gap-2">
+                       <Navigation className="w-4 h-4 text-blue-600" />
+                       Shipment Lifecycle
+                    </h3>
+                    <div className="space-y-0 pl-2 border-l-2 border-zinc-100 ml-2">
+                      <TimelinePart dot={<Package className="w-4 h-4" />} title="Processing" desc="Warehouse acknowledged" active />
+                      <TimelinePart dot={<Truck className="w-4 h-4" />} title="Out for Delivery" desc="Carrier en-route" active={!!selectedOrder.externalTrackingNumber} />
+                      <TimelinePart dot={<CheckCircle2 className="w-4 h-4" />} title="Delivered" desc="Successfully received" last active={selectedOrder.status === 'delivered' || selectedOrder.status === 'Completed'} />
+                    </div>
+                  </div>
+                </div>
 
                   {(selectedOrder.status === 'Pending' || selectedOrder.status === 'assigning' || selectedOrder.status === 'pending') && (
                     <div className="pt-4 border-t border-zinc-200">
@@ -721,7 +711,7 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                       </button>
                     </div>
                   )}
-                </div>
+
               </motion.div>
             </div>
           )}

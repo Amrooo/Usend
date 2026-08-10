@@ -6,7 +6,7 @@ import {
   ArrowRight, Globe2, ChevronDown, ArrowUp, Zap, Smartphone, Shield, 
   ChevronLeft, ChevronRight, XCircle, Truck, Package, Plane, Warehouse, 
   Bot, Star, Users, Calculator, Check, MapPin, Play, Plus, Building, 
-  ArrowUpRight, Phone, Award, ShieldAlert, HelpCircle, Lock, Mail, Loader2, Anchor, LogOut, Bell
+  ArrowUpRight, Phone, Award, ShieldAlert, HelpCircle, Lock, Mail, Loader2, Anchor, LogOut, Bell, Menu, X
 } from 'lucide-react';
 import { signInWithEmailAndPassword, signInAnonymously } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
@@ -18,11 +18,10 @@ import LoginModal from '../components/LoginModal';
 import OrderWizard from '../components/OrderWizard';
 import uaeFlag from '../assets/uae-flag.jpg';
 import heroVideo from '../assets/hero-video.mp4';
-
-const heroTruck = 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1920&q=80';
-const shipmentImg = 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1920&q=80';
-const sectorContainer = 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1920&q=80';
-const ctaCargoShip = 'https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?auto=format&fit=crop&w=1920&q=80';
+import heroTruck from '../assets/hero-truck.png';
+import shipmentImg from '../assets/shipment.png';
+import sectorContainer from '../assets/sector-container.png';
+import ctaCargoShip from '../assets/cta-cargo-ship.png';
 
 const AiFace3DIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
   <svg viewBox="0 0 44 44" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
@@ -494,17 +493,34 @@ const [botOpen, setBotOpen] = useState(false);
       <header className={`z-50 transition-all duration-300 ${
         isScrolled 
           ? 'fixed top-0 inset-x-0 py-2.5 shadow-md bg-white/95 backdrop-blur-md border-b border-zinc-100 text-slate-900 px-6 md:px-16 flex items-center justify-between' 
-          : 'absolute top-8 left-12 md:left-24 right-12 md:right-24 bg-transparent text-white px-0 py-0 flex items-center justify-between'
+          : 'absolute top-8 left-6 md:left-24 right-6 md:right-24 bg-transparent text-white px-0 py-0 flex items-center justify-between'
       }`}>
+        {/* Mobile Menu Button (Hamburger) */}
+        <div className="flex md:hidden items-center gap-2">
+          <button 
+            onClick={() => {
+              const menu = document.getElementById('mobile-nav-overlay');
+              if (menu) menu.style.display = 'flex';
+            }}
+            className={`p-2 rounded-lg transition-all border ${
+              isScrolled 
+                ? 'border-zinc-200 text-[#113f36] hover:bg-zinc-50' 
+                : 'border-white/20 text-white hover:bg-white/10'
+            }`}
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        </div>
+
         {/* Logo */}
         <div
-          className="flex items-center gap-3.5 cursor-pointer select-none"
+          className="flex items-center gap-2 md:gap-3.5 cursor-pointer select-none"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         >
-          <LogoIcon className={`h-13 w-auto transition-all duration-300 ${!isScrolled ? 'brightness-0 invert' : ''}`} />
+          <LogoIcon className={`h-10 md:h-13 w-auto transition-all duration-300 ${!isScrolled ? 'brightness-0 invert' : ''}`} />
           <div className="flex flex-col text-start">
-            <span className={`text-xl font-black tracking-tight leading-none transition-colors duration-300 ${isScrolled ? 'text-slate-900' : 'text-white'}`}>{isRTL ? 'يو سند' : 'USend'}</span>
-            <span className={`text-[10px] font-bold uppercase tracking-wider leading-none mt-1.5 transition-colors duration-300 ${isScrolled ? 'text-[#113f36]' : 'text-[#cca073]'}`}>{isRTL ? 'الشحن الذكي' : 'Smart Shipping'}</span>
+            <span className={`text-lg md:text-xl font-black tracking-tight leading-none transition-colors duration-300 ${isScrolled ? 'text-slate-900' : 'text-white'}`}>{isRTL ? 'يو سند' : 'USend'}</span>
+            <span className={`text-[9px] md:text-[10px] font-bold uppercase tracking-wider leading-none mt-1 md:mt-1.5 transition-colors duration-300 ${isScrolled ? 'text-[#113f36]' : 'text-[#cca073]'}`}>{isRTL ? 'الشحن الذكي' : 'Smart Shipping'}</span>
           </div>
         </div>
         
@@ -721,7 +737,58 @@ const [botOpen, setBotOpen] = useState(false);
         </div>
       </header>
 
-      {/* ─── HERO SLIDER ─── */}
+      {/* ── Mobile Nav Overlay ── */}
+      <div 
+        id="mobile-nav-overlay"
+        className="fixed inset-0 z-[100] bg-slate-950/95 backdrop-blur-xl flex-col hidden md:hidden"
+      >
+        <div className="flex items-center justify-between p-6 border-b border-white/10">
+          <div className="flex items-center gap-3">
+            <LogoIcon className="h-10 w-auto brightness-0 invert" />
+            <span className="text-xl font-black text-white">{isRTL ? 'يو سند' : 'USend'}</span>
+          </div>
+          <button 
+            onClick={() => {
+              const menu = document.getElementById('mobile-nav-overlay');
+              if (menu) menu.style.display = 'none';
+            }}
+            className="p-2 rounded-lg bg-white/10 text-white border border-white/20"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+        <div className="flex-1 flex flex-col items-center justify-center gap-8 text-2xl font-black uppercase tracking-widest text-white/90">
+          <a href="#landing-root" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); document.getElementById('mobile-nav-overlay')!.style.display = 'none'; }} className="hover:text-[#cca073] transition-colors">{isRTL ? 'الرئيسية' : 'Home'}</a>
+          <a href="#services"  onClick={(e) => { handleScrollTo(e, 'services'); document.getElementById('mobile-nav-overlay')!.style.display = 'none'; }}  className="hover:text-[#cca073] transition-colors">{isRTL ? 'الخدمات' : 'Services'}</a>
+          <a href="#solutions" onClick={(e) => { handleScrollTo(e, 'solutions'); document.getElementById('mobile-nav-overlay')!.style.display = 'none'; }} className="hover:text-[#cca073] transition-colors">{isRTL ? 'الحلول' : 'Resources'}</a>
+          <a href="#about"     onClick={(e) => { handleScrollTo(e, 'about'); document.getElementById('mobile-nav-overlay')!.style.display = 'none'; }}     className="hover:text-[#cca073] transition-colors">{isRTL ? 'من نحن' : 'About'}</a>
+          <a href="#faq"       onClick={(e) => { handleScrollTo(e, 'faq'); document.getElementById('mobile-nav-overlay')!.style.display = 'none'; }}       className="hover:text-[#cca073] transition-colors">{isRTL ? 'اتصل بنا' : 'Contact'}</a>
+        </div>
+        <div className="p-10 border-t border-white/10 flex flex-col gap-4">
+           {!user ? (
+             <button
+               onClick={() => { setLoginRole('user'); setLoginModalOpen(true); document.getElementById('mobile-nav-overlay')!.style.display = 'none'; }}
+               className="w-full py-4 bg-white text-zinc-950 rounded-2xl font-black uppercase tracking-widest text-sm flex items-center justify-center gap-2"
+             >
+               {isRTL ? 'ابدأ الآن' : 'Get Started'}
+               <ArrowUpRight className="w-5 h-5" />
+             </button>
+           ) : (
+             <button
+                onClick={() => {
+                  let dest: Screen = 'user_dashboard';
+                  if (user.email?.toLowerCase().includes('merchant') || user.role === 'merchant') dest = 'merchant_dashboard';
+                  else if (user.email?.toLowerCase().includes('admin') || user.role === 'admin' || user.email === 'octman.sam@gmail.com') dest = 'admin_dashboard';
+                  onNavigate(dest);
+                  document.getElementById('mobile-nav-overlay')!.style.display = 'none';
+                }}
+                className="w-full py-4 bg-white text-zinc-950 rounded-2xl font-black uppercase tracking-widest text-sm flex items-center justify-center gap-2"
+              >
+                {isRTL ? 'لوحة التحكم' : 'Dashboard'}
+              </button>
+           )}
+        </div>
+      </div>
       <div className="w-full relative z-10 bg-white px-6 md:px-16 py-4 pb-0">
         <div className="relative w-full h-[510px] md:h-[640px] rounded-[2rem] overflow-hidden shadow-sm">
           {/* Background Slider */}
@@ -746,6 +813,7 @@ const [botOpen, setBotOpen] = useState(false);
                 key={heroSlideIdx}
                 src={heroSlides[heroSlideIdx].image}
                 alt="USend Freight"
+                referrerPolicy="no-referrer"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -1087,7 +1155,7 @@ const [botOpen, setBotOpen] = useState(false);
       <section id="sectors" className="w-full bg-white py-16 px-4 md:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="rounded-[2rem] overflow-hidden relative min-h-[500px] shadow-sm">
-            <img src={sectorContainer} alt="Sectors Background" className="absolute inset-0 w-full h-full object-cover" />
+            <img src={sectorContainer} alt="Sectors Background" referrerPolicy="no-referrer" className="absolute inset-0 w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-r from-transparent to-slate-900/80"></div>
             <div className="absolute top-0 right-0 w-full md:w-[55%] h-full flex flex-col justify-center p-8 md:p-16 text-white z-10">
               <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight leading-none mb-6 font-sans drop-shadow-md">
@@ -1307,7 +1375,7 @@ const [botOpen, setBotOpen] = useState(false);
       <section className="w-full bg-white pb-24 px-4 md:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="rounded-[2rem] overflow-hidden relative min-h-[400px] shadow-sm flex items-end" onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}>
-            <img src={ctaCargoShip} alt="Cargo Ship" className="absolute inset-0 w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-700" />
+            <img src={ctaCargoShip} alt="Cargo Ship" referrerPolicy="no-referrer" className="absolute inset-0 w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-700" />
             <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent pointer-events-none"></div>
             <div className="relative z-10 p-10 md:p-14 w-full">
               <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-white font-sans leading-none drop-shadow-lg mb-4">
@@ -1403,12 +1471,12 @@ const [botOpen, setBotOpen] = useState(false);
               
               {/* Large top card (Warehouse Photo) */}
               <div className="col-span-12 rounded-[2rem] overflow-hidden border border-slate-100 shadow-sm h-[260px]">
-                <img src={sectorContainer} alt="Modern warehouse" className="w-full h-full object-cover" />
+                <img src={sectorContainer} alt="Modern warehouse" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
               </div>
 
               {/* Bottom row: left image card + right statistics card */}
               <div className="col-span-12 sm:col-span-6 rounded-[2rem] overflow-hidden border border-slate-100 shadow-sm h-[190px]">
-                <img src={heroTruck} alt="Logistics delivery truck" className="w-full h-full object-cover" />
+                <img src={heroTruck} alt="Logistics delivery truck" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
               </div>
 
               <div className="col-span-12 sm:col-span-6 bg-gradient-to-br from-[#9fb19b] to-[#859c81] rounded-[2rem] p-6 text-white flex flex-col justify-between h-[190px] shadow-lg shadow-emerald-900/15 text-start">

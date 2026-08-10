@@ -67,36 +67,35 @@ export default function MerchantDashboard({ onNavigate }: MerchantDashboardProps
     <div className={`flex flex-col md:flex-row h-screen overflow-hidden bg-[#EFF3EE] text-zinc-900 font-sans ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
       <MerchantSidebar currentScreen="merchant_dashboard" onNavigate={onNavigate} />
       
-      <main className="flex-1 p-8 lg:p-12 h-full overflow-y-auto hide-scrollbar overflow-x-hidden relative">
-        {/* Decorative Background Elements */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#113f36]/10/30 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none z-0"></div>
+      <main className="flex-1 p-4 md:p-8 lg:p-12 h-full overflow-y-auto hide-scrollbar overflow-x-hidden relative">
+        {/* Background Decoration */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#113f36]/10 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none z-0"></div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-7xl mx-auto space-y-12 relative z-10"
+          className="max-w-7xl mx-auto space-y-6 md:space-y-12 relative z-10"
         >
-          {/* Stunning Template Hero Banner Card */}
-          <div className="bg-gradient-to-br from-[#7AA08A] via-[#94B8A4] to-[#B1CFBE] rounded-[2.5rem] p-8 lg:p-10 relative overflow-hidden shadow-[0_12px_45px_rgba(110,125,105,0.12)] text-zinc-950 flex flex-col xl:flex-row gap-8 justify-between items-stretch">
-            {/* Soft decorative visual wave graphic overlays simulating high-end architecture design */}
-            <div className="absolute inset-0 opacity-20 overflow-hidden z-0 pointer-events-none">
+          {/* Dashboard Header Banner */}
+          <div className="bg-[#7AA08A] rounded-[1.5rem] md:rounded-[2.5rem] p-6 md:p-10 relative overflow-hidden shadow-sm text-zinc-950 flex flex-col xl:flex-row gap-6 md:gap-8 justify-between items-stretch">
+            {/* Background Texture */}
+            <div className="absolute inset-0 opacity-10 overflow-hidden z-0 pointer-events-none">
               <svg className="w-full h-full" viewBox="0 0 1000 400" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M 0,150 C 300,100 400,300 700,200 C 900,150 1000,250 1000,250 L 1000,400 L 0,400 Z" fill="#3D523A" />
-                <path d="M 0,220 C 200,180 500,280 800,210 C 950,180 1000,300 1000,300 L 1000,400 L 0,400 Z" fill="#2E3C2D" />
-                <circle cx="800" cy="80" r="120" fill="#EBF1E9" opacity="0.3" />
+                <path d="M 0,150 C 300,100 400,300 700,200 C 900,150 1000,250 1000,250 L 1000,400 L 0,400 Z" fill="#113f36" />
+                <circle cx="800" cy="80" r="120" fill="white" opacity="0.3" />
               </svg>
             </div>
 
             {/* Banner Main Column */}
             <div className="flex-1 space-y-8 relative z-10 flex flex-col justify-between">
               <div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-[#243B20] bg-[#D5E2D2]/90 border border-white/20 px-3.5 py-1.5 rounded-full inline-block mb-3.5 shadow-xs">
+                <span className="text-[10px] font-black uppercase tracking-widest text-[#243B20] bg-[#D5E2D2]/90 border border-white/20 px-3 md:px-3.5 py-1 md:py-1.5 rounded-full inline-block mb-2 md:mb-3.5 shadow-xs">
                   {t('merchant_intelligence') || 'Merchant Hub'}
                 </span>
-                <h1 className="text-4xl md:text-5xl font-display font-black text-[#1C2C1E] tracking-tight leading-none uppercase">
+                <h1 className="text-2xl md:text-5xl font-display font-black text-[#1C2C1E] tracking-tight leading-tight md:leading-none uppercase">
                   OAK Merchant Intel
                 </h1>
-                <p className="text-[#364935] text-xs font-bold uppercase tracking-wider mt-2.5">
+                <p className="text-[#364935] text-[10px] md:text-xs font-bold uppercase tracking-wider mt-1 md:mt-2.5">
                   {t('welcome_back_merchant') || "Manage logistics, customer cash settlements, and dispatch stats securely."}
                 </p>
               </div>
@@ -161,9 +160,9 @@ export default function MerchantDashboard({ onNavigate }: MerchantDashboardProps
           </div>
 
           {/* Recent Orders Table */}
-          <div className="bg-white border hover:border-[#D5E2D2] transition-colors border-zinc-150/50 rounded-[2.5rem] overflow-hidden shadow-[0_8px_30px_rgba(150,160,145,0.06)]">
-            <div className="p-10 border-b border-slate-100 flex items-center justify-between bg-white">
-              <h2 className="text-xl font-display font-black uppercase tracking-tight text-[#1C2C1E]">{t('recent_orders')}</h2>
+          <div className="bg-white border hover:border-[#D5E2D2] transition-colors border-zinc-150/50 rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden shadow-[0_8px_30px_rgba(150,160,145,0.06)]">
+            <div className="p-6 md:p-10 border-b border-slate-100 flex items-center justify-between bg-white">
+              <h2 className="text-lg md:text-xl font-display font-black uppercase tracking-tight text-[#1C2C1E]">{t('recent_orders')}</h2>
               <button 
                 onClick={() => onNavigate('merchant_tracking')}
                 className="text-[#344633] font-black text-[11px] uppercase tracking-widest hover:opacity-75 transition-opacity"
@@ -239,10 +238,10 @@ export default function MerchantDashboard({ onNavigate }: MerchantDashboardProps
           </div>
 
           {/* All Orders Ledger Block */}
-          <div className="bg-white border hover:border-[#D5E2D2] transition-colors border-zinc-150/50 rounded-[2.5rem] overflow-hidden shadow-[0_8px_30px_rgba(150,160,145,0.06)] mt-8">
-            <div className="p-10 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white">
+          <div className="bg-white border hover:border-[#D5E2D2] transition-colors border-zinc-150/50 rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden shadow-[0_8px_30px_rgba(150,160,145,0.06)] mt-6 md:mt-8">
+            <div className="p-6 md:p-10 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white">
               <div>
-                <h2 className="text-xl font-display font-black uppercase tracking-tight text-[#1C2C1E]">
+                <h2 className="text-lg md:text-xl font-display font-black uppercase tracking-tight text-[#1C2C1E]">
                   {t('all_orders') || 'All Orders Ledger'}
                 </h2>
                 <p className="text-xs font-bold text-zinc-400 mt-1 uppercase tracking-wider">
@@ -264,7 +263,7 @@ export default function MerchantDashboard({ onNavigate }: MerchantDashboardProps
             </div>
 
             {/* Status Filter Tabs */}
-            <div className="px-10 py-5 bg-zinc-50/50 border-b border-slate-100 flex flex-wrap gap-2.5">
+            <div className="px-6 md:px-10 py-4 md:py-5 bg-zinc-50/50 border-b border-slate-100 flex flex-wrap gap-2 md:gap-2.5">
               {[
                 { id: 'all', label: 'All' },
                 { id: 'pending', label: 'Pending' },

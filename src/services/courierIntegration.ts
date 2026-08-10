@@ -52,14 +52,14 @@ export interface TrackingStep {
 }
 
 export const defaultAramexCreds: CourierCredentials = {
-  version: "v1",
-  accountNumber: "45796",
-  accountPin: "116216",
+  version: "v1.0",
+  accountNumber: "154454",
+  accountPin: "115216",
   accountEntity: "DXB",
   accountCountryCode: "AE",
-  source: "24",
-  username: "testingapi@aramex.com",
-  password: "R123456789$r",
+  source: "0",
+  username: "dxbit@aramex.com",
+  password: "Ar@m3x$h1pp1ng",
   apiEnv: 'sandbox'
 };
 
@@ -195,7 +195,10 @@ export const courierIntegrationService = {
 
         const res = await fetch("/api/aramex/rate", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "x-aramex-env": params.credentials.apiEnv || "sandbox"
+          },
           body: JSON.stringify(aramexPayload)
         });
         const data = await res.json();
@@ -426,7 +429,10 @@ export const courierIntegrationService = {
 
         const res = await fetch("/api/aramex/shipping", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "x-aramex-env": params.credentials.apiEnv || "sandbox"
+          },
           body: JSON.stringify(aramexPayload)
         });
         const data = await res.json();
@@ -578,14 +584,14 @@ export const courierIntegrationService = {
       try {
         const aramexPayload = {
           ClientInfo: {
-            UserName: credentials?.username || "testingapi@aramex.com",
-            Password: credentials?.password || "R123456789$r",
-            Version: credentials?.version || "v1",
-            AccountNumber: credentials?.accountNumber || "45796",
-            AccountPin: credentials?.accountPin || "116216",
+            UserName: credentials?.username || "dxbit@aramex.com",
+            Password: credentials?.password || "Ar@m3x$h1pp1ng",
+            Version: credentials?.version || "v1.0",
+            AccountNumber: credentials?.accountNumber || "154454",
+            AccountPin: credentials?.accountPin || "115216",
             AccountEntity: credentials?.accountEntity || "DXB",
             AccountCountryCode: credentials?.accountCountryCode || "AE",
-            Source: parseInt(credentials?.source || "24", 10)
+            Source: parseInt(credentials?.source || "0", 10)
           },
           Transaction: { 
             Reference1: `USEND-TRK-${cleanNum}`,
@@ -597,7 +603,10 @@ export const courierIntegrationService = {
 
         const res = await fetch("/api/aramex/tracking", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "x-aramex-env": credentials?.apiEnv || "sandbox"
+          },
           body: JSON.stringify(aramexPayload)
         });
         
@@ -688,14 +697,14 @@ export const courierIntegrationService = {
       try {
         const aramexPayload = {
           ClientInfo: {
-            UserName: params.credentials?.username || "testingapi@aramex.com",
-            Password: params.credentials?.password || "R123456789$r",
-            Version: params.credentials?.version || "v1",
-            AccountNumber: params.credentials?.accountNumber || "45796",
-            AccountPin: params.credentials?.accountPin || "116216",
+            UserName: params.credentials?.username || "dxbit@aramex.com",
+            Password: params.credentials?.password || "Ar@m3x$h1pp1ng",
+            Version: params.credentials?.version || "v1.0",
+            AccountNumber: params.credentials?.accountNumber || "154454",
+            AccountPin: params.credentials?.accountPin || "115216",
             AccountEntity: params.credentials?.accountEntity || "DXB",
             AccountCountryCode: params.credentials?.accountCountryCode || "AE",
-            Source: parseInt(params.credentials?.source || "24", 10)
+            Source: parseInt(params.credentials?.source || "0", 10)
           },
           Transaction: { Reference1: `PICK-${randomPickNo}` },
           Pickup: {
@@ -725,7 +734,10 @@ export const courierIntegrationService = {
 
         const res = await fetch("/api/aramex/pickup", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "x-aramex-env": params.credentials?.apiEnv || "sandbox"
+          },
           body: JSON.stringify(aramexPayload)
         });
         

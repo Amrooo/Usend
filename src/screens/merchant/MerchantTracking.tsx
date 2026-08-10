@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { Screen } from '../../types';
 import MerchantSidebar from '../../components/MerchantSidebar';
-import { Search, MapPin, Package, Clock, X, Phone, User, FileText, Star, AlertCircle, ChevronRight, CheckCircle2, Play, Check, Terminal, Printer, RefreshCw } from 'lucide-react';
+import { Search, MapPin, Package, Clock, X, Phone, User, FileText, Star, AlertCircle, ChevronRight, CheckCircle2, Play, Check, Terminal, Printer, RefreshCw, Navigation, CreditCard, Hash, Truck, Send, Zap } from 'lucide-react';
 import { useState, useEffect, ReactNode, FC } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useApp, USendRequest } from '../../context/AppContext';
@@ -10,6 +10,7 @@ import { noonService } from '../../services/noonIntegration';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import Barcode from 'react-barcode';
 
 // Fix for default marker icons in react-leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -171,6 +172,37 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
     }
   };
 
+  const handleTestIntegration = async (req: USendRequest) => {
+    setIsDispatching(true);
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    const mockTrackingNumber = `TST-${Math.floor(10000000 + Math.random() * 90000000)}`;
+    const mockNoonId = `MP-${Math.floor(1000000 + Math.random() * 9000000)}`;
+    
+    await updateRequest(req.id, {
+      status: 'Assigned',
+      carrier: 'noon',
+      externalTrackingNumber: mockTrackingNumber,
+      noonLogs: {
+        request: {
+          test_mode: true,
+          order_reference: req.id,
+          integration_type: 'USend-Noon-STG'
+        },
+        response: {
+          status: 'SUCCESS',
+          mp_task_nr: mockTrackingNumber,
+          request_id: mockNoonId,
+          message: 'Integration Successful'
+        },
+        timestamp: new Date().toISOString()
+      }
+    });
+    setIsDispatching(false);
+    alert("USend API Signal: Integration Successful! Mock Waybill & Noon Task generated.");
+  };
+
   const handleNoonDispatch = async (req: USendRequest) => {
     setIsDispatching(true);
     try {
@@ -197,7 +229,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
           lng: 55.2738,
           contact_name: req.name || "Recipient Buyer",
           contact_phone_number: req.phone || "+971520000000",
-          country_code: "AE"
+          country_code: "ARE"
         },
         lat: 25.1998,
         lng: 55.2738,
@@ -733,7 +765,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                 animate={{ x: 0 }}
                 exit={{ x: isRTL ? '-100%' : '100%' }}
                 transition={{ type: 'spring', damping: 25, stiffness: 240 }}
-                className={`relative bg-white shadow-2xl w-full max-w-sm h-full overflow-hidden flex flex-col ${isRTL ? 'text-right' : 'text-left'}`}
+                className={`relative bg-white shadow-2xl w-[90%] md:w-full md:max-w-sm h-full overflow-hidden flex flex-col ${isRTL ? 'text-right' : 'text-left'}`}
               >
                 <div className="p-6 border-b border-zinc-200 flex items-center justify-between shadow-xs z-10">
                   <div>
@@ -756,6 +788,169 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                 </div>
                 
                 <div className="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-hide">
+                  {/* Status Progress Header */}
+                  <div className="flex items-center justify-between p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white shadow-lg ${
+                        liveSelectedOrder.status === 'delivered' || liveSelectedOrder.status === 'Completed' ? 'bg-[#113f36]' : 'bg-amber-500'
+                      }`}>
+                        {liveSelectedOrder.status === 'delivered' || liveSelectedOrder.status === 'Completed' ? <CheckCircle2 className="w-6 h-6" /> : <Clock className="w-6 h-6" />}
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest leading-none">Current Status</p>
+                        <h4 className="text-sm font-black text-zinc-900 uppercase mt-1">{liveSelectedOrder.status}</h4>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest leading-none">Estimated Delivery</p>
+                      <h4 className="text-sm font-black text-zinc-900 uppercase mt-1">{liveSelectedOrder.etaTime || 'Calculating...'}</h4>
+                    </div>
+                  </div>
+
+                  {/* Test Integration & Dispatch Controls */}
+                  <div className="space-y-3">
+                    {!liveSelectedOrder.externalTrackingNumber && (
+                      <button 
+                        onClick={() => handleTestIntegration(liveSelectedOrder)}
+                        disabled={isDispatching}
+                        className="w-full bg-[#113f36] text-white font-black text-[11px] uppercase tracking-widest py-3.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                      >
+                        {isDispatching ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Terminal className="w-4 h-4" />}
+                        <span>Test Integration (Generate Waybill)</span>
+                      </button>
+                    )}
+
+                    {liveSelectedOrder.carrier === 'aramex' && !liveSelectedOrder.externalTrackingNumber && (
+                      <button 
+                        onClick={() => handleAramexDispatch(liveSelectedOrder)}
+                        disabled={isDispatching}
+                        className="w-full bg-[#E31B23] text-white font-black text-[11px] uppercase tracking-widest py-3.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                      >
+                        {isDispatching ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                        <span>Dispatch via Aramex API</span>
+                      </button>
+                    )}
+
+                    {liveSelectedOrder.carrier === 'noon' && !liveSelectedOrder.externalTrackingNumber && (
+                      <button 
+                        onClick={() => handleNoonDispatch(liveSelectedOrder)}
+                        disabled={isDispatching}
+                        className="w-full bg-[#feee00] text-black font-black text-[11px] uppercase tracking-widest py-3.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50 border border-amber-300 cursor-pointer"
+                      >
+                        {isDispatching ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+                        <span>Dispatch via Noon Staging</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Waybill / Label Visualization Section */}
+                  {liveSelectedOrder.externalTrackingNumber && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="relative border-2 border-dashed border-zinc-200 rounded-3xl p-6 bg-zinc-50/30 overflow-hidden"
+                    >
+                      <div className="flex justify-between items-start mb-6 relative z-10">
+                        <div className="flex flex-col">
+                           <h3 className="text-xl font-black italic tracking-tighter text-zinc-900 uppercase">
+                             {liveSelectedOrder.carrier === 'noon' ? 'noon' : liveSelectedOrder.carrier === 'aramex' ? 'aramex' : 'usend'}
+                           </h3>
+                           <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Digital Waybill</span>
+                        </div>
+                        <div className="bg-zinc-900 text-white px-3 py-1.5 rounded-xl flex flex-col items-end">
+                           <span className="text-[9px] font-black uppercase tracking-widest opacity-70">Carrier ID</span>
+                           <span className="text-xs font-black font-mono">{liveSelectedOrder.externalTrackingNumber}</span>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-6 mb-8 relative z-10">
+                        <div>
+                          <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1.5">Origin (Shipper)</p>
+                          <p className="text-xs font-black text-zinc-900 leading-tight">{liveSelectedOrder.fromDestination || 'Merchant Warehouse'}</p>
+                        </div>
+                        <div>
+                          <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1.5">Destination (Consignee)</p>
+                          <p className="text-xs font-black text-zinc-900 leading-tight">{liveSelectedOrder.address || liveSelectedOrder.toDestination}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col items-center justify-center pt-6 border-t border-zinc-200 relative z-10">
+                        <div className="bg-white p-4 rounded-2xl shadow-sm border border-zinc-100">
+                          <Barcode 
+                            value={liveSelectedOrder.externalTrackingNumber} 
+                            width={1.4} 
+                            height={45} 
+                            fontSize={12}
+                            background="transparent"
+                            lineColor="#18181b"
+                          />
+                        </div>
+                        <div className="flex items-center gap-4 mt-4">
+                           <button className="flex items-center gap-1.5 text-[10px] font-black text-zinc-400 hover:text-zinc-900 uppercase tracking-widest transition-colors cursor-pointer">
+                             <Printer className="w-3.5 h-3.5" /> Print Label
+                           </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Complete Order Details Table */}
+                  <div className="space-y-4">
+                    <h3 className="text-xs font-black text-zinc-900 uppercase tracking-widest flex items-center gap-2">
+                       <Package className="w-4 h-4 text-[#113f36]" />
+                       Package Specifications
+                    </h3>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                       <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
+                          <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest block">Weight</span>
+                          <span className="text-sm font-black text-zinc-900 mt-1 block">{liveSelectedOrder.weight || '5.0'} kg</span>
+                       </div>
+                       <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
+                          <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest block">Item Category</span>
+                          <span className="text-sm font-black text-zinc-900 mt-1 block truncate">{liveSelectedOrder.itemType || 'General Goods'}</span>
+                       </div>
+                    </div>
+                  </div>
+
+                  {/* Financial Summary */}
+                  <div className="space-y-4">
+                    <h3 className="text-xs font-black text-zinc-900 uppercase tracking-widest flex items-center gap-2">
+                       <CreditCard className="w-4 h-4 text-[#113f36]" />
+                       Billing Summary
+                    </h3>
+                    <div className="p-5 bg-zinc-900 rounded-[2rem] text-white space-y-4 shadow-xl">
+                       <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Payment Mode</span>
+                          <span className="text-xs font-black uppercase bg-white/10 px-2 py-0.5 rounded">{liveSelectedOrder.paymentMethod || 'Prepaid'}</span>
+                       </div>
+                       <div className="flex items-center justify-between border-t border-white/10 pt-4">
+                          <div>
+                             <span className="text-[10px] font-black uppercase tracking-widest opacity-60 block leading-none">Order Value</span>
+                             <span className="text-lg font-black mt-1 block tracking-tight">{liveSelectedOrder.orderAmount || '0.00 AED'}</span>
+                          </div>
+                          <div className="text-right">
+                             <span className="text-[10px] font-black uppercase tracking-widest opacity-60 block leading-none">Settlement</span>
+                             <span className="text-lg font-black mt-1 block tracking-tight text-[#cca073]">{liveSelectedOrder.orderAmount}</span>
+                          </div>
+                       </div>
+                    </div>
+                  </div>
+
+                  {/* Tracking Lifecycle */}
+                  <div className="space-y-4">
+                    <h3 className="text-xs font-black text-zinc-900 uppercase tracking-widest flex items-center gap-2">
+                       <Navigation className="w-4 h-4 text-[#113f36]" />
+                       Shipment Timeline
+                    </h3>
+                    <div className="space-y-0 pl-2 border-l-2 border-zinc-100 ml-2">
+                      <TimelinePart dot={<Package className="w-4 h-4" />} title="Order Dispatched" desc={liveSelectedOrder.date} active />
+                      <TimelinePart dot={<Truck className="w-4 h-4" />} title="Carrier Handoff" desc="Carrier acknowledged" active={!!liveSelectedOrder.externalTrackingNumber} />
+                      <TimelinePart dot={<CheckCircle2 className="w-4 h-4" />} title="Completed" desc="Successfully delivered" last active={liveSelectedOrder.status === 'delivered' || liveSelectedOrder.status === 'Completed'} />
+                    </div>
+                  </div>
+                </div>
+
                   {/* Courier Dispatch Actions */}
                   {!liveSelectedOrder.externalTrackingNumber && liveSelectedOrder.status !== 'Rejected' && liveSelectedOrder.status !== 'Cancelled' && (
                     <>
@@ -817,297 +1012,124 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                     </>
                   )}
 
-                  {/* Built-in Waybill & Log viewer */}
-                  {liveSelectedOrder.externalTrackingNumber && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 15 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="space-y-4"
-                    >
-                      <div className="flex flex-col gap-3">
-                        <div className="flex items-center justify-between">
-                           <div className="flex items-center gap-2">
-                              <div className="w-1.5 h-4 bg-[#d12421] rounded-full" />
-                              <h3 className="text-xs font-black uppercase tracking-wider text-zinc-400">Aramex Waybill Signal</h3>
-                           </div>
-                           <span className="text-[12px] text-[#113f36] font-extrabold flex items-center gap-1 bg-[#113f36]/10 px-2 py-0.5 rounded-md">
-                             <Check className="w-3 h-3" /> API REGISTERED
-                           </span>
-                        </div>
-                        
-                        {!liveSelectedOrder.aramexLogs?.pickupId && (
-                           <button 
-                              onClick={() => handlePickupRequest(liveSelectedOrder)}
-                              disabled={isDispatching}
-                              className="w-full bg-[#d12421]/10 text-[#d12421] border border-[#d12421]/30 hover:bg-[#d12421] hover:text-white font-black text-[12px] uppercase tracking-widest py-3 rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 disabled:opacity-50 select-none cursor-pointer"
-                           >
-                              {isDispatching ? (
-                                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                              ) : (
-                                <Clock className="w-3.5 h-3.5" />
-                              )}
-                              <span>Schedule Courier Pickup</span>
-                           </button>
-                        )}
-                        {liveSelectedOrder.aramexLogs?.pickupId && (
-                           <div className="bg-[#113f36]/10 border border-[#113f36]/20 text-[#113f36] p-3 rounded-xl flex items-center justify-between px-4">
-                              <span className="text-[12px] font-black uppercase tracking-widest">Pickup Booked</span>
-                              <span className="text-xs font-mono font-bold">{liveSelectedOrder.aramexLogs.pickupId}</span>
-                           </div>
-                        )}
-                      </div>
-
-                      {/* Printable Waybill design */}
-                      <div className="bg-white text-zinc-950 border-2 border-zinc-950 p-4 rounded-3xl font-sans text-left flex flex-col justify-between shadow-xs border-dashed">
-                        <div className="border-b-2 border-zinc-950 pb-2 flex justify-between items-start">
-                          <span className={`text-sm font-black uppercase tracking-tight italic ${(liveSelectedOrder.courier || '').toLowerCase().includes('noon') ? 'text-amber-600' : 'text-[#d12421]'}`}>
-                            {(liveSelectedOrder.courier || '').toLowerCase().includes('noon') ? 'noon' : 'aramex'}
+                  {/* API Traces Expanders */}
+                  <div className="space-y-3">
+                    {/* Aramex Waybill Signal Status */}
+                    {liveSelectedOrder.externalTrackingNumber && (liveSelectedOrder.courier || '').toLowerCase().includes('aramex') && (
+                       <div className="flex items-center justify-between bg-[#113f36]/5 p-3 rounded-xl border border-[#113f36]/10">
+                          <div className="flex items-center gap-2">
+                             <div className="w-1.5 h-4 bg-[#d12421] rounded-full" />
+                             <h3 className="text-[11px] font-black uppercase tracking-wider text-zinc-500">Aramex Waybill Signal</h3>
+                          </div>
+                          <span className="text-[10px] text-[#113f36] font-extrabold flex items-center gap-1">
+                            <Check className="w-3 h-3" /> API REGISTERED
                           </span>
-                          <div className="text-right">
-                            <span className="text-[13px] font-black uppercase text-zinc-400 block">Delivery Protocol</span>
-                            <span className="text-[12px] font-bold bg-zinc-950 text-white px-1.5 py-0.5 rounded tracking-wide uppercase">COD Parcel</span>
-                          </div>
-                        </div>
+                       </div>
+                    )}
 
-                        <div className="py-2.5 border-b border-zinc-200 grid grid-cols-2 gap-2 text-[13px] font-medium">
-                          <div>
-                            <span className="font-bold text-zinc-400 block uppercase text-[13px] tracking-wider">Sender</span>
-                            <p className="font-extrabold leading-tight">USend Central Depot</p>
-                            <p className="text-zinc-500 text-[12px] truncate leading-tight mt-0.5">Jebel Ali Area Node A</p>
+                    {/* SOAP XML logs expander */}
+                    {liveSelectedOrder.aramexLogs && (
+                      <div className="border border-zinc-200 rounded-2xl overflow-hidden bg-zinc-50">
+                        <button 
+                          type="button"
+                          onClick={() => setShowSoapLogs(!showSoapLogs)}
+                          className="w-full p-3.5 font-extrabold text-[11px] text-zinc-500 flex items-center justify-between hover:bg-zinc-100 outline-hidden"
+                        >
+                          <span className="flex items-center gap-1.5 uppercase font-black tracking-widest">
+                            <Terminal className="w-3.5 h-3.5 text-[#113f36]" />
+                            ARAMEX SOAP TRACES
+                          </span>
+                          <span className="text-[10px] font-bold text-white bg-zinc-900 px-2 py-0.5 rounded uppercase">{showSoapLogs ? 'Hide' : 'API JSON'}</span>
+                        </button>
+                        
+                        {showSoapLogs && (
+                          <div className="p-3 border-t border-zinc-200 space-y-3 font-mono text-[11px] max-h-[220px] overflow-y-auto bg-black text-zinc-300">
+                            <div className="space-y-1">
+                              <span className="text-[#113f36] font-black block uppercase tracking-wider text-[11px]">WSDL ENDPOINT: https://ws.aramex.net/ShippingAPI.v1</span>
+                              <pre className="bg-zinc-950/80 p-2 rounded text-zinc-400 overflow-x-auto select-all leading-normal">
+                                {JSON.stringify(liveSelectedOrder.aramexLogs.request, null, 2)}
+                              </pre>
+                            </div>
+                            <div className="space-y-1 pt-2 border-t border-zinc-900">
+                              <span className="text-[#6d8c55] font-black block uppercase tracking-wider text-[11px]">SOAP ACTION: 'CreateShipmentsResponse'</span>
+                              <pre className="bg-zinc-950/80 p-2 rounded text-[#6d8c55] overflow-x-auto select-all leading-normal">
+                                {JSON.stringify(liveSelectedOrder.aramexLogs.response, null, 2)}
+                              </pre>
+                            </div>
                           </div>
-                          <div>
-                            <span className="font-bold text-zinc-400 block uppercase text-[13px] tracking-wider">Recipient (Buyer)</span>
-                            <p className="font-extrabold leading-tight text-zinc-950">{liveSelectedOrder.name}</p>
-                            <p className="text-zinc-550 text-[12px] truncate leading-tight mt-0.5">{liveSelectedOrder.address}</p>
-                          </div>
-                        </div>
-
-                        {/* Cargo dimensions audit */}
-                        <div className="py-2 border-b border-zinc-200 grid grid-cols-2 gap-2 text-[12px] font-semibold text-zinc-500">
-                          <div>
-                            <span className="text-[13px] uppercase block text-zinc-400">Cargo Contents</span>
-                            <p className="font-bold text-zinc-800 truncate">{liveSelectedOrder.itemType}</p>
-                          </div>
-                          <div>
-                            <span className="text-[13px] uppercase block text-zinc-400">Declared Value</span>
-                            <p className="font-extrabold text-[#d12421]">{liveSelectedOrder.orderAmount}</p>
-                          </div>
-                        </div>
-
-                        {/* Barcode block */}
-                        <div className="py-3 flex flex-col items-center justify-center bg-zinc-50 rounded-2xl my-2 p-2">
-                          <div className="flex gap-[1px] h-7 items-stretch mb-1 font-mono">
-                            {[2, 4, 1, 3, 2, 4, 1, 3, 1, 4, 2, 3, 1, 2, 3, 1, 4, 1, 2, 4, 1, 3, 4, 1, 2, 3, 4, 1].map((width, i) => (
-                              <div key={i} className="bg-zinc-950" style={{ width: `${width}px` }} />
-                            ))}
-                          </div>
-                          <span className="font-mono text-[13px] font-black tracking-widest text-zinc-800">{liveSelectedOrder.externalTrackingNumber}</span>
-                        </div>
-
-                        <div className="flex justify-between items-center text-[12px] pt-1.5 text-zinc-400 font-bold">
-                          <span>Payment Method: {liveSelectedOrder.paymentMethod}</span>
-                          <span className="text-zinc-900 text-[13px] font-black">{liveSelectedOrder.orderAmount}</span>
-                        </div>
+                        )}
                       </div>
+                    )}
 
-                      {/* Download label options */}
-                      {(liveSelectedOrder.awbLabelUrl || liveSelectedOrder.awbLabelBase64) && (
-                         <div className="flex items-center gap-2">
-                           {liveSelectedOrder.awbLabelUrl ? (
-                             <a 
-                               href={liveSelectedOrder.awbLabelUrl} 
-                               target="_blank" 
-                               rel="noopener noreferrer"
-                               className="flex-1 bg-zinc-900 text-white hover:bg-zinc-800 text-[12px] font-black uppercase tracking-wider py-2.5 rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5"
-                             >
-                               <FileText className="w-3.5 h-3.5" />
-                               {t('view_pdf') || 'View PDF Label'}
-                             </a>
-                           ) : liveSelectedOrder.awbLabelBase64 ? (
-                             <button 
-                               onClick={() => {
-                                 const isZpl = liveSelectedOrder.awbLabelBase64?.startsWith('Xl') || liveSelectedOrder.awbLabelBase64?.includes('^XA'); // Mock ZPL check
-                                 const link = document.createElement('a');
-                                 if (isZpl) {
-                                  link.href = `data:text/plain;charset=utf-8,${encodeURIComponent(liveSelectedOrder.awbLabelBase64 || '')}`;
-                                  link.download = `Waybill-${liveSelectedOrder.externalTrackingNumber}.zpl`;
-                                 } else {
-                                  link.href = `data:application/pdf;base64,${liveSelectedOrder.awbLabelBase64}`;
-                                  link.download = `Waybill-${liveSelectedOrder.externalTrackingNumber}.pdf`;
-                                 }
-                                 link.click();
-                               }}
-                               className="flex-1 bg-zinc-900 text-white hover:bg-zinc-800 text-[12px] font-black uppercase tracking-wider py-2.5 rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
-                             >
-                               <FileText className="w-3.5 h-3.5" />
-                               {t('download_label') || 'Download Label'}
-                             </button>
-                           ) : null}
-                         </div>
-                      )}
-
-                      {/* SOAP XML logs expander */}
-                      {liveSelectedOrder.aramexLogs && (
-                        <div className="border border-zinc-200 rounded-2xl overflow-hidden bg-zinc-50">
-                          <button 
-                            type="button"
-                            onClick={() => setShowSoapLogs(!showSoapLogs)}
-                            className="w-full p-3.5 font-extrabold text-[12px] text-zinc-500 flex items-center justify-between hover:bg-zinc-100 outline-hidden"
-                          >
-                            <span className="flex items-center gap-1.5 uppercase font-black">
-                              <Terminal className="w-3.5 h-3.5 text-[#113f36]" />
-                              SOAP Web Service Traces
-                            </span>
-                            <span className="text-[13px] font-bold text-[#113f36] bg-[#113f36]/10 px-2 py-0.5 rounded">{showSoapLogs ? 'Hide' : 'WSDL XML'}</span>
-                          </button>
-                          
-                          {showSoapLogs && (
-                            <div className="p-3 border-t border-zinc-200 space-y-3 font-mono text-[12px] max-h-[220px] overflow-y-auto bg-black text-zinc-300">
-                              <div className="space-y-1">
-                                <span className="text-[#113f36] font-black block uppercase tracking-wider text-[13px]">WSDL ENDPOINT: https://ws.aramex.net/ShippingAPI.v1</span>
-                                <span className="text-zinc-500 italic block text-[13px]">SOAPEnvelope XML Request (ClientInfo Header Authorization)</span>
-                                <pre className="bg-zinc-950/80 p-2 rounded text-zinc-400 overflow-x-auto select-all leading-normal">
-                                  {JSON.stringify(liveSelectedOrder.aramexLogs.request, null, 2)}
-                                </pre>
-                              </div>
-                              <div className="space-y-1 pt-2 border-t border-zinc-900">
-                                <span className="text-[#6d8c55] font-black block uppercase tracking-wider text-[13px]">SOAP ACTION: 'CreateShipmentsResponse'</span>
-                                <span className="text-zinc-500 italic block text-[13px]">API Response Body (JSON/XML structure)</span>
-                                <pre className="bg-zinc-950/80 p-2 rounded text-[#6d8c55] overflow-x-auto select-all leading-normal">
-                                  {JSON.stringify(liveSelectedOrder.aramexLogs.response, null, 2)}
-                                </pre>
-                              </div>
+                    {/* Noon JSON REST logs expander */}
+                    {liveSelectedOrder.noonLogs && (
+                      <div className="border border-zinc-200 rounded-2xl overflow-hidden bg-zinc-50">
+                        <button 
+                          type="button"
+                          onClick={() => setShowSoapLogs(!showSoapLogs)}
+                          className="w-full p-3.5 font-extrabold text-[11px] text-zinc-500 flex items-center justify-between hover:bg-zinc-100 outline-hidden"
+                        >
+                          <span className="flex items-center gap-1.5 uppercase font-black tracking-widest">
+                            <Terminal className="w-3.5 h-3.5 text-amber-600" />
+                            NOON STAGING REST TRACES
+                          </span>
+                          <span className="text-[10px] font-bold text-white bg-zinc-900 px-2 py-0.5 rounded uppercase">{showSoapLogs ? 'Hide' : 'API JSON'}</span>
+                        </button>
+                        
+                        {showSoapLogs && (
+                          <div className="p-3 border-t border-zinc-200 space-y-3 font-mono text-[11px] max-h-[220px] overflow-y-auto bg-black text-zinc-300">
+                            <div className="space-y-1">
+                              <span className="text-amber-500 font-black block uppercase tracking-wider text-[11px]">REST ENDPOINT: POST https://food-api-team.noonstg.team/public/v1/create-task</span>
+                              <pre className="bg-zinc-950/80 p-2 rounded text-zinc-400 overflow-x-auto select-all leading-normal">
+                                {JSON.stringify(liveSelectedOrder.noonLogs.request, null, 2)}
+                              </pre>
                             </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Noon JSON REST logs expander */}
-                      {liveSelectedOrder.noonLogs && (
-                        <div className="border border-zinc-200 rounded-2xl overflow-hidden bg-zinc-50">
-                          <button 
-                            type="button"
-                            onClick={() => setShowSoapLogs(!showSoapLogs)}
-                            className="w-full p-3.5 font-extrabold text-[12px] text-zinc-500 flex items-center justify-between hover:bg-zinc-100 outline-hidden"
-                          >
-                            <span className="flex items-center gap-1.5 uppercase font-black">
-                              <Terminal className="w-3.5 h-3.5 text-amber-600" />
-                              Noon Hyperlocal REST Logs
-                            </span>
-                            <span className="text-[13px] font-bold text-amber-750 bg-amber-500/10 px-2 py-0.5 rounded">{showSoapLogs ? 'Hide' : 'REST JSON'}</span>
-                          </button>
-                          
-                          {showSoapLogs && (
-                            <div className="p-3 border-t border-zinc-200 space-y-3 font-mono text-[12px] max-h-[220px] overflow-y-auto bg-black text-zinc-300">
-                              <div className="space-y-1">
-                                <span className="text-amber-500 font-black block uppercase tracking-wider text-[13px]">REST ENDPOINT: POST https://food-api-team.noonstg.team/public/v1/create-task</span>
-                                <span className="text-zinc-400 italic block text-[13px]">Headers (X-API-KEY Authorization) & JSON Request Body</span>
-                                <pre className="bg-zinc-950/80 p-2 rounded text-zinc-400 overflow-x-auto select-all leading-normal">
-                                  {JSON.stringify(liveSelectedOrder.noonLogs.request, null, 2)}
-                                </pre>
-                              </div>
-                              <div className="space-y-1 pt-2 border-t border-zinc-900">
-                                <span className="text-[#6d8c55] font-black block uppercase tracking-wider text-[13px]">RESPONSE CODES: 200/201 SUCCESS</span>
-                                <span className="text-zinc-400 italic block text-[13px]">API JSON Response Payload</span>
-                                <pre className="bg-zinc-950/80 p-2 rounded text-[#6d8c55] overflow-x-auto select-all leading-normal">
-                                  {JSON.stringify(liveSelectedOrder.noonLogs.response, null, 2)}
-                                </pre>
-                              </div>
+                            <div className="space-y-1 pt-2 border-t border-zinc-900">
+                              <span className="text-[#6d8c55] font-black block uppercase tracking-wider text-[11px]">RESPONSE CODES: 200/201 SUCCESS</span>
+                              <pre className="bg-zinc-950/80 p-2 rounded text-[#6d8c55] overflow-x-auto select-all leading-normal">
+                                {JSON.stringify(liveSelectedOrder.noonLogs.response, null, 2)}
+                              </pre>
                             </div>
-                          )}
-                        </div>
-                      )}
-                    </motion.div>
-                  )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
 
                   {/* Status Timeline */}
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
                        <div className="flex items-center gap-2">
-                          <div className="w-1.5 h-4 bg-[#113f36] rounded-full" />
-                          <h3 className="text-sm font-bold text-zinc-900">{t('current_status')}</h3>
+                          <div className="w-1.5 h-4 bg-zinc-900 rounded-full" />
+                          <h3 className="text-sm font-black uppercase tracking-wider text-zinc-900">Current Status</h3>
                        </div>
-                       <button className="flex items-center gap-1.5 text-xs font-bold text-[#113f36] bg-[#113f36]/5 hover:bg-[#113f36]/10 px-3 py-1.5 rounded-lg transition-colors">
-                          <FileText className="w-3.5 h-3.5" />
-                          Download AWB
-                       </button>
                     </div>
-                    <div className="space-y-1">
-                      {(liveSelectedOrder.carrier || '').toLowerCase() === 'noon' ? (
-                        <>
-                          <TimelinePart 
-                            dot={<CheckCircle2 className="w-5 h-5" />} 
-                            title="Pending Assignment" 
-                            desc="Successfully queued on Noon Hyperlocal system" 
-                            active={true}
-                          />
-                          <TimelinePart 
-                            dot={<User className="w-5 h-5" />} 
-                            title="Rider Assigned" 
-                            desc={liveSelectedOrder.externalTrackingNumber ? `Assigned to Noon Rider (${liveSelectedOrder.externalTrackingNumber})` : "Awaiting Rider allocation"} 
-                            active={!!liveSelectedOrder.externalTrackingNumber}
-                          />
-                          <TimelinePart 
-                            dot={<MapPin className="w-5 h-5" />} 
-                            title="Arrived at Pickup Location" 
-                            desc={(liveSelectedOrder.status || '').toLowerCase() === 'picked_up' || (liveSelectedOrder.status || '').toLowerCase() === 'in_transit' || (liveSelectedOrder.status || '').toLowerCase() === 'en-route' || (liveSelectedOrder.status || '').toLowerCase() === 'delivered' ? "Rider arrived at outlet warehouse" : "Rider en route to outlet"} 
-                            active={(liveSelectedOrder.status || '').toLowerCase() === 'picked_up' || (liveSelectedOrder.status || '').toLowerCase() === 'in_transit' || (liveSelectedOrder.status || '').toLowerCase() === 'en-route' || (liveSelectedOrder.status || '').toLowerCase() === 'delivered'}
-                          />
-                          <TimelinePart 
-                            dot={<Package className="w-5 h-5" />} 
-                            title="Picked Up" 
-                            desc={(liveSelectedOrder.status || '').toLowerCase() === 'picked_up' || (liveSelectedOrder.status || '').toLowerCase() === 'in_transit' || (liveSelectedOrder.status || '').toLowerCase() === 'en-route' || (liveSelectedOrder.status || '').toLowerCase() === 'delivered' ? "Parcel loaded by rider successfully" : "Awaiting dispatch hand-off"} 
-                            active={(liveSelectedOrder.status || '').toLowerCase() === 'picked_up' || (liveSelectedOrder.status || '').toLowerCase() === 'in_transit' || (liveSelectedOrder.status || '').toLowerCase() === 'en-route' || (liveSelectedOrder.status || '').toLowerCase() === 'delivered'}
-                          />
-                          <TimelinePart 
-                            dot={<MapPin className="w-5 h-5" />} 
-                            title="Arrived at Delivery" 
-                            desc={(liveSelectedOrder.status || '').toLowerCase() === 'in_transit' || (liveSelectedOrder.status || '').toLowerCase() === 'en-route' || (liveSelectedOrder.status || '').toLowerCase() === 'delivered' ? "Rider reached recipient coordinates" : "Rider in transit to destination"} 
-                            active={(liveSelectedOrder.status || '').toLowerCase() === 'in_transit' || (liveSelectedOrder.status || '').toLowerCase() === 'en-route' || (liveSelectedOrder.status || '').toLowerCase() === 'delivered'}
-                          />
-                          <TimelinePart 
-                            dot={<CheckCircle2 className="w-5 h-5" />} 
-                            title="Delivered" 
-                            desc={(liveSelectedOrder.status || '').toLowerCase() === 'delivered' ? "Package handoff verified with proof" : "Awaiting final hand-off"} 
-                            active={(liveSelectedOrder.status || '').toLowerCase() === 'delivered'}
-                            last
-                          />
-                        </>
-                      ) : (
-                        <>
-                          <TimelinePart 
-                            dot={<CheckCircle2 className="w-5 h-5" />} 
-                            title="Order Placed" 
-                            desc="Successfully placed and received by system" 
-                            active={true}
-                          />
-                          <TimelinePart 
-                            dot={<FileText className="w-5 h-5" />} 
-                            title="Courier Assigned" 
-                            desc={liveSelectedOrder.externalTrackingNumber ? "AWB generated & assigned" : "Awaiting assignment"} 
-                            active={(liveSelectedOrder.status || '').toLowerCase() !== 'pending' && (liveSelectedOrder.status || '').toLowerCase() !== 'assigning'}
-                          />
-                          <TimelinePart 
-                            dot={<Package className="w-5 h-5" />} 
-                            title="Picked Up" 
-                            desc="Handed over to courier" 
-                            active={(liveSelectedOrder.status || '').toLowerCase() !== 'pending' && (liveSelectedOrder.status || '').toLowerCase() !== 'assigning' && (liveSelectedOrder.status || '').toLowerCase() !== 'approved' && (liveSelectedOrder.status || '').toLowerCase() !== 'created'}
-                          />
-                          <TimelinePart 
-                            dot={<Clock className="w-4 h-4" />} 
-                            title="In Transit" 
-                            desc="On the way to recipient" 
-                            active={(liveSelectedOrder.status || '').toLowerCase() === 'in_transit' || (liveSelectedOrder.status || '').toLowerCase() === 'en-route' || (liveSelectedOrder.status || '').toLowerCase() === 'delivered'}
-                          />
-                          <TimelinePart 
-                            dot={<MapPin className="w-5 h-5" />} 
-                            title="Delivered" 
-                            desc="Successfully delivered" 
-                            active={(liveSelectedOrder.status || '').toLowerCase() === 'delivered'}
-                            last
-                          />
-                        </>
-                      )}
+                    <div className="space-y-0.5">
+                       <TimelinePart 
+                         dot={<div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-white"><Check className="w-3.5 h-3.5" /></div>} 
+                         title="Order Created" 
+                         desc="Waybill generated & system received" 
+                         active={true}
+                       />
+                       <TimelinePart 
+                         dot={<div className="w-6 h-6 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-400"><Package className="w-3.5 h-3.5" /></div>} 
+                         title="Picked Up" 
+                         desc="Package collected by courier" 
+                         active={(liveSelectedOrder.status || '').toLowerCase() === 'picked_up' || (liveSelectedOrder.status || '').toLowerCase() === 'in_transit' || (liveSelectedOrder.status || '').toLowerCase() === 'en-route' || (liveSelectedOrder.status || '').toLowerCase() === 'delivered'}
+                       />
+                       <TimelinePart 
+                         dot={<div className="w-6 h-6 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-400"><Clock className="w-3.5 h-3.5" /></div>} 
+                         title="Out for Delivery" 
+                         desc="In courier vehicle en-route to recipient" 
+                         active={(liveSelectedOrder.status || '').toLowerCase() === 'in_transit' || (liveSelectedOrder.status || '').toLowerCase() === 'en-route' || (liveSelectedOrder.status || '').toLowerCase() === 'delivered'}
+                       />
+                       <TimelinePart 
+                         dot={<div className="w-6 h-6 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-400"><MapPin className="w-3.5 h-3.5" /></div>} 
+                         title="Delivered" 
+                         desc="Handed over & COD collected" 
+                         active={(liveSelectedOrder.status || '').toLowerCase() === 'delivered'}
+                         last
+                       />
                     </div>
                   </div>
 
@@ -1157,7 +1179,6 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                       </button>
                     </div>
                   )}
-                </div>
 
                 <div className="p-6 border-t border-zinc-200 bg-zinc-50">
                    <div className="flex gap-3">

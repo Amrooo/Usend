@@ -157,22 +157,22 @@ const INITIAL_COURIER_CONFIGS: Record<string, CourierIntegrationConfig> = {
     status: 'Active',
     currentMode: 'sandbox',
     sandboxCreds: {
-      username: "testingapi@aramex.com",
-      password: "R123456789$r",
-      accountNumber: "45796",
-      accountPin: "116216",
+      username: "dxbit@aramex.com",
+      password: "Ar@m3x$h1pp1ng",
+      accountNumber: "154454",
+      accountPin: "115216",
       accountEntity: "DXB",
       accountCountryCode: "AE",
-      source: "24"
+      source: "0"
     },
     productionCreds: {
       username: "",
       password: "",
-      accountNumber: "",
-      accountPin: "",
-      accountEntity: "",
+      accountNumber: "75788705",
+      accountPin: "217147",
+      accountEntity: "DXB",
       accountCountryCode: "AE",
-      source: "24"
+      source: "0"
     },
     rates: {
       guest: { baseFee: 30, perKmRate: 0, perKgRate: 5, expressSurcharge: 25, codFee: 10 },

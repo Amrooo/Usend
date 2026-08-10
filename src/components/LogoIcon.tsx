@@ -8,6 +8,7 @@ export default function LogoIcon({ className = 'h-9 w-auto', variant = 'light' }
         src={logo} 
         alt="USend Logo" 
         className={`${className} object-contain`} 
+        referrerPolicy="no-referrer"
       />
     </div>
   );

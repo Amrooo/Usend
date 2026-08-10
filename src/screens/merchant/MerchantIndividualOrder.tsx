@@ -398,7 +398,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
               lng: formData.position ? formData.position[1] : 55.2738,
               contact_name: formData.customerName || "Recipient Buyer",
               contact_phone_number: formData.phone || "+971520000000",
-              country_code: "AE"
+              country_code: "ARE"
             },
             lat: formData.position ? formData.position[0] : 25.1998,
             lng: formData.position ? formData.position[1] : 55.2738,
@@ -447,7 +447,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
     <div className={`flex flex-col md:flex-row h-screen overflow-hidden bg-zinc-50 ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
       <MerchantSidebar currentScreen="merchant_individual" onNavigate={onNavigate} />
       
-      <main className="flex-1 p-6 lg:p-10 h-full overflow-y-auto relative">
+      <main className="flex-1 p-4 md:p-10 h-full overflow-y-auto relative">
         {/* Abstract Background Decoration */}
         <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#113f36]/5 rounded-full blur-[100px] -translate-y-1/3 translate-x-1/3 pointer-events-none z-0"></div>
 
@@ -503,7 +503,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
             <form onSubmit={handleNormalSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 space-y-6">
                 {/* Customer Information Cards */}
-                <div className="bg-white dark:bg-zinc-950 border border-[#EBEFE9] dark:border-zinc-800/60 rounded-[2.5rem] p-8 shadow-[0_8px_30px_rgb(220,225,235,0.45)] dark:shadow-none space-y-7">
+                <div className="bg-white dark:bg-zinc-950 border border-[#EBEFE9] dark:border-zinc-800/60 rounded-[2.5rem] p-5 md:p-8 shadow-[0_8px_30px_rgb(220,225,235,0.45)] dark:shadow-none space-y-7">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-xl bg-[#113f36]/10 text-[#546a40] flex items-center justify-center">
                       <User className="w-[18px] h-[18px]" />

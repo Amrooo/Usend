@@ -65,7 +65,7 @@ const dbAdmin = firebaseConfig.firestoreDatabaseId
   : getFirestore(appInstance);
 
 const app = express();
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = 3000;
 
 app.get("/api/health", (req, res) => {
   res.json({ 
@@ -275,24 +275,61 @@ app.post("/api/aramex/:serviceType", async (req, res) => {
     const { serviceType } = req.params;
     let payload = req.body;
 
-    let aramexUser = process.env.ARAMEX_USERNAME;
-    
+    const userClientInfo = payload.ClientInfo || {};
+
+    const isProduction = (process.env.ARAMEX_ENV === "production") || (req.headers["x-aramex-env"] === "production");
+    const baseUrl = process.env.ARAMEX_BASE_URL || (isProduction ? "https://ws.aramex.net" : "https://ws.dev.aramex.net");
+
+    // Default test credentials according to the attached Aramex JSON environment
+    const defaultUserName = "dxbit@aramex.com";
+    const defaultPassword = "Ar@m3x$h1pp1ng";
+    const defaultAccountNumber = "154454";
+    const defaultAccountPin = "115216";
+    const defaultAccountEntity = "DXB";
+    const defaultAccountCountryCode = "AE";
+    const defaultSource = 0;
+    const defaultVersion = "v1.0";
+
+    const finalUserName = userClientInfo.UserName && userClientInfo.UserName !== "testingapi@aramex.com"
+      ? userClientInfo.UserName
+      : (process.env.ARAMEX_USERNAME || defaultUserName);
+
+    const finalPassword = userClientInfo.Password && userClientInfo.Password !== "R123456789$r"
+      ? userClientInfo.Password
+      : (process.env.ARAMEX_PASSWORD || defaultPassword);
+
+    const finalVersion = userClientInfo.Version && userClientInfo.Version !== "v1"
+      ? userClientInfo.Version
+      : (process.env.ARAMEX_VERSION || defaultVersion);
+
+    const finalAccountNumber = userClientInfo.AccountNumber && userClientInfo.AccountNumber !== "45796"
+      ? userClientInfo.AccountNumber
+      : (process.env.ARAMEX_ACCOUNT_NUMBER || defaultAccountNumber);
+
+    const finalAccountPin = userClientInfo.AccountPin && userClientInfo.AccountPin !== "116216"
+      ? userClientInfo.AccountPin
+      : (process.env.ARAMEX_ACCOUNT_PIN || defaultAccountPin);
+
+    const finalAccountEntity = userClientInfo.AccountEntity || process.env.ARAMEX_ACCOUNT_ENTITY || defaultAccountEntity;
+    const finalAccountCountryCode = userClientInfo.AccountCountryCode || process.env.ARAMEX_ACCOUNT_COUNTRY_CODE || defaultAccountCountryCode;
+    const finalSource = userClientInfo.Source !== undefined
+      ? Number(userClientInfo.Source)
+      : (process.env.ARAMEX_SOURCE !== undefined ? Number(process.env.ARAMEX_SOURCE) : defaultSource);
+
     payload = {
       ...payload,
       ClientInfo: {
-        UserName: aramexUser ? aramexUser.replace(/,$/, '') : "testingapi@aramex.com",
-        Password: process.env.ARAMEX_PASSWORD || "R123456789$r",
-        Version: process.env.ARAMEX_VERSION || "v1.0",
-        AccountNumber: process.env.ARAMEX_ACCOUNT_NUMBER || "45796",
-        AccountPin: process.env.ARAMEX_ACCOUNT_PIN || "116216",
-        AccountEntity: process.env.ARAMEX_ACCOUNT_ENTITY || "DXB",
-        AccountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY_CODE || "AE",
-        Source: process.env.ARAMEX_SOURCE !== undefined ? Number(process.env.ARAMEX_SOURCE) : 0,
-        PreferredLanguageCode: process.env.ARAMEX_PREFERRED_LANGUAGE || null
+        UserName: finalUserName,
+        Password: finalPassword,
+        Version: finalVersion,
+        AccountNumber: finalAccountNumber,
+        AccountPin: finalAccountPin,
+        AccountEntity: finalAccountEntity,
+        AccountCountryCode: finalAccountCountryCode,
+        Source: finalSource,
+        PreferredLanguageCode: userClientInfo.PreferredLanguageCode || process.env.ARAMEX_PREFERRED_LANGUAGE || null
       },
     };
-
-    const baseUrl = process.env.ARAMEX_BASE_URL || "https://ws.dev.aramex.net";
 
     let path = "";
     if (serviceType === "rate") {
