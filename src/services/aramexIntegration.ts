@@ -2,7 +2,7 @@ import { USendRequest } from '../context/AppContext';
 import { courierIntegrationService, defaultAramexCreds } from './courierIntegration';
 
 export const aramexService = {
-  createDeliveryJob: async (request: USendRequest): Promise<{ success: boolean; externalTrackingNumber?: string; error?: string }> => {
+  createDeliveryJob: async (request: USendRequest): Promise<{ success: boolean; externalTrackingNumber?: string; error?: string; labelUrl?: string; base64Label?: string }> => {
     try {
       // Parse numeric cash on delivery from orderAmount (e.g. "150 AED")
       let numericCod = 0;
@@ -33,7 +33,9 @@ export const aramexService = {
       return {
         success: result.success,
         externalTrackingNumber: result.trackingNumber,
-        error: result.error
+        error: result.error,
+        labelUrl: result.labelUrl,
+        base64Label: result.base64Label
       };
     } catch (e: any) {
       return { success: false, error: e.message || String(e) };

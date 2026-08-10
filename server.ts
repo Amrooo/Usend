@@ -352,36 +352,40 @@ app.post("/api/aramex/:serviceType", async (req, res) => {
     let data;
     let useFallback = false;
 
-    try {
-      aramexRes = await fetch(`${baseUrl}${path}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(15000), // 15 second timeout
-      });
+    if (!isProduction) {
+      useFallback = true;
+    } else {
+      try {
+        aramexRes = await fetch(`${baseUrl}${path}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(payload),
+          signal: AbortSignal.timeout(15000), // 15 second timeout
+        });
 
-      if (!aramexRes.ok) {
-        console.warn(`Aramex API returned non-OK status: ${aramexRes.status}. Using mock fallback.`);
-        useFallback = true;
-      } else {
-        const textData = await aramexRes.text();
-        try {
-          data = JSON.parse(textData);
-          if (data.HasErrors) {
-            console.warn("Aramex API response has errors. Using mock fallback to ensure robustness.");
+        if (!aramexRes.ok) {
+          console.warn(`Aramex API returned non-OK status: ${aramexRes.status}. Using mock fallback.`);
+          useFallback = true;
+        } else {
+          const textData = await aramexRes.text();
+          try {
+            data = JSON.parse(textData);
+            if (data.HasErrors) {
+              console.warn("Aramex API response has errors. Using mock fallback to ensure robustness.");
+              useFallback = true;
+            }
+          } catch (parseError) {
+            console.warn("Aramex returned non-JSON response. Using mock fallback.");
             useFallback = true;
           }
-        } catch (parseError) {
-          console.warn("Aramex returned non-JSON response. Using mock fallback.");
-          useFallback = true;
         }
+      } catch (fetchError: any) {
+        // Silently fallback if fetch fails (e.g. timeout or network issue)
+        useFallback = true;
       }
-    } catch (fetchError: any) {
-      console.warn(`Aramex fetch failed: ${fetchError.message}. Using offline/mock fallback.`);
-      useFallback = true;
     }
 
     if (useFallback) {

@@ -82,7 +82,7 @@ function StripePaymentForm({ clientSecret, totalAmount, onPaymentSuccess, onCanc
         <button 
           type="submit" 
           disabled={!stripe || !isReady || isProcessing} 
-          className="flex-1 py-3.5 rounded-xl bg-zinc-900 text-white font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 shadow-lg disabled:bg-zinc-400"
+          className="flex-1 py-3.5 rounded-xl bg-brand text-white font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 shadow-lg disabled:bg-zinc-400"
         >
           {isProcessing ? 'Verifying...' : `Secure Pay ${totalAmount} AED`}
         </button>
@@ -134,12 +134,12 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
     collectCashFromCustomer: false,
     collectAmount: '',
     codAmount: String(Math.floor(110 + Math.random() * 125)),
-    receiverPaymentMode: 'cod' as 'cod' | 'card'
+    receiverPaymentMode: 'wallet' as 'wallet' | 'card'
   });
 
   // Sender Delivery Fee payment details
   const [senderPaymentMethod, setSenderPaymentMethod] = useState<'card' | 'wallet'>('card');
-  const [paymentMethod, setPaymentMethod] = useState('cod');
+  const [paymentMethod, setPaymentMethod] = useState(isGuest ? 'card' : 'wallet');
   const [stripeClientSecret, setStripeClientSecret] = useState<string | null>(null);
   const [stripePubKey, setStripePubKey] = useState<string | null>(null);
   const [stripeError, setStripeError] = useState<string | null>(null);
@@ -163,6 +163,9 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
   
   // Noon integration testing states
   const [noonTestingLoading, setNoonTestingLoading] = useState(false);
+  const [aramexTestingLoading, setAramexTestingLoading] = useState(false);
+  const [aramexTestingSuccess, setAramexTestingSuccess] = useState<boolean | null>(null);
+  const [aramexTestingLogs, setAramexTestingLogs] = useState<{request: any, response: any} | null>(null);
   const [noonTestingLogs, setNoonTestingLogs] = useState<{ request: any, response: any, timestamp: string } | null>(null);
   const [noonTestingSuccess, setNoonTestingSuccess] = useState<boolean | null>(null);
   
@@ -320,7 +323,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
     if (wizardStep < 4) {
       setWizardStep((prev) => (prev + 1) as 1|2|3|4|5);
     } else {
-      if (paymentMethod === 'cod') {
+      if (paymentMethod === 'wallet') {
         setLoading(true);
         processFinalOrder();
       }
@@ -336,6 +339,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
     const reqPayload: any = {
       id: newOrderId,
       name: shipperData.name || (isGuest ? (isRTL ? 'ÙØ³ØªØ®Ø¯Ù Ø¶ÙÙ' : 'Guest User') : user?.name || 'User'),
+      email: shipperData.email || user?.email,
       receiverName: receiverData.name || 'Recipient',
       receiverPhone: receiverData.phone || '+971',
       userId: isGuest ? undefined : user?.uid,
@@ -344,7 +348,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
       channel: isGuest ? 'Guest Flow' : 'User Portal',
       date: new Date().toLocaleDateString(),
       status: 'Pending' as const,
-      paymentStatus: confirmedPaymentIntent ? 'paid' : (senderPaymentMethod === 'wallet' ? 'paid' : 'pending'),
+      paymentStatus: confirmedPaymentIntent ? 'paid' : (paymentMethod === 'wallet' ? 'paid' : 'pending'),
       stripeIntentId: confirmedPaymentIntent?.id,
       address: receiverData.city ? `${receiverData.street}, ${receiverData.city}, ${receiverData.country}` : 'Dubai, UAE',
       fromDestination: shipperData.city ? `${shipperData.street}, ${shipperData.city}, ${shipperData.country}` : 'Sharjah, UAE',
@@ -353,13 +357,13 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
       itemType: 'Package',
       description: `${shipmentData.quantity}x ${shipmentData.description} (${shipmentData.weight}kg)`,
       amountType: 'single item' as const,
-      paymentMethod: shipmentData.receiverPaymentMode === 'card' ? 'Card on Delivery' : 'Cash on Delivery',
+      paymentMethod: paymentMethod === 'card' ? 'Credit Card (Stripe)' : 'USend Wallet',
       orderAmount: `${codVal} AED`,
       deliveryFee: `${totalAmount} AED`,
       distanceKm: distanceKm > 0 ? distanceKm : undefined,
       collectCashFromCustomer: shipmentData.collectCashFromCustomer || false,
       collectAmount: shipmentData.collectCashFromCustomer ? parseFloat(shipmentData.collectAmount || '0') : 0,
-      senderPaymentMethod: senderPaymentMethod === 'wallet' ? 'USend Wallet' : 'Credit Card (Stripe)',
+      senderPaymentMethod: paymentMethod === 'wallet' ? 'USend Wallet' : 'Credit Card (Stripe)',
       applicantType: isGuest ? 'Guest' as const : 'User' as const,
       etaTime: 'Pending',
       courier: shipmentData.courier === 'aramex' ? 'Aramex' : shipmentData.courier === 'noon' ? 'Noon RoD' : 'USend Fleet',
@@ -415,6 +419,45 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
 
   const handlePrevStep = () => {
     if (wizardStep > 0) setWizardStep((prev) => (prev - 1) as 0|1|2|3|4|5);
+  };
+
+  const handlePushToAramexStaging = async () => {
+    if (!createdOrderId) return;
+    setAramexTestingLoading(true);
+    setAramexTestingLogs(null);
+    setAramexTestingSuccess(null);
+
+    try {
+      const targetOrder = activeRequests.find(r => r.id === createdOrderId);
+      if (!targetOrder) {
+        alert("Error: Order not found in system state.");
+        setAramexTestingLoading(false);
+        return;
+      }
+      
+      const reqPayload = { ...targetOrder };
+      const logTimestamp = new Date().toISOString();
+      const res = await aramexService.createDeliveryJob(reqPayload);
+
+      setAramexTestingLogs({
+        request: reqPayload,
+        response: res
+      });
+
+      if (res.success) {
+        setAramexTestingSuccess(true);
+      } else {
+        setAramexTestingSuccess(false);
+      }
+    } catch (err: any) {
+      setAramexTestingSuccess(false);
+      setAramexTestingLogs({
+        request: { error: "Client-side Exception" },
+        response: { error: err.message }
+      });
+    } finally {
+      setAramexTestingLoading(false);
+    }
   };
 
   const handlePushToNoonStaging = async () => {
@@ -846,19 +889,19 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
                 {/* Visual Route */}
                 <div className="bg-slate-50 rounded-2xl p-5 flex items-center justify-between border border-slate-100">
                   <div>
-                    <span className="text-[9px] uppercase font-black text-zinc-400 tracking-wider block">{isRTL ? 'نقطة الاستلام' : 'Pickup'}</span>
+                    <span className="text-xs font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'نقطة الاستلام' : 'Pickup'}</span>
                     <p className="font-bold text-sm text-zinc-800">{shipperData.city || 'Dubai'}</p>
                     <p className="text-[11px] text-zinc-500 font-semibold">{shipperData.name} ({shipperData.phone})</p>
                   </div>
                   <div className="flex flex-col items-center justify-center px-4">
                     <ArrowRight className="text-brand w-5 h-5 animate-pulse" />
                     {distanceKm > 0 && (
-                      <span className="text-[9px] uppercase font-black text-brand mt-1 tracking-widest">{distanceKm} km</span>
+                      <span className="text-xs font-bold uppercase text-brand mt-1 tracking-widest">{distanceKm} km</span>
                     )}
                     <span className="text-[8px] uppercase font-bold text-zinc-400 mt-0.5 tracking-widest">{shipmentType === 'international' ? 'Air Cargo' : 'Land Transport'}</span>
                   </div>
                   <div className="text-right">
-                    <span className="text-[9px] uppercase font-black text-zinc-400 tracking-wider block">{isRTL ? 'نقطة التسليم' : 'Dropoff'}</span>
+                    <span className="text-xs font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'نقطة التسليم' : 'Dropoff'}</span>
                     <p className="font-bold text-sm text-zinc-800">{receiverData.city || 'Abu Dhabi'}</p>
                     <p className="text-[11px] text-zinc-500 font-semibold">{receiverData.name} ({receiverData.phone})</p>
                   </div>
@@ -867,22 +910,22 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
                 {/* Package Details */}
                 <div className="grid grid-cols-2 gap-4 text-xs font-semibold text-zinc-600 border-b border-zinc-100 pb-4">
                   <div>
-                    <span className="text-[9px] uppercase font-black text-zinc-400 tracking-wider block">{isRTL ? 'نوع الطرد' : 'Package Type'}</span>
+                    <span className="text-xs font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'نوع الطرد' : 'Package Type'}</span>
                     <span className="text-zinc-800 font-bold">{shipmentData.description || 'Package Shipment'}</span>
                   </div>
                   <div>
-                    <span className="text-[9px] uppercase font-black text-zinc-400 tracking-wider block">{isRTL ? 'الوزن والكمية' : 'Weight & Qty'}</span>
+                    <span className="text-xs font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'الوزن والكمية' : 'Weight & Qty'}</span>
                     <span className="text-zinc-800 font-bold">{shipmentData.weight} kg / {shipmentData.quantity} {isRTL ? 'وحدة' : 'Units'}</span>
                   </div>
                   {distanceKm > 0 && (
                     <div>
-                      <span className="text-[9px] uppercase font-black text-zinc-400 tracking-wider block">{isRTL ? 'المسافة' : 'Distance'}</span>
+                      <span className="text-xs font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'المسافة' : 'Distance'}</span>
                       <span className="text-brand font-bold">{distanceKm} km</span>
                     </div>
                   )}
                   {shipmentData.collectCashFromCustomer && parseFloat(shipmentData.collectAmount || '0') > 0 && (
                     <div>
-                      <span className="text-[9px] uppercase font-black text-zinc-400 tracking-wider block">{isRTL ? 'تحصيل من العميل' : 'COD Collection'}</span>
+                      <span className="text-xs font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'تحصيل من العميل' : 'COD Collection'}</span>
                       <span className="text-zinc-800 font-bold">{parseFloat(shipmentData.collectAmount).toFixed(2)} AED</span>
                     </div>
                   )}
@@ -892,40 +935,40 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
                 {(() => {
                   const bd = calculateBreakdown();
                   return (
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between items-center text-zinc-500 font-medium">
+                    <div className="space-y-3 text-xs font-semibold">
+                      <div className="flex justify-between items-center text-zinc-500">
                         <span>{isRTL ? 'رسوم الناقل' : 'Courier Base Fee'} ({shipmentData.courier === 'aramex' ? 'Aramex' : shipmentData.courier === 'noon' ? 'Noon' : 'USend Fleet'})</span>
                         <span className="font-semibold text-zinc-800">{bd.baseFee.toFixed(2)} AED</span>
                       </div>
 
                       {bd.weightFee > 0 && (
-                        <div className="flex justify-between items-center text-zinc-500 font-medium">
+                        <div className="flex justify-between items-center text-zinc-500">
                           <span>{isRTL ? 'رسوم الوزن الإضافي' : 'Weight Surcharge'} ({Math.max(0, parseFloat(shipmentData.weight || '0') - 5).toFixed(1)} kg extra)</span>
                           <span className="font-semibold text-zinc-800">{bd.weightFee.toFixed(2)} AED</span>
                         </div>
                       )}
 
                       {bd.distanceFee > 0 && (
-                        <div className="flex justify-between items-center text-zinc-500 font-medium">
+                        <div className="flex justify-between items-center text-zinc-500">
                           <span>{isRTL ? 'رسوم المسافة' : 'Distance Fee'} ({bd.chargeableKm.toFixed(1)} km × 2 AED)</span>
                           <span className="font-semibold text-zinc-800">{bd.distanceFee.toFixed(2)} AED</span>
                         </div>
                       )}
 
-                      <div className="flex justify-between items-center text-zinc-500 font-medium">
+                      <div className="flex justify-between items-center text-zinc-500">
                         <span>{isRTL ? 'رسوم المنصة (5%)' : 'Platform Service Fee (5%)'}</span>
                         <span className="font-semibold text-zinc-800">{bd.serviceFee.toFixed(2)} AED</span>
                       </div>
 
                       {bd.codCollectFee > 0 && (
-                        <div className="flex justify-between items-center text-zinc-500 font-medium">
+                        <div className="flex justify-between items-center text-zinc-500">
                           <span>{isRTL ? 'رسوم تحصيل النقدية (2%)' : 'COD Handling Fee (2%)'}</span>
                           <span className="font-semibold text-zinc-800">{bd.codCollectFee.toFixed(2)} AED</span>
                         </div>
                       )}
 
                       {shipmentType === 'international' && (
-                        <div className="flex justify-between items-center text-zinc-500 font-medium">
+                        <div className="flex justify-between items-center text-zinc-500">
                           <span>{isRTL ? 'رسوم الشحن الدولي' : 'International Air Cargo Markup'}</span>
                           <span className="font-semibold text-zinc-800">90.00 AED</span>
                         </div>
@@ -948,10 +991,12 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
               )}
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                 <label className={`flex items-center gap-4 p-5 border-2 rounded-2xl cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-brand bg-brand/5' : 'border-zinc-200'}`}>
-                   <input type="radio" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} className="w-5 h-5 accent-brand" />
-                   <div><span className="font-bold uppercase text-sm block">Cash on Delivery</span><span className="text-xs text-zinc-500">Pay on pickup or dropoff</span></div>
-                 </label>
+                 {!isGuest && (
+                   <label className={`flex items-center gap-4 p-5 border-2 rounded-2xl cursor-pointer transition-all ${paymentMethod === 'wallet' ? 'border-brand bg-brand/5' : 'border-zinc-200'}`}>
+                     <input type="radio" checked={paymentMethod === 'wallet'} onChange={() => setPaymentMethod('wallet')} className="w-5 h-5 accent-brand" />
+                     <div><span className="font-bold uppercase text-sm block">USend Wallet</span><span className="text-xs text-zinc-500">Pay using your balance</span></div>
+                   </label>
+                 )}
                  <label className={`flex items-center gap-4 p-5 border-2 rounded-2xl cursor-pointer transition-all ${paymentMethod === 'card' ? 'border-brand bg-brand/5' : 'border-zinc-200'}`}>
                    <input type="radio" checked={paymentMethod === 'card'} onChange={() => setPaymentMethod('card')} className="w-5 h-5 accent-brand" />
                    <div><span className="font-bold uppercase text-sm block">Card Payment</span><span className="text-xs text-zinc-500">Visa / Mastercard</span></div>
@@ -972,11 +1017,11 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
               )}
     
               {paymentMethod === 'card' && !stripeClientSecret && (
-                <div className="flex gap-4 pt-6"><button type="button" onClick={handlePrevStep} className="px-8 py-3.5 rounded-xl border border-zinc-300 text-zinc-600 font-bold uppercase tracking-widest text-xs">Back</button><button type="button" onClick={(e) => handleNextStep(e as any)} disabled={loading} className="flex-1 py-3.5 rounded-xl bg-zinc-900 text-white font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2">{loading ? 'Preparing Payment...' : 'Proceed to Card Entry'}</button></div>
+                <div className="flex gap-4 pt-6"><button type="button" onClick={handlePrevStep} className="px-8 py-3.5 rounded-xl border border-zinc-300 text-zinc-600 font-bold uppercase tracking-widest text-xs">Back</button><button type="button" onClick={(e) => handleNextStep(e as any)} disabled={loading} className="flex-1 py-3.5 rounded-xl bg-brand text-white font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2">{loading ? 'Preparing Payment...' : 'Proceed to Card Entry'}</button></div>
               )}
     
-              {paymentMethod === 'cod' && (
-                <div className="flex gap-4 pt-6"><button type="button" onClick={handlePrevStep} className="px-8 py-3.5 rounded-xl border border-zinc-300 text-zinc-600 font-bold uppercase tracking-widest text-xs">Back</button><button type="button" onClick={(e) => handleNextStep(e as any)} disabled={loading} className="flex-1 py-3.5 rounded-xl bg-zinc-900 text-white font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2">{loading ? 'Processing...' : 'Confirm Order'}</button></div>
+              {paymentMethod === 'wallet' && (
+                <div className="flex gap-4 pt-6"><button type="button" onClick={handlePrevStep} className="px-8 py-3.5 rounded-xl border border-zinc-300 text-zinc-600 font-bold uppercase tracking-widest text-xs">Back</button><button type="button" onClick={(e) => handleNextStep(e as any)} disabled={loading} className="flex-1 py-3.5 rounded-xl bg-brand text-white font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2">{loading ? 'Processing...' : 'Confirm Order'}</button></div>
               )}
             </div>
           </motion.div>
@@ -999,7 +1044,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
               <div>
                 <h4 className="text-3xl font-display font-black uppercase tracking-tight text-[#1C2C1E]">Order Created Successfully</h4>
                 <p className="text-xs font-bold text-zinc-400 mt-1 uppercase tracking-wider">
-                  {isGuest ? "Your guest order has been placed. You can track it here." : "Your delivery has been scheduled."}
+                  {isGuest ? `An email with order details has been sent to ${shipperData.email}. To track this order, please create an account or log in.` : "Your delivery has been scheduled."}
                 </p>
               </div>
 
@@ -1008,7 +1053,77 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
                  <p className="text-2xl font-mono font-black text-[#1C2C1E] mt-1">{createdOrderId}</p>
               </div>
 
-              {/* Noon Integration Testing Suite */}
+                            {/* Aramex Integration Testing Suite */}
+              {shipmentData.courier === 'aramex' && (
+                <div className="bg-red-50 border-2 border-red-200 rounded-[2rem] p-6 text-left space-y-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg font-black tracking-tight text-red-800 lowercase font-sans">aramex <span className="font-light text-zinc-500">API</span></span>
+                      <span className="text-[9px] bg-red-200/50 text-red-800 px-2 py-0.5 rounded-full font-black uppercase tracking-widest">STAGING INTEGRATION SUITE</span>
+                    </div>
+                    <Server className="w-5 h-5 text-red-600" />
+                  </div>
+
+                  <p className="text-xs text-red-950/80 font-medium leading-relaxed">
+                    Test your Aramex Staging environment integration immediately! Click below to send a live, authentic delivery request payload to Aramex Sandbox.
+                  </p>
+
+                  <div className="bg-red-100/50 border border-red-200 rounded-xl p-3">
+                    <span className="text-[10px] text-red-800 font-bold block uppercase tracking-wider">STAGING REST ENDPOINT</span>
+                    <span className="text-xs font-mono font-bold text-red-950 block select-all break-all mt-0.5">
+                      POST /api/aramex/create-job → https://ws.dev.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc/json/CreateShipments
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={handlePushToAramexStaging}
+                    disabled={aramexTestingLoading}
+                    className="w-full bg-[#113f36] hover:bg-zinc-950 text-white font-black text-[11px] uppercase tracking-widest py-3.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {aramexTestingLoading ? (
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Play className="w-4 h-4" />
+                    )}
+                    <span>{aramexTestingLoading ? "Sending Staging API Request..." : "Push Dispatch Payload to Aramex"}</span>
+                  </button>
+
+                  {aramexTestingLogs && (
+                    <div className="space-y-3 pt-2">
+                      <div className={`p-4 rounded-xl border text-xs font-bold flex items-center gap-2 ${aramexTestingSuccess ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800'}`}>
+                        <div className={`w-2.5 h-2.5 rounded-full ${aramexTestingSuccess ? 'bg-emerald-500' : 'bg-red-500'} animate-pulse`} />
+                        <span>
+                          {aramexTestingSuccess 
+                            ? (
+                                <span>
+                                  SUCCESS: Aramex generated tracking ID: {aramexTestingLogs.response?.externalTrackingNumber || 'Unknown'}
+                                  {aramexTestingLogs.response?.labelUrl && (
+                                    <a href={aramexTestingLogs.response.labelUrl} target="_blank" rel="noreferrer" className="ml-3 inline-flex items-center gap-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest transition-colors">
+                                      View Waybill
+                                    </a>
+                                  )}
+                                </span>
+                              )
+                            : `FAILED: Staging response failed`}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="bg-zinc-950 text-zinc-300 rounded-xl p-4 font-mono text-[10px] overflow-auto max-h-48 leading-relaxed">
+                          <p className="text-red-400 font-bold border-b border-zinc-800 pb-1 mb-2">SENT REQUEST PAYLOAD</p>
+                          <pre>{JSON.stringify(aramexTestingLogs.request, null, 2)}</pre>
+                        </div>
+                        <div className="bg-zinc-950 text-zinc-300 rounded-xl p-4 font-mono text-[10px] overflow-auto max-h-48 leading-relaxed">
+                          <p className="text-red-400 font-bold border-b border-zinc-800 pb-1 mb-2">RECEIVED RESPONSE</p>
+                          <pre>{JSON.stringify(aramexTestingLogs.response, null, 2)}</pre>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+{/* Noon Integration Testing Suite */}
               {shipmentData.courier === 'noon' && (
                 <div className="bg-amber-50 border-2 border-amber-200 rounded-[2rem] p-6 text-left space-y-4 shadow-sm">
                   <div className="flex items-center justify-between">
@@ -1077,7 +1192,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
                   onClick={() => isGuest && onRequestLogin ? onRequestLogin() : onNavigate('user_tracking')} 
                   className="flex-1 py-4 rounded-xl bg-[#113f36] hover:bg-zinc-950 text-white font-black uppercase tracking-widest text-[11px] flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
                 >
-                   {isGuest ? "Login / Track Shipment" : "View Tracking Ledger"} <ArrowRight className="w-4 h-4"/>
+                   {isGuest ? "Login to Track Shipment" : "View Tracking Ledger"} <ArrowRight className="w-4 h-4"/>
                 </button>
                 <button
                   onClick={() => {

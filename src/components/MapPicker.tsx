@@ -22,9 +22,18 @@ interface MapPickerProps {
 
 function LocationMarker({ position, setPosition, setAddress }: any) {
   useMapEvents({
-    click(e) {
+    async click(e) {
       setPosition(e.latlng);
-      setAddress(`Selected Location: ${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}`);
+      setAddress(`${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}`); // Fallback while loading
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${e.latlng.lat}&lon=${e.latlng.lng}`);
+        const data = await res.json();
+        if (data && data.display_name) {
+          setAddress(data.display_name);
+        }
+      } catch (err) {
+        console.error("Geocoding failed", err);
+      }
     },
   });
 
