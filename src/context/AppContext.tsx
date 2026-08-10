@@ -4,7 +4,7 @@ import { db, auth } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 
-export type RequestStatus = 'Pending' | 'Reviewing' | 'Approved' | 'assigning' | 'in_transit' | 'delivered' | 'Rejected' | 'En-route';
+export type RequestStatus = 'Pending' | 'Reviewing' | 'Approved' | 'assigning' | 'in_transit' | 'delivered' | 'Rejected' | 'En-route' | 'Assigned' | 'Completed';
 
 export interface USendRequest {
   id: string;
@@ -32,6 +32,7 @@ export interface USendRequest {
   awbLabelBase64?: string;
   awbLabelUrl?: string;
   aramexLogs?: { request: any; response: any; timestamp: string, pickupId?: string };
+  noonLogs?: { request: any; response: any; timestamp: string };
   phone?: string;
   pickupAddress?: string;
   printFormat?: 'PDF' | 'ZPL';
@@ -52,6 +53,8 @@ export interface PlatformSettings {
   driverPlatformFee: number;
   baseDeliveryFee: number;
   perKmRate: number;
+  codHandlingFeePercent?: number;
+  enableCodHandlingFee?: boolean;
 }
 
 export interface USendUser {
@@ -142,7 +145,9 @@ const INITIAL_SETTINGS: PlatformSettings = {
   merchantCommission: 2.5,
   driverPlatformFee: 15,
   baseDeliveryFee: 12,
-  perKmRate: 2.5
+  perKmRate: 2.5,
+  codHandlingFeePercent: 2,
+  enableCodHandlingFee: true
 };
 
 const INITIAL_COURIER_CONFIGS: Record<string, CourierIntegrationConfig> = {
@@ -268,6 +273,12 @@ const INITIAL_COURIER_CONFIGS: Record<string, CourierIntegrationConfig> = {
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [activeRequests, setActiveRequests] = useState<USendRequest[]>(() => {
+    // Force a one-time clear of previous dummy/mock orders to white-sheet the app
+    if (!localStorage.getItem('usend_requests_cleared_v1')) {
+      localStorage.removeItem('usend_requests');
+      localStorage.removeItem('guestOrders');
+      localStorage.setItem('usend_requests_cleared_v1', 'true');
+    }
     const saved = localStorage.getItem('usend_requests');
     let loadedRequests = INITIAL_REQUESTS;
     if (saved) {
@@ -415,43 +426,54 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
 
     // Subscriptions
-    const unsubscribeRequests = subscribeToCollection<USendRequest>(
-      'requests', 
-      (data) => {
-        if (data && data.length > 0) {
-          setActiveRequests(data.sort((a, b) => b.id.localeCompare(a.id)));
+    let unsubscribeRequests = () => {};
+    if (auth.currentUser) {
+      unsubscribeRequests = subscribeToCollection<USendRequest>(
+        'requests', 
+        (data) => {
+          if (data) {
+            setActiveRequests(data.sort((a, b) => b.id.localeCompare(a.id)));
+          }
+          setIsLoading(false);
+        },
+        (error) => {
+          console.warn('Requests Firestore sync skipped (will use fallback mock data):', error.message);
+          setIsLoading(false);
         }
-        setIsLoading(false);
-      },
-      (error) => {
-        console.warn('Requests Firestore sync skipped (will use fallback mock data):', error.message);
-        setIsLoading(false);
-      }
-    );
+      );
+    } else {
+      setIsLoading(false);
+    }
 
-    const unsubscribeMerchants = subscribeToCollection<Merchant>(
-      'merchants', 
-      (data) => {
-        if (data && data.length > 0) {
-          setMerchants(data);
+    let unsubscribeMerchants = () => {};
+    if (auth.currentUser && (user?.role === 'admin' || user?.email?.toLowerCase() === 'octman.sam@gmail.com')) {
+      unsubscribeMerchants = subscribeToCollection<Merchant>(
+        'merchants', 
+        (data) => {
+          if (data && data.length > 0) {
+            setMerchants(data);
+          }
+        },
+        (error) => {
+          console.warn('Merchants Firestore sync skipped (will use fallback mock data):', error.message);
         }
-      },
-      (error) => {
-        console.warn('Merchants Firestore sync skipped (will use fallback mock data):', error.message);
-      }
-    );
+      );
+    }
 
-    const unsubscribeUsers = subscribeToCollection<USendUser>(
-      'users', 
-      (data) => {
-        if (data && data.length > 0) {
-          setUsers(data);
+    let unsubscribeUsers = () => {};
+    if (auth.currentUser && (user?.role === 'admin' || user?.email?.toLowerCase() === 'octman.sam@gmail.com')) {
+      unsubscribeUsers = subscribeToCollection<USendUser>(
+        'users', 
+        (data) => {
+          if (data && data.length > 0) {
+            setUsers(data);
+          }
+        },
+        (error) => {
+          console.warn('Users Firestore sync skipped (will use fallback mock data):', error.message);
         }
-      },
-      (error) => {
-        console.warn('Users Firestore sync skipped (will use fallback mock data):', error.message);
-      }
-    );
+      );
+    }
 
     const unsubscribeSettings = onSnapshot(doc(db, 'settings', 'global'), (snapshot) => {
       if (snapshot.exists()) {
@@ -496,11 +518,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       createdAt: new Date().toISOString()
     };
     
+    const currentUid = user?.uid || auth.currentUser?.uid || 'anonymous';
     if (isMerchant) {
-      requestData.merchantId = auth.currentUser?.uid || 'anonymous';
+      requestData.merchantId = currentUid;
       delete requestData.userId;
     } else {
-      requestData.userId = auth.currentUser?.uid || 'anonymous';
+      requestData.userId = currentUid;
       delete requestData.merchantId;
     }
     

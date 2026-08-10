@@ -6,6 +6,7 @@ import { useState, useEffect, ReactNode, FC } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useApp, USendRequest } from '../../context/AppContext';
 import { courierIntegrationService, defaultAramexCreds } from '../../services/courierIntegration';
+import { noonService } from '../../services/noonIntegration';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -41,10 +42,70 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
   }, []);
 
   const merchantRequests = activeRequests.filter(req => 
-    (user?.uid && req.merchantId === user.uid) || 
-    (!user?.uid && req.applicantType === 'Merchant')
+    (user?.uid && req.merchantId === user.uid)
   );
   const activeOrders = merchantRequests;
+
+  // Bottom Grid State
+  const [gridSearch, setGridSearch] = useState('');
+  const [gridStatusFilter, setGridStatusFilter] = useState('all');
+  const [gridPage, setGridPage] = useState(1);
+  const gridPageSize = 8;
+
+  const gridFilteredRequests = merchantRequests.filter(order => {
+    if (gridSearch.trim()) {
+      const q = gridSearch.toLowerCase();
+      const matchId = (order.id || '').toLowerCase().includes(q);
+      const matchName = (order.name || '').toLowerCase().includes(q);
+      const matchAddress = (order.address || '').toLowerCase().includes(q);
+      const matchItem = (order.itemType || '').toLowerCase().includes(q);
+      if (!matchId && !matchName && !matchAddress && !matchItem) {
+        return false;
+      }
+    }
+    
+    // Status Filter
+    if (gridStatusFilter !== 'all') {
+      const orderStatus = order.status.toLowerCase().replace(' ', '_');
+      const matchesStatus = orderStatus === gridStatusFilter || 
+             (gridStatusFilter === 'pending' && (orderStatus === 'pending' || orderStatus === 'assigning' || orderStatus === 'approved' || orderStatus === 'assigned' || orderStatus === 'created')) || 
+             (gridStatusFilter === 'in_transit' && (orderStatus === 'in_transit' || orderStatus === 'en-route')) || 
+             (gridStatusFilter === 'picked_up' && orderStatus === 'picked_up') ||
+             (gridStatusFilter === 'delivered' && (orderStatus === 'delivered' || orderStatus === 'completed')) ||
+             (gridStatusFilter === 'cancelled' && (orderStatus === 'rejected' || orderStatus === 'exceptions' || orderStatus === 'cancelled'));
+      if (!matchesStatus) return false;
+    }
+
+    // Carrier Filter
+    if (carrierFilter !== 'all_carriers' && order.carrier !== carrierFilter) {
+      return false;
+    }
+
+    // Date Range Filter
+    if (dateRange.start || dateRange.end) {
+      const orderTime = order.createdAt ? new Date(order.createdAt).getTime() : Date.parse(order.date);
+      if (!isNaN(orderTime)) {
+         if (dateRange.start && orderTime < new Date(dateRange.start).getTime()) return false;
+         if (dateRange.end && orderTime > new Date(dateRange.end).getTime() + 86400000) return false;
+      }
+    }
+
+    return true;
+  }).sort((a, b) => {
+    const timeA = a.createdAt ? new Date(a.createdAt).getTime() : (Date.parse(a.date) || 0);
+    const timeB = b.createdAt ? new Date(b.createdAt).getTime() : (Date.parse(b.date) || 0);
+
+    if (sortOrder === 'newest') {
+       if (timeA !== timeB) return timeB - timeA;
+       return b.id.localeCompare(a.id);
+    } else {
+       if (timeA !== timeB) return timeA - timeB;
+       return a.id.localeCompare(b.id);
+    }
+  });
+
+  const gridTotalPages = Math.ceil(gridFilteredRequests.length / gridPageSize);
+  const gridPaginatedRequests = gridFilteredRequests.slice((gridPage - 1) * gridPageSize, gridPage * gridPageSize);
 
   const [selectedOrder, setSelectedOrder] = useState<USendRequest | null>(null);
   const liveSelectedOrder = selectedOrder ? (merchantRequests.find(r => r.id === selectedOrder.id) || selectedOrder) : null;
@@ -81,7 +142,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
 
       if (res.success) {
         await updateRequest(req.id, {
-          status: 'Reviewing',
+          status: 'Assigned',
           carrier: 'aramex',
           externalTrackingNumber: res.trackingNumber,
           awbLabelBase64: res.base64Label,
@@ -104,6 +165,77 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
       }
     } catch (err: any) {
       console.error("Failed to dispatch to Aramex:", err);
+      alert("System Error: " + err.message);
+    } finally {
+      setIsDispatching(false);
+    }
+  };
+
+  const handleNoonDispatch = async (req: USendRequest) => {
+    setIsDispatching(true);
+    try {
+      let numericCod = 0;
+      if (req.orderAmount) {
+        const parsed = parseInt(req.orderAmount.replace(/[^0-9]/g, ''), 10);
+        if (!isNaN(parsed)) {
+          numericCod = parsed;
+        }
+      }
+
+      // Convert COD value to fills (Noon requirement: integer, in fills not dirhams)
+      const codValueFils = Math.round(numericCod * 100);
+
+      console.log(`[Noon Dispatch] Processing order ${req.id} through Noon Staging API...`);
+      const res = await noonService.createDeliveryTask({
+        outlet_code: "77T4HCOD4G", // Default staging outlet
+        order_reference: req.id,
+        customer_name: req.name || "Recipient Buyer",
+        customer_phone: req.phone || "+971520000000",
+        drop_off_address: {
+          address: req.address || "Corniche Street, Dubai, UAE",
+          lat: 25.1998,
+          lng: 55.2738,
+          contact_name: req.name || "Recipient Buyer",
+          contact_phone_number: req.phone || "+971520000000",
+          country_code: "AE"
+        },
+        lat: 25.1998,
+        lng: 55.2738,
+        cod_value: codValueFils,
+        payment_method: numericCod > 0 ? 'COD' : 'PAID'
+      });
+
+      if (res.success && res.data?.mp_task_nr) {
+        await updateRequest(req.id, {
+          status: 'Assigned',
+          carrier: 'noon',
+          externalTrackingNumber: res.data.mp_task_nr,
+          noonLogs: {
+            request: {
+              outlet_code: "77T4HCOD4G",
+              order_reference: req.id,
+              customer_name: req.name || "Recipient Buyer",
+              customer_phone: req.phone || "+971520000000",
+              cod_value: codValueFils,
+              payment_method: numericCod > 0 ? 'COD' : 'PAID'
+            },
+            response: res.data,
+            timestamp: new Date().toISOString()
+          }
+        });
+        alert(`Noon Staging Dispatch Succeeded! mp_task_nr: ${res.data.mp_task_nr}`);
+      } else {
+        alert("Noon Dispatch Failed: " + (res.error || res.data?.message || "Unknown error generating Noon delivery task."));
+        await updateRequest(req.id, {
+          noonLogs: {
+            request: { order_reference: req.id },
+            response: res.data || { error: res.error },
+            timestamp: new Date().toISOString()
+          }
+        });
+      }
+    } catch (err: any) {
+      console.error("Failed to dispatch to Noon:", err);
       alert("System Error: " + err.message);
     } finally {
       setIsDispatching(false);
@@ -156,10 +288,16 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
   const filteredOrders = activeOrders.filter(order => {
     // 1. Status Filter
     const orderStatus = order.status.toLowerCase().replace(' ', '_');
-    const matchesStatus = filter === 'all' || orderStatus === filter || (filter === 'pending' && (orderStatus === 'pending' || orderStatus === 'assigning')) || (filter === 'in_transit' && orderStatus === 'in_transit') || (filter === 'exceptions' && (orderStatus === 'rejected' || orderStatus === 'exceptions'));
+    const matchesStatus = filter === 'all' || 
+                          orderStatus === filter || 
+                          (filter === 'pending' && (orderStatus === 'pending' || orderStatus === 'assigning' || orderStatus === 'approved' || orderStatus === 'assigned' || orderStatus === 'created')) || 
+                          (filter === 'in_transit' && (orderStatus === 'in_transit' || orderStatus === 'en-route')) || 
+                          (filter === 'picked_up' && orderStatus === 'picked_up') ||
+                          (filter === 'delivered' && (orderStatus === 'delivered' || orderStatus === 'completed')) ||
+                          (filter === 'cancelled' && (orderStatus === 'rejected' || orderStatus === 'exceptions' || orderStatus === 'cancelled'));
 
-    // 2. Search Filter
-    const sTerm = searchQuery.toLowerCase();
+    // 2. Search Filter (Unified with gridSearch)
+    const sTerm = gridSearch.toLowerCase();
     const searchStr = (order.id + ' ' + order.name + ' ' + (order.externalTrackingNumber || '')).toLowerCase();
     const matchesSearch = !sTerm || searchStr.includes(sTerm);
 
@@ -200,7 +338,8 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
     { id: 'pending', label: t('pending') || 'Pending' },
     { id: 'picked_up', label: t('picked_up') || 'Picked Up' },
     { id: 'in_transit', label: t('in_transit') || 'In Transit' },
-    { id: 'exceptions', label: 'Exceptions' },
+    { id: 'delivered', label: t('delivered') || 'Delivered' },
+    { id: 'cancelled', label: 'Cancelled' },
   ];
 
   const TimelinePart: FC<{ dot: ReactNode, title: string, desc: string, active?: boolean, last?: boolean }> = ({ dot, title, desc, active, last }) => (
@@ -232,16 +371,6 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
             <div>
               <h1 className="text-2xl md:text-3xl font-black text-zinc-900">{t('order_tracking')}</h1>
               <p className="text-zinc-500 mt-1">{t('monitor_active_deliveries')}</p>
-            </div>
-            <div className="flex gap-3">
-              <div className="relative">
-                <Search className={`w-5 h-5 text-zinc-400 absolute ${isRTL ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2`} />
-                <input 
-                  type="text" 
-                  placeholder={t('search_orders')} 
-                  className={`bg-white border border-zinc-200 rounded-xl ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none text-zinc-900 w-full md:w-64`}
-                />
-              </div>
             </div>
           </div>
 
@@ -285,77 +414,9 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
              </div>
           </div>
 
-          {/* Search and Filter Row */}
-          <div className="flex flex-col md:flex-row flex-wrap gap-3 mt-4">
-             <div className="relative flex-1 min-w-[200px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-                <input 
-                  type="text" 
-                  placeholder="Search by Tracking ID, Name..." 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-white border border-zinc-200 rounded-xl pl-10 pr-4 py-2.5 outline-none text-zinc-900 text-sm font-medium focus:border-[#113f36] transition-colors"
-                />
-             </div>
-             
-             <div className="flex flex-1 md:flex-none gap-2">
-                <input 
-                   type="date" 
-                   value={dateRange.start} 
-                   onChange={(e) => setDateRange(p => ({...p, start: e.target.value}))}
-                   className="bg-white border border-zinc-200 rounded-xl px-3 py-2 text-sm text-zinc-600 outline-none font-medium"
-                />
-                <span className="text-zinc-400 self-center">-</span>
-                <input 
-                   type="date" 
-                   value={dateRange.end} 
-                   onChange={(e) => setDateRange(p => ({...p, end: e.target.value}))}
-                   className="bg-white border border-zinc-200 rounded-xl px-3 py-2 text-sm text-zinc-600 outline-none font-medium"
-                />
-             </div>
-
-             <div className="flex gap-2">
-               <select 
-                 value={carrierFilter}
-                 onChange={(e) => setCarrierFilter(e.target.value)}
-                 className="bg-white border border-zinc-200 rounded-xl px-4 py-2.5 outline-none text-zinc-900 text-sm font-bold min-w-[130px] appearance-none"
-               >
-                 <option value="all_carriers">All Carriers</option>
-                 <option value="aramex">Aramex</option>
-                 <option value="dhl_express">DHL</option>
-                 <option value="usend">USend Fleet</option>
-               </select>
-               <select
-                 value={sortOrder}
-                 onChange={(e) => setSortOrder(e.target.value as any)}
-                 className="bg-white border border-zinc-200 rounded-xl px-4 py-2.5 outline-none text-zinc-900 text-sm font-bold min-w-[130px] appearance-none"
-               >
-                 <option value="newest">Newest First</option>
-                 <option value="oldest">Oldest First</option>
-               </select>
-             </div>
-          </div>
-
-          {/* Status Tabs */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 hide-scrollbar mt-4">
-             {statusTabs.map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setFilter(tab.id)}
-                  className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${
-                    filter === tab.id 
-                      ? 'bg-gradient-to-r from-blue-700 to-blue-500 text-white shadow-lg shadow-[#113f36]/20' 
-                      : 'bg-white text-zinc-500 border border-zinc-200 hover:bg-zinc-50'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-             ))}
-          </div>
-
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative">
             {/* Real Map */}
-            <div className="lg:col-span-2 bg-zinc-200 rounded-3xl h-[400px] lg:h-[600px] relative overflow-hidden border border-zinc-200 z-0">
+            <div className="lg:col-span-2 bg-zinc-200 rounded-3xl h-[240px] lg:h-[300px] relative overflow-hidden border border-zinc-200 z-0">
               {isMapReady ? (
                 <MapContainer center={mapCenter} zoom={13} style={{ height: '100%', width: '100%' }}>
                   <TileLayer
@@ -388,7 +449,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
             </div>
 
             {/* Active Orders List */}
-            <div className="bg-white rounded-3xl shadow-sm border border-zinc-200 flex flex-col min-h-[400px] lg:h-[600px] transition-colors">
+            <div className="bg-white rounded-3xl shadow-sm border border-zinc-200 flex flex-col min-h-[240px] lg:h-[300px] transition-colors">
               <div className="p-6 border-b border-zinc-200">
                 <h2 className="text-xl font-bold text-zinc-900 flex items-center gap-3">
                   <div className="w-2 h-2 bg-[#113f36] rounded-full animate-pulse"></div>
@@ -407,7 +468,9 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                     {/* Status accent bar indicator */}
                     <div className={`absolute top-0 bottom-0 ${isRTL ? 'right-0' : 'left-0'} w-1.5 ${
                       isRejected ? 'bg-red-500' :
-                      order.status === 'in_transit' ? 'bg-[#113f36]' :
+                      order.status === 'delivered' || order.status === 'Completed' ? 'bg-[#113f36]' :
+                      order.status === 'in_transit' ? 'bg-amber-500' :
+                      order.status === 'Assigned' ? 'bg-indigo-500' :
                       order.status === 'Approved' ? 'bg-purple-500' :
                       'bg-orange-500'
                     }`} />
@@ -418,6 +481,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                            <div className="flex flex-wrap items-center gap-2">
                              <h3 className="text-sm font-bold text-zinc-900">{order.name}</h3>
                              {order.carrier === 'aramex' && <span className="bg-[#d12421] text-white px-1.5 py-0.5 rounded-md text-[13px] font-black uppercase">Aramex</span>}
+                              {order.carrier === 'noon' && <span className="bg-[#feee00] text-black px-1.5 py-0.5 rounded-md text-[13px] font-black uppercase border border-amber-300">Noon</span>}
                              {order.carrier === 'dhl_express' && <span className="bg-yellow-400 text-red-600 px-1.5 py-0.5 rounded-md text-[13px] font-black uppercase">DHL</span>}
                              {order.carrier === 'usend' && <span className="bg-zinc-900 text-white px-1.5 py-0.5 rounded-md text-[13px] font-black uppercase">USend</span>}
                              <span className="px-1.5 py-0.5 rounded-md bg-zinc-200/50 text-[12px] font-black text-zinc-500">
@@ -431,11 +495,13 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                         </div>
                         <div className="flex flex-col items-end gap-1">
                            <span className={`px-2 py-0.5 rounded-lg text-[13px] font-black tracking-wider uppercase ${
-                             order.status === 'in_transit' ? 'bg-[#113f36]/5 text-[#113f36]' :
-                             order.status === 'Approved' ? 'bg-purple-50 text-purple-600' :
-                             'bg-orange-50 text-orange-600'
-                           }`}>
-                             {order.status}
+                              order.status === 'delivered' || order.status === 'Completed' ? 'bg-[#113f36]/10 text-[#113f36]' :
+                              order.status === 'in_transit' ? 'bg-amber-50 text-amber-700' :
+                              order.status === 'Assigned' ? 'bg-indigo-50 text-indigo-700 font-bold' :
+                              order.status === 'Approved' ? 'bg-purple-50 text-purple-600' :
+                              'bg-orange-50 text-orange-600'
+                            }`}>
+                              {order.status}
                            </span>
                            <span className="text-[12px] font-bold text-zinc-400">{order.date}</span>
                         </div>
@@ -483,6 +549,172 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
               )}
             </div>
           </div>
+
+          {/* All Orders Table Grid Section */}
+          <div className="bg-white rounded-3xl shadow-sm border border-zinc-200 overflow-hidden mt-8">
+            <div className="p-8 border-b border-zinc-200 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-zinc-900 flex items-center gap-2">
+                  <Package className="w-5 h-5 text-[#113f36]" />
+                  {t('all_orders') || 'All Shipments Ledger'}
+                </h2>
+                <p className="text-sm text-zinc-500 mt-1">Filter, search, and track all your past and current orders.</p>
+              </div>
+
+              {/* Integrated Filters & Grid Search */}
+              <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3">
+                {/* Search */}
+                <div className="relative min-w-[200px] flex-1">
+                  <Search className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 ${isRTL ? 'right-3' : 'left-3'}`} />
+                  <input 
+                    type="text" 
+                    placeholder={t('search_orders') || 'Search orders...'}
+                    value={gridSearch}
+                    onChange={(e) => { setGridSearch(e.target.value); setGridPage(1); }}
+                    className={`w-full h-10 pl-9 pr-4 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-hidden focus:border-[#113f36] focus:ring-4 focus:ring-[#113f36]/5 transition-all ${isRTL ? 'text-right' : 'text-left'}`}
+                  />
+                </div>
+
+                {/* Date range picker */}
+                <div className="flex items-center gap-1 bg-zinc-50 border border-zinc-200 rounded-xl px-2.5 h-10">
+                  <input 
+                     type="date" 
+                     value={dateRange.start} 
+                     onChange={(e) => { setDateRange(p => ({...p, start: e.target.value})); setGridPage(1); }}
+                     className="bg-transparent text-xs text-zinc-600 outline-none font-medium border-none focus:ring-0 p-0"
+                  />
+                  <span className="text-zinc-400 self-center">-</span>
+                  <input 
+                     type="date" 
+                     value={dateRange.end} 
+                     onChange={(e) => { setDateRange(p => ({...p, end: e.target.value})); setGridPage(1); }}
+                     className="bg-transparent text-xs text-zinc-600 outline-none font-medium border-none focus:ring-0 p-0"
+                  />
+                </div>
+
+                {/* Carrier Filter */}
+                <select 
+                  value={carrierFilter}
+                  onChange={(e) => { setCarrierFilter(e.target.value); setGridPage(1); }}
+                  className="bg-zinc-50 border border-zinc-200 rounded-xl px-3 h-10 outline-none text-zinc-900 text-xs font-bold min-w-[120px]"
+                >
+                  <option value="all_carriers">All Carriers</option>
+                  <option value="aramex">Aramex</option>
+                  <option value="dhl_express">DHL</option>
+                  <option value="usend">USend Fleet</option>
+                </select>
+
+                {/* Sort Order */}
+                <select
+                  value={sortOrder}
+                  onChange={(e) => { setSortOrder(e.target.value as any); setGridPage(1); }}
+                  className="bg-zinc-50 border border-zinc-200 rounded-xl px-3 h-10 outline-none text-zinc-900 text-xs font-bold min-w-[120px]"
+                >
+                  <option value="newest">Newest First</option>
+                  <option value="oldest">Oldest First</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Grid Status Filters */}
+            <div className="px-8 py-4 bg-zinc-50/50 border-b border-zinc-200 flex flex-wrap gap-2">
+              {[
+                { id: 'all', label: t('all') || 'All' },
+                { id: 'pending', label: t('pending') || 'Pending' },
+                { id: 'picked_up', label: t('picked_up') || 'Picked Up' },
+                { id: 'in_transit', label: t('in_transit') || 'In Transit' },
+                { id: 'delivered', label: t('delivered') || 'Delivered' },
+                { id: 'cancelled', label: 'Cancelled' }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => { setGridStatusFilter(tab.id); setFilter(tab.id); setGridPage(1); }}
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border transition-all ${gridStatusFilter === tab.id ? 'bg-[#113f36] border-[#113f36] text-white' : 'bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-50'}`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Table */}
+            <div className="overflow-x-auto">
+              <table className={`w-full ${isRTL ? 'text-right' : 'text-left'} border-collapse`}>
+                <thead>
+                  <tr className="bg-zinc-50 text-zinc-400 text-[11px] font-black uppercase tracking-wider border-b border-zinc-200">
+                    <th className="p-4 px-6 font-bold">Order ID</th>
+                    <th className="p-4 px-6 font-bold">Recipient</th>
+                    <th className="p-4 px-6 font-bold">Route</th>
+                    <th className="p-4 px-6 font-bold">Item Type</th>
+                    <th className="p-4 px-6 font-bold">Status</th>
+                    <th className="p-4 px-6 font-bold text-right">Amount</th>
+                    <th className="p-4 px-6 font-bold text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="text-sm font-medium">
+                  {gridPaginatedRequests.length > 0 ? gridPaginatedRequests.map((order) => {
+                    const isRejected = order.status === 'Rejected' || order.status === 'Cancelled';
+                    return (
+                      <tr key={order.id} className="border-b border-zinc-200 hover:bg-zinc-50/50 transition-colors">
+                        <td className="p-4 px-6 text-zinc-900 font-bold font-mono text-xs">{order.id}</td>
+                        <td className="p-4 px-6 text-zinc-900 font-bold">{order.name}</td>
+                        <td className="p-4 px-6 text-zinc-500 max-w-[200px] truncate" title={`${order.fromDestination} ➔ ${order.toDestination}`}>
+                          {order.fromDestination || 'N/A'} ➔ {order.toDestination || 'N/A'}
+                        </td>
+                        <td className="p-4 px-6 text-zinc-500 capitalize">{order.itemType}</td>
+                        <td className="p-4 px-6">
+                          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${
+                            order.status === 'delivered' || order.status === 'Completed' ? 'bg-[#113f36]/10 text-[#113f36]' :
+                            order.status === 'in_transit' ? 'bg-amber-50 text-amber-700' :
+                            order.status === 'Assigned' ? 'bg-indigo-50 text-indigo-700' :
+                            order.status === 'Approved' ? 'bg-purple-50 text-purple-700' :
+                            isRejected ? 'bg-red-50 text-red-700' :
+                            'bg-orange-50 text-orange-600'
+                          }`}>
+                            {order.status === 'delivered' && <CheckCircle2 className="w-3 h-3" />}
+                            {order.status}
+                          </span>
+                        </td>
+                        <td className="p-4 px-6 text-zinc-900 font-bold text-right" dir="ltr">{order.orderAmount}</td>
+                        <td className="p-4 px-6 text-center">
+                          <button 
+                            onClick={() => setSelectedOrder(order)}
+                            className="px-3.5 py-1.5 bg-zinc-100 hover:bg-[#113f36] hover:text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all text-zinc-700 inline-flex items-center gap-1.5 cursor-pointer"
+                          >
+                            Track on Map
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  }) : (
+                    <tr>
+                      <td colSpan={7} className="p-16 text-center text-zinc-400 italic">No shipments match filters.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Grid Pagination Controls */}
+            {gridTotalPages > 1 && (
+              <div className="p-4 border-t border-zinc-200 bg-zinc-50 flex items-center justify-between">
+                <button 
+                  onClick={() => setGridPage(p => Math.max(1, p - 1))}
+                  disabled={gridPage === 1}
+                  className="px-4 py-2 border border-zinc-200 bg-white rounded-lg text-xs font-bold text-zinc-700 disabled:opacity-40 hover:bg-zinc-100 transition-colors cursor-pointer"
+                >
+                  Prev
+                </button>
+                <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Page {gridPage} of {gridTotalPages}</span>
+                <button 
+                  onClick={() => setGridPage(p => Math.min(gridTotalPages, p + 1))}
+                  disabled={gridPage === gridTotalPages}
+                  className="px-4 py-2 border border-zinc-200 bg-white rounded-lg text-xs font-bold text-zinc-700 disabled:opacity-40 hover:bg-zinc-100 transition-colors cursor-pointer"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </div>
         </motion.div>
         
         {/* Advanced Order Details Side-Sheet */}
@@ -524,33 +756,65 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                 </div>
                 
                 <div className="flex-1 overflow-y-auto p-6 space-y-8 scrollbar-hide">
-                  {/* Aramex Sandbox Courier Dispatch Action */}
+                  {/* Courier Dispatch Actions */}
                   {!liveSelectedOrder.externalTrackingNumber && liveSelectedOrder.status !== 'Rejected' && liveSelectedOrder.status !== 'Cancelled' && (
-                    <motion.div 
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="bg-[#d12421]/5 border border-[#d12421]/20 rounded-2xl p-5 space-y-3"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-base font-extrabold tracking-tight text-[#d12421] lowercase font-sans select-none">aramex</span>
-                        <span className="text-[13px] bg-[#d12421]/15 text-[#d12421] px-2 py-0.5 rounded font-black uppercase tracking-wider">Sandbox API Ready</span>
-                      </div>
-                      <p className="text-[12px] text-zinc-500 leading-normal">
-                        This order hasn&apos;t been connected to an active delivery agent carrier yet. Send dispatch signal to verify Aramex SOAP Web Service integrations.
-                      </p>
-                      <button 
-                        onClick={() => handleAramexDispatch(liveSelectedOrder)}
-                        disabled={isDispatching}
-                        className="w-full bg-[#d12421] hover:bg-zinc-950 text-white font-black text-[12px] uppercase tracking-widest py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5 disabled:opacity-50 select-none cursor-pointer"
-                      >
-                        {isDispatching ? (
-                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <Play className="w-3.5 h-3.5" />
-                        )}
-                        <span>Dispatch to Aramex Courier</span>
-                      </button>
-                    </motion.div>
+                    <>
+                      {/* Noon Sandbox Courier Dispatch Action */}
+                      {(liveSelectedOrder.courier || '').toLowerCase().includes('noon') ? (
+                        <motion.div 
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-5 space-y-3"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-base font-extrabold tracking-tight text-amber-600 lowercase font-sans select-none">noon <span className="font-light text-zinc-400">RoD</span></span>
+                            <span className="text-[13px] bg-amber-500/15 text-amber-700 px-2 py-0.5 rounded font-black uppercase tracking-wider">Staging API Ready</span>
+                          </div>
+                          <p className="text-[12px] text-zinc-500 leading-normal">
+                            This order hasn&apos;t been connected to an active Noon Rider on Demand task yet. Send dispatch signal to verify Noon Staging Hyperlocal API integrations.
+                          </p>
+                          <button 
+                            onClick={() => handleNoonDispatch(liveSelectedOrder)}
+                            disabled={isDispatching}
+                            className="w-full bg-amber-500 hover:bg-zinc-950 text-white font-black text-[12px] uppercase tracking-widest py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5 disabled:opacity-50 select-none cursor-pointer"
+                          >
+                            {isDispatching ? (
+                              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <Play className="w-3.5 h-3.5" />
+                            )}
+                            <span>Dispatch to Noon Staging</span>
+                          </button>
+                        </motion.div>
+                      ) : (
+                        /* Aramex Sandbox Courier Dispatch Action */
+                        <motion.div 
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="bg-[#d12421]/5 border border-[#d12421]/20 rounded-2xl p-5 space-y-3"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-base font-extrabold tracking-tight text-[#d12421] lowercase font-sans select-none">aramex</span>
+                            <span className="text-[13px] bg-[#d12421]/15 text-[#d12421] px-2 py-0.5 rounded font-black uppercase tracking-wider">Sandbox API Ready</span>
+                          </div>
+                          <p className="text-[12px] text-zinc-500 leading-normal">
+                            This order hasn&apos;t been connected to an active delivery agent carrier yet. Send dispatch signal to verify Aramex SOAP Web Service integrations.
+                          </p>
+                          <button 
+                            onClick={() => handleAramexDispatch(liveSelectedOrder)}
+                            disabled={isDispatching}
+                            className="w-full bg-[#d12421] hover:bg-zinc-950 text-white font-black text-[12px] uppercase tracking-widest py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5 disabled:opacity-50 select-none cursor-pointer"
+                          >
+                            {isDispatching ? (
+                              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <Play className="w-3.5 h-3.5" />
+                            )}
+                            <span>Dispatch to Aramex Courier</span>
+                          </button>
+                        </motion.div>
+                      )}
+                    </>
                   )}
 
                   {/* Built-in Waybill & Log viewer */}
@@ -717,6 +981,42 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                           )}
                         </div>
                       )}
+
+                      {/* Noon JSON REST logs expander */}
+                      {liveSelectedOrder.noonLogs && (
+                        <div className="border border-zinc-200 rounded-2xl overflow-hidden bg-zinc-50">
+                          <button 
+                            type="button"
+                            onClick={() => setShowSoapLogs(!showSoapLogs)}
+                            className="w-full p-3.5 font-extrabold text-[12px] text-zinc-500 flex items-center justify-between hover:bg-zinc-100 outline-hidden"
+                          >
+                            <span className="flex items-center gap-1.5 uppercase font-black">
+                              <Terminal className="w-3.5 h-3.5 text-amber-600" />
+                              Noon Hyperlocal REST Logs
+                            </span>
+                            <span className="text-[13px] font-bold text-amber-750 bg-amber-500/10 px-2 py-0.5 rounded">{showSoapLogs ? 'Hide' : 'REST JSON'}</span>
+                          </button>
+                          
+                          {showSoapLogs && (
+                            <div className="p-3 border-t border-zinc-200 space-y-3 font-mono text-[12px] max-h-[220px] overflow-y-auto bg-black text-zinc-300">
+                              <div className="space-y-1">
+                                <span className="text-amber-500 font-black block uppercase tracking-wider text-[13px]">REST ENDPOINT: POST https://food-api-team.noonstg.team/public/v1/create-task</span>
+                                <span className="text-zinc-400 italic block text-[13px]">Headers (X-API-KEY Authorization) & JSON Request Body</span>
+                                <pre className="bg-zinc-950/80 p-2 rounded text-zinc-400 overflow-x-auto select-all leading-normal">
+                                  {JSON.stringify(liveSelectedOrder.noonLogs.request, null, 2)}
+                                </pre>
+                              </div>
+                              <div className="space-y-1 pt-2 border-t border-zinc-900">
+                                <span className="text-[#6d8c55] font-black block uppercase tracking-wider text-[13px]">RESPONSE CODES: 200/201 SUCCESS</span>
+                                <span className="text-zinc-400 italic block text-[13px]">API JSON Response Payload</span>
+                                <pre className="bg-zinc-950/80 p-2 rounded text-[#6d8c55] overflow-x-auto select-all leading-normal">
+                                  {JSON.stringify(liveSelectedOrder.noonLogs.response, null, 2)}
+                                </pre>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </motion.div>
                   )}
 
@@ -733,30 +1033,81 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                        </button>
                     </div>
                     <div className="space-y-1">
-                       <TimelinePart 
-                         dot={<CheckCircle2 className="w-5 h-5" />} 
-                         title="Order Formed" 
-                         desc="10:30 AM • System Received" 
-                         active={true}
-                       />
-                       <TimelinePart 
-                         dot={<Package className="w-5 h-5" />} 
-                         title="Courier Dispatched" 
-                         desc={liveSelectedOrder.externalTrackingNumber ? "Registered with Aramex Sandbox" : "Awaiting assignment"} 
-                         active={liveSelectedOrder.status !== 'Pending' || !!liveSelectedOrder.externalTrackingNumber}
-                       />
-                       <TimelinePart 
-                         dot={<Clock className="w-4 h-4" />} 
-                         title="In Transit" 
-                         desc="ETA: 10 mins" 
-                         active={liveSelectedOrder.status === 'in_transit'}
-                       />
-                       <TimelinePart 
-                         dot={<MapPin className="w-5 h-5" />} 
-                         title="Delivered" 
-                         desc="Estimate: 11:00 AM" 
-                         last
-                       />
+                      {(liveSelectedOrder.carrier || '').toLowerCase() === 'noon' ? (
+                        <>
+                          <TimelinePart 
+                            dot={<CheckCircle2 className="w-5 h-5" />} 
+                            title="Pending Assignment" 
+                            desc="Successfully queued on Noon Hyperlocal system" 
+                            active={true}
+                          />
+                          <TimelinePart 
+                            dot={<User className="w-5 h-5" />} 
+                            title="Rider Assigned" 
+                            desc={liveSelectedOrder.externalTrackingNumber ? `Assigned to Noon Rider (${liveSelectedOrder.externalTrackingNumber})` : "Awaiting Rider allocation"} 
+                            active={!!liveSelectedOrder.externalTrackingNumber}
+                          />
+                          <TimelinePart 
+                            dot={<MapPin className="w-5 h-5" />} 
+                            title="Arrived at Pickup Location" 
+                            desc={(liveSelectedOrder.status || '').toLowerCase() === 'picked_up' || (liveSelectedOrder.status || '').toLowerCase() === 'in_transit' || (liveSelectedOrder.status || '').toLowerCase() === 'en-route' || (liveSelectedOrder.status || '').toLowerCase() === 'delivered' ? "Rider arrived at outlet warehouse" : "Rider en route to outlet"} 
+                            active={(liveSelectedOrder.status || '').toLowerCase() === 'picked_up' || (liveSelectedOrder.status || '').toLowerCase() === 'in_transit' || (liveSelectedOrder.status || '').toLowerCase() === 'en-route' || (liveSelectedOrder.status || '').toLowerCase() === 'delivered'}
+                          />
+                          <TimelinePart 
+                            dot={<Package className="w-5 h-5" />} 
+                            title="Picked Up" 
+                            desc={(liveSelectedOrder.status || '').toLowerCase() === 'picked_up' || (liveSelectedOrder.status || '').toLowerCase() === 'in_transit' || (liveSelectedOrder.status || '').toLowerCase() === 'en-route' || (liveSelectedOrder.status || '').toLowerCase() === 'delivered' ? "Parcel loaded by rider successfully" : "Awaiting dispatch hand-off"} 
+                            active={(liveSelectedOrder.status || '').toLowerCase() === 'picked_up' || (liveSelectedOrder.status || '').toLowerCase() === 'in_transit' || (liveSelectedOrder.status || '').toLowerCase() === 'en-route' || (liveSelectedOrder.status || '').toLowerCase() === 'delivered'}
+                          />
+                          <TimelinePart 
+                            dot={<MapPin className="w-5 h-5" />} 
+                            title="Arrived at Delivery" 
+                            desc={(liveSelectedOrder.status || '').toLowerCase() === 'in_transit' || (liveSelectedOrder.status || '').toLowerCase() === 'en-route' || (liveSelectedOrder.status || '').toLowerCase() === 'delivered' ? "Rider reached recipient coordinates" : "Rider in transit to destination"} 
+                            active={(liveSelectedOrder.status || '').toLowerCase() === 'in_transit' || (liveSelectedOrder.status || '').toLowerCase() === 'en-route' || (liveSelectedOrder.status || '').toLowerCase() === 'delivered'}
+                          />
+                          <TimelinePart 
+                            dot={<CheckCircle2 className="w-5 h-5" />} 
+                            title="Delivered" 
+                            desc={(liveSelectedOrder.status || '').toLowerCase() === 'delivered' ? "Package handoff verified with proof" : "Awaiting final hand-off"} 
+                            active={(liveSelectedOrder.status || '').toLowerCase() === 'delivered'}
+                            last
+                          />
+                        </>
+                      ) : (
+                        <>
+                          <TimelinePart 
+                            dot={<CheckCircle2 className="w-5 h-5" />} 
+                            title="Order Placed" 
+                            desc="Successfully placed and received by system" 
+                            active={true}
+                          />
+                          <TimelinePart 
+                            dot={<FileText className="w-5 h-5" />} 
+                            title="Courier Assigned" 
+                            desc={liveSelectedOrder.externalTrackingNumber ? "AWB generated & assigned" : "Awaiting assignment"} 
+                            active={(liveSelectedOrder.status || '').toLowerCase() !== 'pending' && (liveSelectedOrder.status || '').toLowerCase() !== 'assigning'}
+                          />
+                          <TimelinePart 
+                            dot={<Package className="w-5 h-5" />} 
+                            title="Picked Up" 
+                            desc="Handed over to courier" 
+                            active={(liveSelectedOrder.status || '').toLowerCase() !== 'pending' && (liveSelectedOrder.status || '').toLowerCase() !== 'assigning' && (liveSelectedOrder.status || '').toLowerCase() !== 'approved' && (liveSelectedOrder.status || '').toLowerCase() !== 'created'}
+                          />
+                          <TimelinePart 
+                            dot={<Clock className="w-4 h-4" />} 
+                            title="In Transit" 
+                            desc="On the way to recipient" 
+                            active={(liveSelectedOrder.status || '').toLowerCase() === 'in_transit' || (liveSelectedOrder.status || '').toLowerCase() === 'en-route' || (liveSelectedOrder.status || '').toLowerCase() === 'delivered'}
+                          />
+                          <TimelinePart 
+                            dot={<MapPin className="w-5 h-5" />} 
+                            title="Delivered" 
+                            desc="Successfully delivered" 
+                            active={(liveSelectedOrder.status || '').toLowerCase() === 'delivered'}
+                            last
+                          />
+                        </>
+                      )}
                     </div>
                   </div>
 

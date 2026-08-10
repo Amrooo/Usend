@@ -27,6 +27,7 @@ import {
 import { useApp } from '../../context/AppContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { aramexService } from '../../services/aramexIntegration';
+import { noonService } from '../../services/noonIntegration';
 
 export const UAE_ADDRESS_SUGGESTIONS = [
   { name: "Dubai Mall, Financial Center Road, Downtown Dubai", position: [25.1972, 55.2797] },
@@ -76,7 +77,7 @@ interface MerchantIndividualOrderProps {
 
 export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividualOrderProps) {
   const { t, isRTL } = useLanguage();
-  const { addRequest, merchantActiveTab, setMerchantActiveTab } = useApp();
+  const { addRequest, updateRequest, merchantActiveTab, setMerchantActiveTab } = useApp();
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [isMapOpenQuoteTarget, setIsMapOpenQuoteTarget] = useState<'pickup' | 'dropoff' | 'manual_pickup' | 'manual_dropoff' | null>(null);
   const [isDateOpen, setIsDateOpen] = useState(false);
@@ -350,7 +351,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
         name: formData.customerName,
         phone: formData.phone,
         channel: 'Merchant Portal',
-        date: 'Today, ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        date: `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
         status: 'Pending' as const,
         position: formData.position,
         address: formData.address,
@@ -358,7 +359,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
         description: formData.notes,
         amountType: 'packages' as const,
         paymentMethod: formData.paymentType === 'card' ? 'Credit Card' : 'Cash on Delivery',
-        orderAmount: `${formData.amount || '150'} AED`,
+        orderAmount: `${formData.amount || Math.floor(95 + Math.random() * 190)} AED`,
         applicantType: 'Merchant' as const,
         fromDestination: formData.pickupAddress,
         toDestination: formData.address,
@@ -375,10 +376,60 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
           if (aramexRes.success === false) {
              throw new Error(aramexRes.error || "Aramex API failed to create shipment.");
           }
+          await updateRequest(reqId, { status: 'Assigned' });
         } catch (err: any) {
           console.error("Aramex Sandbox Dispatch failed", err);
           setIsSubmitting(false);
           window.dispatchEvent(new CustomEvent('app_toast', { detail: { title: 'Aramex Integration Error', message: err.message, type: 'error' } }));
+          return;
+        }
+      } else if (formData.carrier === 'noon') {
+        try {
+          const numericCod = parseFloat(formData.amount || '0') || 0;
+          const codValueFils = Math.round(numericCod * 100);
+          const res = await noonService.createDeliveryTask({
+            outlet_code: "77T4HCOD4G", // Default staging outlet
+            order_reference: reqId,
+            customer_name: formData.customerName || "Recipient Buyer",
+            customer_phone: formData.phone || "+971520000000",
+            drop_off_address: {
+              address: formData.address || "Corniche Street, Dubai, UAE",
+              lat: formData.position ? formData.position[0] : 25.1998,
+              lng: formData.position ? formData.position[1] : 55.2738,
+              contact_name: formData.customerName || "Recipient Buyer",
+              contact_phone_number: formData.phone || "+971520000000",
+              country_code: "AE"
+            },
+            lat: formData.position ? formData.position[0] : 25.1998,
+            lng: formData.position ? formData.position[1] : 55.2738,
+            cod_value: codValueFils,
+            payment_method: numericCod > 0 ? 'COD' : 'PAID'
+          });
+
+          if (res.success && res.data?.mp_task_nr) {
+            await updateRequest(reqId, {
+              status: 'Assigned',
+              externalTrackingNumber: res.data.mp_task_nr,
+              noonLogs: {
+                request: {
+                  outlet_code: "77T4HCOD4G",
+                  order_reference: reqId,
+                  customer_name: formData.customerName,
+                  customer_phone: formData.phone,
+                  cod_value: codValueFils,
+                  payment_method: numericCod > 0 ? 'COD' : 'PAID'
+                },
+                response: res.data,
+                timestamp: new Date().toISOString()
+              }
+            });
+          } else {
+            throw new Error(res.error || (res.data ? JSON.stringify(res.data) : "Noon API failed to create shipment."));
+          }
+        } catch (err: any) {
+          console.error("Noon Staging Dispatch failed", err);
+          setIsSubmitting(false);
+          window.dispatchEvent(new CustomEvent('app_toast', { detail: { title: 'Noon Integration Error', message: err.message, type: 'error' } }));
           return;
         }
       }
@@ -879,58 +930,112 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
 
                   <div className="space-y-4">
                     <p className="text-[12px] uppercase font-black tracking-wider text-zinc-400">Choose Courier Channel</p>
-                    <div className="grid grid-cols-1 gap-3">
-                      {[
-                        
-                        { 
-                          key: 'aramex', 
-                          label: 'Aramex Sandbox Service', 
-                          desc: 'Dispatches packages directly into Aramex\'s sandbox courier channels. Generates automated sandbox API Waybills, WSDL XML logs, and external tracking.' 
-                        }
-                      ].map((carrier) => (
-                        <div key={carrier.key} className="space-y-2">
-                           <button
-                             type="button"
-                             onClick={() => setFormData({...formData, carrier: carrier.key})}
-                             className={`flex flex-col p-4 rounded-xl border-2 text-left transition-all cursor-pointer w-full ${
-                               formData.carrier === carrier.key 
-                                 ? 'border-indigo-600 bg-indigo-50/10 dark:bg-indigo-950/20 text-indigo-900 dark:text-zinc-100' 
-                                 : 'border-zinc-100 dark:border-zinc-800/80 bg-zinc-50 dark:bg-zinc-900/40 hover:bg-zinc-100 text-zinc-700 dark:text-zinc-300'
-                             }`}
-                           >
-                             <div className="flex items-center justify-between w-full mb-1">
-                               <span className="font-extrabold text-xs">{carrier.label}</span>
-                               <div className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center ${
-                                 formData.carrier === carrier.key ? 'border-indigo-600' : 'border-zinc-300'
-                               }`}>
-                                 {formData.carrier === carrier.key && (
-                                   <div className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-pulse" />
-                                 )}
-                               </div>
-                             </div>
-                             <p className="text-[12px] text-zinc-500 leading-normal">{carrier.desc}</p>
-                           </button>
-
-                           {formData.carrier === carrier.key && (
-                              <div className="flex bg-zinc-100 dark:bg-zinc-800/50 p-2 rounded-xl mt-2 animate-in fade-in slide-in-from-top-1">
-                                 <button
-                                   type="button"
-                                   onClick={() => setFormData({...formData, printFormat: 'PDF'})}
-                                   className={`flex-1 text-[12px] font-bold uppercase tracking-wider py-2 rounded-lg transition-colors ${formData.printFormat === 'PDF' ? 'bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-white' : 'text-zinc-500 hover:text-zinc-700'}`}
-                                 >
-                                   {t('standard_a4') || 'Standard A4 (PDF)'}
-                                 </button>
-                                 <button
-                                   type="button"
-                                   onClick={() => setFormData({...formData, printFormat: 'ZPL'})}
-                                   className={`flex-1 text-[12px] font-bold uppercase tracking-wider py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5 ${formData.printFormat === 'ZPL' ? 'bg-white dark:bg-zinc-900 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-zinc-500 hover:text-zinc-700'}`}
-                                 >
-                                   {t('thermal_printer') || 'Thermal Printer (ZPL)'}
-                                 </button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Aramex Carrier Button */}
+                      <div className="space-y-2">
+                        <button
+                          type="button"
+                          onClick={() => setFormData({...formData, carrier: 'aramex'})}
+                          className={`flex flex-col p-5 rounded-2xl border-2 text-left transition-all cursor-pointer w-full relative overflow-hidden h-full justify-between ${
+                            formData.carrier === 'aramex'
+                              ? 'border-[#d12421] bg-[#d12421]/5 dark:bg-[#d12421]/10 text-zinc-950 dark:text-zinc-100 shadow-sm'
+                              : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/30 hover:bg-zinc-100 text-zinc-700 dark:text-zinc-300'
+                          }`}
+                        >
+                          <div>
+                            <div className="flex items-center justify-between w-full mb-3">
+                              <div className="flex items-center gap-2.5">
+                                <div className="w-8 h-8 rounded-full bg-[#d12421] text-white flex items-center justify-center text-[10px] font-black tracking-tighter">
+                                  aramex
+                                </div>
+                                <span className="font-extrabold text-sm text-zinc-900 dark:text-zinc-100">Aramex Express</span>
                               </div>
-                           )}
-                        </div>
-                      ))}
+                              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                                formData.carrier === 'aramex' ? 'border-[#d12421]' : 'border-zinc-300'
+                              }`}>
+                                {formData.carrier === 'aramex' && (
+                                  <div className="w-2 h-2 rounded-full bg-[#d12421]" />
+                                )}
+                              </div>
+                            </div>
+                            <p className="text-[11px] text-zinc-500 leading-relaxed">
+                              Dispatches packages into Aramex's global courier networks. Supports full waybills, automated PDF tracking, and sandbox testing.
+                            </p>
+                          </div>
+                        </button>
+
+                        {formData.carrier === 'aramex' && (
+                          <div className="flex bg-zinc-100 dark:bg-zinc-800/50 p-1.5 rounded-xl mt-2 animate-in fade-in slide-in-from-top-1">
+                            <button
+                              type="button"
+                              onClick={() => setFormData({...formData, printFormat: 'PDF'})}
+                              className={`flex-1 text-[11px] font-black uppercase tracking-wider py-2 rounded-lg transition-colors ${formData.printFormat === 'PDF' ? 'bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-white' : 'text-zinc-500 hover:text-zinc-700'}`}
+                            >
+                              Standard A4 (PDF)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setFormData({...formData, printFormat: 'ZPL'})}
+                              className={`flex-1 text-[11px] font-black uppercase tracking-wider py-2 rounded-lg transition-colors ${formData.printFormat === 'ZPL' ? 'bg-white dark:bg-zinc-900 shadow-sm text-[#d12421]' : 'text-zinc-500 hover:text-zinc-700'}`}
+                            >
+                              Thermal (ZPL)
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Noon Carrier Button */}
+                      <div className="space-y-2">
+                        <button
+                          type="button"
+                          onClick={() => setFormData({...formData, carrier: 'noon'})}
+                          className={`flex flex-col p-5 rounded-2xl border-2 text-left transition-all cursor-pointer w-full relative overflow-hidden h-full justify-between ${
+                            formData.carrier === 'noon'
+                              ? 'border-amber-500 bg-amber-500/5 dark:bg-amber-500/10 text-zinc-950 dark:text-zinc-100 shadow-sm'
+                              : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/30 hover:bg-zinc-100 text-zinc-700 dark:text-zinc-300'
+                          }`}
+                        >
+                          <div>
+                            <div className="flex items-center justify-between w-full mb-3">
+                              <div className="flex items-center gap-2.5">
+                                <div className="w-8 h-8 rounded-full bg-[#feee00] text-black flex items-center justify-center text-[10px] font-black tracking-tight border border-amber-300">
+                                  noon
+                                </div>
+                                <span className="font-extrabold text-sm text-zinc-900 dark:text-zinc-100">Noon Hyperlocal</span>
+                              </div>
+                              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                                formData.carrier === 'noon' ? 'border-amber-500' : 'border-zinc-300'
+                              }`}>
+                                {formData.carrier === 'noon' && (
+                                  <div className="w-2 h-2 rounded-full bg-amber-500" />
+                                )}
+                              </div>
+                            </div>
+                            <p className="text-[11px] text-zinc-500 leading-relaxed">
+                              Dispatches on-demand deliveries to Noon's Hyperlocal API. Ideal for same-day grocery, food, or rapid merchant fulfillment.
+                            </p>
+                          </div>
+                        </button>
+
+                        {formData.carrier === 'noon' && (
+                          <div className="flex bg-zinc-100 dark:bg-zinc-800/50 p-1.5 rounded-xl mt-2 animate-in fade-in slide-in-from-top-1">
+                            <button
+                              type="button"
+                              onClick={() => setFormData({...formData, printFormat: 'PDF'})}
+                              className={`flex-1 text-[11px] font-black uppercase tracking-wider py-2 rounded-lg transition-colors ${formData.printFormat === 'PDF' ? 'bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-white' : 'text-zinc-500 hover:text-zinc-700'}`}
+                            >
+                              Standard A4 (PDF)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setFormData({...formData, printFormat: 'ZPL'})}
+                              className={`flex-1 text-[11px] font-black uppercase tracking-wider py-2 rounded-lg transition-colors ${formData.printFormat === 'ZPL' ? 'bg-white dark:bg-zinc-900 shadow-sm text-amber-600' : 'text-zinc-500 hover:text-zinc-700'}`}
+                            >
+                              Thermal (ZPL)
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

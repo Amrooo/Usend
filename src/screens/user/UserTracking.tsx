@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { Screen } from '../../types';
 import UserSidebar from '../../components/UserSidebar';
-import { Search, MapPin, Package, Clock, X, Phone, FileText, CheckCircle2, AlertCircle, Truck, Navigation } from 'lucide-react';
+import { Search, MapPin, Package, Clock, X, Phone, FileText, CheckCircle2, AlertCircle, Truck, Navigation, User } from 'lucide-react';
 import { useState, useEffect, ReactNode, FC } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useApp, USendRequest } from '../../context/AppContext';
@@ -40,10 +40,44 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
   const storedGuestData = JSON.parse(localStorage.getItem('guestOrders') || '[]');
   const storedGuestIds = storedGuestData.map((g: any) => g.id);
   const myRequests = activeRequests.filter(req => 
-    (user?.uid && (req.userId === user.uid || req.phone === user.phoneNumber)) || 
-    (!user?.uid && (req.applicantType === 'Individual User' || req.applicantType === 'User' || storedGuestIds.includes(req.id)))
+    (user?.uid && (req.userId === user.uid || req.phone === user.phoneNumber || storedGuestIds.includes(req.id))) || 
+    (!user?.uid && storedGuestIds.includes(req.id))
   );
   const activeOrders = myRequests;
+
+  // Bottom Grid State
+  const [gridSearch, setGridSearch] = useState('');
+  const [gridStatusFilter, setGridStatusFilter] = useState('all');
+  const [gridPage, setGridPage] = useState(1);
+  const gridPageSize = 5;
+
+  const gridFilteredRequests = myRequests.filter(order => {
+    if (gridSearch.trim()) {
+      const q = gridSearch.toLowerCase();
+      const matchId = (order.id || '').toLowerCase().includes(q);
+      const matchName = (order.name || '').toLowerCase().includes(q);
+      const matchAddress = (order.address || '').toLowerCase().includes(q);
+      const matchItem = (order.itemType || '').toLowerCase().includes(q);
+      if (!matchId && !matchName && !matchAddress && !matchItem) {
+        return false;
+      }
+    }
+    if (gridStatusFilter !== 'all') {
+      const orderStatus = order.status.toLowerCase().replace(' ', '_');
+      const matchesStatus = orderStatus === gridStatusFilter || 
+             (gridStatusFilter === 'pending' && (orderStatus === 'pending' || orderStatus === 'assigning' || orderStatus === 'approved' || orderStatus === 'assigned' || orderStatus === 'created')) || 
+             (gridStatusFilter === 'in_transit' && (orderStatus === 'in_transit' || orderStatus === 'en-route')) || 
+             (gridStatusFilter === 'picked_up' && orderStatus === 'picked_up') ||
+             (gridStatusFilter === 'delivered' && (orderStatus === 'delivered' || orderStatus === 'completed')) ||
+             (gridStatusFilter === 'cancelled' && (orderStatus === 'rejected' || orderStatus === 'exceptions' || orderStatus === 'cancelled'));
+      if (!matchesStatus) return false;
+    }
+    return true;
+  });
+
+  const gridTotalPages = Math.ceil(gridFilteredRequests.length / gridPageSize);
+  const gridPaginatedRequests = gridFilteredRequests.slice((gridPage - 1) * gridPageSize, gridPage * gridPageSize);
+
   const [selectedOrder, setSelectedOrder] = useState<USendRequest | null>(null);
   const liveSelectedOrder = selectedOrder ? (activeRequests.find(r => r.id === selectedOrder.id) || selectedOrder) : null;
   const [aramexSteps, setAramexSteps] = useState<any[]>([]);
@@ -90,9 +124,17 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
 
     if (!matchesDate) return false;
 
-    if (filter === 'all') return true;
-    const orderStatus = order.status.toLowerCase().replace(' ', '_');
-    return orderStatus === filter || (filter === 'pending' && (orderStatus === 'pending' || orderStatus === 'assigning')) || (filter === 'in_transit' && orderStatus === 'in_transit') || (filter === 'exceptions' && (orderStatus === 'rejected' || orderStatus === 'exceptions'));
+    if (filter !== 'all') {
+      const orderStatus = order.status.toLowerCase().replace(' ', '_');
+      const matchesStatus = orderStatus === filter || 
+                            (filter === 'pending' && (orderStatus === 'pending' || orderStatus === 'assigning' || orderStatus === 'approved' || orderStatus === 'assigned' || orderStatus === 'created')) || 
+                            (filter === 'in_transit' && (orderStatus === 'in_transit' || orderStatus === 'en-route')) || 
+                            (filter === 'picked_up' && orderStatus === 'picked_up') ||
+                            (filter === 'delivered' && (orderStatus === 'delivered' || orderStatus === 'completed')) ||
+                            (filter === 'cancelled' && (orderStatus === 'rejected' || orderStatus === 'exceptions' || orderStatus === 'cancelled'));
+      if (!matchesStatus) return false;
+    }
+    return true;
   }).sort((a, b) => {
       const timeA = a.createdAt ? new Date(a.createdAt).getTime() : (Date.parse(a.date) || 0);
       const timeB = b.createdAt ? new Date(b.createdAt).getTime() : (Date.parse(b.date) || 0);
@@ -116,7 +158,8 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
     { id: 'pending', label: t('pending') || 'Pending' },
     { id: 'picked_up', label: t('picked_up') || 'Picked Up' },
     { id: 'in_transit', label: t('in_transit') || 'In Transit' },
-    { id: 'exceptions', label: 'Exceptions' }
+    { id: 'delivered', label: t('delivered') || 'Delivered' },
+    { id: 'cancelled', label: 'Cancelled' }
   ];
 
   const TimelinePart: FC<{ dot: ReactNode, title: string, desc: string, active?: boolean, last?: boolean }> = ({ dot, title, desc, active, last }) => (
@@ -203,7 +246,7 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative">
-            <div className="lg:col-span-2 bg-zinc-200 rounded-3xl h-[400px] lg:h-[600px] relative overflow-hidden border border-zinc-200 z-0">
+            <div className="lg:col-span-2 bg-zinc-200 rounded-3xl h-[340px] lg:h-[510px] relative overflow-hidden border border-zinc-200 z-0">
               {isMapReady ? (
                 <MapContainer center={mapCenter} zoom={13} style={{ height: '100%', width: '100%' }}>
                   <TileLayer
@@ -235,7 +278,7 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
               )}
             </div>
 
-            <div className="bg-white rounded-3xl shadow-sm border border-zinc-200 flex flex-col min-h-[400px] lg:h-[600px] transition-colors">
+            <div className="bg-white rounded-3xl shadow-sm border border-zinc-200 flex flex-col min-h-[340px] lg:h-[510px] transition-colors">
               <div className="p-6 border-b border-zinc-200">
                 <h2 className="text-xl font-bold text-zinc-900 flex items-center gap-3">
                   <div className="w-2 h-2 bg-[#113f36] rounded-full animate-pulse"></div>
@@ -253,7 +296,9 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                   >
                     <div className={`absolute top-0 bottom-0 ${isRTL ? 'right-0' : 'left-0'} w-1.5 ${
                       isRejected ? 'bg-red-500' :
-                      order.status === 'in_transit' ? 'bg-[#113f36]' :
+                      order.status === 'delivered' || order.status === 'Completed' ? 'bg-[#113f36]' :
+                      order.status === 'in_transit' ? 'bg-amber-500' :
+                      order.status === 'Assigned' ? 'bg-indigo-500' :
                       order.status === 'Approved' ? 'bg-purple-500' :
                       'bg-orange-500'
                     }`} />
@@ -272,7 +317,9 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                         </div>
                         <div className="flex flex-col items-end gap-1">
                            <span className={`px-2 py-0.5 rounded-lg text-[13px] font-black tracking-wider uppercase ${
-                             order.status === 'in_transit' ? 'bg-[#113f36]/5 text-[#113f36]' :
+                             order.status === 'delivered' || order.status === 'Completed' ? 'bg-[#113f36]/10 text-[#113f36]' :
+                             order.status === 'in_transit' ? 'bg-amber-50 text-amber-700' :
+                             order.status === 'Assigned' ? 'bg-indigo-50 text-indigo-700 font-bold' :
                              order.status === 'Approved' ? 'bg-purple-50 text-purple-600' :
                              'bg-orange-50 text-orange-600'
                            }`}>
@@ -310,6 +357,130 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                 </div>
               )}
             </div>
+          </div>
+
+          {/* All Orders Table Grid Section */}
+          <div className="bg-white rounded-3xl shadow-sm border border-zinc-200 overflow-hidden mt-8">
+            <div className="p-8 border-b border-zinc-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-zinc-900 flex items-center gap-2">
+                  <Package className="w-5 h-5 text-[#113f36]" />
+                  {t('all_orders') || 'All Shipments Ledger'}
+                </h2>
+                <p className="text-sm text-zinc-500 mt-1">Filter, search, and track all your past and current orders.</p>
+              </div>
+
+              {/* Grid Search */}
+              <div className="relative w-full md:w-80">
+                <Search className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 ${isRTL ? 'right-3' : 'left-3'}`} />
+                <input 
+                  type="text" 
+                  placeholder={t('search_orders') || 'Search orders...'}
+                  value={gridSearch}
+                  onChange={(e) => { setGridSearch(e.target.value); setGridPage(1); }}
+                  className={`w-full h-10 pl-9 pr-4 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-hidden focus:border-[#113f36] focus:ring-4 focus:ring-[#113f36]/5 transition-all ${isRTL ? 'text-right' : 'text-left'}`}
+                />
+              </div>
+            </div>
+
+            {/* Grid Status Filters */}
+            <div className="px-8 py-4 bg-zinc-50/50 border-b border-zinc-200 flex flex-wrap gap-2">
+              {[
+                { id: 'all', label: t('all') || 'All' },
+                { id: 'pending', label: t('pending') || 'Pending' },
+                { id: 'picked_up', label: t('picked_up') || 'Picked Up' },
+                { id: 'in_transit', label: t('in_transit') || 'In Transit' },
+                { id: 'delivered', label: t('delivered') || 'Delivered' },
+                { id: 'cancelled', label: 'Cancelled' }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => { setGridStatusFilter(tab.id); setGridPage(1); }}
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border transition-all ${gridStatusFilter === tab.id ? 'bg-[#113f36] border-[#113f36] text-white' : 'bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-50'}`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Table */}
+            <div className="overflow-x-auto">
+              <table className={`w-full ${isRTL ? 'text-right' : 'text-left'} border-collapse`}>
+                <thead>
+                  <tr className="bg-zinc-50 text-zinc-400 text-[11px] font-black uppercase tracking-wider border-b border-zinc-200">
+                    <th className="p-4 px-6 font-bold">Order ID</th>
+                    <th className="p-4 px-6 font-bold">Recipient</th>
+                    <th className="p-4 px-6 font-bold">Route</th>
+                    <th className="p-4 px-6 font-bold">Item Type</th>
+                    <th className="p-4 px-6 font-bold">Status</th>
+                    <th className="p-4 px-6 font-bold text-right">Amount</th>
+                    <th className="p-4 px-6 font-bold text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="text-sm font-medium">
+                  {gridPaginatedRequests.length > 0 ? gridPaginatedRequests.map((order) => {
+                    const isRejected = order.status === 'Rejected' || order.status === 'Cancelled';
+                    return (
+                      <tr key={order.id} className="border-b border-zinc-200 hover:bg-zinc-50/50 transition-colors">
+                        <td className="p-4 px-6 text-zinc-900 font-bold font-mono text-xs">{order.id}</td>
+                        <td className="p-4 px-6 text-zinc-900 font-bold">{order.name}</td>
+                        <td className="p-4 px-6 text-zinc-500 max-w-[200px] truncate" title={`${order.fromDestination} ➔ ${order.toDestination}`}>
+                          {order.fromDestination || 'N/A'} ➔ {order.toDestination || 'N/A'}
+                        </td>
+                        <td className="p-4 px-6 text-zinc-500 capitalize">{order.itemType}</td>
+                        <td className="p-4 px-6">
+                          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${
+                            order.status === 'delivered' || order.status === 'Completed' ? 'bg-[#113f36]/10 text-[#113f36]' :
+                            order.status === 'in_transit' ? 'bg-amber-50 text-amber-700' :
+                            order.status === 'Assigned' ? 'bg-indigo-50 text-indigo-700' :
+                            order.status === 'Approved' ? 'bg-purple-50 text-purple-700' :
+                            isRejected ? 'bg-red-50 text-red-700' :
+                            'bg-orange-50 text-orange-600'
+                          }`}>
+                            {order.status === 'delivered' && <CheckCircle2 className="w-3 h-3" />}
+                            {order.status}
+                          </span>
+                        </td>
+                        <td className="p-4 px-6 text-zinc-900 font-bold text-right" dir="ltr">{order.orderAmount}</td>
+                        <td className="p-4 px-6 text-center">
+                          <button 
+                            onClick={() => setSelectedOrder(order)}
+                            className="px-3.5 py-1.5 bg-zinc-100 hover:bg-[#113f36] hover:text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all text-zinc-700 inline-flex items-center gap-1.5 cursor-pointer"
+                          >
+                            Track on Map
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  }) : (
+                    <tr>
+                      <td colSpan={7} className="p-16 text-center text-zinc-400 italic">No shipments match filters.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Grid Pagination Controls */}
+            {gridTotalPages > 1 && (
+              <div className="p-4 border-t border-zinc-200 bg-zinc-50 flex items-center justify-between">
+                <button 
+                  onClick={() => setGridPage(p => Math.max(1, p - 1))}
+                  disabled={gridPage === 1}
+                  className="px-4 py-2 border border-zinc-200 bg-white rounded-lg text-xs font-bold text-zinc-700 disabled:opacity-40 hover:bg-zinc-100 transition-colors cursor-pointer"
+                >
+                  Prev
+                </button>
+                <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Page {gridPage} of {gridTotalPages}</span>
+                <button 
+                  onClick={() => setGridPage(p => Math.min(gridTotalPages, p + 1))}
+                  disabled={gridPage === gridTotalPages}
+                  className="px-4 py-2 border border-zinc-200 bg-white rounded-lg text-xs font-bold text-zinc-700 disabled:opacity-40 hover:bg-zinc-100 transition-colors cursor-pointer"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
         </motion.div>
         
@@ -419,7 +590,47 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                        </div>
                     </div>
                     <div className="space-y-1">
-                       {aramexSteps.length > 0 ? (
+                       {(selectedOrder.carrier || '').toLowerCase() === 'noon' ? (
+                          <>
+                            <TimelinePart 
+                              dot={<CheckCircle2 className="w-5 h-5" />} 
+                              title="Pending Assignment" 
+                              desc="Successfully queued on Noon Hyperlocal system" 
+                              active={true}
+                            />
+                            <TimelinePart 
+                              dot={<User className="w-5 h-5" />} 
+                              title="Rider Assigned" 
+                              desc={selectedOrder.externalTrackingNumber ? `Assigned to Noon Rider (${selectedOrder.externalTrackingNumber})` : "Awaiting Rider allocation"} 
+                              active={!!selectedOrder.externalTrackingNumber}
+                            />
+                            <TimelinePart 
+                              dot={<MapPin className="w-5 h-5" />} 
+                              title="Arrived at Pickup Location" 
+                              desc={(selectedOrder.status || '').toLowerCase() === 'picked_up' || (selectedOrder.status || '').toLowerCase() === 'in_transit' || (selectedOrder.status || '').toLowerCase() === 'en-route' || (selectedOrder.status || '').toLowerCase() === 'delivered' ? "Rider arrived at outlet warehouse" : "Rider en route to outlet"} 
+                              active={(selectedOrder.status || '').toLowerCase() === 'picked_up' || (selectedOrder.status || '').toLowerCase() === 'in_transit' || (selectedOrder.status || '').toLowerCase() === 'en-route' || (selectedOrder.status || '').toLowerCase() === 'delivered'}
+                            />
+                            <TimelinePart 
+                              dot={<Package className="w-5 h-5" />} 
+                              title="Picked Up" 
+                              desc={(selectedOrder.status || '').toLowerCase() === 'picked_up' || (selectedOrder.status || '').toLowerCase() === 'in_transit' || (selectedOrder.status || '').toLowerCase() === 'en-route' || (selectedOrder.status || '').toLowerCase() === 'delivered' ? "Parcel loaded by rider successfully" : "Awaiting dispatch hand-off"} 
+                              active={(selectedOrder.status || '').toLowerCase() === 'picked_up' || (selectedOrder.status || '').toLowerCase() === 'in_transit' || (selectedOrder.status || '').toLowerCase() === 'en-route' || (selectedOrder.status || '').toLowerCase() === 'delivered'}
+                            />
+                            <TimelinePart 
+                              dot={<MapPin className="w-5 h-5" />} 
+                              title="Arrived at Delivery" 
+                              desc={(selectedOrder.status || '').toLowerCase() === 'in_transit' || (selectedOrder.status || '').toLowerCase() === 'en-route' || (selectedOrder.status || '').toLowerCase() === 'delivered' ? "Rider reached recipient coordinates" : "Rider in transit to destination"} 
+                              active={(selectedOrder.status || '').toLowerCase() === 'in_transit' || (selectedOrder.status || '').toLowerCase() === 'en-route' || (selectedOrder.status || '').toLowerCase() === 'delivered'}
+                            />
+                            <TimelinePart 
+                              dot={<CheckCircle2 className="w-5 h-5" />} 
+                              title="Delivered" 
+                              desc={(selectedOrder.status || '').toLowerCase() === 'delivered' ? "Package handoff verified with proof" : "Awaiting final hand-off"} 
+                              active={(selectedOrder.status || '').toLowerCase() === 'delivered'}
+                              last
+                            />
+                          </>
+                        ) : aramexSteps.length > 0 ? (
                           aramexSteps.map((step, idx) => (
                              <TimelinePart 
                                 key={idx}
@@ -433,29 +644,36 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                        ) : (
                          <>
                            <TimelinePart 
-                             dot={<CheckCircle2 className="w-5 h-5" />} 
-                             title="Order Created" 
-                             desc="System Received" 
-                             active={true}
-                           />
-                           <TimelinePart 
-                             dot={<Package className="w-5 h-5" />} 
-                             title="Picked Up" 
-                             desc="Courier assigned" 
-                             active={selectedOrder.status !== 'Pending' && selectedOrder.status !== 'assigning'}
-                           />
-                           <TimelinePart 
-                             dot={<Clock className="w-4 h-4" />} 
-                             title="In Transit" 
-                             desc="On the way" 
-                             active={selectedOrder.status === 'in_transit'}
-                           />
-                           <TimelinePart 
-                             dot={<MapPin className="w-5 h-5" />} 
-                             title="Delivered" 
-                             desc="Recipient location" 
-                             last
-                           />
+                              dot={<CheckCircle2 className="w-5 h-5" />} 
+                              title="Order Placed" 
+                              desc="Successfully placed and received by system" 
+                              active={true}
+                            />
+                            <TimelinePart 
+                              dot={<FileText className="w-5 h-5" />} 
+                              title="Courier Assigned" 
+                              desc={selectedOrder.externalTrackingNumber ? "AWB generated & assigned" : "Awaiting assignment"} 
+                              active={(selectedOrder.status || '').toLowerCase() !== 'pending' && (selectedOrder.status || '').toLowerCase() !== 'assigning'}
+                            />
+                            <TimelinePart 
+                              dot={<Package className="w-5 h-5" />} 
+                              title="Picked Up" 
+                              desc="Handed over to courier" 
+                              active={(selectedOrder.status || '').toLowerCase() !== 'pending' && (selectedOrder.status || '').toLowerCase() !== 'assigning' && (selectedOrder.status || '').toLowerCase() !== 'approved' && (selectedOrder.status || '').toLowerCase() !== 'created'}
+                            />
+                            <TimelinePart 
+                              dot={<Clock className="w-4 h-4" />} 
+                              title="In Transit" 
+                              desc="On the way to recipient" 
+                              active={(selectedOrder.status || '').toLowerCase() === 'in_transit' || (selectedOrder.status || '').toLowerCase() === 'en-route' || (selectedOrder.status || '').toLowerCase() === 'delivered'}
+                            />
+                            <TimelinePart 
+                              dot={<MapPin className="w-5 h-5" />} 
+                              title="Delivered" 
+                              desc="Successfully delivered" 
+                              active={(selectedOrder.status || '').toLowerCase() === 'delivered'}
+                              last
+                            />
                          </>
                        )}
                     </div>

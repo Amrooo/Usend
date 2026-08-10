@@ -21,8 +21,13 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
   const storedGuestIds = storedGuestData.map((g: any) => g.id);
   const myRequests = activeRequests.filter(req => 
     (user?.uid && (req.userId === user.uid || req.phone === user.phoneNumber || storedGuestIds.includes(req.id))) || 
-    (!user?.uid && (req.applicantType === 'Individual User' || req.applicantType === 'User' || storedGuestIds.includes(req.id)))
+    (!user?.uid && storedGuestIds.includes(req.id))
   );
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+  const totalPages = Math.ceil(myRequests.length / itemsPerPage);
+  const paginatedRequests = myRequests.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const totalSpent = myRequests.reduce((sum, req) => sum + parseFloat(req.orderAmount?.replace(/[^0-9.]/g, '') || '0'), 0);
 
@@ -31,8 +36,6 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
     { label: t('active_deliveries') || 'Active Deliveries', value: myRequests.filter(o => o.status !== 'delivered').length.toString(), change: '+1', isPositive: true, icon: Clock },
     { label: t('total_spent') || 'Total Spent', value: `AED ${totalSpent.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, change: '+AED 45', isPositive: true, icon: DollarSign },
   ];
-
-  const previousOrders = myRequests.filter(req => req.status === 'delivered');
 
   return (
     <div className={`flex flex-col md:flex-row h-screen overflow-hidden bg-[#EFF3EE] text-zinc-900 font-sans ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
@@ -123,55 +126,6 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
             </div>
           </div>
 
-          {/* Previous Orders Section */}
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-display font-black uppercase tracking-tight text-[#1C2C1E] flex items-center gap-2">
-                <History className="w-5 h-5 text-[#344633]" />
-                {t('previous_orders') || 'Recent Shipments'}
-              </h2>
-              <button 
-                onClick={() => onNavigate('user_orders')}
-                className="text-[#344633] font-black text-[11px] uppercase tracking-widest hover:opacity-75 transition-opacity"
-              >
-                View History
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {previousOrders.length > 0 ? previousOrders.map((order: any, i) => (
-                <div key={order.id} className="bg-white border-0 rounded-[2.2rem] p-8 space-y-6 shadow-[0_8px_30px_rgba(150,160,145,0.06)] hover:shadow-[0_12px_40px_rgba(150,160,145,0.12)] transition-all group">
-                  <div className="flex justify-between items-start">
-                    <span className="text-[12px] font-black text-[#6D7D6A] uppercase tracking-widest group-hover:text-[#344633] transition-colors">{order.id}</span>
-                    <span className="bg-[#D5E2D2]/60 text-[#344633] text-[10px] font-black px-3.5 py-1.5 rounded-full uppercase tracking-widest">Delivered</span>
-                  </div>
-                  <div>
-                    <p className="font-extrabold text-[#1C2C1E] text-base truncate">To: {order.recipient || order.toDestination || 'N/A'}</p>
-                    <p className="text-[11px] font-bold text-zinc-400 mt-1">{order.date}</p>
-                  </div>
-                  <div className="flex gap-2 pt-2 border-t border-zinc-50">
-                    <button 
-                      onClick={() => setSelectedOrder(order)}
-                      className="flex-1 h-12 rounded-xl bg-[#EFF3EE] hover:bg-[#D5E2D2]/40 text-[#344633] text-[11px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
-                    >
-                      <Info className="w-3.5 h-3.5" />
-                      Details
-                    </button>
-                    <button 
-                      onClick={() => onNavigate('user_individual')}
-                      className="h-12 w-12 rounded-xl bg-[#D5E2D2]/25 text-[#344633] hover:bg-[#D5E2D2] transition-all flex items-center justify-center"
-                      title="Send Again"
-                    >
-                      <Redo2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              )) : (
-                <div className="col-span-full p-16 bg-white rounded-[2rem] shadow-[0_8px_30px_rgba(150,160,145,0.04)] text-center text-[#6D7D6A] font-bold italic text-sm">No previous orders found.</div>
-              )}
-            </div>
-          </div>
-
           {/* Recent Orders Table */}
           <div className="bg-white border border-[#EBEFE9] rounded-[2.5rem] overflow-hidden shadow-[0_8px_30px_rgb(220,225,235,0.45)]">
             <div className="p-10 border-b border-[#EBEFE9] flex items-center justify-between bg-white">
@@ -195,7 +149,7 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
                   </tr>
                 </thead>
                 <tbody className="text-sm font-medium">
-                  {myRequests.length > 0 ? myRequests.map((order, i) => (
+                  {paginatedRequests.length > 0 ? paginatedRequests.map((order, i) => (
                     <tr key={i} className="border-b border-[#EBEFE9] last:border-0 hover:bg-slate-50/50 transition-colors group">
                       <td className="p-8 text-zinc-900 font-bold">{order.id}</td>
                       <td className="p-8 text-zinc-500">{order.name}</td>
@@ -203,7 +157,7 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
                         <span className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[12px] font-bold uppercase tracking-widest ${
                           order.status === 'delivered' ? 'bg-[#113f36]/5 text-[#113f36]' :
                           order.status === 'in_transit' || order.status === 'En-route' ? 'bg-[#113f36]/5 text-[#546a40]' :
-                          'bg-orange-50 text-orange-655'
+                          'bg-orange-50 text-orange-600'
                         }`}>
                           {order.status === 'delivered' && <CheckCircle2 className="w-3 h-3" />}
                           {(order.status === 'in_transit' || order.status === 'En-route') && <Clock className="w-3 h-3" />}
@@ -223,6 +177,29 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
                 </tbody>
               </table>
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="p-6 border-t border-[#EBEFE9] bg-slate-50/50 flex items-center justify-between">
+                <button 
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-5 py-2.5 border border-[#EBEFE9] rounded-xl text-xs font-black uppercase tracking-wider text-zinc-700 disabled:opacity-40 hover:bg-zinc-100 transition-all bg-white shadow-xs cursor-pointer disabled:cursor-not-allowed"
+                >
+                  Prev
+                </button>
+                <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button 
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-5 py-2.5 border border-[#EBEFE9] rounded-xl text-xs font-black uppercase tracking-wider text-zinc-700 disabled:opacity-40 hover:bg-zinc-100 transition-all bg-white shadow-xs cursor-pointer disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
         </motion.div>
       </main>

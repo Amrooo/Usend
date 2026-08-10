@@ -425,7 +425,20 @@ const [botOpen, setBotOpen] = useState(false);
       
       if (matchOrder) {
         const orderNum = matchOrder[0].toUpperCase();
-        reply = `Status for ${orderNum}: • Current Location: Dubai Al Quoz Sorting Facility• Shipping Line: Aramex Express (Sandbox)• Expected Delivery: Next Business Day before 6:00 PM• Payout Mode: Cash on Delivery (320.00 AED)`;
+        const found = activeRequests.find(r => r.id.toUpperCase() === orderNum);
+        if (found) {
+          reply = `Order ${found.id} Found!
+• Status: ${found.status.toUpperCase()}
+• Recipient: ${found.name}
+• Route: ${found.fromDestination} ➔ ${found.toDestination}
+• Carrier: ${found.courier || 'USend Fleet'}
+• Item Type: ${found.itemType || 'Package'}
+• COD Amount: ${found.orderAmount || '0 AED'}
+• Delivery Fee: ${found.deliveryFee || '0 AED'}
+• ETA Time: ${found.etaTime || 'Calculating...'}`;
+        } else {
+          reply = `Status for ${orderNum}: • Current Location: Dubai Al Quoz Sorting Facility• Shipping Line: Aramex Express (Sandbox)• Expected Delivery: Next Business Day before 6:00 PM• Payout Mode: Cash on Delivery (320.00 AED)`;
+        }
       } else if (userMsg.toLowerCase().includes('rate') || userMsg.toLowerCase().includes('price') || userMsg.toLowerCase().includes('cost')) {
         reply = "Our standard UAE domestic rates:• Dubai to Abu Dhabi (Express Road): Starting at 25 AED base• Local messengers (Same Day): 15 AED flat rate• Extra Weight tariff: 1.5 AED per extra KGUse the Live Shipping Calculator on our home page to compare exact tariffs.";
       } else {

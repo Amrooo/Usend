@@ -19,7 +19,7 @@ import { useApp } from '../../context/AppContext';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, useStripe, useElements, PaymentElement } from '@stripe/react-stripe-js';
 import { updateDocument } from '../../lib/firebaseUtils';
-import { db } from '../../firebase';
+import { db, auth } from '../../firebase';
 import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 
 interface SavedCard {
@@ -146,7 +146,7 @@ export default function UserPayments({ onNavigate }: UserPaymentsProps) {
 
   // Real-time synchronization listener for transaction history directly from Firestore
   useEffect(() => {
-    if (user && user.uid) {
+    if (user && user.uid && auth.currentUser && auth.currentUser.uid === user.uid && user.uid !== 'demo-fallback-uid') {
       const userDocRef = doc(db, 'users', user.uid);
       const unsubscribe = onSnapshot(userDocRef, (snapshot) => {
         if (snapshot.exists()) {
@@ -159,6 +159,8 @@ export default function UserPayments({ onNavigate }: UserPaymentsProps) {
         console.error("Real-time transaction history sync error:", error);
       });
       return () => unsubscribe();
+    } else {
+      setTransactions([]);
     }
   }, [user?.uid]);
 
@@ -201,7 +203,7 @@ export default function UserPayments({ onNavigate }: UserPaymentsProps) {
 
   // Load saved cards from Firestore
   useEffect(() => {
-    if (user && user.uid) {
+    if (user && user.uid && auth.currentUser && auth.currentUser.uid === user.uid && user.uid !== 'demo-fallback-uid') {
       const loadProfileCards = async () => {
         try {
           const userDocRef = doc(db, 'users', user.uid);
@@ -220,6 +222,8 @@ export default function UserPayments({ onNavigate }: UserPaymentsProps) {
         }
       };
       loadProfileCards();
+    } else {
+      setCards([]);
     }
   }, [user?.uid]);
 

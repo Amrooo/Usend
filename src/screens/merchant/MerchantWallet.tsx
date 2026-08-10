@@ -13,7 +13,7 @@ import { Elements } from '@stripe/react-stripe-js';
 import StripeCheckoutForm from '../../components/merchant/StripeCheckoutForm';
 import { useApp } from '../../context/AppContext';
 import { updateDocument } from '../../lib/firebaseUtils';
-import { db } from '../../firebase';
+import { db, auth } from '../../firebase';
 import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 
 interface MerchantWalletProps {
@@ -69,7 +69,7 @@ export default function MerchantWallet({ onNavigate }: MerchantWalletProps) {
 
   // Real-time synchronization listener for transaction history, COD, and wallet states directly from Firestore
   useEffect(() => {
-    if (user && user.uid) {
+    if (user && user.uid && auth.currentUser && auth.currentUser.uid === user.uid && user.uid !== 'demo-fallback-uid') {
       const userDocRef = doc(db, 'users', user.uid);
       const unsubscribe = onSnapshot(userDocRef, (snapshot) => {
         if (snapshot.exists()) {

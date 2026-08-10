@@ -31,7 +31,7 @@ export default function UserOrders({ onNavigate }: UserOrdersProps) {
   const storedGuestIds = storedGuestData.map((g: any) => g.id);
   const myRequests = activeRequests.filter((req: any) => 
     (user?.uid && (req.userId === user.uid || req.phone === user.phoneNumber || storedGuestIds.includes(req.id))) || 
-    (!user?.uid && (req.applicantType === 'Individual User' || req.applicantType === 'User' || storedGuestIds.includes(req.id)))
+    (!user?.uid && storedGuestIds.includes(req.id))
   );
   
   const [selectedOrder, setSelectedOrder] = useState<OrderRecord | null>(null);

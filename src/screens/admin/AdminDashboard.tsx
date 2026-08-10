@@ -437,8 +437,8 @@ function RequestsHub() {
 
   // Filters computed cleanly
   const filteredRequests = activeRequests.filter(req => {
-    const isExceptionFilter = statusFilter === 'Exceptions';
-    const matchesStatus = statusFilter === 'All Requests' || (isExceptionFilter ? (req.status === 'Rejected' || req.status === 'Exceptions') : req.status === statusFilter);
+    const isCancelledFilter = statusFilter === 'Cancelled';
+    const matchesStatus = statusFilter === 'All Requests' || (isCancelledFilter ? (req.status === 'Rejected' || req.status === 'Exceptions' || req.status === 'Cancelled' || req.status === 'cancelled') : req.status === statusFilter);
     const matchesChannel = channelFilter === 'All Channels' || req.channel === channelFilter;
     const matchesCarrier = carrierFilter === 'All Carriers' || req.carrier === carrierFilter;
     const matchesSearch = !expressSearch.trim() || 
@@ -672,7 +672,7 @@ function RequestsHub() {
           <div className="flex gap-1.5 overflow-x-auto w-full xl:w-auto pb-2 xl:pb-0 scrollbar-none">
               <button onClick={() => setStatusFilter('All Requests')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider shadow-sm flex items-center gap-2 transition-colors ${statusFilter === 'All Requests' ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-zinc-400"></div>All</button>
               <button onClick={() => setStatusFilter('Pending')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Pending' ? 'bg-orange-50 text-orange-655 ring-1 ring-orange-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-orange-400"></div>Pending</button>
-              <button onClick={() => setStatusFilter('Exceptions')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Exceptions' ? 'bg-red-50 text-red-650 ring-1 ring-red-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>{t('exceptions') || 'Exceptions'}</button>
+              <button onClick={() => setStatusFilter('Cancelled')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Cancelled' ? 'bg-red-50 text-red-650 ring-1 ring-red-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>{t('cancelled') || 'Cancelled'}</button>
               <button onClick={() => setStatusFilter('Reviewing')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Reviewing' ? 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>Reviewing</button>
               <button onClick={() => setStatusFilter('Approved')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Approved' ? 'bg-[#113f36]/5 text-[#113f36] ring-1 ring-blue-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-[#6d8c55]"></div>Approved</button>
               <button onClick={() => setStatusFilter('assigning')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'assigning' ? 'bg-[#113f36]/5 text-[#113f36] ring-1 ring-blue-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-[#113f36]"></div>Assigning</button>
@@ -1166,6 +1166,31 @@ function RequestsHub() {
                       <div className="bg-[#d12421]/10 text-[#d12421] p-2 rounded-xl mb-3">
                         <span className="text-[13px] font-black uppercase tracking-widest block mb-1">API Error</span>
                         <p className="text-xs font-bold">{selectedRequest.aramexLogs.response.Notifications[0].Message}</p>
+                      </div>
+                    )}
+                 </div>
+               )}
+
+               {selectedRequest.carrier === 'noon' && (
+                 <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-4 overflow-hidden">
+                    <p className="text-[12px] font-black uppercase tracking-widest text-amber-600 mb-3 flex items-center gap-2">
+                       <Truck className="w-3.5 h-3.5 text-amber-500" />
+                       Noon RoD Staging Integration
+                    </p>
+                    <div className="grid grid-cols-2 gap-4 mb-3">
+                       <div>
+                         <span className="text-[13px] uppercase tracking-widest text-zinc-400 font-bold">Task Number (mp_task_nr)</span>
+                         <p className="text-sm font-black font-mono text-zinc-900">{selectedRequest.externalTrackingNumber || 'N/A'}</p>
+                       </div>
+                       <div>
+                         <span className="text-[13px] uppercase tracking-widest text-zinc-400 font-bold">Staging Status</span>
+                         <p className="text-sm font-black font-mono text-amber-600">Active Task</p>
+                       </div>
+                    </div>
+                    {selectedRequest.noonLogs && (
+                      <div className="bg-amber-50 text-amber-900 p-2 rounded-xl mb-3 border border-amber-200">
+                        <span className="text-[13px] font-black uppercase tracking-widest block mb-1">Last Sync Details</span>
+                         <p className="text-xs font-medium">Staging delivery task registered successfully: {selectedRequest.externalTrackingNumber}</p>
                       </div>
                     )}
                  </div>
@@ -2468,7 +2493,9 @@ function AdminSettings() {
     merchantCommission: 2.5,
     driverPlatformFee: 15,
     baseDeliveryFee: 12,
-    perKmRate: 2.5
+    perKmRate: 2.5,
+    codHandlingFeePercent: 2,
+    enableCodHandlingFee: true
   });
 
   useEffect(() => {
@@ -2540,6 +2567,39 @@ function AdminSettings() {
                     />
                   </div>
                 </div>
+            </div>
+         </div>
+
+         <div className="border-t border-zinc-100 pt-8 mt-10 max-w-4xl">
+            <h4 className="text-sm font-bold text-zinc-700 mb-6 uppercase tracking-wider">Cash on Delivery (COD) Options</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="flex items-center gap-4 bg-zinc-50 border border-zinc-200 rounded-2xl p-5">
+                <input 
+                  type="checkbox" 
+                  id="enableCodHandlingFee"
+                  checked={localSettings.enableCodHandlingFee !== false}
+                  onChange={(e) => setLocalSettings({...localSettings, enableCodHandlingFee: e.target.checked})}
+                  className="w-5 h-5 text-brand rounded border-zinc-300 focus:ring-brand accent-brand cursor-pointer"
+                />
+                <label htmlFor="enableCodHandlingFee" className="block text-xs font-black uppercase tracking-widest text-zinc-600 cursor-pointer select-none">
+                  Enable COD Handling Fee (optional)
+                </label>
+              </div>
+              {localSettings.enableCodHandlingFee !== false && (
+                <div>
+                  <label className="block text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-3">COD Handling Fee (%)</label>
+                  <div className="relative">
+                    <Percent className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                    <input 
+                      type="number" 
+                      step="0.1"
+                      value={localSettings.codHandlingFeePercent !== undefined ? localSettings.codHandlingFeePercent : 2}
+                      onChange={(e) => setLocalSettings({...localSettings, codHandlingFeePercent: parseFloat(e.target.value) || 0})}
+                      className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-brand font-medium text-zinc-900" 
+                    />
+                  </div>
+                </div>
+              )}
             </div>
          </div>
 

@@ -63,7 +63,8 @@ service cloud.firestore {
     // ===============================================================
 
     match /users/{userId} {
-      allow read: if isSignedIn();
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
       allow create: if isOwner(userId) && isValidUser(incoming());
       allow update: if (isOwner(userId) || isAdmin()) && isValidUser(incoming()) && 
                     incoming().role == existing().role; // Users can't change their own roles
@@ -93,7 +94,7 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    match /settings/global {
+    match /settings/{settingId} {
       allow read: if true;
       allow write: if isAdmin();
     }

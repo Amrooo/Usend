@@ -27,7 +27,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import StripeCheckoutForm from '../../components/merchant/StripeCheckoutForm';
 import { updateDocument } from '../../lib/firebaseUtils';
-import { db } from '../../firebase';
+import { db, auth } from '../../firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
 
 interface MerchantPaymentsProps {
@@ -46,7 +46,7 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
 
   // Real-time synchronization listener for Merchant transactions, COD, and wallet states directly from Firestore
   useEffect(() => {
-    if (user && user.uid) {
+    if (user && user.uid && auth.currentUser && auth.currentUser.uid === user.uid && user.uid !== 'demo-fallback-uid') {
       const userDocRef = doc(db, 'users', user.uid);
       const unsubscribe = onSnapshot(userDocRef, (snapshot) => {
         if (snapshot.exists()) {

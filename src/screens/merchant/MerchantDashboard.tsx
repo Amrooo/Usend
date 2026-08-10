@@ -1,4 +1,5 @@
 import { motion } from 'motion/react';
+import { useState } from 'react';
 import { Screen } from '../../types';
 import MerchantSidebar from '../../components/MerchantSidebar';
 import { Package, TrendingUp, Clock, DollarSign, ArrowUpRight, ArrowDownRight, CheckCircle2, PlusCircle, Search, Bell } from 'lucide-react';
@@ -15,9 +16,42 @@ export default function MerchantDashboard({ onNavigate }: MerchantDashboardProps
   const { activeRequests, user } = useApp();
 
   const merchantRequests = activeRequests.filter(req => 
-    (user?.uid && req.merchantId === user.uid) || 
-    (!user?.uid && req.applicantType === 'Merchant')
+    (user?.uid && req.merchantId === user.uid)
   );
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+  const totalPages = Math.ceil(merchantRequests.length / itemsPerPage);
+  const paginatedRequests = merchantRequests.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  // All Orders ledger states
+  const [allOrdersSearch, setAllOrdersSearch] = useState('');
+  const [allOrdersStatus, setAllOrdersStatus] = useState('all');
+  const [allOrdersPage, setAllOrdersPage] = useState(1);
+  const allOrdersLimit = 10;
+
+  const filteredAllRequests = merchantRequests.filter(order => {
+    if (allOrdersSearch.trim()) {
+      const q = allOrdersSearch.toLowerCase();
+      const matchId = (order.id || '').toLowerCase().includes(q);
+      const matchName = (order.name || '').toLowerCase().includes(q);
+      const matchAddress = (order.address || '').toLowerCase().includes(q);
+      const matchItem = (order.itemType || '').toLowerCase().includes(q);
+      if (!matchId && !matchName && !matchAddress && !matchItem) {
+        return false;
+      }
+    }
+    if (allOrdersStatus === 'all') return true;
+    const orderStatus = order.status.toLowerCase().replace(' ', '_');
+    return orderStatus === allOrdersStatus || 
+           (allOrdersStatus === 'pending' && (orderStatus === 'pending' || orderStatus === 'assigning' || orderStatus === 'approved')) || 
+           (allOrdersStatus === 'in_transit' && (orderStatus === 'in_transit' || orderStatus === 'en-route' || orderStatus === 'reviewing')) || 
+           (allOrdersStatus === 'delivered' && orderStatus === 'delivered') ||
+           (allOrdersStatus === 'cancelled' && (orderStatus === 'rejected' || orderStatus === 'cancelled' || orderStatus === 'exceptions'));
+  });
+
+  const allOrdersTotalPages = Math.ceil(filteredAllRequests.length / allOrdersLimit);
+  const paginatedAllRequests = filteredAllRequests.slice((allOrdersPage - 1) * allOrdersLimit, allOrdersPage * allOrdersLimit);
 
   const totalRev = merchantRequests.reduce((sum, req) => sum + parseFloat(req.orderAmount?.replace(/[^0-9.]/g, '') || '0'), 0);
   const platformFees = totalRev * 0.05;
@@ -150,7 +184,7 @@ export default function MerchantDashboard({ onNavigate }: MerchantDashboardProps
                   </tr>
                 </thead>
                 <tbody className="text-sm font-medium">
-                  {merchantRequests.length > 0 ? merchantRequests.map((order, i) => (
+                  {paginatedRequests.length > 0 ? paginatedRequests.map((order, i) => (
                     <tr key={i} className="border-b border-zinc-50 last:border-0 hover:bg-[#EFF3EE]/20 transition-colors group">
                       <td className="p-8 text-[#1C2C1E] font-black">{order.id}</td>
                       <td className="p-8 text-[#5D6B5A] font-bold">{order.name}</td>
@@ -179,6 +213,166 @@ export default function MerchantDashboard({ onNavigate }: MerchantDashboardProps
                 </tbody>
               </table>
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="p-6 border-t border-zinc-150/50 bg-[#EFF3EE]/20 flex items-center justify-between">
+                <button 
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-5 py-2.5 border border-zinc-200 rounded-xl text-xs font-black uppercase tracking-wider text-zinc-700 disabled:opacity-40 hover:bg-zinc-100 transition-all bg-white shadow-xs cursor-pointer disabled:cursor-not-allowed"
+                >
+                  Prev
+                </button>
+                <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button 
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-5 py-2.5 border border-zinc-200 rounded-xl text-xs font-black uppercase tracking-wider text-zinc-700 disabled:opacity-40 hover:bg-zinc-100 transition-all bg-white shadow-xs cursor-pointer disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* All Orders Ledger Block */}
+          <div className="bg-white border hover:border-[#D5E2D2] transition-colors border-zinc-150/50 rounded-[2.5rem] overflow-hidden shadow-[0_8px_30px_rgba(150,160,145,0.06)] mt-8">
+            <div className="p-10 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white">
+              <div>
+                <h2 className="text-xl font-display font-black uppercase tracking-tight text-[#1C2C1E]">
+                  {t('all_orders') || 'All Orders Ledger'}
+                </h2>
+                <p className="text-xs font-bold text-zinc-400 mt-1 uppercase tracking-wider">
+                  Full list of all active, past, and pending deliveries ({filteredAllRequests.length})
+                </p>
+              </div>
+
+              {/* Search Control */}
+              <div className="relative w-full md:w-80">
+                <Search className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 ${isRTL ? 'right-3.5' : 'left-3.5'}`} />
+                <input 
+                  type="text" 
+                  placeholder="Search by ID, Recipient, Address..."
+                  value={allOrdersSearch}
+                  onChange={(e) => { setAllOrdersSearch(e.target.value); setAllOrdersPage(1); }}
+                  className={`w-full h-11 bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-bold uppercase tracking-wider outline-none focus:ring-2 focus:ring-[#113f36]/20 focus:border-[#113f36] transition-all ${isRTL ? 'pr-11 pl-4 text-right' : 'pl-11 pr-4 text-left'}`}
+                />
+              </div>
+            </div>
+
+            {/* Status Filter Tabs */}
+            <div className="px-10 py-5 bg-zinc-50/50 border-b border-slate-100 flex flex-wrap gap-2.5">
+              {[
+                { id: 'all', label: 'All' },
+                { id: 'pending', label: 'Pending' },
+                { id: 'in_transit', label: 'In Transit' },
+                { id: 'delivered', label: 'Delivered' },
+                { id: 'cancelled', label: 'Cancelled / Rejected' }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => { setAllOrdersStatus(tab.id); setAllOrdersPage(1); }}
+                  className={`px-4.5 py-2 rounded-full text-[11px] font-black uppercase tracking-widest border transition-all cursor-pointer ${
+                    allOrdersStatus === tab.id 
+                      ? 'bg-[#113f36] border-[#113f36] text-white shadow-md' 
+                      : 'bg-white border-zinc-200 text-zinc-500 hover:bg-zinc-100'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className={`w-full ${isRTL ? 'text-right' : 'text-left'} border-collapse min-w-[800px]`}>
+                <thead>
+                  <tr className="bg-[#EFF3EE]/60 text-[#5D6B5A] text-[11px] font-black uppercase tracking-widest border-b border-slate-100">
+                    <th className="p-8 font-bold">{t('order_id')}</th>
+                    <th className="p-8 font-bold">{t('customer')}</th>
+                    <th className="p-8 font-bold">{t('courier')}</th>
+                    <th className="p-8 font-bold">{t('status')}</th>
+                    <th className="p-8 font-bold">{t('amount')}</th>
+                    <th className="p-8 font-bold text-center">{t('time')}</th>
+                    <th className="p-8 font-bold text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="text-sm font-medium">
+                  {paginatedAllRequests.length > 0 ? paginatedAllRequests.map((order, i) => (
+                    <tr key={i} className="border-b border-zinc-50 last:border-0 hover:bg-[#EFF3EE]/20 transition-colors group">
+                      <td className="p-8 text-[#1C2C1E] font-black font-mono text-xs">{order.id}</td>
+                      <td className="p-8">
+                        <div>
+                          <p className="text-[#5D6B5A] font-bold">{order.name}</p>
+                          <p className="text-[11px] text-zinc-400 font-bold truncate max-w-[180px]" title={order.address}>{order.address}</p>
+                        </div>
+                      </td>
+                      <td className="p-8">
+                        <span className={`inline-block px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${
+                          (order.carrier || '').toLowerCase() === 'noon' ? 'bg-amber-100 text-amber-800' :
+                          (order.carrier || '').toLowerCase() === 'aramex' ? 'bg-red-100 text-red-800' :
+                          'bg-zinc-100 text-zinc-650'
+                        }`}>
+                          {order.carrier || 'Not Dispatched'}
+                        </span>
+                      </td>
+                      <td className="p-8">
+                        <span className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                          order.status === 'delivered' ? 'bg-[#D5E2D2]/60 text-[#344633]' :
+                          order.status === 'in_transit' || order.status === 'En-route' ? 'bg-amber-50 text-amber-700' :
+                          'bg-zinc-100 text-zinc-650'
+                        }`}>
+                          {order.status === 'delivered' && <CheckCircle2 className="w-3 h-3" />}
+                          {(order.status === 'in_transit' || order.status === 'En-route') && <Clock className="w-3 h-3" />}
+                          {order.status === 'delivered' ? t('delivered') : (order.status === 'in_transit' || order.status === 'En-route') ? t('in_transit') : order.status}
+                        </span>
+                      </td>
+                      <td className="p-8 text-[#1C2C1E] font-black" dir="ltr">{order.orderAmount}</td>
+                      <td className="p-8 text-zinc-400 text-center">{order.date}</td>
+                      <td className="p-8 text-center">
+                        <button 
+                          onClick={() => onNavigate('merchant_tracking')}
+                          className="px-4 py-2 bg-zinc-950 hover:bg-[#113f36] text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-xs hover:shadow-md transition-all active:scale-95 cursor-pointer inline-flex items-center gap-1.5"
+                        >
+                          Track Shipment
+                        </button>
+                      </td>
+                    </tr>
+                  )) : (
+                    <tr>
+                       <td colSpan={7} className="p-20 text-center text-zinc-350 italic font-medium">
+                          No shipments match search query or filters.
+                       </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* All Orders Pagination Controls */}
+            {allOrdersTotalPages > 1 && (
+              <div className="p-6 border-t border-zinc-150/50 bg-[#EFF3EE]/20 flex items-center justify-between">
+                <button 
+                  onClick={() => setAllOrdersPage(p => Math.max(1, p - 1))}
+                  disabled={allOrdersPage === 1}
+                  className="px-5 py-2.5 border border-zinc-200 rounded-xl text-xs font-black uppercase tracking-wider text-zinc-700 disabled:opacity-40 hover:bg-zinc-100 transition-all bg-white shadow-xs cursor-pointer disabled:cursor-not-allowed"
+                >
+                  Prev
+                </button>
+                <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">
+                  Page {allOrdersPage} of {allOrdersTotalPages}
+                </span>
+                <button 
+                  onClick={() => setAllOrdersPage(p => Math.min(allOrdersTotalPages, p + 1))}
+                  disabled={allOrdersPage === allOrdersTotalPages}
+                  className="px-5 py-2.5 border border-zinc-200 rounded-xl text-xs font-black uppercase tracking-wider text-zinc-700 disabled:opacity-40 hover:bg-zinc-100 transition-all bg-white shadow-xs cursor-pointer disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
         </motion.div>
       </main>

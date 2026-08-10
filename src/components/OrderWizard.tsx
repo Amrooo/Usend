@@ -1,10 +1,11 @@
 import React, { useState, useRef, ChangeEvent, useMemo } from 'react';
-import { Truck, MapPin, Phone, Lock, CheckCircle2, ArrowRight, Plane, Camera, AlertCircle, Map, UploadCloud, User, DollarSign } from 'lucide-react';
+import { Truck, MapPin, Phone, Lock, CheckCircle2, ArrowRight, Plane, Camera, AlertCircle, Map, UploadCloud, User, DollarSign, Play, RefreshCw, Server } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLanguage } from '../context/LanguageContext';
 import { useApp } from '../context/AppContext';
 import { Screen } from '../types';
 import { aramexService } from '../services/aramexIntegration';
+import { noonService } from '../services/noonIntegration';
 import { updateDocument } from '../lib/firebaseUtils';
 import MapPicker from './MapPicker';
 import Modal from './Modal';
@@ -98,7 +99,7 @@ interface OrderWizardProps {
 
 export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true }: OrderWizardProps) {
   const { isRTL, t } = useLanguage();
-  const { addRequest, user, courierConfigs } = useApp();
+  const { addRequest, updateRequest, activeRequests, user, courierConfigs, settings } = useApp();
 
   const [wizardStep, setWizardStep] = useState<0 | 1 | 2 | 3 | 4 | 5>(0);
   const [shipmentType, setShipmentType] = useState<'domestic' | 'international' | null>(null);
@@ -132,7 +133,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
     // Optional: cash amount to collect FROM customer at delivery (COD for customer)
     collectCashFromCustomer: false,
     collectAmount: '',
-    codAmount: '150',
+    codAmount: String(Math.floor(110 + Math.random() * 125)),
     receiverPaymentMode: 'cod' as 'cod' | 'card'
   });
 
@@ -159,6 +160,11 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
   const [createdOrderId, setCreatedOrderId] = useState('');
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [mapTarget, setMapTarget] = useState<'shipper' | 'receiver'>('shipper');
+  
+  // Noon integration testing states
+  const [noonTestingLoading, setNoonTestingLoading] = useState(false);
+  const [noonTestingLogs, setNoonTestingLogs] = useState<{ request: any, response: any, timestamp: string } | null>(null);
+  const [noonTestingSuccess, setNoonTestingSuccess] = useState<boolean | null>(null);
   
   const validatePhone = (phone: string) => {
     // Exact UAE phone format: +971 followed by 9 digits
@@ -250,8 +256,10 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
     const serviceFee = parseFloat(((baseFee + weightFee + distanceFee) * 0.05).toFixed(2));
 
     // Optional COD collection fee (if merchant wants driver to collect cash from customer)
-    const codCollectFee = shipmentData.collectCashFromCustomer && parseFloat(shipmentData.collectAmount || '0') > 0
-      ? parseFloat((parseFloat(shipmentData.collectAmount) * 0.02).toFixed(2)) // 2% of collected amount
+    const isCodEnabled = settings?.enableCodHandlingFee !== false;
+    const codPercent = settings?.codHandlingFeePercent !== undefined ? settings.codHandlingFeePercent : 2;
+    const codCollectFee = (isCodEnabled && shipmentData.collectCashFromCustomer && parseFloat(shipmentData.collectAmount || '0') > 0)
+      ? parseFloat((parseFloat(shipmentData.collectAmount) * (codPercent / 100)).toFixed(2))
       : 0;
 
     const total = parseFloat((baseFee + weightFee + distanceFee + serviceFee + codCollectFee).toFixed(2));
@@ -407,6 +415,83 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
 
   const handlePrevStep = () => {
     if (wizardStep > 0) setWizardStep((prev) => (prev - 1) as 0|1|2|3|4|5);
+  };
+
+  const handlePushToNoonStaging = async () => {
+    if (!createdOrderId) return;
+    setNoonTestingLoading(true);
+    setNoonTestingLogs(null);
+    setNoonTestingSuccess(null);
+
+    try {
+      // Find the actual order object in memory
+      const targetOrder = activeRequests.find(r => r.id === createdOrderId);
+      if (!targetOrder) {
+        alert("Error: Order not found in system state.");
+        setNoonTestingLoading(false);
+        return;
+      }
+
+      const numericCod = parseFloat(targetOrder.orderAmount?.replace(/[^0-9.]/g, '') || '0');
+      const codValueFils = Math.round(numericCod * 100);
+
+      const requestPayload = {
+        outlet_code: "77T4HCOD4G", // default staging outlet
+        order_reference: targetOrder.id,
+        customer_name: targetOrder.name || "Recipient Buyer",
+        customer_phone: targetOrder.phone || "+971520000000",
+        drop_off_address: {
+          address: targetOrder.address || "Corniche Street, Dubai, UAE",
+          lat: targetOrder.position?.[0] || 25.1998,
+          lng: targetOrder.position?.[1] || 55.2738,
+          contact_name: targetOrder.name || "Recipient Buyer",
+          contact_phone_number: targetOrder.phone || "+971520000000",
+          country_code: "AE"
+        },
+        lat: targetOrder.position?.[0] || 25.1998,
+        lng: targetOrder.position?.[1] || 55.2738,
+        cod_value: codValueFils,
+        payment_method: (numericCod > 0 ? 'COD' : 'PAID') as 'COD' | 'PAID'
+      };
+
+      const res = await noonService.createDeliveryTask(requestPayload);
+
+      const logTimestamp = new Date().toISOString();
+      const newLogs = {
+        request: requestPayload,
+        response: res.data || { error: res.error || "No data received" },
+        timestamp: logTimestamp
+      };
+
+      setNoonTestingLogs(newLogs);
+
+      if (res.success && res.data?.mp_task_nr) {
+        setNoonTestingSuccess(true);
+        // Sync back into our reactive state and Firestore
+        updateRequest(targetOrder.id, {
+          status: 'Assigned',
+          carrier: 'noon',
+          externalTrackingNumber: res.data.mp_task_nr,
+          noonLogs: newLogs
+        });
+      } else {
+        setNoonTestingSuccess(false);
+        // Save failure logs so they can be viewed
+        updateRequest(targetOrder.id, {
+          noonLogs: newLogs
+        });
+      }
+    } catch (err: any) {
+      console.error("Noon manual test error:", err);
+      setNoonTestingSuccess(false);
+      setNoonTestingLogs({
+        request: { orderId: createdOrderId },
+        response: { error: err.message || String(err) },
+        timestamp: new Date().toISOString()
+      });
+    } finally {
+      setNoonTestingLoading(false);
+    }
   };
 
   const handleMapSelect = (addr: string, pos: [number, number]) => {
@@ -907,17 +992,103 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3, ease: 'easeInOut' }}
           >
-            <div className="text-center py-10 space-y-6 max-w-sm mx-auto">
-              <div className="w-24 h-24 rounded-full bg-brand/10 flex items-center justify-center mx-auto text-brand"><CheckCircle2 className="w-12 h-12" /></div>
-              <h4 className="text-3xl font-black uppercase">Order Created</h4>
-              <div className="bg-slate-100 border border-slate-200 rounded-xl p-4">
-                 <p className="text-[10px] font-black uppercase text-slate-500">Tracking Code</p>
-                 <p className="text-2xl font-mono font-bold text-brand">{createdOrderId}</p>
+            <div className="text-center py-10 space-y-6 max-w-xl mx-auto px-4">
+              <div className="w-20 h-20 rounded-full bg-[#113f36]/10 flex items-center justify-center mx-auto text-[#113f36]">
+                <CheckCircle2 className="w-10 h-10" />
               </div>
-              <p className="text-sm text-slate-500">{isGuest ? "Your guest order has been placed. You can track it here." : "Your delivery has been scheduled."}</p>
-              <div className="pt-8">
-                <button onClick={() => isGuest && onRequestLogin ? onRequestLogin() : onNavigate('user_tracking')} className="w-full py-4 rounded-xl bg-brand text-white font-black uppercase tracking-widest text-[12px] flex items-center justify-center gap-2">
-                   {isGuest ? "Login / Track" : "View Tracking"} <ArrowRight className="w-4 h-4"/>
+              <div>
+                <h4 className="text-3xl font-display font-black uppercase tracking-tight text-[#1C2C1E]">Order Created Successfully</h4>
+                <p className="text-xs font-bold text-zinc-400 mt-1 uppercase tracking-wider">
+                  {isGuest ? "Your guest order has been placed. You can track it here." : "Your delivery has been scheduled."}
+                </p>
+              </div>
+
+              <div className="bg-[#EFF3EE]/60 border border-[#D5E2D2] rounded-3xl p-6 text-center max-w-sm mx-auto">
+                 <p className="text-[10px] font-black uppercase tracking-wider text-[#5D6B5A]">USend Internal Reference</p>
+                 <p className="text-2xl font-mono font-black text-[#1C2C1E] mt-1">{createdOrderId}</p>
+              </div>
+
+              {/* Noon Integration Testing Suite */}
+              {shipmentData.courier === 'noon' && (
+                <div className="bg-amber-50 border-2 border-amber-200 rounded-[2rem] p-6 text-left space-y-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg font-black tracking-tight text-amber-800 lowercase font-sans">noon <span className="font-light text-zinc-500">RoD</span></span>
+                      <span className="text-[9px] bg-amber-200/50 text-amber-800 px-2 py-0.5 rounded-full font-black uppercase tracking-widest">STAGING INTEGRATION SUITE</span>
+                    </div>
+                    <Server className="w-5 h-5 text-amber-600" />
+                  </div>
+
+                  <p className="text-xs text-amber-950/80 font-medium leading-relaxed">
+                    Test your Noon Rider on Demand Staging environment integration immediately! Click below to send a live, authentic delivery request payload to Noon Hyperlocal Staging.
+                  </p>
+
+                  {/* Rest endpoint indicator */}
+                  <div className="bg-amber-100/50 border border-amber-200 rounded-xl p-3">
+                    <span className="text-[10px] text-amber-800 font-bold block uppercase tracking-wider">STAGING REST ENDPOINT</span>
+                    <span className="text-xs font-mono font-bold text-amber-950 block select-all break-all mt-0.5">
+                      POST /api/noon/create-task → https://food-api-team.noonstg.team/public/v1/create-task
+                    </span>
+                  </div>
+
+                  {/* Trigger button */}
+                  <button
+                    onClick={handlePushToNoonStaging}
+                    disabled={noonTestingLoading}
+                    className="w-full bg-[#113f36] hover:bg-zinc-950 text-white font-black text-[11px] uppercase tracking-widest py-3.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {noonTestingLoading ? (
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Play className="w-4 h-4" />
+                    )}
+                    <span>{noonTestingLoading ? "Sending Staging API Request..." : "Push Dispatch Payload to Noon"}</span>
+                  </button>
+
+                  {/* API response & logs */}
+                  {noonTestingLogs && (
+                    <div className="space-y-3 pt-2">
+                      <div className={`p-4 rounded-xl border text-xs font-bold flex items-center gap-2 ${noonTestingSuccess ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800'}`}>
+                        <div className={`w-2.5 h-2.5 rounded-full ${noonTestingSuccess ? 'bg-emerald-500' : 'bg-red-500'} animate-pulse`} />
+                        <span>
+                          {noonTestingSuccess 
+                            ? `SUCCESS: Noon generated rider task reference: ${noonTestingLogs.response?.mp_task_nr}` 
+                            : `FAILED: Staging response code ${noonTestingLogs.response?.status || '500'}`}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="bg-zinc-950 text-zinc-300 rounded-xl p-4 font-mono text-[10px] overflow-auto max-h-48 leading-relaxed">
+                          <p className="text-amber-400 font-bold border-b border-zinc-800 pb-1 mb-2">SENT REQUEST PAYLOAD</p>
+                          <pre>{JSON.stringify(noonTestingLogs.request, null, 2)}</pre>
+                        </div>
+                        <div className="bg-zinc-950 text-zinc-300 rounded-xl p-4 font-mono text-[10px] overflow-auto max-h-48 leading-relaxed">
+                          <p className="text-amber-400 font-bold border-b border-zinc-800 pb-1 mb-2">RECEIVED RESPONSE</p>
+                          <pre>{JSON.stringify(noonTestingLogs.response, null, 2)}</pre>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="pt-4 flex flex-col sm:flex-row gap-3">
+                <button 
+                  onClick={() => isGuest && onRequestLogin ? onRequestLogin() : onNavigate('user_tracking')} 
+                  className="flex-1 py-4 rounded-xl bg-[#113f36] hover:bg-zinc-950 text-white font-black uppercase tracking-widest text-[11px] flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
+                >
+                   {isGuest ? "Login / Track Shipment" : "View Tracking Ledger"} <ArrowRight className="w-4 h-4"/>
+                </button>
+                <button
+                  onClick={() => {
+                    // Reset wizard steps
+                    setWizardStep(0);
+                    setNoonTestingLogs(null);
+                    setNoonTestingSuccess(null);
+                  }}
+                  className="py-4 px-6 rounded-xl border border-zinc-200 hover:bg-zinc-50 text-[#1C2C1E] font-black uppercase tracking-widest text-[11px] transition-all cursor-pointer"
+                >
+                  Create Another Order
                 </button>
               </div>
             </div>
