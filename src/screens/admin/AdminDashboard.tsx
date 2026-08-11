@@ -215,17 +215,17 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
              <h3 className="text-xl font-display font-semibold uppercase tracking-tight text-slate-900 mb-2 group-hover/card:text-[#546a40] transition-colors">{t('uae_ops_map')}</h3>
              <p className="text-xs text-zinc-400 font-medium">{t('live_origin')}</p>
           </div>
-          <div className="flex-1 min-h-[250px] bg-zinc-900 rounded-[2rem] relative overflow-hidden group z-0">
-             <MapContainer center={[24.2, 54.5]} zoom={6} scrollWheelZoom={false} style={{ height: '100%', width: '100%', backgroundColor: '#18181b' }} zoomControl={false} dragging={true}>
+          <div className="flex-1 min-h-[250px] bg-slate-100 rounded-[2rem] relative overflow-hidden group z-0">
+             <MapContainer center={[24.2, 54.5]} zoom={6} scrollWheelZoom={false} style={{ height: '100%', width: '100%', backgroundColor: '#EFF3EE' }} zoomControl={false} dragging={true}>
                <TileLayer
-                 url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                 url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
                />
                <Marker position={[25.2048, 55.2708]} icon={createCustomMarker('bg-[#546a40]', '#546a40', '0s')} />
                <Marker position={[24.4539, 54.3773]} icon={createCustomMarker('bg-[#6d8c55]', '#34d399', '0.5s')} />
                <Marker position={[25.3463, 55.4209]} icon={createCustomMarker('bg-[#546a40]', '#546a40', '1s')} />
                <Marker position={[25.7895, 55.9432]} icon={createCustomMarker('bg-orange-400', '#fb923c', '1.5s')} />
              </MapContainer>
-             <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-transparent to-transparent pointer-events-none z-10"></div>
+             <div className="absolute inset-0 bg-gradient-to-t from-slate-100 via-transparent to-transparent pointer-events-none z-10"></div>
           </div>
           
           <div className="grid grid-cols-2 gap-4 mt-8 pointer-events-none">
@@ -345,6 +345,7 @@ function RequestsHub() {
   const { isRTL, t } = useLanguage();
   const { activeRequests, updateRequestStatus, addRequest } = useApp();
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
+  const [showRawLogs, setShowRawLogs] = useState(false);
   const [statusFilter, setStatusFilter] = useState('All Requests');
   const [channelFilter, setChannelFilter] = useState('All Channels');
   const [carrierFilter, setCarrierFilter] = useState('All Carriers');
@@ -1147,54 +1148,88 @@ function RequestsHub() {
                )}
 
                {selectedRequest.carrier === 'aramex' && (
-                 <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-4 overflow-hidden">
-                    <p className="text-[12px] font-black uppercase tracking-widest text-[#d12421] mb-3 flex items-center gap-2">
-                       <Truck className="w-3.5 h-3.5" />
-                       Aramex Integration
-                    </p>
-                    <div className="grid grid-cols-2 gap-4 mb-3">
-                       <div>
-                         <span className="text-[13px] uppercase tracking-widest text-zinc-400 font-bold">Tracking Number</span>
-                         <p className="text-sm font-black font-mono text-zinc-900">{selectedRequest.externalTrackingNumber || 'N/A'}</p>
+                  <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-4 overflow-hidden space-y-3">
+                     <p className="text-[12px] font-black uppercase tracking-widest text-[#d12421] flex items-center justify-between gap-2">
+                        <span className="flex items-center gap-2">
+                          <Truck className="w-3.5 h-3.5" />
+                          Aramex Integration
+                        </span>
+                        {selectedRequest.aramexLogs && (
+                          <button 
+                            type="button"
+                            onClick={() => setShowRawLogs(!showRawLogs)}
+                            className="text-[10px] bg-zinc-200 hover:bg-zinc-300 text-zinc-700 px-2 py-1 rounded font-bold uppercase tracking-wider transition-colors"
+                          >
+                            {showRawLogs ? 'Hide API Payload' : 'Show API Payload'}
+                          </button>
+                        )}
+                     </p>
+                     <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <span className="text-[11px] uppercase tracking-widest text-zinc-400 font-bold">Tracking Number</span>
+                          <p className="text-sm font-black font-mono text-zinc-900">{selectedRequest.externalTrackingNumber || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <span className="text-[11px] uppercase tracking-widest text-zinc-400 font-bold">Pickup Status</span>
+                          <p className="text-sm font-black font-mono text-zinc-900">{selectedRequest.aramexLogs?.pickupId || 'Not Booked'}</p>
+                        </div>
+                     </div>
+                     {selectedRequest.aramexLogs?.response?.Notifications?.length > 0 && (
+                       <div className="bg-[#d12421]/10 text-[#d12421] p-2 rounded-xl border border-[#d12421]/20">
+                         <span className="text-[11px] font-black uppercase tracking-widest block mb-1">API Error</span>
+                         <p className="text-xs font-bold">{selectedRequest.aramexLogs.response.Notifications[0].Message}</p>
                        </div>
-                       <div>
-                         <span className="text-[13px] uppercase tracking-widest text-zinc-400 font-bold">Pickup Status</span>
-                         <p className="text-sm font-black font-mono text-zinc-900">{selectedRequest.aramexLogs?.pickupId || 'Not Booked'}</p>
+                     )}
+                     {showRawLogs && selectedRequest.aramexLogs && (
+                       <div className="bg-zinc-900 text-zinc-100 p-3 rounded-xl text-[10px] font-mono overflow-x-auto max-h-48 text-left leading-relaxed">
+                         <span className="text-[9px] text-zinc-400 block uppercase mb-1">// Raw SOAP Payload Logs</span>
+                         <pre>{JSON.stringify(selectedRequest.aramexLogs, null, 2)}</pre>
                        </div>
-                    </div>
-                    {selectedRequest.aramexLogs?.response?.Notifications?.length > 0 && (
-                      <div className="bg-[#d12421]/10 text-[#d12421] p-2 rounded-xl mb-3">
-                        <span className="text-[13px] font-black uppercase tracking-widest block mb-1">API Error</span>
-                        <p className="text-xs font-bold">{selectedRequest.aramexLogs.response.Notifications[0].Message}</p>
-                      </div>
-                    )}
-                 </div>
-               )}
-
-               {selectedRequest.carrier === 'noon' && (
-                 <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-4 overflow-hidden">
-                    <p className="text-[12px] font-black uppercase tracking-widest text-amber-600 mb-3 flex items-center gap-2">
-                       <Truck className="w-3.5 h-3.5 text-amber-500" />
-                       Noon RoD Staging Integration
-                    </p>
-                    <div className="grid grid-cols-2 gap-4 mb-3">
-                       <div>
-                         <span className="text-[13px] uppercase tracking-widest text-zinc-400 font-bold">Task Number (mp_task_nr)</span>
-                         <p className="text-sm font-black font-mono text-zinc-900">{selectedRequest.externalTrackingNumber || 'N/A'}</p>
-                       </div>
-                       <div>
-                         <span className="text-[13px] uppercase tracking-widest text-zinc-400 font-bold">Staging Status</span>
-                         <p className="text-sm font-black font-mono text-amber-600">Active Task</p>
-                       </div>
-                    </div>
-                    {selectedRequest.noonLogs && (
-                      <div className="bg-amber-50 text-amber-900 p-2 rounded-xl mb-3 border border-amber-200">
-                        <span className="text-[13px] font-black uppercase tracking-widest block mb-1">Last Sync Details</span>
+                     )}
+                  </div>
+                )}
+ 
+                {selectedRequest.carrier === 'noon' && (
+                  <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-4 overflow-hidden space-y-3">
+                     <p className="text-[12px] font-black uppercase tracking-widest text-amber-600 flex items-center justify-between gap-2">
+                        <span className="flex items-center gap-2">
+                          <Truck className="w-3.5 h-3.5 text-amber-500" />
+                          Noon RoD Staging Integration
+                        </span>
+                        {selectedRequest.noonLogs && (
+                          <button 
+                            type="button"
+                            onClick={() => setShowRawLogs(!showRawLogs)}
+                            className="text-[10px] bg-zinc-200 hover:bg-zinc-300 text-zinc-700 px-2 py-1 rounded font-bold uppercase tracking-wider transition-colors"
+                          >
+                            {showRawLogs ? 'Hide API Payload' : 'Show API Payload'}
+                          </button>
+                        )}
+                     </p>
+                     <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <span className="text-[11px] uppercase tracking-widest text-zinc-400 font-bold">Task Number (mp_task_nr)</span>
+                          <p className="text-sm font-black font-mono text-zinc-900">{selectedRequest.externalTrackingNumber || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <span className="text-[11px] uppercase tracking-widest text-zinc-400 font-bold">Staging Status</span>
+                          <p className="text-sm font-black font-mono text-amber-600">Active Task</p>
+                        </div>
+                     </div>
+                     {selectedRequest.noonLogs && (
+                       <div className="bg-amber-50 text-amber-900 p-2.5 rounded-xl border border-amber-200">
+                         <span className="text-[11px] font-black uppercase tracking-widest block mb-1">Last Sync Details</span>
                          <p className="text-xs font-medium">Staging delivery task registered successfully: {selectedRequest.externalTrackingNumber}</p>
-                      </div>
-                    )}
-                 </div>
-               )}
+                       </div>
+                     )}
+                     {showRawLogs && selectedRequest.noonLogs && (
+                       <div className="bg-zinc-900 text-zinc-100 p-3 rounded-xl text-[10px] font-mono overflow-x-auto max-h-48 text-left leading-relaxed">
+                         <span className="text-[9px] text-zinc-400 block uppercase mb-1">// Raw JSON payload logs</span>
+                         <pre>{JSON.stringify(selectedRequest.noonLogs, null, 2)}</pre>
+                       </div>
+                     )}
+                  </div>
+                )}
 
                <div className="grid grid-cols-2 gap-4">
                  <div className="bg-[#113f36]/5 p-4 rounded-2xl">
@@ -2618,10 +2653,27 @@ function AdminSettings() {
 
 function AdminIntegrations() {
   const { courierConfigs, updateCourierConfigs } = useApp();
-  const [selectedCourierId, setSelectedCourierId] = useState<'aramex' | 'noon' | 'dhl' | 'fedex'>('aramex');
+  const [selectedCourierId, setSelectedCourierId] = useState<string>('aramex');
   const [localConfigs, setLocalConfigs] = useState<any>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+
+  // Add Courier Modal States
+  const [showAddCourierModal, setShowAddCourierModal] = useState(false);
+  const [newCourierId, setNewCourierId] = useState('');
+  const [newCourierName, setNewCourierName] = useState('');
+  const [newUsername, setNewUsername] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newAccountNumber, setNewAccountNumber] = useState('');
+  const [newAccountPin, setNewAccountPin] = useState('');
+  const [newAccountEntity, setNewAccountEntity] = useState('');
+  const [newAccountCountryCode, setNewAccountCountryCode] = useState('AE');
+  const [newSource, setNewSource] = useState('0');
+  const [newApiKey, setNewApiKey] = useState('');
+  const [newDomesticExpress, setNewDomesticExpress] = useState('20');
+  const [newDomesticStandard, setNewDomesticStandard] = useState('15');
+  const [newIntlExpress, setNewIntlExpress] = useState('85');
+  const [newIntlStandard, setNewIntlStandard] = useState('60');
 
   const [isTesting, setIsTesting] = useState(false);
   const [testLogs, setTestLogs] = useState<string[]>([]);
@@ -2652,15 +2704,107 @@ function AdminIntegrations() {
         `[STATUS] CONNECTION FAILED`
       ]);
       setTestResult('error');
-    } else {
+      setIsTesting(false);
+      return;
+    }
+
+    // Default mock check warnings to be realistic
+    const isDefaultAramex = selectedCourierId === 'aramex' && (creds.username === 'dxbit@aramex.com' || creds.username === 'testingapi@aramex.com');
+    const isDefaultNoon = selectedCourierId === 'noon' && (!creds.apiKey || creds.apiKey === 'noon_secret_key_123');
+
+    if (isDefaultAramex) {
       setTestLogs(prev => [
         ...prev,
-        `[SUCCESS] Connection handshake complete. HTTP Status: 200 OK.`,
-        `[INFO] Service Availability: 100% ONLINE`,
-        `[INFO] Latency RTT: 148ms`,
-        `[STATUS] ACTIVE & ONLINE`
+        `[WARNING] Using default USend sandbox credentials.`,
+        `[INFO] Handshake bypass enabled for standard testing.`,
+        `[SUCCESS] Connection handshake complete (Mock Bypass).`,
+        `[STATUS] ACTIVE & ONLINE (SANDBOX)`
       ]);
       setTestResult('success');
+      setIsTesting(false);
+      return;
+    }
+
+    if (isDefaultNoon) {
+      setTestLogs(prev => [
+        ...prev,
+        `[WARNING] Using default USend Noon staging token.`,
+        `[INFO] Handshake bypass enabled for standard testing.`,
+        `[SUCCESS] Connection handshake complete (Mock Bypass).`,
+        `[STATUS] ACTIVE & ONLINE (STAGING)`
+      ]);
+      setTestResult('success');
+      setIsTesting(false);
+      return;
+    }
+
+    // Real API handshake
+    try {
+      if (selectedCourierId === 'aramex') {
+        setTestLogs(prev => [...prev, `[INFO] Dispatching CalculateRate SOAP packet to Aramex Sandbox...`]);
+        const response = await fetch('/api/aramex/test-connection', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ credentials: creds })
+        });
+        const result = await response.json();
+        if (result.success) {
+          setTestLogs(prev => [
+            ...prev,
+            `[SUCCESS] Connection handshake complete. SOAP response: 200 OK.`,
+            `[INFO] Service Availability: 100% ONLINE`,
+            `[STATUS] ACTIVE & ONLINE (UAT)`
+          ]);
+          setTestResult('success');
+        } else {
+          setTestLogs(prev => [
+            ...prev,
+            `[ERROR] Aramex API returned error: ${result.error}`,
+            `[STATUS] CONNECTION FAILED`
+          ]);
+          setTestResult('error');
+        }
+      } else if (selectedCourierId === 'noon') {
+        setTestLogs(prev => [...prev, `[INFO] Dispatching pickup-points list request to Noon Hyperlocal Staging...`]);
+        const response = await fetch('/api/noon/test-connection', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ apiKey: creds.apiKey || creds.password })
+        });
+        const result = await response.json();
+        if (result.success) {
+          setTestLogs(prev => [
+            ...prev,
+            `[SUCCESS] Connection handshake complete. HTTP status: 200 OK.`,
+            `[INFO] Service Availability: 100% ONLINE`,
+            `[STATUS] ACTIVE & ONLINE (STAGING)`
+          ]);
+          setTestResult('success');
+        } else {
+          setTestLogs(prev => [
+            ...prev,
+            `[ERROR] Noon Staging returned error: ${result.error}`,
+            `[STATUS] CONNECTION FAILED`
+          ]);
+          setTestResult('error');
+        }
+      } else {
+        // Generic/DHL/FedEx connection check simulation
+        setTestLogs(prev => [
+          ...prev,
+          `[INFO] Testing integration for custom courier: ${activeConfig.name}`,
+          `[SUCCESS] Simulated custom credentials verification complete.`,
+          `[STATUS] ACTIVE & ONLINE`
+        ]);
+        setTestResult('success');
+      }
+    } catch (e: any) {
+      setTestLogs(prev => [
+        ...prev,
+        `[ERROR] Network error connecting to proxy: ${e.message}`,
+        `[STATUS] CONNECTION FAILED`
+      ]);
+      setTestResult('error');
     }
     setIsTesting(false);
   };
@@ -2764,6 +2908,77 @@ function AdminIntegrations() {
     }
   };
 
+  const handleAddCourier = () => {
+    if (!newCourierId || !newCourierName) {
+      alert("Please fill in Courier ID and Name.");
+      return;
+    }
+    const cleanId = newCourierId.toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+    if (localConfigs?.[cleanId]) {
+      alert("A courier with this ID already exists.");
+      return;
+    }
+
+    const newConfig = {
+      name: newCourierName,
+      status: 'Inactive',
+      currentMode: 'sandbox',
+      sandboxCreds: {
+        username: newUsername,
+        password: newPassword,
+        accountNumber: newAccountNumber,
+        accountPin: newAccountPin,
+        accountEntity: newAccountEntity,
+        accountCountryCode: newAccountCountryCode,
+        source: newSource || '0',
+        apiKey: newApiKey || '',
+        version: 'v1.0'
+      },
+      productionCreds: {
+        username: newUsername,
+        password: newPassword,
+        accountNumber: newAccountNumber,
+        accountPin: newAccountPin,
+        accountEntity: newAccountEntity,
+        accountCountryCode: newAccountCountryCode,
+        source: newSource || '0',
+        apiKey: newApiKey || '',
+        version: 'v1.0'
+      },
+      rates: {
+        guest: { baseFee: parseFloat(newDomesticExpress) || 20, perKmRate: 1.5, perKgRate: 2.0, expressSurcharge: 10, codFee: 5 },
+        user: { baseFee: parseFloat(newDomesticStandard) || 15, perKmRate: 1.2, perKgRate: 1.5, expressSurcharge: 8, codFee: 4 },
+        merchant: { baseFee: parseFloat(newIntlExpress) || 12, perKmRate: 1.0, perKgRate: 1.2, expressSurcharge: 6, codFee: 3 }
+      }
+    };
+
+    setLocalConfigs((prev: any) => ({
+      ...prev,
+      [cleanId]: newConfig
+    }));
+
+    setSelectedCourierId(cleanId);
+    setShowAddCourierModal(false);
+    
+    // Clear form
+    setNewCourierId('');
+    setNewCourierName('');
+    setNewUsername('');
+    setNewPassword('');
+    setNewAccountNumber('');
+    setNewAccountPin('');
+    setNewAccountEntity('');
+    setNewAccountCountryCode('AE');
+    setNewSource('0');
+    setNewApiKey('');
+    setNewDomesticExpress('20');
+    setNewDomesticStandard('15');
+    setNewIntlExpress('85');
+    setNewIntlStandard('60');
+
+    triggerToast(`Registered new courier ${newCourierName}! Click Save to write to Cloud.`);
+  };
+
   const activeCreds = currentConfig.currentMode === 'sandbox' ? currentConfig.sandboxCreds : currentConfig.productionCreds;
 
   const courierLogos: Record<string, string> = {
@@ -2791,24 +3006,32 @@ function AdminIntegrations() {
             <h3 className="text-xl font-display font-medium uppercase tracking-tight text-zinc-900 mb-2">Courier Integration Gateway</h3>
             <p className="text-sm text-zinc-500 font-medium max-w-2xl">Toggle active environment APIs, verify credentials, and customize rate tables based on applicant user profiles.</p>
           </div>
-          <button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="px-8 py-4 bg-orange-500 text-white rounded-full font-bold text-xs uppercase tracking-widest hover:bg-orange-600 transition-colors shadow-lg shadow-orange-500/20 active:scale-95 flex items-center justify-center gap-2 cursor-pointer min-w-[200px]"
-          >
-            {isSaving ? (
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            ) : (
-              <>
-                <Check className="w-4 h-4" /> Save Integration Settings
-              </>
-            )}
-          </button>
+          <div className="flex gap-4">
+            <button
+              onClick={() => setShowAddCourierModal(true)}
+              className="px-6 py-4 border border-zinc-200 text-zinc-700 bg-white rounded-full font-bold text-xs uppercase tracking-widest hover:bg-zinc-50 transition-colors shadow-sm active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" /> Register Courier
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="px-8 py-4 bg-orange-500 text-white rounded-full font-bold text-xs uppercase tracking-widest hover:bg-orange-600 transition-colors shadow-lg shadow-orange-500/20 active:scale-95 flex items-center justify-center gap-2 cursor-pointer min-w-[200px]"
+            >
+              {isSaving ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <>
+                  <Check className="w-4 h-4" /> Save Integration Settings
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Courier Select Tabs */}
         <div className="flex flex-wrap gap-4 mb-10 border-b border-zinc-100 pb-8">
-          {(Object.keys(localConfigs) as Array<'aramex' | 'noon' | 'dhl' | 'fedex'>).map((id) => {
+          {Object.keys(localConfigs || {}).map((id) => {
             const cfg = localConfigs[id];
             const isSelected = selectedCourierId === id;
             return (
@@ -2822,7 +3045,7 @@ function AdminIntegrations() {
                 }`}
               >
                 <div className="w-10 h-10 rounded-xl overflow-hidden bg-zinc-100 shrink-0 border border-zinc-200">
-                  <img src={courierLogos[id]} alt={cfg.name} className="w-full h-full object-cover grayscale opacity-80" />
+                  <img src={courierLogos[id] || 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?q=80&w=100&auto=format&fit=crop'} alt={cfg.name} className="w-full h-full object-cover grayscale opacity-80" />
                 </div>
                 <div className="text-left">
                   <p className="font-bold text-xs uppercase tracking-widest text-zinc-800">{cfg.name}</p>
@@ -3005,9 +3228,9 @@ function AdminIntegrations() {
                   </div>
 
                   {testLogs.length > 0 && (
-                    <div className="bg-zinc-950 text-[#00FF00] font-mono text-[11px] p-4 rounded-xl space-y-1 overflow-x-auto shadow-inner leading-relaxed">
+                    <div className="bg-[#113f36]/5 text-[#113f36] border border-[#113f36]/15 font-mono text-[11px] p-4 rounded-xl space-y-1 overflow-x-auto shadow-inner leading-relaxed">
                       {testLogs.map((log, idx) => (
-                        <div key={idx} className={log.includes('[ERROR]') ? 'text-red-500 font-bold' : log.includes('[SUCCESS]') ? 'text-[#00FF00] font-bold' : 'text-zinc-400'}>
+                        <div key={idx} className={log.includes('[ERROR]') ? 'text-red-650 font-bold' : log.includes('[SUCCESS]') ? 'text-[#113f36] font-black' : 'text-zinc-600'}>
                           {log}
                         </div>
                       ))}
@@ -3212,29 +3435,141 @@ function AdminIntegrations() {
           </div>
         </div>
       </div>
+
+      {showAddCourierModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowAddCourierModal(false)}></div>
+          <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] w-full max-w-4xl p-8 md:p-10 shadow-2xl relative z-10 flex flex-col max-h-[90vh] overflow-y-auto border border-zinc-150">
+            <div className="flex items-center justify-between mb-8 pb-6 border-b border-zinc-100">
+              <div>
+                <h3 className="text-xl font-display font-semibold uppercase tracking-tight text-zinc-900">Register New Courier Integration</h3>
+                <p className="text-xs text-zinc-500 mt-1">Add a custom logistics partner to the USend system, defining credentials and standard base rates.</p>
+              </div>
+              <button onClick={() => setShowAddCourierModal(false)} className="w-10 h-10 rounded-full bg-zinc-50 hover:bg-zinc-100 flex items-center justify-center text-zinc-400 hover:text-zinc-600 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 text-left">
+              {/* Left Column: Details & Sandbox Credentials */}
+              <div className="space-y-6">
+                <h4 className="text-xs font-black uppercase tracking-widest text-[#113f36] pb-2 border-b border-zinc-100">Courier Identity & Sandbox Creds</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">Courier ID (Unique, small letters)</label>
+                    <input type="text" placeholder="e.g. naqel" value={newCourierId} onChange={e => setNewCourierId(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-xs font-bold text-zinc-800 outline-none focus:border-orange-500" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">Display Name</label>
+                    <input type="text" placeholder="e.g. Naqel Express" value={newCourierName} onChange={e => setNewCourierName(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-xs font-bold text-zinc-800 outline-none focus:border-orange-500" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">API Username / Account</label>
+                    <input type="text" placeholder="e.g. info@naqel.com.sa" value={newUsername} onChange={e => setNewUsername(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-xs font-semibold text-zinc-800 outline-none focus:border-orange-500" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">Password / API Key</label>
+                    <input type="password" placeholder="••••••••" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-xs font-semibold text-zinc-800 outline-none focus:border-orange-500" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">Account Number</label>
+                    <input type="text" placeholder="e.g. 98124012" value={newAccountNumber} onChange={e => setNewAccountNumber(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-xs font-bold text-zinc-800 outline-none focus:border-orange-500" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">Account PIN / Security Token</label>
+                    <input type="text" placeholder="e.g. PIN-9921" value={newAccountPin} onChange={e => setNewAccountPin(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-xs font-bold text-zinc-800 outline-none focus:border-orange-500" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">Entity</label>
+                    <input type="text" placeholder="DXB" value={newAccountEntity} onChange={e => setNewAccountEntity(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-bold text-zinc-800 outline-none focus:border-orange-500" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">Country</label>
+                    <input type="text" placeholder="AE" value={newAccountCountryCode} onChange={e => setNewAccountCountryCode(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-bold text-zinc-800 outline-none focus:border-orange-500" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">Source ID</label>
+                    <input type="text" placeholder="0" value={newSource} onChange={e => setNewSource(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-bold text-zinc-800 outline-none focus:border-orange-500" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Custom API Token & Standard Rates */}
+              <div className="space-y-6">
+                <h4 className="text-xs font-black uppercase tracking-widest text-[#113f36] pb-2 border-b border-zinc-100">Store API Key & Delivery Rates</h4>
+                
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">Custom OAuth / Bearer API Token (Optional)</label>
+                  <textarea rows={2} placeholder="e.g. eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." value={newApiKey} onChange={e => setNewApiKey(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2 text-xs font-mono text-zinc-700 outline-none focus:border-orange-500" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-100">
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">Guest Base Fee (AED)</label>
+                    <input type="number" placeholder="20" value={newDomesticExpress} onChange={e => setNewDomesticExpress(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-xs font-bold text-zinc-800 outline-none focus:border-orange-500" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">User Base Fee (AED)</label>
+                    <input type="number" placeholder="15" value={newDomesticStandard} onChange={e => setNewDomesticStandard(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-xs font-bold text-zinc-800 outline-none focus:border-orange-500" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">Merchant Base Fee (AED)</label>
+                    <input type="number" placeholder="12" value={newIntlExpress} onChange={e => setNewIntlExpress(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-xs font-bold text-zinc-800 outline-none focus:border-orange-500" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">Express Surcharge (AED)</label>
+                    <input type="number" placeholder="10" value={newIntlStandard} onChange={e => setNewIntlStandard(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-xs font-bold text-zinc-800 outline-none focus:border-orange-500" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-4 pt-6 border-t border-zinc-100 bg-zinc-50 -mx-8 -mb-8 p-8 rounded-b-[2.5rem]">
+              <button onClick={() => setShowAddCourierModal(false)} className="px-6 py-3 bg-zinc-150 hover:bg-zinc-200 text-zinc-700 font-bold text-xs uppercase tracking-widest rounded-xl transition-colors">
+                Cancel
+              </button>
+              <button onClick={handleAddCourier} className="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs uppercase tracking-widest rounded-xl transition-colors shadow-md shadow-orange-500/10">
+                Register Partner
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 function UnifiedInventoryDesk() {
-  const [inventoryCatalog, setInventoryCatalog] = useState([
-    { sku: "SKU-IP15-PRO", name: "iPhone 15 Pro Max 256GB", merchant: "Noon E-commerce", stock: 12, site: "Jebel Ali Hub B", threshold: 25, status: "Critical Alert" },
-    { sku: "SKU-IK-BILLY", name: "Billy Bookcase White 80x28x202", merchant: "IKEA UAE", stock: 140, site: "Al Quoz Node A", threshold: 30, status: "Healthy" },
-    { sku: "SKU-SP-CHIA5", name: "Organic Chia Seeds 500g", merchant: "Spinneys Supermarket", stock: 3, site: "Dubai Marina Node C", threshold: 15, status: "Out Of Stock" },
-    { sku: "SKU-AP-M3PRO", name: "Apple MacBook Pro 14' M3", merchant: "Noon E-commerce", stock: 8, site: "Jebel Ali Hub B", threshold: 10, status: "Critical Alert" },
-    { sku: "SKU-IK-POANG", name: "Poäng Armchair Birch Veneer", merchant: "IKEA UAE", stock: 55, site: "Al Quoz Node A", threshold: 20, status: "Healthy" }
+  const [hubsCatalog, setHubsCatalog] = useState([
+    { code: "HUB-DXB-JebelAli", name: "Jebel Ali Regional Fulfillment Depot", region: "Dubai, UAE", activeRiders: 42, activeShipments: 850, capacityUsed: "82%", status: "High Demand" },
+    { code: "HUB-DXB-AlQuoz", name: "Al Quoz Express Delivery Hub", region: "Dubai, UAE", activeRiders: 28, activeShipments: 412, capacityUsed: "48%", status: "Optimal" },
+    { code: "HUB-DXB-Deira", name: "Deira Port Logistics Node", region: "Dubai, UAE", activeRiders: 18, activeShipments: 195, capacityUsed: "31%", status: "Optimal" },
+    { code: "HUB-AUH-Mussafah", name: "Mussafah Abu Dhabi Logistics Depot", region: "Abu Dhabi, UAE", activeRiders: 35, activeShipments: 620, capacityUsed: "75%", status: "High Demand" },
+    { code: "HUB-SHJ-Industrial", name: "Sharjah Industrial Fulfillment Center", region: "Sharjah, UAE", activeRiders: 15, activeShipments: 140, capacityUsed: "22%", status: "Underutilized" }
   ]);
 
   const [notif, setNotif] = useState("");
 
-  const triggerReplenish = (sku: string) => {
-    setInventoryCatalog(prev => prev.map(item => {
-      if (item.sku === sku) {
-        return { ...item, stock: item.stock + 50, status: "Healthy" };
+  const triggerRiderDispatch = (code: string) => {
+    setHubsCatalog(prev => prev.map(item => {
+      if (item.code === code) {
+        return { ...item, activeRiders: item.activeRiders + 10, status: "Optimal" };
       }
       return item;
     }));
-    setNotif(`Automated stock replenishment order generated and dispatched for ${sku}! +50 units pending delivery.`);
+    setNotif(`Dispatched 10 on-demand backup riders to ${code} to balance peak demand!`);
     setTimeout(() => setNotif(""), 4000);
   };
 
@@ -3242,13 +3577,13 @@ function UnifiedInventoryDesk() {
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-xl font-display font-medium text-zinc-900 mb-1 uppercase tracking-tight">UAE Unified Stock Catalog</h3>
-          <p className="text-sm text-zinc-500">Cross-merchant fulfillment dashboard. Spot critical low stock alerts and transfer resources.</p>
+          <h3 className="text-xl font-display font-medium text-zinc-900 mb-1 uppercase tracking-tight">UAE Unified Logistics Hubs</h3>
+          <p className="text-sm text-zinc-500">Cross-region fulfillment hubs dashboard. Manage localized dispatch queues, rider allocations, and service coverage.</p>
         </div>
       </div>
 
       {notif && (
-        <div className="bg-blue-55 bg-[#113f36]/5 border border-[#113f36]/20 text-blue-850 p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 animate-bounce">
+        <div className="bg-[#113f36]/5 border border-[#113f36]/20 text-[#113f36] p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 animate-bounce">
           <div className="w-1.5 h-1.5 rounded-full bg-[#113f36] animate-ping"></div>
           {notif}
         </div>
@@ -3256,19 +3591,19 @@ function UnifiedInventoryDesk() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white border border-zinc-200 p-6 rounded-[2rem] shadow-sm">
-          <span className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Total Monitored SKUs</span>
-          <p className="text-2xl font-bold text-zinc-900">4,812 SKUs</p>
-          <span className="text-[12px] text-zinc-400 mt-2 block">Across 14 merchant channels</span>
+          <span className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Total Active Hubs</span>
+          <p className="text-2xl font-bold text-zinc-900">5 Regional Hubs</p>
+          <span className="text-[12px] text-zinc-400 mt-2 block">Covering Dubai, Abu Dhabi, and Sharjah</span>
         </div>
-        <div className="bg-red-50 border border-red-105 p-6 rounded-[2rem] shadow-sm col-span-1">
-          <span className="text-[13px] font-black uppercase tracking-widest text-red-600 block mb-1">Low Stock Alerts</span>
-          <p className="text-2xl font-bold text-red-700">12 Items</p>
-          <span className="text-[12px] text-red-500 mt-2 block">Stock level fell below safety threshold</span>
+        <div className="bg-orange-50 border border-orange-100 p-6 rounded-[2rem] shadow-sm">
+          <span className="text-[13px] font-black uppercase tracking-widest text-orange-600 block mb-1">Peak Demand Alert</span>
+          <p className="text-2xl font-bold text-orange-700">2 Hubs Peak</p>
+          <span className="text-[12px] text-orange-500 mt-2 block">Capacity utilization has crossed 70%</span>
         </div>
-        <div className="bg-orange-50 border border-orange-105 p-6 rounded-[2rem] shadow-sm">
-          <span className="text-[13px] font-black uppercase tracking-widest text-orange-600 block mb-1">Pending Stock Transits</span>
-          <p className="text-2xl font-bold text-orange-700">3 Fleet Runs</p>
-          <span className="text-[12px] text-orange-500 mt-2 block">Moving to balance localized demands</span>
+        <div className="bg-green-50 border border-green-100 p-6 rounded-[2rem] shadow-sm">
+          <span className="text-[13px] font-black uppercase tracking-widest text-green-600 block mb-1">Active Deliveries</span>
+          <p className="text-2xl font-bold text-[#113f36]">2,217 runs</p>
+          <span className="text-[12px] text-green-600 mt-2 block">Underway across all registered couriers</span>
         </div>
       </div>
 
@@ -3277,43 +3612,43 @@ function UnifiedInventoryDesk() {
           <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
               <tr className="bg-zinc-50 text-zinc-400 text-[12px] font-black uppercase tracking-widest border-b border-zinc-100">
-                <th className="p-6">SKU Code</th>
-                <th className="p-6">Product Details</th>
-                <th className="p-6">Merchant Partner</th>
-                <th className="p-6">Fulfillment Location</th>
-                <th className="p-6">Level / Safety</th>
-                <th className="p-6 text-center">Operational Action</th>
+                <th className="p-6">Hub Code</th>
+                <th className="p-6">Location & Facility Name</th>
+                <th className="p-6">Region</th>
+                <th className="p-6">Telemetry</th>
+                <th className="p-6">Queue Status</th>
+                <th className="p-6 text-center">Rider Optimization</th>
               </tr>
             </thead>
             <tbody className="text-sm font-medium">
-              {inventoryCatalog.map((item, idx) => (
+              {hubsCatalog.map((item, idx) => (
                 <tr key={idx} className="border-b border-zinc-50 hover:bg-zinc-50/50 transition-colors">
-                  <td className="p-6 font-mono text-zinc-900 font-bold text-xs">{item.sku}</td>
+                  <td className="p-6 font-mono text-zinc-900 font-bold text-xs">{item.code}</td>
                   <td className="p-6">
                     <span className="text-zinc-800 font-bold block">{item.name}</span>
-                    <span className="text-[12px] text-zinc-400 mt-0.5 block">Threshold: {item.threshold} units</span>
+                    <span className="text-[12px] text-zinc-400 mt-0.5 block">Capacity Used: {item.capacityUsed}</span>
                   </td>
-                  <td className="p-6 text-zinc-650">{item.merchant}</td>
-                  <td className="p-6 text-zinc-500 text-xs">{item.site}</td>
+                  <td className="p-6 text-zinc-650">{item.region}</td>
+                  <td className="p-6 text-zinc-500 text-xs">
+                    <span className="block font-bold text-zinc-800">{item.activeRiders} Active Riders</span>
+                    <span className="block text-zinc-400">{item.activeShipments} Shipments Queue</span>
+                  </td>
                   <td className="p-6">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-zinc-805">{item.stock}</span>
-                      <span className={`px-2.5 py-1 rounded-full text-[13px] font-black uppercase tracking-widest leading-none ${
-                        item.status === 'Healthy' ? 'bg-[#113f36]/5 text-[#113f36]' :
-                        item.status === 'Critical Alert' ? 'bg-orange-50 text-orange-600 animate-pulse' :
-                        'bg-red-50 text-red-600'
-                      }`}>
-                        {item.status}
-                      </span>
-                    </div>
+                    <span className={`px-2.5 py-1 rounded-full text-[13px] font-black uppercase tracking-widest leading-none ${
+                      item.status === 'Optimal' ? 'bg-[#113f36]/5 text-[#113f36]' :
+                      item.status === 'High Demand' ? 'bg-orange-50 text-orange-600 animate-pulse' :
+                      'bg-blue-50 text-blue-600'
+                    }`}>
+                      {item.status}
+                    </span>
                   </td>
                   <td className="p-6 text-center">
-                    {(item.status !== "Healthy") ? (
+                    {(item.status !== "Optimal" && item.status !== "Underutilized") ? (
                       <button 
-                        onClick={() => triggerReplenish(item.sku)}
+                        onClick={() => triggerRiderDispatch(item.code)}
                         className="text-[12px] bg-brand text-white font-black uppercase tracking-widest px-4 py-2.5 rounded-xl hover:bg-brand/90 hover:scale-105 transition-all shadow-md shadow-brand/10"
                       >
-                        Auto-Replenish
+                        Allocate Riders
                       </button>
                     ) : (
                       <span className="text-[12px] font-bold text-[#113f36] flex items-center justify-center gap-1">

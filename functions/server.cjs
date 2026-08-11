@@ -252,7 +252,7 @@ app.post("/api/aramex/:serviceType", async (req, res) => {
     let payload = req.body;
     const userClientInfo = payload.ClientInfo || {};
     const isProduction = process.env.ARAMEX_ENV === "production" || req.headers["x-aramex-env"] === "production";
-    const baseUrl = process.env.ARAMEX_BASE_URL || (isProduction ? "https://ws.aramex.net" : "https://ws.dev.aramex.net");
+    const baseUrl = process.env.ARAMEX_BASE_URL || (isProduction ? "https://ws.aramex.net" : "https://ws.uat.aramex.net");
     const defaultUserName = "dxbit@aramex.com";
     const defaultPassword = "Ar@m3x$h1pp1ng";
     const defaultAccountNumber = "154454";
@@ -300,10 +300,9 @@ app.post("/api/aramex/:serviceType", async (req, res) => {
     }
     let aramexRes;
     let data;
-    let useFallback = false;
-    if (!isProduction) {
-      useFallback = true;
-    } else {
+    const isMockCreds = finalUserName === "dxbit@aramex.com" || finalUserName === "testingapi@aramex.com";
+    let useFallback = isMockCreds;
+    if (!useFallback) {
       try {
         aramexRes = await fetch(`${baseUrl}${path2}`, {
           method: "POST",
@@ -322,16 +321,13 @@ app.post("/api/aramex/:serviceType", async (req, res) => {
           const textData = await aramexRes.text();
           try {
             data = JSON.parse(textData);
-            if (data.HasErrors) {
-              console.warn("Aramex API response has errors. Using mock fallback to ensure robustness.");
-              useFallback = true;
-            }
           } catch (parseError) {
             console.warn("Aramex returned non-JSON response. Using mock fallback.");
             useFallback = true;
           }
         }
       } catch (fetchError) {
+        console.warn(`Aramex API connection failed: ${fetchError.message}. Using mock fallback.`);
         useFallback = true;
       }
     }
@@ -415,18 +411,122 @@ app.post("/api/aramex/:serviceType", async (req, res) => {
 });
 var NOON_STAGING_KEY = "SstJi9Ho0EHG2t7kQVSz7nA2hOeL3iiwVxHxb0Njk60QJ0LfmvoXoOsimw1zQC7VugHXiIRRMnWyU6f0uHcEcLlco5Eujqbd5pTwDlfBXpacuRI4m4AAj61NwM0B7Ihk";
 var NOON_STAGING_URL = "https://food-api-team.noonstg.team";
-var getNoonHeaders = () => ({
-  "Content-Type": "application/json",
-  "X-API-KEY": NOON_STAGING_KEY,
-  "Api-Key": NOON_STAGING_KEY,
-  "Authorization": `Bearer ${NOON_STAGING_KEY}`
+var getNoonHeaders = (req) => {
+  const clientApiKey = req.headers["x-noon-api-key"] || req.query.apiKey || req.body && req.body.apiKey;
+  const apiKey2 = clientApiKey && clientApiKey !== "noon_secret_key_123" ? clientApiKey : NOON_STAGING_KEY;
+  return {
+    "Content-Type": "application/json",
+    "X-API-KEY": apiKey2,
+    "Api-Key": apiKey2,
+    "Authorization": `Bearer ${apiKey2}`
+  };
+};
+app.post("/api/aramex/test-connection", import_express.default.json(), async (req, res) => {
+  try {
+    const { credentials } = req.body;
+    if (!credentials) {
+      return res.status(400).json({ error: "Missing credentials parameter" });
+    }
+    const isProduction = credentials.apiEnv === "production";
+    const baseUrl = isProduction ? "https://ws.aramex.net" : "https://ws.uat.aramex.net";
+    const path2 = "/ShippingAPI.V2/RateCalculator/Service_1_0.svc/json/CalculateRate";
+    const payload = {
+      ClientInfo: {
+        UserName: credentials.username,
+        Password: credentials.password || "",
+        Version: credentials.version || "v1.0",
+        AccountNumber: credentials.accountNumber,
+        AccountPin: credentials.accountPin,
+        AccountEntity: credentials.accountEntity,
+        AccountCountryCode: credentials.accountCountryCode,
+        Source: parseInt(credentials.source, 10) || 0
+      },
+      Transaction: {
+        Reference1: "Connection Verification",
+        Reference2: "",
+        Reference3: "",
+        Reference4: "",
+        Reference5: ""
+      },
+      OriginAddress: { City: "Dubai", CountryCode: "AE" },
+      DestinationAddress: { City: "Abu Dhabi", CountryCode: "AE" },
+      ShipmentDetails: {
+        PaymentType: "P",
+        ProductGroup: "DOM",
+        ProductType: "OND",
+        ActualWeight: { Value: 1, Unit: "KG" },
+        ChargeableWeight: { Value: 1, Unit: "KG" },
+        NumberOfPieces: 1
+      }
+    };
+    console.log(`[Aramex Connection Test] Testing against ${baseUrl}...`);
+    const aramexRes = await fetch(`${baseUrl}${path2}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json"
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(15e3)
+    });
+    if (!aramexRes.ok) {
+      return res.status(200).json({
+        success: false,
+        error: `HTTP Error: Server returned status code ${aramexRes.status}`
+      });
+    }
+    const data = await aramexRes.json();
+    if (data.HasErrors) {
+      return res.status(200).json({
+        success: false,
+        error: data.Notifications?.[0]?.Message || "Aramex API credentials validation failed"
+      });
+    }
+    return res.json({ success: true, message: "Handshake verified successfully!" });
+  } catch (error) {
+    console.error("[Aramex Connection Test] Error:", error);
+    return res.status(200).json({ success: false, error: error.message });
+  }
+});
+app.post("/api/noon/test-connection", import_express.default.json(), async (req, res) => {
+  try {
+    const { apiKey: apiKey2 } = req.body;
+    if (!apiKey2) {
+      return res.status(400).json({ error: "Missing API key parameter" });
+    }
+    console.log("[Noon Connection Test] Testing API Key against Noon Staging...");
+    const response = await fetch(`${NOON_STAGING_URL}/public/v1/pickup-points/list`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-KEY": apiKey2,
+        "Api-Key": apiKey2,
+        "Authorization": `Bearer ${apiKey2}`
+      },
+      signal: AbortSignal.timeout(1e4)
+    });
+    if (response.ok) {
+      const data = await response.json();
+      if (data.status === "SUCCESS" || Array.isArray(data.pickup_points)) {
+        return res.json({ success: true, message: "Noon credentials handshake verified successfully!" });
+      }
+    }
+    const errText = await response.text();
+    return res.status(200).json({
+      success: false,
+      error: `Handshake failed: Noon Staging returned status ${response.status}. Details: ${errText || "Invalid API Key"}`
+    });
+  } catch (error) {
+    console.error("[Noon Connection Test] Error:", error);
+    return res.status(200).json({ success: false, error: error.message });
+  }
 });
 app.get("/api/noon/pickup-addresses", async (req, res) => {
   try {
     console.log("[Noon Proxy] Fetching pickup points from Noon Staging...");
     const response = await fetch(`${NOON_STAGING_URL}/public/v1/pickup-points/list`, {
       method: "GET",
-      headers: getNoonHeaders(),
+      headers: getNoonHeaders(req),
       signal: AbortSignal.timeout(1e4)
     });
     if (response.ok) {
@@ -472,7 +572,7 @@ app.post("/api/noon/create-task", async (req, res) => {
     console.log("[Noon Proxy] Sending create-task payload to Noon Staging...", JSON.stringify(params));
     const response = await fetch(`${NOON_STAGING_URL}/public/v1/create-task`, {
       method: "POST",
-      headers: getNoonHeaders(),
+      headers: getNoonHeaders(req),
       body: JSON.stringify(params),
       signal: AbortSignal.timeout(1e4)
     });
@@ -506,7 +606,7 @@ app.get("/api/noon/tasks/:mp_task_nr", async (req, res) => {
     console.log(`[Noon Proxy] Fetching task details for ${mp_task_nr} from Noon Staging...`);
     const response = await fetch(`${NOON_STAGING_URL}/public/v1/tasks/${mp_task_nr}`, {
       method: "GET",
-      headers: getNoonHeaders(),
+      headers: getNoonHeaders(req),
       signal: AbortSignal.timeout(1e4)
     });
     if (response.ok) {
@@ -541,7 +641,7 @@ app.post("/api/noon/tasks/:mp_task_nr/cancel", async (req, res) => {
     console.log(`[Noon Proxy] Sending cancellation request for ${mp_task_nr}...`);
     const response = await fetch(`${NOON_STAGING_URL}/public/v1/tasks/${mp_task_nr}/cancel`, {
       method: "POST",
-      headers: getNoonHeaders(),
+      headers: getNoonHeaders(req),
       body: JSON.stringify({ reason }),
       signal: AbortSignal.timeout(1e4)
     });

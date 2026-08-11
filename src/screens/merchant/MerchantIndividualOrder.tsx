@@ -1,4 +1,4 @@
-import { useState, FormEvent, useRef, ChangeEvent } from 'react';
+import { useState, FormEvent, useRef, ChangeEvent, useMemo } from 'react';
 import { motion } from 'motion/react';
 import { Screen } from '../../types';
 import MerchantSidebar from '../../components/MerchantSidebar';
@@ -22,12 +22,15 @@ import {
   ChevronRight, 
   Map,
   UploadCloud,
-  Truck
+  Truck,
+  AlertCircle
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { aramexService } from '../../services/aramexIntegration';
 import { noonService } from '../../services/noonIntegration';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
 export const UAE_ADDRESS_SUGGESTIONS = [
   { name: "Dubai Mall, Financial Center Road, Downtown Dubai", position: [25.1972, 55.2797] },
@@ -77,7 +80,7 @@ interface MerchantIndividualOrderProps {
 
 export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividualOrderProps) {
   const { t, isRTL } = useLanguage();
-  const { addRequest, updateRequest, merchantActiveTab, setMerchantActiveTab } = useApp();
+  const { addRequest, updateRequest, merchantActiveTab, setMerchantActiveTab, settings, courierConfigs } = useApp();
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [isMapOpenQuoteTarget, setIsMapOpenQuoteTarget] = useState<'pickup' | 'dropoff' | 'manual_pickup' | 'manual_dropoff' | null>(null);
   const [isDateOpen, setIsDateOpen] = useState(false);
@@ -120,6 +123,178 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const dynamicPricing = useMemo(() => {
+    const carrierKey = formData.carrier || 'aramex';
+    const config = courierConfigs?.[carrierKey];
+    const rates = config?.rates?.merchant || { baseFee: 12, perKmRate: 0, perKgRate: 2.5, expressSurcharge: 10, codFee: 5 };
+    
+    let distance = 0;
+    if (formData.pickupPosition && formData.position) {
+      const R = 6371;
+      const dLat = (formData.position[0] - formData.pickupPosition[0]) * Math.PI / 180;
+      const dLon = (formData.position[1] - formData.pickupPosition[1]) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(formData.pickupPosition[0] * Math.PI / 180) * Math.cos(formData.position[0] * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+      distance = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+    
+    const baseFee = rates.baseFee + (distance * (rates.perKmRate || 0));
+    const weightSurcharge = formData.weight === 'heavy' ? (rates.perKgRate * 5) : 0;
+    const finalBase = Number((baseFee + weightSurcharge).toFixed(2));
+    
+    const commission = Number((settings?.merchantCommission || 5.00).toFixed(2));
+    const total = Number((finalBase + commission).toFixed(2));
+    
+    return {
+      baseFee: finalBase,
+      commission,
+      total
+    };
+  }, [formData.carrier, formData.pickupPosition, formData.position, formData.weight, courierConfigs, settings]);
+
+  // Stripe Integration States
+  const [stripeClientSecret, setStripeClientSecret] = useState<string | null>(null);
+  const [stripePubKey, setStripePubKey] = useState<string | null>(null);
+  const [stripeError, setStripeError] = useState<string | null>(null);
+
+  const stripePromise = useMemo(() => {
+    if (!stripePubKey) return null;
+    try {
+      return loadStripe(stripePubKey);
+    } catch (e) {
+      console.error("Stripe initialization error:", e);
+      setStripeError("Unable to connect to secure payment network.");
+      return null;
+    }
+  }, [stripePubKey]);
+
+  const stripeOptions = useMemo(() => stripeClientSecret ? { clientSecret: stripeClientSecret } : null, [stripeClientSecret]);
+
+  const handlePayWithStripe = async () => {
+    try {
+      setStripeError(null);
+      setIsSubmitting(true);
+      const res = await fetch("/api/payments/create-intent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: dynamicPricing.total,
+          currency: "aed",
+          metadata: {
+            customerName: formData.customerName,
+            phone: formData.phone,
+            merchantEmail: "merchant@usend.ae"
+          }
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to initialize Stripe session.");
+      
+      setStripePubKey(data.publishableKey);
+      setStripeClientSecret(data.clientSecret);
+    } catch (err: any) {
+      console.error(err);
+      setStripeError(err.message);
+      setIsSubmitting(false);
+    }
+  };
+
+  const handlePaymentSuccess = async (paymentIntent: any) => {
+    setStripeClientSecret(null);
+    setIsSubmitting(true);
+    
+    const reqId = `REQ-${Math.floor(1000 + Math.random() * 9000).toString()}`;
+    const payload = {
+      id: reqId,
+      name: formData.customerName,
+      phone: formData.phone,
+      channel: 'Merchant Portal',
+      date: `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+      status: 'Pending' as const,
+      position: formData.position,
+      address: formData.address,
+      itemType: formData.items || 'General Goods',
+      description: formData.notes,
+      amountType: 'packages' as const,
+      paymentMethod: 'Credit Card (Stripe)',
+      stripeIntentId: paymentIntent.id,
+      orderAmount: `${formData.amount || Math.floor(95 + Math.random() * 190)} AED`,
+      applicantType: 'Merchant' as const,
+      fromDestination: formData.pickupAddress,
+      toDestination: formData.address,
+      etaTime: '2 Hours',
+      carrier: formData.carrier,
+      printFormat: formData.printFormat
+    };
+
+    await addRequest(payload);
+    
+    if (formData.carrier === 'aramex') {
+      try {
+        const aramexRes = await aramexService.createDeliveryJob(payload);
+        if (aramexRes.success === false) {
+           throw new Error(aramexRes.error || "Aramex API failed to create shipment.");
+        }
+        await updateRequest(reqId, { status: 'Assigned' });
+      } catch (err: any) {
+        console.error("Aramex Sandbox Dispatch failed", err);
+        setIsSubmitting(false);
+        window.dispatchEvent(new CustomEvent('app_toast', { detail: { title: 'Aramex Integration Error', message: err.message, type: 'error' } }));
+        return;
+      }
+    } else if (formData.carrier === 'noon') {
+      try {
+        const numericCod = parseFloat(formData.amount || '0') || 0;
+        const codValueFils = Math.round(numericCod * 100);
+        const res = await noonService.createDeliveryTask({
+          outlet_code: "77T4HCOD4G",
+          order_reference: reqId,
+          customer_name: formData.customerName || "Recipient Buyer",
+          customer_phone: formData.phone || "+971520000000",
+          drop_off_address: {
+            address: formData.address || "Corniche Street, Dubai, UAE",
+            lat: formData.position ? formData.position[0] : 25.1998,
+            lng: formData.position ? formData.position[1] : 55.2738,
+            contact_name: formData.customerName || "Recipient Buyer",
+            contact_phone_number: formData.phone || "+971520000000",
+            country_code: "ARE"
+          },
+          lat: formData.position ? formData.position[0] : 25.1998,
+          lng: formData.position ? formData.position[1] : 55.2738,
+          cod_value: codValueFils,
+          payment_method: numericCod > 0 ? 'COD' : 'PAID'
+        });
+
+        if (res.success && res.data?.mp_task_nr) {
+          await updateRequest(reqId, {
+            status: 'Assigned',
+            externalTrackingNumber: res.data.mp_task_nr,
+            noonLogs: {
+              request: {
+                outlet_code: "77T4HCOD4G",
+                order_reference: reqId,
+                customer_name: formData.customerName,
+                customer_phone: formData.phone,
+                cod_value: codValueFils,
+                payment_method: numericCod > 0 ? 'COD' : 'PAID'
+              },
+              response: res.data,
+              timestamp: new Date().toISOString()
+            }
+          });
+        } else {
+          throw new Error(res.error || (res.data ? JSON.stringify(res.data) : "Noon API failed to create shipment."));
+        }
+      } catch (err: any) {
+        console.error("Noon Staging Dispatch failed", err);
+        setIsSubmitting(false);
+        window.dispatchEvent(new CustomEvent('app_toast', { detail: { title: 'Noon Integration Error', message: err.message, type: 'error' } }));
+        return;
+      }
+    }
+    setIsSubmitting(false);
+    onNavigate('merchant_tracking');
+  };
 
   // Merchant AI recognition uploader state and tools
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -342,6 +517,11 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
       return;
     }
 
+    if (formData.paymentType === 'card' && !stripeClientSecret) {
+      handlePayWithStripe();
+      return;
+    }
+
     setIsSubmitting(true);
 
     const submitOrder = async () => {
@@ -503,40 +683,40 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
             <form onSubmit={handleNormalSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 space-y-6">
                 {/* Customer Information Cards */}
-                <div className="bg-white dark:bg-zinc-950 border border-[#EBEFE9] dark:border-zinc-800/60 rounded-[2.5rem] p-5 md:p-8 shadow-[0_8px_30px_rgb(220,225,235,0.45)] dark:shadow-none space-y-7">
+                <div className="bg-white border border-[#EBEFE9] rounded-[2.5rem] p-5 md:p-8 shadow-[0_8px_30px_rgb(220,225,235,0.45)] space-y-7">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-xl bg-[#113f36]/10 text-[#546a40] flex items-center justify-center">
                       <User className="w-[18px] h-[18px]" />
                     </div>
-                    <h2 className="font-bold text-lg text-slate-800 dark:text-zinc-250">Customer Details</h2>
+                    <h2 className="font-bold text-lg text-slate-800">Customer Details</h2>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="space-y-2">
-                      <label className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider block">FullName</label>
+                      <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">FullName</label>
                       <div className="relative flex items-center">
-                        <User className="absolute left-4 text-slate-400 dark:text-zinc-500 w-4.5 h-4.5 z-10" />
+                        <User className="absolute left-4 text-slate-400 w-4.5 h-4.5 z-10" />
                         <input 
                           required
                           type="text" 
                           value={formData.customerName}
                           onChange={(e) => setFormData({...formData, customerName: e.target.value})}
                           placeholder="John Doe" 
-                          className="w-full bg-slate-50/50 dark:bg-zinc-800/50 border border-[#E2E8F0] dark:border-zinc-800/80 focus:border-[#546a40] focus:bg-white dark:focus:bg-zinc-900 rounded-2xl pl-12 pr-4 py-3.5 outline-none text-slate-900 dark:text-zinc-100 transition-all font-medium text-sm focus:ring-4 focus:ring-[#546a40]/10 shadow-xs"
+                          className="w-full bg-slate-50/50 border border-[#E2E8F0] focus:border-[#546a40] focus:bg-white rounded-2xl pl-12 pr-4 py-3.5 outline-none text-slate-900 transition-all font-medium text-sm focus:ring-4 focus:ring-[#546a40]/10 shadow-xs"
                         />
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider block">Recipient Phone</label>
+                      <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Recipient Phone</label>
                       <div className="relative flex items-center">
-                        <Phone className="absolute left-4 text-slate-400 dark:text-zinc-500 w-4.5 h-4.5 z-10" />
+                        <Phone className="absolute left-4 text-slate-400 w-4.5 h-4.5 z-10" />
                         <input 
                           required
                           type="tel" 
                           value={formData.phone}
                           onChange={handlePhoneChange}
                           placeholder="+971 50 XXXXXXX" 
-                          className="w-full bg-slate-50/50 dark:bg-zinc-800/50 border border-[#E2E8F0] dark:border-zinc-800/80 focus:border-[#546a40] focus:bg-white dark:focus:bg-zinc-900 rounded-2xl pl-12 pr-4 py-3.5 outline-none text-slate-900 dark:text-zinc-100 transition-all font-mono tracking-widest text-sm focus:ring-4 focus:ring-[#546a40]/10 shadow-xs"
+                          className="w-full bg-slate-50/50 border border-[#E2E8F0] focus:border-[#546a40] focus:bg-white rounded-2xl pl-12 pr-4 py-3.5 outline-none text-slate-900 transition-all font-mono tracking-widest text-sm focus:ring-4 focus:ring-[#546a40]/10 shadow-xs"
                           dir="ltr"
                         />
                       </div>
@@ -545,7 +725,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="space-y-2 relative">
-                      <label className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider block">Pickup Location / Warehouse</label>
+                      <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Pickup Location / Warehouse</label>
                       <div className="relative flex items-center">
                         <MapPin className="absolute left-4 text-[#546a40] w-4.5 h-4.5 z-10" />
                         <input 
@@ -559,18 +739,9 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                               pickupAddress: val,
                               pickupPosition: getDeterministicCoordinates(val)
                             });
-                            setAutocompleteQuery(val);
-                            setActiveAutocompleteField('manual_pickup');
-                          }}
-                          onFocus={() => {
-                            setAutocompleteQuery(formData.pickupAddress);
-                            setActiveAutocompleteField('manual_pickup');
-                          }}
-                          onBlur={() => {
-                            setTimeout(() => setActiveAutocompleteField(null), 250);
                           }}
                           placeholder="Type pickup address or use map..." 
-                          className="w-full bg-slate-50/50 dark:bg-zinc-800/50 border border-[#E2E8F0] dark:border-zinc-800/80 focus:border-[#546a40] focus:bg-white dark:focus:bg-zinc-900 rounded-2xl pl-12 pr-28 py-3.5 outline-none text-slate-900 dark:text-zinc-100 font-medium text-sm truncate z-0 focus:ring-4 focus:ring-[#546a40]/10 shadow-xs"
+                          className="w-full bg-slate-50/50 border border-[#E2E8F0] focus:border-[#546a40] focus:bg-white rounded-2xl pl-12 pr-28 py-3.5 outline-none text-slate-900 font-medium text-sm truncate z-0 focus:ring-4 focus:ring-[#546a40]/10 shadow-xs"
                         />
                         <div className="absolute right-2 top-1.5 bottom-1.5 flex items-center">
                           <button
@@ -585,33 +756,10 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                           </button>
                         </div>
                       </div>
-                      
-                      {activeAutocompleteField === 'manual_pickup' && (
-                        <div className="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-zinc-900 border border-[#E2E8F0] dark:border-zinc-800 rounded-2xl shadow-xl z-50 max-h-48 overflow-y-auto">
-                          {UAE_ADDRESS_SUGGESTIONS.filter(item => item.name.toLowerCase().includes(autocompleteQuery.toLowerCase())).slice(0, 5).map((item, idx) => (
-                            <button
-                              key={idx}
-                              type="button"
-                              onMouseDown={() => {
-                                setFormData({
-                                  ...formData,
-                                  pickupAddress: item.name,
-                                  pickupPosition: item.position as [number, number]
-                                });
-                                setActiveAutocompleteField(null);
-                              }}
-                              className="w-full text-left px-6 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors flex items-center gap-2 border-b border-[#F1F5F9] dark:border-[#1E293B] last:border-0"
-                            >
-                              <MapPin className="w-3.5 h-3.5 text-[#546a40] shrink-0" />
-                              <span className="truncate">{item.name}</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
                     </div>
 
                     <div className="space-y-2 relative">
-                      <label className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider block">Dropoff Location / Customer</label>
+                      <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Dropoff Location / Customer</label>
                       <div className="relative flex items-center">
                         <MapPin className="absolute left-4 text-rose-500 w-4.5 h-4.5 z-10" />
                         <input 
@@ -625,18 +773,9 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                               address: val,
                               position: getDeterministicCoordinates(val)
                             });
-                            setAutocompleteQuery(val);
-                            setActiveAutocompleteField('manual_dropoff');
-                          }}
-                          onFocus={() => {
-                            setAutocompleteQuery(formData.address);
-                            setActiveAutocompleteField('manual_dropoff');
-                          }}
-                          onBlur={() => {
-                            setTimeout(() => setActiveAutocompleteField(null), 250);
                           }}
                           placeholder="Type dropoff address or use map..." 
-                          className="w-full bg-slate-50/50 dark:bg-zinc-800/50 border border-[#E2E8F0] dark:border-zinc-800/80 focus:border-[#546a40] focus:bg-white dark:focus:bg-zinc-900 rounded-2xl pl-12 pr-28 py-3.5 outline-none text-slate-900 dark:text-zinc-100 font-medium text-sm truncate z-0 focus:ring-4 focus:ring-[#546a40]/10 shadow-xs"
+                          className="w-full bg-slate-50/50 border border-[#E2E8F0] focus:border-[#546a40] focus:bg-white rounded-2xl pl-12 pr-28 py-3.5 outline-none text-slate-900 font-medium text-sm truncate z-0 focus:ring-4 focus:ring-[#546a40]/10 shadow-xs"
                         />
                         
                         <div className="absolute right-2 top-1.5 bottom-1.5 flex items-center">
@@ -652,54 +791,31 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                           </button>
                         </div>
                       </div>
-                      
-                      {activeAutocompleteField === 'manual_dropoff' && (
-                        <div className="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-zinc-900 border border-[#E2E8F0] dark:border-zinc-800 rounded-2xl shadow-xl z-50 max-h-48 overflow-y-auto">
-                          {UAE_ADDRESS_SUGGESTIONS.filter(item => item.name.toLowerCase().includes(autocompleteQuery.toLowerCase())).slice(0, 5).map((item, idx) => (
-                            <button
-                              key={idx}
-                              type="button"
-                              onMouseDown={() => {
-                                setFormData({
-                                  ...formData,
-                                  address: item.name,
-                                  position: item.position as [number, number]
-                                });
-                                setActiveAutocompleteField(null);
-                              }}
-                              className="w-full text-left px-6 py-3.5 text-xs text-zinc-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors flex items-center gap-2 border-b border-[#F1F5F9] dark:border-[#1E293B] last:border-0"
-                            >
-                              <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
-                              <span className="truncate">{item.name}</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="space-y-2 col-span-1">
-                      <label className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider block">Scheduled Delivery</label>
+                      <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Scheduled Delivery</label>
                       <div className="relative flex items-center">
-                        <Calendar className="absolute left-4 text-slate-400 dark:text-zinc-500 w-4.5 h-4.5 z-10 pointer-events-none" />
+                        <Calendar className="absolute left-4 text-slate-400 w-4.5 h-4.5 z-10 pointer-events-none" />
                         <input 
                           readOnly
                           required
                           type="text" 
                           value={formData.deliveryDate}
                           onClick={() => setIsDateOpen(true)}
-                          className="w-full bg-slate-50/50 dark:bg-zinc-800/50 border border-[#E2E8F0] dark:border-zinc-800/80 hover:border-slate-300 dark:hover:border-zinc-700 rounded-2xl pl-12 pr-4 py-3.5 outline-none text-slate-900 dark:text-zinc-100 cursor-pointer font-medium text-sm transition-all shadow-xs"
+                          className="w-full bg-slate-50/50 border border-[#E2E8F0] hover:border-slate-300 rounded-2xl pl-12 pr-4 py-3.5 outline-none text-slate-900 cursor-pointer font-medium text-sm transition-all shadow-xs"
                         />
                       </div>
                     </div>
                     
                     {/* Dynamic Distance Indicator */}
                     <div className="space-y-2 col-span-1">
-                      <label className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider block">GPS Calculated Distance</label>
-                      <div className="w-full h-[50px] bg-slate-50/50 dark:bg-zinc-850 border border-[#E2E8F0] dark:border-zinc-800/80 rounded-2xl px-5 font-semibold text-sm text-slate-800 dark:text-zinc-100 flex items-center justify-between shadow-xs">
+                      <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">GPS Calculated Distance</label>
+                      <div className="w-full h-[50px] bg-slate-50/50 border border-[#E2E8F0] rounded-2xl px-5 font-semibold text-sm text-slate-800 flex items-center justify-between shadow-xs">
                         <div className="flex items-center gap-2">
-                          <span className="text-slate-400 dark:text-zinc-500 font-medium text-xs uppercase tracking-wider">Calculated:</span>
+                          <span className="text-slate-400 font-medium text-xs uppercase tracking-wider">Calculated:</span>
                           <span>
                             {formData.pickupPosition && formData.position ? (
                               <strong className="text-[#546a40] font-black text-sm tracking-tight animate-fade-in">
@@ -722,15 +838,15 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                 </div>
 
                 {/* Package Information Card */}
-                <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-8 border border-zinc-200/80 shadow-sm space-y-6">
+                <div className="bg-white rounded-[2.5rem] p-8 border border-zinc-200/80 shadow-sm space-y-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-orange-500/10 text-orange-600 flex items-center justify-center">
                         <Package className="w-[18px] h-[18px]" />
                       </div>
-                      <h2 className="font-bold text-lg text-zinc-800 dark:text-zinc-200">Package Parameters & Details</h2>
+                      <h2 className="font-bold text-lg text-zinc-800">Package Parameters & Details</h2>
                     </div>
-                    <span className="text-[13px] font-bold text-[#113f36] dark:text-[#6d8c55] bg-[#113f36]/10 px-2 py-1 rounded-md">
+                    <span className="text-[13px] font-bold text-[#113f36] bg-[#113f36]/10 px-2 py-1 rounded-md">
                       AI Auto-recognition Enabled
                     </span>
                   </div>
@@ -759,7 +875,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                         }
                       }}
                       placeholder="e.g. 1x Mac Studio, 2x Keyboard Accessories" 
-                      className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200/60 focus:border-[#113f36] rounded-xl px-4 py-3 outline-none text-zinc-900 dark:text-zinc-100 font-medium text-sm resize-none"
+                      className="w-full bg-zinc-50 border border-zinc-200/60 focus:border-[#113f36] rounded-xl px-4 py-3 outline-none text-zinc-900 font-medium text-sm resize-none"
                     />
                   </div>
 
@@ -770,7 +886,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                     </div>
                     <div 
                       onClick={() => fileInputRef.current?.click()}
-                      className="w-full h-32 border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-[#113f36] hover:bg-[#113f36]/5 dark:hover:bg-zinc-900/20 transition-all text-zinc-500"
+                      className="w-full h-32 border-2 border-dashed border-zinc-300 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-[#113f36] hover:bg-[#113f36]/5 transition-all text-zinc-500"
                     >
                       {merchantPhoto ? (
                         <div className="relative w-full h-full p-2">
@@ -779,7 +895,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                       ) : (
                         <>
                           <UploadCloud className="w-8 h-8 opacity-50 text-orange-500 animate-bounce" />
-                          <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">Click to upload package image for instant parameter filling</span>
+                          <span className="text-xs font-bold text-zinc-800">Click to upload package image for instant parameter filling</span>
                           <span className="text-[12px] text-zinc-400">Directly extracts weight, counts, values, and package sizes!</span>
                         </>
                       )}
@@ -797,14 +913,14 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                     <motion.div 
                       initial={{ opacity: 0, scale: 0.98 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="p-4 bg-orange-50/70 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/40 rounded-2xl flex items-center gap-3"
+                      className="p-4 bg-orange-50/70 border border-orange-100 rounded-2xl flex items-center gap-3"
                     >
                       <div className="w-6 h-6 border-2 border-orange-500/20 border-t-orange-600 rounded-full animate-spin shrink-0"></div>
                       <div>
-                        <h4 className="text-xs font-bold text-orange-900 dark:text-orange-100 uppercase tracking-wider flex items-center gap-1">
+                        <h4 className="text-xs font-bold text-orange-900 uppercase tracking-wider flex items-center gap-1">
                           <span>✨ AI Freight Analyst parsing shipment characteristics...</span>
                         </h4>
-                        <p className="text-[12px] text-orange-600 dark:text-orange-400 mt-0.5 font-medium">Auto-estimating bulk weight, package dimensions (LxWxH), and confirming package counts.</p>
+                        <p className="text-[12px] text-orange-600 mt-0.5 font-medium">Auto-estimating bulk weight, package dimensions (LxWxH), and confirming package counts.</p>
                       </div>
                     </motion.div>
                   )}
@@ -813,10 +929,10 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                     <motion.div 
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="p-4 bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-250/60 dark:border-zinc-800/80 rounded-2xl space-y-2.5"
+                      className="p-4 bg-zinc-50 border border-zinc-250/60 rounded-2xl space-y-2.5"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-[12px] uppercase font-black tracking-widest text-orange-600 dark:text-orange-400 flex items-center gap-1">
+                        <span className="text-[12px] uppercase font-black tracking-widest text-orange-600 flex items-center gap-1">
                           📦 AI EXPORT ESTIMATES APPLIED
                         </span>
                         <button 
@@ -829,23 +945,23 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                       </div>
 
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-                        <div className="bg-white dark:bg-zinc-900 p-2.5 rounded-xl border border-zinc-100 dark:border-zinc-800/50">
+                        <div className="bg-white p-2.5 rounded-xl border border-zinc-100">
                           <span className="text-[12px] uppercase tracking-wider text-zinc-400 block font-bold">Est. Weight</span>
-                          <span className="text-xs font-extrabold text-zinc-800 dark:text-zinc-200">{merchantAIResult.estimatedWeightKg || 5} kg</span>
+                          <span className="text-xs font-extrabold text-zinc-850">{merchantAIResult.estimatedWeightKg || 5} kg</span>
                         </div>
-                        <div className="bg-white dark:bg-zinc-900 p-2.5 rounded-xl border border-zinc-100 dark:border-zinc-800/50">
+                        <div className="bg-white p-2.5 rounded-xl border border-zinc-100">
                           <span className="text-[12px] uppercase tracking-wider text-zinc-400 block font-bold">Dimensions</span>
                           <span className="text-xs font-extrabold text-zinc-800 dark:text-zinc-200">
                             {merchantAIResult.lengthCm || 30}x{merchantAIResult.widthCm || 20}x{merchantAIResult.heightCm || 15}cm
                           </span>
                         </div>
-                        <div className="bg-white dark:bg-zinc-900 p-2.5 rounded-xl border border-zinc-100 dark:border-zinc-800/50">
+                        <div className="bg-white p-2.5 rounded-xl border border-zinc-100">
                           <span className="text-[12px] uppercase tracking-wider text-zinc-400 block font-bold">Total Quantity</span>
-                          <span className="text-xs font-extrabold text-zinc-800 dark:text-zinc-200">{merchantAIResult.quantity || 1} Item(s)</span>
+                          <span className="text-xs font-extrabold text-zinc-850">{merchantAIResult.quantity || 1} Item(s)</span>
                         </div>
-                        <div className="bg-white dark:bg-zinc-900 p-2.5 rounded-xl border border-zinc-100 dark:border-zinc-800/50">
+                        <div className="bg-white p-2.5 rounded-xl border border-zinc-100">
                           <span className="text-[12px] uppercase tracking-wider text-zinc-400 block font-bold">Transit Decl. Value</span>
-                          <span className="text-xs font-extrabold text-zinc-800 dark:text-zinc-200">{merchantAIResult.estimatedValueAED || 120} AED</span>
+                          <span className="text-xs font-extrabold text-zinc-850">{merchantAIResult.estimatedValueAED || 120} AED</span>
                         </div>
                       </div>
                     </motion.div>
@@ -858,36 +974,36 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                       value={formData.notes}
                       onChange={(e) => setFormData({...formData, notes: e.target.value})}
                       placeholder="e.g. Leave with security guard, fragile contents" 
-                      className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200/60 focus:border-[#113f36] rounded-xl px-4 py-3 outline-none text-zinc-900 dark:text-zinc-100 font-medium text-sm resize-none"
+                      className="w-full bg-zinc-50 border border-zinc-200/60 focus:border-[#113f36] rounded-xl px-4 py-3 outline-none text-zinc-900 font-medium text-sm resize-none"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Purchase Details Panel */}
-              <div className="space-y-6">
-                <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-8 border border-zinc-200/80 shadow-sm space-y-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-violet-500/10 text-violet-600 flex items-center justify-center">
-                      <DollarSign className="w-[18px] h-[18px]" />
+                {/* Purchase Details Panel */}
+                <div className="space-y-6">
+                  <div className="bg-white rounded-[2.5rem] p-8 border border-zinc-200/80 shadow-sm space-y-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-violet-500/10 text-violet-600 flex items-center justify-center">
+                        <DollarSign className="w-[18px] h-[18px]" />
+                      </div>
+                      <h2 className="font-bold text-lg text-zinc-800">Cod Value Mapping</h2>
                     </div>
-                    <h2 className="font-bold text-lg text-zinc-800 dark:text-zinc-200">Cod Value Mapping</h2>
-                  </div>
 
-                  <div className="space-y-2">
-                    <label className="text-[12px] font-black uppercase tracking-wider text-zinc-400">Order Amount (COD to Collect)</label>
-                    <div className="relative">
-                      <span className="absolute left-4 top-3.5 text-zinc-400 font-bold text-sm">AED</span>
-                      <input 
-                        required
-                        type="number" 
-                        value={formData.amount}
-                        onChange={(e) => setFormData({...formData, amount: e.target.value})}
-                        placeholder="0.00" 
-                        className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200/60 focus:border-[#113f36] rounded-xl pl-14 pr-4 py-3 outline-none text-zinc-900 dark:text-zinc-100 font-bold transition-colors font-mono"
-                      />
+                    <div className="space-y-2">
+                      <label className="text-[12px] font-black uppercase tracking-wider text-zinc-400">Order Amount (COD to Collect)</label>
+                      <div className="relative">
+                        <span className="absolute left-4 top-3.5 text-zinc-400 font-bold text-sm">AED</span>
+                        <input 
+                          required
+                          type="number" 
+                          value={formData.amount}
+                          onChange={(e) => setFormData({...formData, amount: e.target.value})}
+                          placeholder="0.00" 
+                          className="w-full bg-zinc-50 border border-zinc-200/60 focus:border-[#113f36] rounded-xl pl-14 pr-4 py-3 outline-none text-zinc-900 font-bold transition-colors font-mono"
+                        />
+                      </div>
                     </div>
-                  </div>
 
                   <div className="space-y-2">
                     <label className="text-[12px] font-black uppercase tracking-wider text-zinc-400">Payout Settlement Option</label>
@@ -902,7 +1018,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                           onClick={() => setFormData({...formData, paymentType: type.key})}
                           className={`flex items-start justify-between p-4 rounded-xl border-2 text-left transition-all ${
                             formData.paymentType === type.key 
-                              ? 'border-[#113f36] bg-[#113f36]/5/20 text-[#113f36]' 
+                              ? 'border-[#113f36] bg-[#113f36]/5 text-[#113f36]' 
                               : 'border-transparent bg-zinc-50'
                           }`}
                         >
@@ -920,63 +1036,61 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                 </div>
 
                 {/* Courier / Fulfillment Routing Option */}
-                <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-8 border border-zinc-200/80 shadow-sm space-y-6">
+                <div className="bg-white rounded-[2.5rem] p-8 border border-zinc-200/80 shadow-sm space-y-6">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center">
                       <Truck className="w-[18px] h-[18px]" />
                     </div>
-                    <h2 className="font-bold text-lg text-zinc-800 dark:text-zinc-200">Courier & Driver Fulfillment</h2>
+                    <h2 className="font-bold text-lg text-zinc-800">Courier & Driver Fulfillment</h2>
                   </div>
 
                   <div className="space-y-4">
                     <p className="text-[12px] uppercase font-black tracking-wider text-zinc-400">Choose Courier Channel</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Aramex Carrier Button */}
+                    <div className="flex flex-col gap-3.5">
+                      {/* Aramex Option */}
                       <div className="space-y-2">
                         <button
                           type="button"
                           onClick={() => setFormData({...formData, carrier: 'aramex'})}
-                          className={`flex flex-col p-5 rounded-2xl border-2 text-left transition-all cursor-pointer w-full relative overflow-hidden h-full justify-between ${
+                          className={`flex items-center justify-between p-5 rounded-2xl border-2 text-left transition-all cursor-pointer w-full relative overflow-hidden ${
                             formData.carrier === 'aramex'
-                              ? 'border-[#d12421] bg-[#d12421]/5 dark:bg-[#d12421]/10 text-zinc-950 dark:text-zinc-100 shadow-sm'
-                              : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/30 hover:bg-zinc-100 text-zinc-700 dark:text-zinc-300'
+                              ? 'border-[#d12421] bg-[#d12421]/5 text-zinc-950 shadow-sm'
+                              : 'border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-700'
                           }`}
                         >
-                          <div>
-                            <div className="flex items-center justify-between w-full mb-3">
-                              <div className="flex items-center gap-2.5">
-                                <div className="w-8 h-8 rounded-full bg-[#d12421] text-white flex items-center justify-center text-[10px] font-black tracking-tighter">
-                                  aramex
-                                </div>
-                                <span className="font-extrabold text-sm text-zinc-900 dark:text-zinc-100">Aramex Express</span>
-                              </div>
-                              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                                formData.carrier === 'aramex' ? 'border-[#d12421]' : 'border-zinc-300'
-                              }`}>
-                                {formData.carrier === 'aramex' && (
-                                  <div className="w-2 h-2 rounded-full bg-[#d12421]" />
-                                )}
-                              </div>
+                          <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-full bg-[#d12421] text-white flex items-center justify-center text-[10px] font-black tracking-tighter shrink-0 shadow-xs">
+                              aramex
                             </div>
-                            <p className="text-[11px] text-zinc-500 leading-relaxed">
-                              Dispatches packages into Aramex's global courier networks. Supports full waybills, automated PDF tracking, and sandbox testing.
-                            </p>
+                            <div>
+                              <span className="font-extrabold text-sm text-zinc-900 block">Aramex Express</span>
+                              <p className="text-[11px] text-zinc-500 leading-relaxed mt-0.5 max-w-md">
+                                Dispatches packages into Aramex's global courier networks. Supports full waybills, automated PDF tracking, and sandbox testing.
+                              </p>
+                            </div>
+                          </div>
+                          <div className={`w-4.5 h-4.5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                            formData.carrier === 'aramex' ? 'border-[#d12421]' : 'border-zinc-300'
+                          }`}>
+                            {formData.carrier === 'aramex' && (
+                              <div className="w-2.5 h-2.5 rounded-full bg-[#d12421]" />
+                            )}
                           </div>
                         </button>
 
                         {formData.carrier === 'aramex' && (
-                          <div className="flex bg-zinc-100 dark:bg-zinc-800/50 p-1.5 rounded-xl mt-2 animate-in fade-in slide-in-from-top-1">
+                          <div className="flex bg-zinc-100 p-1.5 rounded-xl max-w-xs animate-in fade-in slide-in-from-top-1">
                             <button
                               type="button"
                               onClick={() => setFormData({...formData, printFormat: 'PDF'})}
-                              className={`flex-1 text-[11px] font-black uppercase tracking-wider py-2 rounded-lg transition-colors ${formData.printFormat === 'PDF' ? 'bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-white' : 'text-zinc-500 hover:text-zinc-700'}`}
+                              className={`flex-1 text-[11px] font-black uppercase tracking-wider py-2 rounded-lg transition-colors ${formData.printFormat === 'PDF' ? 'bg-white shadow-sm text-zinc-900' : 'text-zinc-500 hover:text-zinc-700'}`}
                             >
                               Standard A4 (PDF)
                             </button>
                             <button
                               type="button"
                               onClick={() => setFormData({...formData, printFormat: 'ZPL'})}
-                              className={`flex-1 text-[11px] font-black uppercase tracking-wider py-2 rounded-lg transition-colors ${formData.printFormat === 'ZPL' ? 'bg-white dark:bg-zinc-900 shadow-sm text-[#d12421]' : 'text-zinc-500 hover:text-zinc-700'}`}
+                              className={`flex-1 text-[11px] font-black uppercase tracking-wider py-2 rounded-lg transition-colors ${formData.printFormat === 'ZPL' ? 'bg-white shadow-sm text-[#d12421]' : 'text-zinc-500 hover:text-zinc-700'}`}
                             >
                               Thermal (ZPL)
                             </button>
@@ -984,52 +1098,50 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                         )}
                       </div>
 
-                      {/* Noon Carrier Button */}
+                      {/* Noon Option */}
                       <div className="space-y-2">
                         <button
                           type="button"
                           onClick={() => setFormData({...formData, carrier: 'noon'})}
-                          className={`flex flex-col p-5 rounded-2xl border-2 text-left transition-all cursor-pointer w-full relative overflow-hidden h-full justify-between ${
+                          className={`flex items-center justify-between p-5 rounded-2xl border-2 text-left transition-all cursor-pointer w-full relative overflow-hidden ${
                             formData.carrier === 'noon'
-                              ? 'border-amber-500 bg-amber-500/5 dark:bg-amber-500/10 text-zinc-950 dark:text-zinc-100 shadow-sm'
-                              : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/30 hover:bg-zinc-100 text-zinc-700 dark:text-zinc-300'
+                              ? 'border-amber-550 bg-amber-50 text-zinc-950 shadow-sm'
+                              : 'border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-700'
                           }`}
                         >
-                          <div>
-                            <div className="flex items-center justify-between w-full mb-3">
-                              <div className="flex items-center gap-2.5">
-                                <div className="w-8 h-8 rounded-full bg-[#feee00] text-black flex items-center justify-center text-[10px] font-black tracking-tight border border-amber-300">
-                                  noon
-                                </div>
-                                <span className="font-extrabold text-sm text-zinc-900 dark:text-zinc-100">Noon Hyperlocal</span>
-                              </div>
-                              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                                formData.carrier === 'noon' ? 'border-amber-500' : 'border-zinc-300'
-                              }`}>
-                                {formData.carrier === 'noon' && (
-                                  <div className="w-2 h-2 rounded-full bg-amber-500" />
-                                )}
-                              </div>
+                          <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-full bg-[#feee00] text-black flex items-center justify-center text-[10px] font-black tracking-tight border border-amber-300 shrink-0 shadow-xs">
+                              noon
                             </div>
-                            <p className="text-[11px] text-zinc-500 leading-relaxed">
-                              Dispatches on-demand deliveries to Noon's Hyperlocal API. Ideal for same-day grocery, food, or rapid merchant fulfillment.
-                            </p>
+                            <div>
+                              <span className="font-extrabold text-sm text-zinc-900 block">Noon Hyperlocal</span>
+                              <p className="text-[11px] text-zinc-500 leading-relaxed mt-0.5 max-w-md">
+                                Dispatches on-demand deliveries to Noon's Hyperlocal API. Ideal for same-day grocery, food, or rapid merchant fulfillment.
+                              </p>
+                            </div>
+                          </div>
+                          <div className={`w-4.5 h-4.5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                            formData.carrier === 'noon' ? 'border-amber-500' : 'border-zinc-300'
+                          }`}>
+                            {formData.carrier === 'noon' && (
+                              <div className="w-2.5 h-2.5 rounded-full bg-amber-550" />
+                            )}
                           </div>
                         </button>
 
                         {formData.carrier === 'noon' && (
-                          <div className="flex bg-zinc-100 dark:bg-zinc-800/50 p-1.5 rounded-xl mt-2 animate-in fade-in slide-in-from-top-1">
+                          <div className="flex bg-zinc-100 p-1.5 rounded-xl max-w-xs animate-in fade-in slide-in-from-top-1">
                             <button
                               type="button"
                               onClick={() => setFormData({...formData, printFormat: 'PDF'})}
-                              className={`flex-1 text-[11px] font-black uppercase tracking-wider py-2 rounded-lg transition-colors ${formData.printFormat === 'PDF' ? 'bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-white' : 'text-zinc-500 hover:text-zinc-700'}`}
+                              className={`flex-1 text-[11px] font-black uppercase tracking-wider py-2 rounded-lg transition-colors ${formData.printFormat === 'PDF' ? 'bg-white shadow-sm text-zinc-900' : 'text-zinc-500 hover:text-zinc-700'}`}
                             >
                               Standard A4 (PDF)
                             </button>
                             <button
                               type="button"
                               onClick={() => setFormData({...formData, printFormat: 'ZPL'})}
-                              className={`flex-1 text-[11px] font-black uppercase tracking-wider py-2 rounded-lg transition-colors ${formData.printFormat === 'ZPL' ? 'bg-white dark:bg-zinc-900 shadow-sm text-amber-600' : 'text-zinc-500 hover:text-zinc-700'}`}
+                              className={`flex-1 text-[11px] font-black uppercase tracking-wider py-2 rounded-lg transition-colors ${formData.printFormat === 'ZPL' ? 'bg-white shadow-sm text-amber-600' : 'text-zinc-500 hover:text-zinc-700'}`}
                             >
                               Thermal (ZPL)
                             </button>
@@ -1041,26 +1153,26 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                 </div>
 
                 {/* Confirm Dispatch Bar */}
-                <div className="bg-zinc-900 text-white rounded-[2/5rem] p-8 space-y-5 shadow-xl">
+                <div className="bg-[#113f36]/5 border border-[#113f36]/15 text-zinc-850 rounded-[2.5rem] p-8 space-y-5 shadow-xs">
                   <div className="space-y-3">
-                    <div className="flex justify-between text-zinc-400 text-xs uppercase tracking-widest font-black">
+                    <div className="flex justify-between text-zinc-500 text-xs uppercase tracking-widest font-black">
                       <span>Base rate fee</span>
-                      <span className="text-white">AED 12.00</span>
+                      <span className="text-zinc-900 font-bold">AED {dynamicPricing.baseFee.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between text-zinc-400 text-xs uppercase tracking-widest font-black">
+                    <div className="flex justify-between text-zinc-500 text-xs uppercase tracking-widest font-black">
                       <span>Processing commission</span>
-                      <span className="text-white">AED 5.00</span>
+                      <span className="text-zinc-900 font-bold">AED {dynamicPricing.commission.toFixed(2)}</span>
                     </div>
-                    <div className="pt-3 border-t border-white/10 flex justify-between font-bold text-lg">
-                      <span className="uppercase text-xs tracking-widest font-black text-zinc-400">Total charge</span>
-                      <span className="font-mono text-xl">AED 17.00</span>
+                    <div className="pt-3 border-t border-[#113f36]/15 flex justify-between font-bold text-lg">
+                      <span className="uppercase text-xs tracking-widest font-black text-zinc-500">Total charge</span>
+                      <span className="font-mono text-xl font-black text-[#113f36]">AED {dynamicPricing.total.toFixed(2)}</span>
                     </div>
                   </div>
 
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full h-14 bg-[#4f95cc] hover:bg-[#3f87bd] text-white rounded-2xl font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 font-display uppercase text-xs tracking-widest"
+                    className="w-full h-14 bg-[#113f36] hover:bg-[#113f36]/90 text-white rounded-2xl font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 font-display uppercase text-xs tracking-widest"
                   >
                     {isSubmitting ? (
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -1450,6 +1562,108 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
           }}
         />
       </Modal>
+
+      {/* Stripe Payment Dialog Modal */}
+      <Modal
+        isOpen={!!stripeClientSecret}
+        onClose={() => setStripeClientSecret(null)}
+        title="Secure Credit Card Settlement"
+      >
+        <div className="p-2 space-y-4">
+          <div className="text-center pb-4">
+            <span className="text-xs font-black uppercase text-zinc-400 block tracking-wider">Order Value Settle</span>
+            <h3 className="text-2xl font-display font-black text-[#113f36] mt-1">AED {dynamicPricing.total.toFixed(2)}</h3>
+          </div>
+          
+          {stripePromise && stripeOptions && (
+            <Elements stripe={stripePromise} options={stripeOptions}>
+              <StripePaymentForm 
+                clientSecret={stripeClientSecret!}
+                totalAmount={dynamicPricing.total}
+                onPaymentSuccess={handlePaymentSuccess}
+                onCancel={() => setStripeClientSecret(null)}
+              />
+            </Elements>
+          )}
+        </div>
+      </Modal>
     </div>
+  );
+}
+
+function StripePaymentForm({ clientSecret, totalAmount, onPaymentSuccess, onCancel }: { 
+  clientSecret: string, 
+  totalAmount: number, 
+  onPaymentSuccess: (paymentIntent: any) => void,
+  onCancel: () => void 
+}) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isReady, setIsReady] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!stripe || !elements || !isReady) return;
+
+    setIsProcessing(true);
+    setErrorMessage(null);
+
+    try {
+      const { error, paymentIntent } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: window.location.href,
+        },
+        redirect: 'if_required'
+      });
+
+      if (error) {
+        setErrorMessage(error.message || 'An unexpected error occurred during payment.');
+        setIsProcessing(false);
+      } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+        onPaymentSuccess(paymentIntent);
+      } else {
+        setErrorMessage('Payment status unrecognized. Please try again.');
+        setIsProcessing(false);
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Secure payment component error.');
+      setIsProcessing(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-xs transition-all">
+        <PaymentElement onReady={() => setIsReady(true)} />
+      </div>
+      
+      {errorMessage && (
+        <div className="p-3 bg-red-50 border border-red-100 text-red-650 rounded-xl text-xs font-bold flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 text-red-650 shrink-0" />
+          {errorMessage}
+        </div>
+      )}
+
+      <div className="flex gap-4 pt-4">
+        <button 
+          type="button" 
+          onClick={onCancel} 
+          disabled={isProcessing}
+          className="px-8 py-3.5 rounded-xl border border-zinc-300 text-zinc-655 font-bold uppercase tracking-widest text-[11px] disabled:opacity-50"
+        >
+          Cancel
+        </button>
+        <button 
+          type="submit" 
+          disabled={!stripe || !isReady || isProcessing} 
+          className="flex-1 py-3.5 rounded-xl bg-[#113f36] text-white font-bold uppercase tracking-widest text-[11px] flex items-center justify-center gap-2 shadow-md disabled:bg-zinc-300 disabled:text-zinc-500 transition-colors"
+        >
+          {isProcessing ? 'Verifying...' : `Secure Pay AED ${totalAmount.toFixed(2)}`}
+        </button>
+      </div>
+    </form>
   );
 }

@@ -401,7 +401,14 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
       }
       
       if (shipmentData.courier === 'aramex') {
-        const aramexRes = await aramexService.createDeliveryJob(reqPayload);
+        const aramexConfig = courierConfigs?.aramex;
+        const activeCreds = aramexConfig
+          ? (aramexConfig.currentMode === 'sandbox' ? aramexConfig.sandboxCreds : aramexConfig.productionCreds)
+          : undefined;
+        const aramexRes = await aramexService.createDeliveryJob(
+          reqPayload,
+          activeCreds && activeCreds.username ? { ...activeCreds, apiEnv: aramexConfig?.currentMode } : undefined
+        );
         if (aramexRes.success === false) {
            console.error("Aramex failed (non-blocking for USend UI)", aramexRes.error);
         }
@@ -435,9 +442,14 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
         return;
       }
       
+      const aramexConfig = courierConfigs?.aramex;
+      const activeCreds = aramexConfig
+        ? (aramexConfig.currentMode === 'sandbox' ? aramexConfig.sandboxCreds : aramexConfig.productionCreds)
+        : undefined;
+
       const reqPayload = { ...targetOrder };
       const logTimestamp = new Date().toISOString();
-      const res = await aramexService.createDeliveryJob(reqPayload);
+      const res = await aramexService.createDeliveryJob(reqPayload, activeCreds && activeCreds.username ? { ...activeCreds, apiEnv: aramexConfig?.currentMode } : undefined);
 
       setAramexTestingLogs({
         request: reqPayload,
@@ -478,8 +490,15 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
       const numericCod = parseFloat(targetOrder.orderAmount?.replace(/[^0-9.]/g, '') || '0');
       const codValueFils = Math.round(numericCod * 100);
 
+      const noonConfig = courierConfigs?.noon;
+      const noonCreds = noonConfig
+        ? (noonConfig.currentMode === 'sandbox' ? noonConfig.sandboxCreds : noonConfig.productionCreds)
+        : null;
+      const outletCode = noonCreds?.accountNumber || "77T4HCOD4G";
+      const apiKey = noonCreds?.apiKey || "";
+
       const requestPayload = {
-        outlet_code: "77T4HCOD4G", // default staging outlet
+        outlet_code: outletCode, // default staging outlet
         order_reference: targetOrder.id,
         customer_name: targetOrder.name || "Recipient Buyer",
         customer_phone: targetOrder.phone || "+971520000000",
@@ -497,7 +516,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
         payment_method: (numericCod > 0 ? 'COD' : 'PAID') as 'COD' | 'PAID'
       };
 
-      const res = await noonService.createDeliveryTask(requestPayload);
+      const res = await noonService.createDeliveryTask(requestPayload, apiKey);
 
       const logTimestamp = new Date().toISOString();
       const newLogs = {

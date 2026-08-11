@@ -22,11 +22,14 @@ export interface NoonTaskParams {
 }
 
 export const noonService = {
-  createDeliveryTask: async (params: NoonTaskParams) => {
+  createDeliveryTask: async (params: NoonTaskParams, apiKey?: string) => {
     try {
       const response = await fetch('/api/noon/create-task', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(apiKey ? { 'x-noon-api-key': apiKey } : {})
+        },
         body: JSON.stringify(params)
       });
       const data = await response.json();

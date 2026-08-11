@@ -88,7 +88,7 @@ interface MerchantIntegrationsProps {
 
 export default function MerchantIntegrations({ onNavigate }: MerchantIntegrationsProps) {
   const { t, isRTL } = useLanguage();
-  const { merchantActiveTab, setMerchantActiveTab, addRequest, user } = useApp();
+  const { merchantActiveTab, setMerchantActiveTab, addRequest, user, courierConfigs } = useApp();
 
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [copiedTestKey, setCopiedTestKey] = useState<string | null>(null);
@@ -232,8 +232,18 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
   const [trackLoading, setTrackLoading] = useState(false);
 
   const getActiveCreds = (id: string): CourierCredentials => {
+    const config = courierConfigs?.[id];
+    if (config) {
+      const creds = config.currentMode === 'sandbox' ? config.sandboxCreds : config.productionCreds;
+      return {
+        ...creds,
+        apiEnv: config.currentMode,
+        version: creds.version || (id === 'aramex' ? 'v1.0' : id === 'dhl' ? 'v33' : 'v2026')
+      };
+    }
     if (id === 'aramex') return aramexCreds;
     if (id === 'dhl') return dhlCreds;
+    if (id === 'noon') return { username: '', password: '', accountNumber: '77T4HCOD4G', apiKey: '' };
     return fedexCreds;
   };
 
@@ -274,6 +284,16 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
         <span className="text-4xl font-extrabold tracking-tight text-[#d12421] lowercase font-sans select-none">aramex</span>
       ),
       description: "Aramex is a global shipping and logistics company that provides a wide range of transportation services to businesses and individuals worldwide."
+    },
+    {
+      id: 'noon',
+      name: 'Noon RoD',
+      logo: (
+        <div className="flex items-center gap-1 select-none">
+          <span className="text-3xl font-black tracking-tighter text-zinc-950 font-sans lowercase bg-[#feee00] px-3 py-1.5 rounded-xl">noon</span>
+        </div>
+      ),
+      description: "Noon Hyperlocal & RoD provides rapid on-demand intra-city shipping services tailored for express merchant dispatch."
     },
     {
       id: 'dhl',
@@ -1126,7 +1146,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                 </button>
 
                 {/* Banner / Header */}
-                <div className="p-8 bg-zinc-950 text-white flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-800 shrink-0">
+                <div className="p-8 bg-[#113f36] text-white flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-200/10 shrink-0">
                   <div className="flex items-center gap-4 text-left">
                     <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-[#113f36]">
                       <Terminal className="w-6 h-6 text-white" />
@@ -1134,7 +1154,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                     <div>
                       <div className="flex items-center gap-2">
                         <h3 className="text-xl font-display font-medium uppercase tracking-tight text-white">
-                          {'Aramex Sandbox'}
+                          {selectedCourierForConfig ? `${selectedCourierForConfig.toUpperCase()} Sandbox` : 'Courier Sandbox'}
                         </h3>
                         <span className="px-2 py-0.5 rounded-full text-[12px] font-black uppercase tracking-widest bg-yellow-500/25 text-yellow-300 border border-yellow-500/20">
                           Active Sandbox
@@ -1152,7 +1172,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                     <div>
                       <span className="text-zinc-500 block text-[12px] font-bold uppercase tracking-widest leading-none">TEST_URL</span>
                       <span className="text-zinc-300 font-semibold mt-0.5 block leading-none">
-                        {selectedCourierForConfig === 'aramex' ? 'ws.aramex.net' : 'api-mock.usend.ae'}
+                        {selectedCourierForConfig === 'aramex' ? 'ws.aramex.net' : selectedCourierForConfig === 'noon' ? 'food-api-team.noonstg.team' : 'api-mock.usend.ae'}
                       </span>
                     </div>
                   </div>
@@ -1394,14 +1414,14 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
 
                         {/* Interactive IDE JSON Logs */}
                         <div className="md:col-span-2 space-y-4">
-                          <div className="bg-zinc-950 text-zinc-300 rounded-3xl p-6 font-mono text-[13px] h-[340px] flex flex-col justify-between overflow-hidden shadow-2xl relative">
-                            <div className="absolute top-4 right-4 text-[13px] font-black uppercase text-zinc-500">Live API Terminal</div>
+                          <div className="bg-[#113f36]/5 text-zinc-800 border border-[#113f36]/15 rounded-3xl p-6 font-mono text-[13px] h-[340px] flex flex-col justify-between overflow-hidden shadow-xs relative">
+                            <div className="absolute top-4 right-4 text-[13px] font-black uppercase text-[#113f36]/60">Live API Terminal</div>
                             
                             {!rateResult && !rateLoading ? (
-                              <div className="h-full flex flex-col items-center justify-center text-zinc-500 text-center space-y-2">
-                                <Terminal className="w-10 h-10 text-zinc-700 animate-pulse" />
-                                <p className="font-semibold text-xs text-zinc-400">Terminal Idle</p>
-                                <p className="text-[12px] text-zinc-550 max-w-xs">Adjust parameters on the left and click "Run API Request" to transmit payload signals.</p>
+                              <div className="h-full flex flex-col items-center justify-center text-zinc-400 text-center space-y-2">
+                                <Terminal className="w-10 h-10 text-[#113f36]/30 animate-pulse" />
+                                <p className="font-semibold text-xs text-zinc-500">Terminal Idle</p>
+                                <p className="text-[12px] text-zinc-500 max-w-xs">Adjust parameters on the left and click "Run API Request" to transmit payload signals.</p>
                               </div>
                             ) : rateLoading ? (
                               <div className="h-full flex flex-col items-center justify-center text-zinc-400 text-center space-y-3">
@@ -1410,37 +1430,37 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                               </div>
                             ) : (
                               <div className="flex-1 flex flex-col h-full">
-                                <div className="flex justify-between border-b border-zinc-800 pb-3 mb-3 text-[12px] font-bold text-zinc-400 shrink-0">
+                                <div className="flex justify-between border-b border-zinc-200/60 pb-3 mb-3 text-[12px] font-bold text-zinc-500 shrink-0">
                                   <span>🚀 HTTP 200 SUCCESS ({rateResult.timestamp})</span>
                                   <span className="text-[#113f36] font-mono">{rateResult.serviceName}</span>
                                 </div>
                                 
                                 <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto pr-1 select-all h-full max-h-[190px]">
                                   {/* Request */}
-                                  <div className="text-left bg-zinc-900 border border-zinc-800 rounded-xl p-3 flex flex-col">
+                                  <div className="text-left bg-white border border-zinc-200 rounded-xl p-3 flex flex-col">
                                     <div className="text-[13px] font-black text-[#113f36] uppercase mb-1 flex items-center justify-between">
                                       <span>Request Payload (RPC)</span>
-                                      <button onClick={() => navigator.clipboard.writeText(JSON.stringify(rateResult.requestPayload, null, 2))} className="hover:text-white"><Copy className="w-3 h-3" /></button>
+                                      <button onClick={() => navigator.clipboard.writeText(JSON.stringify(rateResult.requestPayload, null, 2))} className="hover:text-[#113f36]/75"><Copy className="w-3 h-3" /></button>
                                     </div>
-                                    <pre className="text-[13px] overflow-x-auto text-zinc-400 font-mono leading-relaxed select-all">
+                                    <pre className="text-[13px] overflow-x-auto text-zinc-600 font-mono leading-relaxed select-all">
                                       {JSON.stringify(rateResult.requestPayload, null, 2)}
                                     </pre>
                                   </div>
                                   {/* Response */}
-                                  <div className="text-left bg-zinc-905 border border-zinc-805 rounded-xl p-3 flex flex-col">
+                                  <div className="text-left bg-white border border-zinc-200 rounded-xl p-3 flex flex-col">
                                     <div className="text-[13px] font-black text-[#113f36] uppercase mb-1 flex items-center justify-between">
                                       <span>Response Body</span>
-                                      <button onClick={() => navigator.clipboard.writeText(JSON.stringify(rateResult.responsePayload, null, 2))} className="hover:text-white"><Copy className="w-3 h-3" /></button>
+                                      <button onClick={() => navigator.clipboard.writeText(JSON.stringify(rateResult.responsePayload, null, 2))} className="hover:text-[#113f36]/75"><Copy className="w-3 h-3" /></button>
                                     </div>
-                                    <pre className="text-[13px] overflow-x-auto text-zinc-300 font-mono leading-relaxed select-all">
+                                    <pre className="text-[13px] overflow-x-auto text-zinc-650 font-mono leading-relaxed select-all">
                                       {JSON.stringify(rateResult.responsePayload, null, 2)}
                                     </pre>
                                   </div>
                                 </div>
 
-                                <div className="pt-3.5 border-t border-zinc-800 mt-3 flex items-center justify-between shrink-0">
+                                <div className="pt-3.5 border-t border-zinc-200/60 mt-3 flex items-center justify-between shrink-0">
                                   <span className="text-zinc-500">Service Courier Quote Rate:</span>
-                                  <span className="text-lg font-black text-white font-mono">AED {rateResult.rateAED.toFixed(2)} <span className="text-[12px] text-zinc-400 font-normal">(incl. VAT)</span></span>
+                                  <span className="text-lg font-black text-zinc-800 font-mono">AED {rateResult.rateAED.toFixed(2)} <span className="text-[12px] text-zinc-400 font-normal">(incl. VAT)</span></span>
                                 </div>
                               </div>
                             )}
@@ -1568,21 +1588,20 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                             Generate Domestic Waybill
                           </button>
                         </div>
-
-                        {/* WAYBILL GRAPHICAL PREVIEW & JSON */}
+                                   {/* WAYBILL GRAPHICAL PREVIEW & JSON */}
                         <div className="lg:col-span-2 space-y-4">
                           {!shipResult && !shipLoading ? (
-                            <div className="bg-zinc-955 bg-black text-zinc-500 rounded-3xl p-10 h-[430px] flex flex-col items-center justify-center text-center space-y-3">
-                              <Terminal className="w-12 h-12 text-zinc-800 animate-pulse" />
-                              <h4 className="font-bold text-sm text-zinc-400">Waybill Generator Standby</h4>
-                              <p className="text-[13px] text-zinc-550 max-w-sm">Enter the customized address details on the left, then click Generate Waybill. The system will construct official SOAP ClientInfo envelopes and return printable Domestic Waybills.</p>
+                            <div className="bg-[#113f36]/5 border border-[#113f36]/15 text-zinc-550 rounded-3xl p-10 h-[430px] flex flex-col items-center justify-center text-center space-y-3">
+                              <Terminal className="w-12 h-12 text-[#113f36]/30 animate-pulse" />
+                              <h4 className="font-bold text-sm text-[#113f36]">Waybill Generator Standby</h4>
+                              <p className="text-[13px] text-zinc-500 max-w-sm">Enter the customized address details on the left, then click Generate Waybill. The system will construct official SOAP ClientInfo envelopes and return printable Domestic Waybills.</p>
                             </div>
                           ) : shipLoading ? (
-                            <div className="bg-black text-zinc-400 rounded-3xl p-10 h-[430px] flex flex-col items-center justify-center text-center space-y-4 font-mono text-[12px]">
+                            <div className="bg-[#113f36]/5 border border-[#113f36]/15 text-zinc-500 rounded-3xl p-10 h-[430px] flex flex-col items-center justify-center text-center space-y-4 font-mono text-[12px]">
                               <RefreshCw className="w-10 h-10 animate-spin text-[#113f36]" />
                               <div className="space-y-1">
                                 <p className="text-[#6d8c55] font-bold">TRANSMITTING WSDL: 'ShippingAPI.V2/Shipments'</p>
-                                <p className="text-zinc-500">Payload matching standard SOAP v1.1. Encoding Base64 print signals...</p>
+                                <p className="text-zinc-550 font-semibold">Payload matching standard SOAP v1.1. Encoding Base64 print signals...</p>
                               </div>
                             </div>
                           ) : (
@@ -1640,12 +1659,12 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                                   <span className="font-mono font-black border border-zinc-950 px-3 py-1 bg-zinc-50 rounded text-xs">{shipResult.labelPreview.cod}</span>
                                 </div>
                               </div>
-
+ 
                               {/* JSON Payloads raw data block */}
-                              <div className="bg-zinc-950 text-zinc-300 rounded-3xl p-5 font-mono text-[13px] h-[430px] flex flex-col justify-between overflow-hidden shadow-2xl relative">
-                                <div className="absolute top-4 right-4 text-[12px] font-black uppercase text-[#113f36]">SOAP WSDL Trace</div>
+                              <div className="bg-[#113f36]/5 text-zinc-800 border border-[#113f36]/15 rounded-3xl p-5 font-mono text-[13px] h-[430px] flex flex-col justify-between overflow-hidden shadow-xs relative">
+                                <div className="absolute top-4 right-4 text-[12px] font-black uppercase text-[#113f36]/60">SOAP WSDL Trace</div>
                                 
-                                <div className="flex justify-between border-b border-zinc-805 pb-2.5 shrink-0 text-[12px] font-black uppercase text-zinc-400">
+                                <div className="flex justify-between border-b border-zinc-200/60 pb-2.5 shrink-0 text-[12px] font-black uppercase text-zinc-550">
                                   <span>Response Signature Stream</span>
                                   <span className="text-[#6d8c55] font-bold">RAW PAYLOAD</span>
                                 </div>
@@ -1654,9 +1673,9 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                                   <div>
                                     <div className="flex justify-between mb-1 text-zinc-500 font-bold">
                                       <span>REQUEST BODY (USend Shipping Mapping)</span>
-                                      <button onClick={() => navigator.clipboard.writeText(JSON.stringify(shipResult.requestPayload, null, 2))} className="hover:text-white"><Copy className="w-3.5 h-3.5" /></button>
+                                      <button onClick={() => navigator.clipboard.writeText(JSON.stringify(shipResult.requestPayload, null, 2))} className="hover:text-[#113f36]/75"><Copy className="w-3.5 h-3.5" /></button>
                                     </div>
-                                    <pre className="bg-zinc-900 rounded-lg p-2 text-zinc-400 overflow-x-auto max-h-[160px] select-all">
+                                    <pre className="bg-white border border-zinc-200 rounded-lg p-2 text-zinc-600 overflow-x-auto max-h-[160px] select-all">
                                       {JSON.stringify(shipResult.requestPayload, null, 2)}
                                     </pre>
                                   </div>
@@ -1664,9 +1683,9 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                                   <div>
                                     <div className="flex justify-between mb-1 text-zinc-550 font-bold">
                                       <span>RETURN SOAP BODY (Success)</span>
-                                      <button onClick={() => navigator.clipboard.writeText(JSON.stringify(shipResult.responsePayload, null, 2))} className="hover:text-white"><Copy className="w-3.5 h-3.5" /></button>
+                                      <button onClick={() => navigator.clipboard.writeText(JSON.stringify(shipResult.responsePayload, null, 2))} className="hover:text-[#113f36]/75"><Copy className="w-3.5 h-3.5" /></button>
                                     </div>
-                                    <pre className="bg-zinc-900 rounded-lg p-2 text-zinc-400 overflow-x-auto max-h-[160px] select-all">
+                                    <pre className="bg-white border border-zinc-200 rounded-lg p-2 text-zinc-650 overflow-x-auto max-h-[160px] select-all">
                                       {JSON.stringify(shipResult.responsePayload, null, 2)}
                                     </pre>
                                   </div>
