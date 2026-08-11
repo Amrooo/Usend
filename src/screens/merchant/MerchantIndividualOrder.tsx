@@ -1546,27 +1546,6 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
         />
       </Modal>
 
-      {/* Stripe Payment Modal */}
-          initialPosition={
-            isMapOpenQuoteTarget === 'pickup' ? quoteData.pickupPosition : 
-            isMapOpenQuoteTarget === 'dropoff' ? quoteData.dropoffPosition : 
-            isMapOpenQuoteTarget === 'manual_pickup' ? formData.pickupPosition : 
-            formData.position
-          }
-          onSelect={(address, position) => {
-            if (isMapOpenQuoteTarget === 'pickup') {
-              setQuoteData({...quoteData, pickupAddress: address, pickupPosition: position as [number, number]});
-            } else if (isMapOpenQuoteTarget === 'dropoff') {
-              setQuoteData({...quoteData, dropoffAddress: address, dropoffPosition: position as [number, number]});
-            } else if (isMapOpenQuoteTarget === 'manual_pickup') {
-              setFormData({...formData, pickupAddress: address, pickupPosition: position as [number, number]});
-            } else {
-              setFormData({...formData, address, position: position as [number, number]});
-            }
-            setIsMapOpen(false);
-          }}
-        />
-      </Modal>
 
       {/* Scheduled Picker Modal */}
       <Modal 
