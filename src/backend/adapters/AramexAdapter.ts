@@ -65,7 +65,7 @@ export class AramexAdapter implements CourierAdapter {
       }
       const data = await response.json();
       if (data.HasErrors) {
-        return { success: false, error: data.Notifications?.[0]?.Message || "Aramex API credentials validation failed" };
+        return { success: false, error: data.Notifications?.[0]?.Message || `Aramex API credentials validation failed. Raw response: ${JSON.stringify(data)}` };
       }
       return { success: true };
     } catch (error: any) {
@@ -119,7 +119,7 @@ export class AramexAdapter implements CourierAdapter {
       });
       const data = await response.json();
       if (data.HasErrors) {
-        return { success: false, error: data.Notifications?.[0]?.Message || "Unknown Error" };
+        return { success: false, error: data.Notifications?.[0]?.Message || `Unknown Error. Raw response: ${JSON.stringify(data)}` };
       }
       return {
         success: true,
@@ -233,7 +233,7 @@ export class AramexAdapter implements CourierAdapter {
       const data = await response.json();
       
       if (data.HasErrors) {
-        return { success: false, error: data.Notifications?.[0]?.Message || "Unknown Error" };
+        return { success: false, error: data.Notifications?.[0]?.Message || `Unknown Error. Raw response: ${JSON.stringify(data)}` };
       }
       const shipment = data.Shipments?.[0];
       if (!shipment) {
@@ -280,7 +280,7 @@ export class AramexAdapter implements CourierAdapter {
       const data = await response.json();
       
       if (data.HasErrors) {
-        return { success: false, providerStatus: 'Error', usendStatus: 'FAILED', timestamp: new Date().toISOString(), error: data.Notifications?.[0]?.Message || "Tracking Error" };
+        return { success: false, providerStatus: 'Error', usendStatus: 'FAILED', timestamp: new Date().toISOString(), error: data.Notifications?.[0]?.Message || `Tracking Error. Raw response: ${JSON.stringify(data)}` };
       }
 
       const results = data.TrackingResults;

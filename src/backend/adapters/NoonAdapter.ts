@@ -107,7 +107,7 @@ export class NoonAdapter implements CourierAdapter {
 
       const data = await response.json();
       if (!response.ok || data.status === 'ERROR' || !data.mp_task_nr) {
-        return { success: false, error: data.message || "Failed to create Noon Task" };
+        return { success: false, error: data.message || `Failed to create Noon Task. Raw response: ${JSON.stringify(data)}` };
       }
 
       return {

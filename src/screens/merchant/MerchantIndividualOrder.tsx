@@ -30,6 +30,7 @@ import { useLanguage } from '../../context/LanguageContext';
 // Removed legacy frontend mocked wrappers in favor of CourierEngine backend
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import StripeCheckoutForm from '../../components/merchant/StripeCheckoutForm';
 
 export const UAE_ADDRESS_SUGGESTIONS = [
   { name: "Dubai Mall, Financial Center Road, Downtown Dubai", position: [25.1972, 55.2797] },
@@ -104,6 +105,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
     weight: string;
     carrier: string;
     printFormat: 'PDF' | 'ZPL';
+    enableCod: boolean;
   }>({
     customerName: '',
     phone: '+971 ',
@@ -118,7 +120,8 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
     items: '',
     weight: 'light',
     carrier: 'aramex',
-    printFormat: 'PDF'
+    printFormat: 'PDF',
+    enableCod: false
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -177,7 +180,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          amount: dynamicPricing.total,
+          amountAED: dynamicPricing.total,
           currency: "aed",
           metadata: {
             customerName: formData.customerName,
@@ -559,7 +562,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
             receiverAddress: formData.address || "Delivery Address",
             goodsDescription: formData.notes || "E-commerce Goods",
             weightKg: formData.weight ? parseFloat(formData.weight) : 1.0,
-            codAmountAED: parseFloat(formData.amount || '0') || 0,
+            codAmountAED: formData.enableCod ? (parseFloat(formData.amount || '0') || 0) : 0,
             reference: reqId
           };
 
@@ -969,9 +972,23 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                       <h2 className="font-bold text-lg text-zinc-800">Cod Value Mapping</h2>
                     </div>
 
-                    <div className="space-y-2">
-                      <label className="text-[12px] font-black uppercase tracking-wider text-zinc-400">Order Amount (COD to Collect)</label>
-                      <div className="relative">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 mb-2">
+                      <input 
+                        type="checkbox" 
+                        id="enableCod"
+                        checked={formData.enableCod}
+                        onChange={(e) => {
+                          setFormData({...formData, enableCod: e.target.checked, amount: e.target.checked ? formData.amount : ''});
+                        }}
+                        className="w-4 h-4 accent-[#113f36] cursor-pointer"
+                      />
+                      <label htmlFor="enableCod" className="text-[12px] font-black uppercase tracking-wider text-zinc-400 cursor-pointer">
+                        Enable COD (Collect Cash from Customer)
+                      </label>
+                    </div>
+                    {formData.enableCod && (
+                      <div className="relative animate-in fade-in slide-in-from-top-1">
                         <span className="absolute left-4 top-3.5 text-zinc-400 font-bold text-sm">AED</span>
                         <input 
                           required
@@ -982,7 +999,8 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                           className="w-full bg-zinc-50 border border-zinc-200/60 focus:border-[#113f36] rounded-xl pl-14 pr-4 py-3 outline-none text-zinc-900 font-bold transition-colors font-mono"
                         />
                       </div>
-                    </div>
+                    )}
+                  </div>
 
                   <div className="space-y-2">
                     <label className="text-[12px] font-black uppercase tracking-wider text-zinc-400">Payout Settlement Option</label>
@@ -1506,6 +1524,29 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
             isMapOpenQuoteTarget === 'manual_pickup' ? formData.pickupAddress : 
             formData.address
           }
+          initialPosition={
+            isMapOpenQuoteTarget === 'pickup' ? quoteData.pickupPosition : 
+            isMapOpenQuoteTarget === 'dropoff' ? quoteData.dropoffPosition : 
+            isMapOpenQuoteTarget === 'manual_pickup' ? formData.pickupPosition : 
+            formData.position
+          }
+          onSelect={(addr, pos) => {
+            if (isMapOpenQuoteTarget === 'pickup') {
+              setQuoteData({ ...quoteData, pickupAddress: addr, pickupPosition: pos });
+            } else if (isMapOpenQuoteTarget === 'dropoff') {
+              setQuoteData({ ...quoteData, dropoffAddress: addr, dropoffPosition: pos });
+            } else if (isMapOpenQuoteTarget === 'manual_pickup') {
+              setFormData({ ...formData, pickupAddress: addr, pickupPosition: pos });
+            } else {
+              setFormData({ ...formData, address: addr, position: pos });
+            }
+            setIsMapOpen(false);
+          }}
+          onClose={() => setIsMapOpen(false)} 
+        />
+      </Modal>
+
+      {/* Stripe Payment Modal */}
           initialPosition={
             isMapOpenQuoteTarget === 'pickup' ? quoteData.pickupPosition : 
             isMapOpenQuoteTarget === 'dropoff' ? quoteData.dropoffPosition : 
