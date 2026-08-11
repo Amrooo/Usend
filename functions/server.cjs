@@ -435,7 +435,13 @@ var NoonAdapter = class {
         },
         body: JSON.stringify(noonPayload)
       });
-      const data2 = await response.json();
+      const responseText = await response.text();
+      let data2;
+      try {
+        data2 = JSON.parse(responseText);
+      } catch (err) {
+        return { success: false, error: `Noon API Error: Status ${response.status}. Body: ${responseText.substring(0, 100)}` };
+      }
       if (!response.ok || data2.status === "ERROR" || !data2.mp_task_nr) {
         return { success: false, error: data2.message || "Failed to create Noon Task" };
       }
@@ -460,7 +466,13 @@ var NoonAdapter = class {
           "Authorization": `Bearer ${credentials.apiKey || credentials.password}`
         }
       });
-      const data2 = await response.json();
+      const responseText = await response.text();
+      let data2;
+      try {
+        data2 = JSON.parse(responseText);
+      } catch (err) {
+        return { success: false, providerStatus: "Error", usendStatus: "FAILED", timestamp: (/* @__PURE__ */ new Date()).toISOString(), error: `Noon API Error: Status ${response.status}. Body: ${responseText.substring(0, 100)}` };
+      }
       if (!response.ok || data2.status === "ERROR") {
         return { success: false, providerStatus: "Error", usendStatus: "FAILED", timestamp: (/* @__PURE__ */ new Date()).toISOString(), error: data2.message || "Tracking Error" };
       }
