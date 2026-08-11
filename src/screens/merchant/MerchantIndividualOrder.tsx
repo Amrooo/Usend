@@ -246,6 +246,11 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
       try {
         const numericCod = parseFloat(formData.amount || '0') || 0;
         const codValueFils = Math.round(numericCod * 100);
+        const noonConfig = courierConfigs?.noon;
+        const noonCreds = noonConfig?.currentMode === 'sandbox' ? noonConfig.sandboxCreds : noonConfig?.productionCreds;
+        const noonApiKey = noonCreds?.apiKey || noonCreds?.password;
+        const noonBaseUrl = noonConfig?.currentMode === 'sandbox' ? noonConfig.baseUrlUat : noonConfig?.baseUrlProd;
+
         const res = await noonService.createDeliveryTask({
           outlet_code: "77T4HCOD4G",
           order_reference: reqId,
@@ -263,7 +268,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
           lng: formData.position ? formData.position[1] : 55.2738,
           cod_value: codValueFils,
           payment_method: numericCod > 0 ? 'COD' : 'PAID'
-        });
+        }, noonApiKey, noonBaseUrl);
 
         if (res.success && res.data?.mp_task_nr) {
           await updateRequest(reqId, {
@@ -567,6 +572,11 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
         try {
           const numericCod = parseFloat(formData.amount || '0') || 0;
           const codValueFils = Math.round(numericCod * 100);
+          const noonConfig = courierConfigs?.noon;
+          const noonCreds = noonConfig?.currentMode === 'sandbox' ? noonConfig.sandboxCreds : noonConfig?.productionCreds;
+          const noonApiKey = noonCreds?.apiKey || noonCreds?.password;
+          const noonBaseUrl = noonConfig?.currentMode === 'sandbox' ? noonConfig.baseUrlUat : noonConfig?.baseUrlProd;
+
           const res = await noonService.createDeliveryTask({
             outlet_code: "77T4HCOD4G", // Default staging outlet
             order_reference: reqId,
@@ -584,7 +594,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
             lng: formData.position ? formData.position[1] : 55.2738,
             cod_value: codValueFils,
             payment_method: numericCod > 0 ? 'COD' : 'PAID'
-          });
+          }, noonApiKey, noonBaseUrl);
 
           if (res.success && res.data?.mp_task_nr) {
             await updateRequest(reqId, {
@@ -1603,7 +1613,7 @@ function StripePaymentForm({ clientSecret, totalAmount, onPaymentSuccess, onCanc
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!stripe || !elements || !isReady) return;
 

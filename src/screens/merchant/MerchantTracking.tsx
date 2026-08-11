@@ -261,6 +261,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
         : null;
       const outletCode = noonCreds?.accountNumber || "77T4HCOD4G";
       const apiKey = noonCreds?.apiKey || "";
+      const baseUrl = noonConfig?.currentMode === 'sandbox' ? noonConfig.baseUrlUat : noonConfig?.baseUrlProd;
 
       console.log(`[Noon Dispatch] Processing order ${req.id} through Noon Staging API...`);
       const res = await noonService.createDeliveryTask({
@@ -280,7 +281,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
         lng: 55.2738,
         cod_value: codValueFils,
         payment_method: numericCod > 0 ? 'COD' : 'PAID'
-      }, apiKey);
+      }, apiKey, baseUrl);
 
       if (res.success && res.data?.mp_task_nr) {
         await updateRequest(req.id, {

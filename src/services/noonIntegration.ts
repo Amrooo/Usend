@@ -22,13 +22,14 @@ export interface NoonTaskParams {
 }
 
 export const noonService = {
-  createDeliveryTask: async (params: NoonTaskParams, apiKey?: string) => {
+  createDeliveryTask: async (params: NoonTaskParams, apiKey?: string, baseUrl?: string) => {
     try {
       const response = await fetch('/api/noon/create-task', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          ...(apiKey ? { 'x-noon-api-key': apiKey } : {})
+          ...(apiKey ? { 'x-noon-api-key': apiKey } : {}),
+          ...(baseUrl ? { 'x-noon-base-url': baseUrl } : {})
         },
         body: JSON.stringify(params)
       });
@@ -44,9 +45,14 @@ export const noonService = {
     }
   },
 
-  getTaskDetails: async (mp_task_nr: string) => {
+  getTaskDetails: async (mp_task_nr: string, apiKey?: string, baseUrl?: string) => {
     try {
-      const response = await fetch(`/api/noon/tasks/${mp_task_nr}`);
+      const response = await fetch(`/api/noon/tasks/${mp_task_nr}`, {
+        headers: {
+          ...(apiKey ? { 'x-noon-api-key': apiKey } : {}),
+          ...(baseUrl ? { 'x-noon-base-url': baseUrl } : {})
+        }
+      });
       const data = await response.json();
       return {
         success: response.status === 200,
@@ -59,11 +65,15 @@ export const noonService = {
     }
   },
 
-  cancelTask: async (mp_task_nr: string, reason: string = "Merchant Cancelled") => {
+  cancelTask: async (mp_task_nr: string, reason: string = "Merchant Cancelled", apiKey?: string, baseUrl?: string) => {
     try {
       const response = await fetch(`/api/noon/tasks/${mp_task_nr}/cancel`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(apiKey ? { 'x-noon-api-key': apiKey } : {}),
+          ...(baseUrl ? { 'x-noon-base-url': baseUrl } : {})
+        },
         body: JSON.stringify({ reason })
       });
       const data = await response.json();
@@ -78,9 +88,14 @@ export const noonService = {
     }
   },
 
-  getPickupAddresses: async () => {
+  getPickupAddresses: async (apiKey?: string, baseUrl?: string) => {
     try {
-      const response = await fetch('/api/noon/pickup-addresses');
+      const response = await fetch('/api/noon/pickup-addresses', {
+        headers: {
+          ...(apiKey ? { 'x-noon-api-key': apiKey } : {}),
+          ...(baseUrl ? { 'x-noon-base-url': baseUrl } : {})
+        }
+      });
       const data = await response.json();
       return {
         success: response.status === 200,

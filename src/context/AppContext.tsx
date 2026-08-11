@@ -78,31 +78,48 @@ export interface CourierRateDetail {
   codFee: number;
 }
 
+export type CourierConnectionState = 
+  | 'NOT_CONFIGURED' 
+  | 'CONFIGURED_NOT_TESTED' 
+  | 'TESTING' 
+  | 'AUTHENTICATION_FAILED' 
+  | 'CONNECTIVITY_FAILED' 
+  | 'PARTIALLY_VERIFIED' 
+  | 'E2E_VERIFIED' 
+  | 'OPERATIONAL' 
+  | 'DISABLED' 
+  | 'PROVIDER_UNAVAILABLE' 
+  | 'PENDING_EXTERNAL_VALIDATION';
+
+export interface CourierConnectionStatus {
+  state: CourierConnectionState;
+  lastTestedAt: string | null;         // ISO timestamp of last test
+  lastTestedMode: 'sandbox' | 'production' | null;
+  errorMessage: string | null;         // Error detail if state === 'failed'
+}
+
+export interface CourierCredentials {
+  username: string;
+  password?: string;
+  accountNumber: string;
+  accountPin?: string;
+  accountEntity?: string;
+  accountCountryCode?: string;
+  source?: string;
+  apiKey?: string;
+  version?: string;
+}
+
 export interface CourierIntegrationConfig {
   id: string;
   name: string;
   status: 'Active' | 'Inactive';
   currentMode: 'sandbox' | 'production';
-  sandboxCreds: {
-    username: string;
-    password?: string;
-    accountNumber: string;
-    accountPin: string;
-    accountEntity: string;
-    accountCountryCode: string;
-    source: string;
-    apiKey?: string;
-  };
-  productionCreds: {
-    username: string;
-    password?: string;
-    accountNumber: string;
-    accountPin: string;
-    accountEntity: string;
-    accountCountryCode: string;
-    source: string;
-    apiKey?: string;
-  };
+  baseUrlUat?: string;
+  baseUrlProd?: string;
+  sandboxCreds: CourierCredentials;
+  productionCreds: CourierCredentials;
+  connectionStatus: CourierConnectionStatus;
   rates: {
     guest: CourierRateDetail;
     user: CourierRateDetail;
@@ -150,12 +167,29 @@ const INITIAL_SETTINGS: PlatformSettings = {
   enableCodHandlingFee: true
 };
 
+const UNCONFIGURED_STATUS: CourierConnectionStatus = {
+  state: 'NOT_CONFIGURED',
+  lastTestedAt: null,
+  lastTestedMode: null,
+  errorMessage: null,
+};
+
+const UNTESTED_STATUS: CourierConnectionStatus = {
+  state: 'CONFIGURED_NOT_TESTED',
+  lastTestedAt: null,
+  lastTestedMode: null,
+  errorMessage: null,
+};
+
 const INITIAL_COURIER_CONFIGS: Record<string, CourierIntegrationConfig> = {
   aramex: {
     id: 'aramex',
     name: 'Aramex Express',
-    status: 'Active',
+    status: 'Inactive',
     currentMode: 'sandbox',
+    baseUrlUat: 'ws.uat.aramex.net',
+    baseUrlProd: 'ws.aramex.net',
+    connectionStatus: UNTESTED_STATUS,
     sandboxCreds: {
       username: "dxbit@aramex.com",
       password: "Ar@m3x$h1pp1ng",
@@ -163,37 +197,8 @@ const INITIAL_COURIER_CONFIGS: Record<string, CourierIntegrationConfig> = {
       accountPin: "115216",
       accountEntity: "DXB",
       accountCountryCode: "AE",
-      source: "0"
-    },
-    productionCreds: {
-      username: "",
-      password: "",
-      accountNumber: "75788705",
-      accountPin: "217147",
-      accountEntity: "DXB",
-      accountCountryCode: "AE",
-      source: "0"
-    },
-    rates: {
-      guest: { baseFee: 30, perKmRate: 0, perKgRate: 5, expressSurcharge: 25, codFee: 10 },
-      user: { baseFee: 25, perKmRate: 0, perKgRate: 4, expressSurcharge: 20, codFee: 8 },
-      merchant: { baseFee: 15, perKmRate: 0, perKgRate: 2.5, expressSurcharge: 10, codFee: 5 }
-    }
-  },
-  noon: {
-    id: 'noon',
-    name: 'Noon RoD Staging',
-    status: 'Active',
-    currentMode: 'sandbox',
-    sandboxCreds: {
-      username: "noon_sandbox_user",
-      password: "NoonPassword_2026",
-      accountNumber: "NOON-DXB-9901",
-      accountPin: "9901",
-      accountEntity: "DXB",
-      accountCountryCode: "AE",
-      source: "noon_staging",
-      apiKey: "noon_secret_key_123"
+      source: "0",
+      version: "v1.0"
     },
     productionCreds: {
       username: "",
@@ -203,7 +208,43 @@ const INITIAL_COURIER_CONFIGS: Record<string, CourierIntegrationConfig> = {
       accountEntity: "",
       accountCountryCode: "AE",
       source: "",
-      apiKey: ""
+      version: "v1.0"
+    },
+    rates: {
+      guest: { baseFee: 30, perKmRate: 0, perKgRate: 5, expressSurcharge: 25, codFee: 10 },
+      user: { baseFee: 25, perKmRate: 0, perKgRate: 4, expressSurcharge: 20, codFee: 8 },
+      merchant: { baseFee: 15, perKmRate: 0, perKgRate: 2.5, expressSurcharge: 10, codFee: 5 }
+    }
+  },
+  noon: {
+    id: 'noon',
+    name: 'Noon RoD',
+    status: 'Inactive',
+    currentMode: 'sandbox',
+    baseUrlUat: 'https://food-api-team.noonstg.team',
+    baseUrlProd: 'https://food-api-team.noon.team',
+    connectionStatus: UNTESTED_STATUS,
+    sandboxCreds: {
+      username: "noon_sandbox_user",
+      password: "",
+      accountNumber: "77T4HCOD4G",
+      accountPin: "",
+      accountEntity: "DXB",
+      accountCountryCode: "AE",
+      source: "noon_staging",
+      apiKey: "SstJi9Ho0EHG2t7kQVSz7nA2hOeL3iiwVxHxb0Njk60QJ0LfmvoXoOsimw1zQC7VugHXiIRRMnWyU6f0uHcEcLlco5Eujqbd5pTwDlfBXpacuRI4m4AAj61NwM0B7Ihk",
+      version: "v1.0"
+    },
+    productionCreds: {
+      username: "",
+      password: "",
+      accountNumber: "",
+      accountPin: "",
+      accountEntity: "",
+      accountCountryCode: "AE",
+      source: "",
+      apiKey: "",
+      version: "v1.0"
     },
     rates: {
       guest: { baseFee: 25, perKmRate: 0, perKgRate: 4.5, expressSurcharge: 20, codFee: 8 },
@@ -214,16 +255,18 @@ const INITIAL_COURIER_CONFIGS: Record<string, CourierIntegrationConfig> = {
   dhl: {
     id: 'dhl',
     name: 'DHL Express',
-    status: 'Active',
+    status: 'Inactive',
     currentMode: 'sandbox',
+    connectionStatus: UNCONFIGURED_STATUS,
     sandboxCreds: {
-      username: "dhl_sandbox_user_ae",
-      password: "DHL_secret_2026",
-      accountNumber: "849301931-DXB",
-      accountPin: "902123",
-      accountEntity: "MIDDLE_EAST",
+      username: "",
+      password: "",
+      accountNumber: "",
+      accountPin: "",
+      accountEntity: "",
       accountCountryCode: "AE",
-      source: "30"
+      source: "",
+      version: "v1.0"
     },
     productionCreds: {
       username: "",
@@ -232,7 +275,8 @@ const INITIAL_COURIER_CONFIGS: Record<string, CourierIntegrationConfig> = {
       accountPin: "",
       accountEntity: "",
       accountCountryCode: "AE",
-      source: ""
+      source: "",
+      version: "v1.0"
     },
     rates: {
       guest: { baseFee: 45, perKmRate: 0, perKgRate: 7, expressSurcharge: 30, codFee: 12 },
@@ -243,16 +287,18 @@ const INITIAL_COURIER_CONFIGS: Record<string, CourierIntegrationConfig> = {
   fedex: {
     id: 'fedex',
     name: 'FedEx GCC',
-    status: 'Active',
+    status: 'Inactive',
     currentMode: 'sandbox',
+    connectionStatus: UNCONFIGURED_STATUS,
     sandboxCreds: {
-      username: "fedex_api_express_sandbox",
-      password: "FedexSecuredPwd_9901",
-      accountNumber: "990158221",
-      accountPin: "FDX-3029",
-      accountEntity: "GCC_FEDEX",
+      username: "",
+      password: "",
+      accountNumber: "",
+      accountPin: "",
+      accountEntity: "",
       accountCountryCode: "AE",
-      source: "45"
+      source: "",
+      version: "v1.0"
     },
     productionCreds: {
       username: "",
@@ -261,7 +307,8 @@ const INITIAL_COURIER_CONFIGS: Record<string, CourierIntegrationConfig> = {
       accountPin: "",
       accountEntity: "",
       accountCountryCode: "AE",
-      source: ""
+      source: "",
+      version: "v1.0"
     },
     rates: {
       guest: { baseFee: 40, perKmRate: 0, perKgRate: 6.5, expressSurcharge: 28, codFee: 10 },
@@ -485,7 +532,61 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     const unsubscribeCourierConfigs = onSnapshot(doc(db, 'settings', 'courier_configs'), (snapshot) => {
       if (snapshot.exists()) {
-        setCourierConfigs(snapshot.data() as Record<string, CourierIntegrationConfig>);
+        const data = snapshot.data() as Record<string, CourierIntegrationConfig>;
+        
+        // Self-heal: If the noon config has empty or default mock key, update it with correct staging key and endpoints
+        const noonConfig = data.noon;
+        const needsHealing = !noonConfig || 
+          !noonConfig.sandboxCreds?.apiKey || 
+          noonConfig.sandboxCreds?.apiKey === 'noon_secret_key_123' ||
+          noonConfig.baseUrlUat !== 'https://food-api-team.noonstg.team';
+
+        if (needsHealing) {
+          const updated = {
+            ...data,
+            noon: {
+              id: 'noon',
+              name: 'Noon RoD',
+              status: data.noon?.status || 'Inactive',
+              currentMode: data.noon?.currentMode || 'sandbox',
+              baseUrlUat: 'https://food-api-team.noonstg.team',
+              baseUrlProd: 'https://food-api-team.noon.team',
+              connectionStatus: data.noon?.connectionStatus || { state: 'configured_untested', lastTestedAt: null, lastTestedMode: null, errorMessage: null },
+              sandboxCreds: {
+                username: "noon_sandbox_user",
+                password: "",
+                accountNumber: "77T4HCOD4G",
+                accountPin: "",
+                accountEntity: "DXB",
+                accountCountryCode: "AE",
+                source: "noon_staging",
+                apiKey: "SstJi9Ho0EHG2t7kQVSz7nA2hOeL3iiwVxHxb0Njk60QJ0LfmvoXoOsimw1zQC7VugHXiIRRMnWyU6f0uHcEcLlco5Eujqbd5pTwDlfBXpacuRI4m4AAj61NwM0B7Ihk",
+                version: "v1.0"
+              },
+              productionCreds: data.noon?.productionCreds || {
+                username: "",
+                password: "",
+                accountNumber: "",
+                accountPin: "",
+                accountEntity: "",
+                accountCountryCode: "AE",
+                source: "",
+                apiKey: "",
+                version: "v1.0"
+              },
+              rates: data.noon?.rates || {
+                guest: { baseFee: 25, perKmRate: 0, perKgRate: 4.5, expressSurcharge: 20, codFee: 8 },
+                user: { baseFee: 20, perKmRate: 0, perKgRate: 3.5, expressSurcharge: 15, codFee: 6 },
+                merchant: { baseFee: 12, perKmRate: 0, perKgRate: 2.0, expressSurcharge: 8, codFee: 3 }
+              }
+            }
+          };
+          setDoc(doc(db, 'settings', 'courier_configs'), updated).catch(e => {
+            console.error("Failed to self-heal courier_configs in Firestore:", e);
+          });
+        }
+        
+        setCourierConfigs(data);
       }
     }, (error) => {
       console.warn('Courier Configs Firestore sync skipped (will use fallback mock data):', error.message);

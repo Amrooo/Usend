@@ -10,6 +10,9 @@ import fs from "fs";
 
 dotenv.config();
 
+// Disable TLS validation errors for UAT/Staging proxy handshakes
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
 // Prevent firebase-admin from checking metadata server and hanging in local environments
 if (process.env.NODE_ENV !== 'production' && !process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
   process.env.GCE_METADATA_HOST = '127.0.0.1';
@@ -348,129 +351,46 @@ app.post("/api/aramex/:serviceType", async (req, res) => {
       });
     }
 
-    let aramexRes;
-    let data;
-    const isMockCreds = finalUserName === "dxbit@aramex.com" || finalUserName === "testingapi@aramex.com";
-    let useFallback = isMockCreds;
+    try {
+      aramexRes = await fetch(`${baseUrl}${path}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(15000), // 15 second timeout
+      });
 
-    if (!useFallback) {
+      if (!aramexRes.ok) {
+        return res.status(aramexRes.status).json({ error: `Aramex API returned status ${aramexRes.status}` });
+      }
+
+      const textData = await aramexRes.text();
       try {
-        aramexRes = await fetch(`${baseUrl}${path}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(15000), // 15 second timeout
-        });
-
-        if (!aramexRes.ok) {
-          console.warn(`Aramex API returned non-OK status: ${aramexRes.status}. Using mock fallback.`);
-          useFallback = true;
-        } else {
-          const textData = await aramexRes.text();
-          try {
-            data = JSON.parse(textData);
-          } catch (parseError) {
-            console.warn("Aramex returned non-JSON response. Using mock fallback.");
-            useFallback = true;
-          }
-        }
-      } catch (fetchError: any) {
-        console.warn(`Aramex API connection failed: ${fetchError.message}. Using mock fallback.`);
-        useFallback = true;
+        data = JSON.parse(textData);
+        return res.json(data);
+      } catch (parseError) {
+        return res.status(500).json({ error: "Aramex returned non-JSON response." });
       }
+    } catch (fetchError: any) {
+      return res.status(500).json({ error: `Aramex API connection failed: ${fetchError.message}` });
     }
-
-    if (useFallback) {
-      // Return a highly realistic mock payload based on the serviceType to bypass any network or firewall limitations
-      if (serviceType === "rate") {
-        const isDomestic = payload.ShipmentDetails?.ProductGroup === "DOM";
-        const weight = payload.ShipmentDetails?.ActualWeight?.Value || 1;
-        const calculatedFee = 15.00 + (weight * (isDomestic ? 4.50 : 15.00));
-        data = {
-          HasErrors: false,
-          Notifications: [],
-          TotalAmount: {
-            Value: calculatedFee,
-            CurrencyCode: "AED"
-          }
-        };
-      } else if (serviceType === "shipping") {
-        const trackingId = "ARX" + Math.floor(10000000 + Math.random() * 90000000);
-        data = {
-          HasErrors: false,
-          Notifications: [],
-          Shipments: [
-            {
-              ProcessedShipment: {
-                ID: trackingId
-              },
-              ShipmentLabel: {
-                LabelURL: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
-              }
-            }
-          ]
-        };
-      } else if (serviceType === "tracking") {
-        const trackingNumber = (payload.Shipments && payload.Shipments[0]) || "ARX-AWB-DEFAULT";
-        data = {
-          HasErrors: false,
-          Notifications: [],
-          TrackingResults: [
-            {
-              Key: trackingNumber,
-              Value: [
-                {
-                  UpdateCode: "SH014",
-                  UpdateLocation: "Dubai Hub (Jebel Ali)",
-                  UpdateDateTime: new Date(Date.now() - 3600000 * 4).toISOString(),
-                  UpdateDescription: "Electronic order data registered with dispatch carrier system. Courier collection request generated."
-                },
-                {
-                  UpdateCode: "SH005",
-                  UpdateLocation: "Dubai Sorting Facility (DXB)",
-                  UpdateDateTime: new Date(Date.now() - 3600000 * 2).toISOString(),
-                  UpdateDescription: "Package collected, weight audits finalized."
-                },
-                {
-                  UpdateCode: "SH006",
-                  UpdateLocation: "Cross-UAE Transit",
-                  UpdateDateTime: new Date(Date.now() - 3600000 * 1).toISOString(),
-                  UpdateDescription: "Dispatched from regional logistics sorting terminal to last-mile hub location."
-                }
-              ]
-            }
-          ]
-        };
-      } else if (serviceType === "pickup") {
-        const randomPickNo = Math.floor(10000 + Math.random() * 90000);
-        data = {
-          HasErrors: false,
-          Notifications: [],
-          ProcessedPickup: {
-            ID: `ARX-PIK-${randomPickNo}`,
-            GUID: `PRQ-GUID-${randomPickNo}`
-          }
-        };
-      }
-    }
-
-    return res.json(data);
   } catch (error: any) {
     console.error("Aramex Error:", error);
     return res.status(500).json({ error: error.message });
   }
 });
 
-// --- NOON HYPERLOCAL LOGISTICS API STAGING PROXY ---
-const NOON_STAGING_KEY = "SstJi9Ho0EHG2t7kQVSz7nA2hOeL3iiwVxHxb0Njk60QJ0LfmvoXoOsimw1zQC7VugHXiIRRMnWyU6f0uHcEcLlco5Eujqbd5pTwDlfBXpacuRI4m4AAj61NwM0B7Ihk";
-const NOON_STAGING_URL = "https://food-api-team.noonstg.team";
+// --- NOON HYPERLOCAL LOGISTICS API PROXY ---
+
+const getNoonBaseUrl = (req: any) => {
+  return req.headers["x-noon-base-url"] || req.query.baseUrl || (req.body && req.body.baseUrl) || "https://merchants.staging.noon.com";
+};
 
 const getNoonHeaders = (req: any) => {
   const clientApiKey = req.headers["x-noon-api-key"] || req.query.apiKey || (req.body && req.body.apiKey);
-  const apiKey = clientApiKey && clientApiKey !== "noon_secret_key_123" ? clientApiKey : NOON_STAGING_KEY;
+  const apiKey = clientApiKey && clientApiKey !== "noon_secret_key_123" ? clientApiKey : "";
   return {
     "Content-Type": "application/json",
     "X-API-KEY": apiKey,
@@ -553,13 +473,15 @@ app.post("/api/aramex/test-connection", express.json(), async (req, res) => {
 
 app.post("/api/noon/test-connection", express.json(), async (req, res) => {
   try {
-    const { apiKey } = req.body;
+    const { apiKey, baseUrl } = req.body;
     if (!apiKey) {
       return res.status(400).json({ error: "Missing API key parameter" });
     }
 
-    console.log("[Noon Connection Test] Testing API Key against Noon Staging...");
-    const response = await fetch(`${NOON_STAGING_URL}/public/v1/pickup-points/list`, {
+    const endpoint = baseUrl || "https://merchants.staging.noon.com";
+    console.log(`[Noon Connection Test] Testing API Key against ${endpoint}...`);
+    
+    const response = await fetch(`${endpoint}/public/v1/pickup-points/list`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -570,29 +492,54 @@ app.post("/api/noon/test-connection", express.json(), async (req, res) => {
       signal: AbortSignal.timeout(10000)
     });
 
+    const responseText = await response.text();
+
+    // Check for corporate firewall interception blocks (e.g. FortiGuard Web Filter)
+    if (responseText.includes("FortiGuard") || responseText.includes("Web Filter") || responseText.includes("Access Blocked")) {
+      return res.status(200).json({
+        success: false,
+        error: "Access blocked by FortiGuard Corporate Firewall/Web Filter. The Noon Staging domain is restricted on this network."
+      });
+    }
+
     if (response.ok) {
-      const data = await response.json();
-      if (data.status === "SUCCESS" || Array.isArray(data.pickup_points)) {
-        return res.json({ success: true, message: "Noon credentials handshake verified successfully!" });
+      try {
+        const data = JSON.parse(responseText);
+        if (data.status === "SUCCESS" || Array.isArray(data.pickup_points)) {
+          return res.json({ success: true, message: "Noon credentials handshake verified successfully!" });
+        }
+        return res.status(200).json({
+          success: false,
+          error: `Handshake failed: Noon API did not return success.`
+        });
+      } catch (parseErr) {
+        return res.status(200).json({
+          success: false,
+          error: `Handshake failed: Invalid JSON response.`
+        });
       }
     }
 
-    const errText = await response.text();
     return res.status(200).json({
       success: false,
-      error: `Handshake failed: Noon Staging returned status ${response.status}. Details: ${errText || 'Invalid API Key'}`
+      error: `Handshake failed: Noon Staging returned status ${response.status}. Details: ${responseText.substring(0, 150) || 'Invalid API Key'}`
     });
   } catch (error: any) {
     console.error("[Noon Connection Test] Error:", error);
-    return res.status(200).json({ success: false, error: error.message });
+    let errorMsg = error.message || "Unknown connection error";
+    if (errorMsg.includes("fetch failed") || error.code === "ENOTFOUND" || error.code === "ECONNREFUSED") {
+      errorMsg = "Connection failed. Staging server is unreachable (DNS resolution failed or connection blocked by firewall).";
+    }
+    return res.status(200).json({ success: false, error: errorMsg });
   }
 });
 
 // 1. GET Pickup Addresses / Pickup Points
 app.get("/api/noon/pickup-addresses", async (req, res) => {
   try {
-    console.log("[Noon Proxy] Fetching pickup points from Noon Staging...");
-    const response = await fetch(`${NOON_STAGING_URL}/public/v1/pickup-points/list`, {
+    const baseUrl = getNoonBaseUrl(req);
+    console.log(`[Noon Proxy] Fetching pickup points from ${baseUrl}...`);
+    const response = await fetch(`${baseUrl}/public/v1/pickup-points/list`, {
       method: "GET",
       headers: getNoonHeaders(req),
       signal: AbortSignal.timeout(10000)
@@ -600,50 +547,25 @@ app.get("/api/noon/pickup-addresses", async (req, res) => {
     
     if (response.ok) {
       const data = await response.json();
-      console.log("[Noon Proxy] Successfully fetched pickup points from Noon Staging API.");
+      console.log("[Noon Proxy] Successfully fetched pickup points from Noon API.");
       return res.json(data);
     } else {
-      console.warn(`[Noon Proxy] Noon Staging API returned ${response.status}. Using high-fidelity staging fallback.`);
+      console.error(`[Noon Proxy] Noon API returned ${response.status}.`);
+      return res.status(response.status).json({ error: `Noon API returned ${response.status}` });
     }
   } catch (error: any) {
-    console.warn(`[Noon Proxy] Failed to connect to Noon Staging: ${error.message}. Using offline fallback.`);
+    console.error(`[Noon Proxy] Failed to connect to Noon: ${error.message}.`);
+    return res.status(500).json({ error: `Connection failed: ${error.message}` });
   }
-
-  // High-fidelity fallback list matching page 5 of the PDF
-  res.json({
-    status: "SUCCESS",
-    pickup_points: [
-      {
-        code: "77T4HCOD4G",
-        name: "Jebel Ali Main Staging Outlet",
-        phone_number: "+971501112222",
-        address_details: "Jebel Ali industrial area, Dubai, UAE",
-        coordinates: { latitude: 251998377, longitude: 552738694 }
-      },
-      {
-        code: "BDLLHTRQC6",
-        name: "Dubai Downtown Staging Outlet",
-        phone_number: "+971503334444",
-        address_details: "Downtown Blvd near Fountain, Dubai, UAE",
-        coordinates: { latitude: 251101359, longitude: 551958038 }
-      },
-      {
-        code: "CMFRTF2DXS",
-        name: "Deira Old Port Staging Outlet",
-        phone_number: "+971505556666",
-        address_details: "Deira Wharfage, Dubai, UAE",
-        coordinates: { latitude: 252519665, longitude: 553150403 }
-      }
-    ]
-  });
 });
 
 // 2. POST Create Delivery Task
 app.post("/api/noon/create-task", async (req, res) => {
   const params = req.body;
   try {
-    console.log("[Noon Proxy] Sending create-task payload to Noon Staging...", JSON.stringify(params));
-    const response = await fetch(`${NOON_STAGING_URL}/public/v1/create-task`, {
+    const baseUrl = getNoonBaseUrl(req);
+    console.log(`[Noon Proxy] Sending create-task payload to ${baseUrl}...`, JSON.stringify(params));
+    const response = await fetch(`${baseUrl}/public/v1/create-task`, {
       method: "POST",
       headers: getNoonHeaders(req),
       body: JSON.stringify(params),
@@ -653,37 +575,25 @@ app.post("/api/noon/create-task", async (req, res) => {
     const data = await response.json();
     console.log(`[Noon Proxy] Noon Staging API returned status ${response.status}:`, data);
     
-    if (response.ok || data.status === "SUCCESS" || !!data.mp_task_nr) {
+    if (response.ok || data.status === "SUCCESS") {
       return res.status(response.status).json(data);
     } else {
-      console.warn(`[Noon Proxy] Noon Staging API returned error structure. Falling back to simulated successful creation.`);
+      console.error(`[Noon Proxy] Noon API returned error structure.`);
+      return res.status(response.status).json(data);
     }
   } catch (error: any) {
-    console.warn(`[Noon Proxy] Noon Staging create-task connection failed: ${error.message}. Using fallback.`);
+    console.error(`[Noon Proxy] Noon create-task connection failed: ${error.message}.`);
+    return res.status(500).json({ error: `Connection failed: ${error.message}` });
   }
-
-  // Simulated Staging Success fallback
-  const mockTaskNr = `MP-NOON-${Math.floor(100000 + Math.random() * 900000)}`;
-  res.status(200).json({
-    status: "SUCCESS",
-    message: "Delivery task successfully queued (Simulated)",
-    mp_task_nr: mockTaskNr,
-    outlet_code: params.outlet_code || "77T4HCOD4G",
-    order_reference: params.order_reference || `REF-${Math.floor(10000 + Math.random() * 90000)}`,
-    courier_assigned: {
-      name: "Rider On Demand (Staging)",
-      phone: "+971509876543",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100&auto=format&fit=crop"
-    }
-  });
 });
 
 // 3. GET Task Details
 app.get("/api/noon/tasks/:mp_task_nr", async (req, res) => {
   const { mp_task_nr } = req.params;
   try {
-    console.log(`[Noon Proxy] Fetching task details for ${mp_task_nr} from Noon Staging...`);
-    const response = await fetch(`${NOON_STAGING_URL}/public/v1/tasks/${mp_task_nr}`, {
+    const baseUrl = getNoonBaseUrl(req);
+    console.log(`[Noon Proxy] Fetching task details for ${mp_task_nr} from ${baseUrl}...`);
+    const response = await fetch(`${baseUrl}/public/v1/tasks/${mp_task_nr}`, {
       method: "GET",
       headers: getNoonHeaders(req),
       signal: AbortSignal.timeout(10000)
@@ -693,27 +603,11 @@ app.get("/api/noon/tasks/:mp_task_nr", async (req, res) => {
       const data = await response.json();
       return res.json(data);
     }
+    return res.status(response.status).json({ error: `Noon API returned ${response.status}` });
   } catch (error: any) {
-    console.warn(`[Noon Proxy] Noon Staging fetch task details failed: ${error.message}. Using fallback.`);
+    console.error(`[Noon Proxy] Noon fetch task details failed: ${error.message}.`);
+    return res.status(500).json({ error: `Connection failed: ${error.message}` });
   }
-
-  // Fallback to highly detailed delivery status sequence mimicking Page 2 "Delivery Statuses"
-  res.json({
-    status: "SUCCESS",
-    mp_task_nr: mp_task_nr,
-    current_status: "assigned", // states: pending_assignment, assigned, arrived_at_pickup_location, picked_up, arrived_at_delivery, delivered
-    delivery_agent: {
-      name: "Ahmed Al Mansoori",
-      phone_number: "+971588123456",
-      current_latitude: 25.1998,
-      current_longitude: 55.2738,
-      telemetry_updated_at: new Date().toISOString()
-    },
-    history: [
-      { status: "pending_assignment", timestamp: new Date(Date.now() - 3600000).toISOString() },
-      { status: "assigned", timestamp: new Date(Date.now() - 1800000).toISOString() }
-    ]
-  });
 });
 
 // 4. POST Cancel Task
@@ -721,8 +615,9 @@ app.post("/api/noon/tasks/:mp_task_nr/cancel", async (req, res) => {
   const { mp_task_nr } = req.params;
   const { reason } = req.body;
   try {
+    const baseUrl = getNoonBaseUrl(req);
     console.log(`[Noon Proxy] Sending cancellation request for ${mp_task_nr}...`);
-    const response = await fetch(`${NOON_STAGING_URL}/public/v1/tasks/${mp_task_nr}/cancel`, {
+    const response = await fetch(`${baseUrl}/public/v1/tasks/${mp_task_nr}/cancel`, {
       method: "POST",
       headers: getNoonHeaders(req),
       body: JSON.stringify({ reason }),
@@ -733,15 +628,11 @@ app.post("/api/noon/tasks/:mp_task_nr/cancel", async (req, res) => {
       const data = await response.json();
       return res.json(data);
     }
+    return res.status(response.status).json({ error: `Noon API returned ${response.status}` });
   } catch (error: any) {
-    console.warn(`[Noon Proxy] Noon Staging task cancellation failed: ${error.message}. Using fallback.`);
+    console.error(`[Noon Proxy] Noon task cancellation failed: ${error.message}.`);
+    return res.status(500).json({ error: `Connection failed: ${error.message}` });
   }
-
-  res.json({
-    status: "SUCCESS",
-    mp_task_nr: mp_task_nr,
-    message: "Delivery task cancelled successfully."
-  });
 });
 
 // Initialize the Google GenAI SDK (only once)

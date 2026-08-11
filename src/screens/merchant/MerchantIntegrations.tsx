@@ -243,7 +243,18 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
     }
     if (id === 'aramex') return aramexCreds;
     if (id === 'dhl') return dhlCreds;
-    if (id === 'noon') return { username: '', password: '', accountNumber: '77T4HCOD4G', apiKey: '' };
+    if (id === 'noon') return { 
+      username: '', 
+      password: '', 
+      accountNumber: '77T4HCOD4G', 
+      apiKey: '', 
+      version: 'v1.0',
+      accountPin: '',
+      accountEntity: 'DXB',
+      accountCountryCode: 'AE',
+      source: 'noon_staging',
+      apiEnv: 'sandbox'
+    };
     return fedexCreds;
   };
 

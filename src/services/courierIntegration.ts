@@ -93,9 +93,6 @@ export const createdWaybills = new Set<string>();
 export const courierIntegrationService = {
   // 1. RATE CALCULATOR
   calculateRate: async (courierId: string, params: RateParams) => {
-    // Generate simulated network delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-
     let rateConfig: any = null;
     try {
       const configDoc = await getDoc(doc(db, 'settings', 'courier_configs'));
@@ -220,62 +217,8 @@ export const courierIntegrationService = {
         console.error("Aramex rate logic failed", err);
         throw err; // Bubble the error up to the UI 
       }
-    } else if (courierId === 'dhl') {
-      requestPayload = {
-        rateRequest: {
-          requestedServices: params.isExpress ? ["ExpressWorldwide"] : ["ExpressClassic"],
-          shipperAddress: { city: params.originCity, countryCode: params.originCountry },
-          recipientAddress: { city: params.destCity, countryCode: params.destCountry },
-          packages: [{ weight: params.weightKb, dimensions: { length: 10, width: 10, height: 10 } }]
-        }
-      };
-      
-      responsePayload = {
-        rateResponse: {
-          services: [
-            {
-              serviceName: params.isExpress ? "DHL Express Worldwide" : "DHL Domestic Delivery",
-              totalCharges: [
-                {
-                  chargeAmount: Number(finalTotal.toFixed(2)),
-                  currencyType: "AED",
-                  chargeTypes: [
-                    { type: "Freight charges", amount: Number(netTotal.toFixed(2)) },
-                    { type: "Emergency Fuel", amount: 2.50 },
-                    { type: "VAT 5%", amount: Number(taxes.toFixed(2)) }
-                  ]
-                }
-              ],
-              deliveryDate: params.isExpress ? "Next Day Delivery" : "3-4 Business Days"
-            }
-          ]
-        }
-      };
-    } else { // fedex
-      requestPayload = {
-        rateRequestMsg: {
-          credentials: { key: params.credentials.accountNumber, securityCode: params.credentials.accountPin },
-          shippingDetails: {
-            serviceType: params.isExpress ? "PRIORITY_OVERNIGHT" : "FEDEX_GROUND",
-            shipper: { address: { city: params.originCity, country: params.originCountry } },
-            recipient: { address: { city: params.destCity, country: params.destCountry } },
-            weight: { value: params.weightKb, units: "KG" }
-          }
-        }
-      };
-
-      responsePayload = {
-        rateResponseMsg: {
-          rates: {
-            netCharge: Number(finalTotal.toFixed(2)),
-            baseCharge: Number(baseRate.toFixed(2)),
-            taxCharge: Number(taxes.toFixed(2)),
-            totalSurcharges: Number((expressSurcharge + weightSurcharge).toFixed(2)),
-            currency: "AED"
-          },
-          status: "SUCCESS"
-        }
-      };
+    } else {
+      throw new Error(`${courierId.toUpperCase()} integration is currently not implemented for Rates.`);
     }
 
     return {
@@ -300,18 +243,8 @@ export const courierIntegrationService = {
 
   // 2. SHIPPING SERVICE SHIPPING WAYBILLS
   createShipment: async (courierId: string, params: ShipmentParams) => {
-    await new Promise(resolve => setTimeout(resolve, 1400));
-
-    // Create unique dynamic airway bills
     const randomNo = Math.floor(1000000 + Math.random() * 9000000);
-    let trackingNumber = courierId === 'aramex'
-      ? `ARX-${params.credentials.accountNumber}-${randomNo}`
-      : courierId === 'dhl'
-        ? `DHL-DXB-${randomNo}`
-        : `FDX-AE-${randomNo}`;
-
-    // Register tracking number in our global sandbox session registry to prevent fake tracking lookup
-    createdWaybills.add(trackingNumber);
+    let trackingNumber = "";
 
     const timestamp = new Date().toISOString();
     let requestPayload = {};
@@ -469,23 +402,7 @@ export const courierIntegrationService = {
         };
       }
     } else {
-      requestPayload = {
-        bookingRequest: {
-          shipper: { name: params.senderName, contact: params.senderPhone, addressLine1: params.senderAddress, city: params.senderCity },
-          receiver: { name: params.receiverName, contact: params.receiverPhone, addressLine1: params.receiverAddress, city: params.receiverCity },
-          consignment: { description: params.goodsDescription, weight: params.weightKg, codAmount: params.codAmountAED }
-        }
-      };
-
-      responsePayload = {
-        bookingResponse: {
-          id: trackingNumber,
-          manifestId: `MAN-${randomNo}`,
-          estimatedDelivery: new Date(Date.now() + 86400000 * 2).toLocaleDateString(),
-          pdfBytes: "MOCK_BASE64_STREAM",
-          status: "SUCCESS"
-        }
-      };
+      throw new Error(`${courierId.toUpperCase()} integration is currently not implemented for Shipment Creation.`);
     }
 
     return {
@@ -510,73 +427,9 @@ export const courierIntegrationService = {
 
   // 3. TRACKING SERVICE
   trackShipment: async (courierId: string, trackingNumber: string, credentials?: CourierCredentials) => {
-    await new Promise(resolve => setTimeout(resolve, 800));
-
     const cleanNum = trackingNumber.trim();
-    
-    // We only resolve statuses for waybills that actually exist in our simulation
-    const isPredefined = [
-      "ARX-45796-7777777", 
-      "DHL-DXB-8888888", 
-      "FDX-AE-9999999"
-    ].includes(cleanNum);
-
-    const exists = createdWaybills.has(cleanNum) || isPredefined || courierId === 'aramex'; // Force real API calls for Aramex
-
     const timestamp = new Date().toISOString();
-
-    if (!exists) {
-      return {
-        success: false,
-        trackingNumber: cleanNum,
-        error: `No active shipping sequence found matches reference "${cleanNum}". To track a package successfully, you must first generate a waybill using the "Generate Domestic Waybill" panel in the third tab above.`,
-        steps: [],
-        requestPayload: {
-          WSDLLookup: {
-            ClientInfo: { AccountNumber: "45796", ProductType: "DomesticExpress" },
-            TrackingID: cleanNum,
-            Result: "NotFound"
-          }
-        },
-        responsePayload: {
-          SoapFault: {
-            faultcode: "soap:Client",
-            faultstring: "OrderNotFoundException: Tracking ID has not been created under this account portfolio."
-          }
-        }
-      };
-    }
-
-    const prefix = cleanNum.split('-')[0] || courierId.toUpperCase();
-    
-    // Simulate real checkpoints
-    const steps: TrackingStep[] = [
-      {
-        status: "MANIFEST_CREATED",
-        location: "Dubai Hub (Jebel Ali)",
-        time: "10 hours ago",
-        description: "Electronic order data registered with dispatch carrier system. Courier collection request generated."
-      },
-      {
-        status: "SORTING_ORIGIN",
-        location: "Dubai Sorting Facility (DXB)",
-        time: "7 hours ago",
-        description: "Package collected, weight audits finalized. Loaded into cross-city delivery trailer container."
-      },
-      {
-        status: "IN_TRANSIT",
-        location: "Cross-UAE Transit",
-        time: "4 hours ago",
-        description: "Dispatched from regional logistics sorting terminal to last-mile hub location."
-      },
-      {
-        status: "OUT_FOR_DELIVERY",
-        location: "Last-Mile Delivery Unit",
-        time: "1 hour ago",
-        description: "Package received at destination depot and assigned to last-mile delivery dispatcher driver courier."
-      }
-    ];
-
+    const steps: TrackingStep[] = [];
     let requestPayload = {};
     let responsePayload = {};
 
@@ -650,26 +503,7 @@ export const courierIntegrationService = {
         };
       }
     } else {
-      requestPayload = {
-        trackingRequest: {
-          trackingIds: [cleanNum],
-          detailedHistory: true
-        }
-      };
-
-      responsePayload = {
-        trackingResponse: {
-          carrier: courierId.toUpperCase(),
-          id: cleanNum,
-          currentStatus: "OUT_FOR_DELIVERY",
-          checkpoints: steps.map(s => ({
-            event: s.status,
-            area: s.location,
-            timestamp: s.time,
-            comment: s.description
-          }))
-        }
-      };
+      throw new Error(`${courierId.toUpperCase()} integration is currently not implemented for Tracking.`);
     }
 
     return {
@@ -767,11 +601,7 @@ export const courierIntegrationService = {
         };
       }
     } else {
-       // Mock for DHL/Fedex
-       success = true;
-       pickupId = `${courierId.toUpperCase()}-PIK-${randomPickNo}`;
-       requestPayload = { pickupConfig: params };
-       responsePayload = { status: "Success", pickupId, guid };
+      throw new Error(`${courierId.toUpperCase()} integration is currently not implemented for Pickup Scheduling.`);
     }
 
     return {

@@ -42,6 +42,7 @@ var import_firebase_admin = __toESM(require("firebase-admin"), 1);
 var import_firestore = require("firebase-admin/firestore");
 var import_fs = __toESM(require("fs"), 1);
 import_dotenv.default.config();
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 if (process.env.NODE_ENV !== "production" && !process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
   process.env.GCE_METADATA_HOST = "127.0.0.1";
   process.env.GCE_METADATA_CHECK_DISABLE = "true";
@@ -505,20 +506,36 @@ app.post("/api/noon/test-connection", import_express.default.json(), async (req,
       },
       signal: AbortSignal.timeout(1e4)
     });
+    const responseText = await response.text();
+    if (responseText.includes("FortiGuard") || responseText.includes("Web Filter") || responseText.includes("Access Blocked")) {
+      return res.status(200).json({
+        success: false,
+        error: "Access blocked by FortiGuard Corporate Firewall/Web Filter. The Noon Staging domain is restricted on this network."
+      });
+    }
     if (response.ok) {
-      const data = await response.json();
-      if (data.status === "SUCCESS" || Array.isArray(data.pickup_points)) {
-        return res.json({ success: true, message: "Noon credentials handshake verified successfully!" });
+      try {
+        const data = JSON.parse(responseText);
+        if (data.status === "SUCCESS" || Array.isArray(data.pickup_points)) {
+          return res.json({ success: true, message: "Noon credentials handshake verified successfully!" });
+        }
+      } catch (parseErr) {
+        if (responseText.includes("pickup_points") || responseText.includes("SUCCESS")) {
+          return res.json({ success: true, message: "Noon credentials handshake verified successfully!" });
+        }
       }
     }
-    const errText = await response.text();
     return res.status(200).json({
       success: false,
-      error: `Handshake failed: Noon Staging returned status ${response.status}. Details: ${errText || "Invalid API Key"}`
+      error: `Handshake failed: Noon Staging returned status ${response.status}. Details: ${responseText.substring(0, 150) || "Invalid API Key"}`
     });
   } catch (error) {
     console.error("[Noon Connection Test] Error:", error);
-    return res.status(200).json({ success: false, error: error.message });
+    let errorMsg = error.message || "Unknown connection error";
+    if (errorMsg.includes("fetch failed") || error.code === "ENOTFOUND" || error.code === "ECONNREFUSED") {
+      errorMsg = "Connection failed. Staging server is unreachable (DNS resolution failed or connection blocked by firewall).";
+    }
+    return res.status(200).json({ success: false, error: errorMsg });
   }
 });
 app.get("/api/noon/pickup-addresses", async (req, res) => {

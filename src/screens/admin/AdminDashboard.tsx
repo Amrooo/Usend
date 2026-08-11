@@ -252,7 +252,7 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
   );
 }
 
-import { useApp } from '../../context/AppContext';
+import { useApp, CourierConnectionStatus } from '../../context/AppContext';
 
 // Deterministic generators to simulate 1000 users and 150 merchants safely without memory bloat
 const generateUsersArray = (baseUsers: any[]): any[] => {
@@ -2680,68 +2680,61 @@ function AdminIntegrations() {
   const [testResult, setTestResult] = useState<'success' | 'error' | null>(null);
 
   const handleTestConnection = async () => {
-    const activeConfig = localConfigs?.[selectedCourierId] || { name: selectedCourierId.toUpperCase(), currentMode: 'sandbox' };
+    const activeConfig = localConfigs?.[selectedCourierId];
+    if (!activeConfig) return;
+
     setIsTesting(true);
     setTestLogs([`Initializing connection check for ${activeConfig.name}...`]);
     setTestResult(null);
 
-    await new Promise(r => setTimeout(r, 600));
-    setTestLogs(prev => [...prev, `[INFO] Resolving endpoint: ${activeConfig.currentMode === 'sandbox' ? 'Staging Sandbox API Gateway' : 'Production Live Web Services'}`]);
-    
-    await new Promise(r => setTimeout(r, 600));
-    setTestLogs(prev => [...prev, `[INFO] Building authentication headers...`]);
-
     const creds = activeConfig.currentMode === 'sandbox' ? activeConfig.sandboxCreds : activeConfig.productionCreds;
     const hasUsername = creds && !!creds.username;
-    const hasPasswordOrPin = creds && !!(creds.password || creds.accountPin || creds.apiKey);
+    
+    // Determine configuration state based on real presence of credentials
+    let hasCredentials = false;
+    if (selectedCourierId === 'aramex') {
+      hasCredentials = !!(creds.username && (creds.password || creds.accountPin) && creds.accountNumber && creds.accountEntity);
+    } else if (selectedCourierId === 'noon') {
+      hasCredentials = !!(creds.apiKey || creds.password);
+    } else {
+      hasCredentials = !!(creds.username && creds.accountNumber);
+    }
 
-    await new Promise(r => setTimeout(r, 800));
-    if (!hasUsername || !hasPasswordOrPin) {
+    if (!hasCredentials) {
+      const updatedStatus: CourierConnectionStatus = {
+        state: 'NOT_CONFIGURED',
+        lastTestedAt: new Date().toISOString(),
+        lastTestedMode: activeConfig.currentMode,
+        errorMessage: 'Credentials missing or incomplete. Username, password, and account information are required.'
+      };
+      const updatedConfigs = {
+        ...localConfigs,
+        [selectedCourierId]: {
+          ...activeConfig,
+          connectionStatus: updatedStatus
+        }
+      };
+      setLocalConfigs(updatedConfigs);
+      await updateCourierConfigs(updatedConfigs);
       setTestLogs(prev => [
-        ...prev, 
-        `[WARNING] Testing payload contains empty parameters.`,
-        `[ERROR] Server authentication failed (Invalid credentials payload).`,
-        `[STATUS] CONNECTION FAILED`
+        ...prev,
+        `[ERROR] Configuration check failed: Credentials missing.`,
+        `[STATUS] CONFIGURATION REQUIRED`
       ]);
       setTestResult('error');
       setIsTesting(false);
       return;
     }
 
-    // Default mock check warnings to be realistic
-    const isDefaultAramex = selectedCourierId === 'aramex' && (creds.username === 'dxbit@aramex.com' || creds.username === 'testingapi@aramex.com');
-    const isDefaultNoon = selectedCourierId === 'noon' && (!creds.apiKey || creds.apiKey === 'noon_secret_key_123');
+    await new Promise(r => setTimeout(r, 600));
+    setTestLogs(prev => [...prev, `[INFO] Resolving endpoint: ${activeConfig.currentMode === 'sandbox' ? (activeConfig.baseUrlUat || 'UAT Sandbox') : (activeConfig.baseUrlProd || 'Production API')}`]);
+    
+    await new Promise(r => setTimeout(r, 600));
+    setTestLogs(prev => [...prev, `[INFO] Building authentication headers...`]);
 
-    if (isDefaultAramex) {
-      setTestLogs(prev => [
-        ...prev,
-        `[WARNING] Using default USend sandbox credentials.`,
-        `[INFO] Handshake bypass enabled for standard testing.`,
-        `[SUCCESS] Connection handshake complete (Mock Bypass).`,
-        `[STATUS] ACTIVE & ONLINE (SANDBOX)`
-      ]);
-      setTestResult('success');
-      setIsTesting(false);
-      return;
-    }
-
-    if (isDefaultNoon) {
-      setTestLogs(prev => [
-        ...prev,
-        `[WARNING] Using default USend Noon staging token.`,
-        `[INFO] Handshake bypass enabled for standard testing.`,
-        `[SUCCESS] Connection handshake complete (Mock Bypass).`,
-        `[STATUS] ACTIVE & ONLINE (STAGING)`
-      ]);
-      setTestResult('success');
-      setIsTesting(false);
-      return;
-    }
-
-    // Real API handshake
     try {
       if (selectedCourierId === 'aramex') {
-        setTestLogs(prev => [...prev, `[INFO] Dispatching CalculateRate SOAP packet to Aramex Sandbox...`]);
+        setTestLogs(prev => [...prev, `[INFO] Dispatching CalculateRate SOAP packet to Aramex Proxy...`]);
         const response = await fetch('/api/aramex/test-connection', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -2749,14 +2742,45 @@ function AdminIntegrations() {
         });
         const result = await response.json();
         if (result.success) {
+          const updatedStatus: CourierConnectionStatus = {
+            state: 'PARTIALLY_VERIFIED',
+            lastTestedAt: new Date().toISOString(),
+            lastTestedMode: activeConfig.currentMode,
+            errorMessage: null
+          };
+          const updatedConfigs = {
+            ...localConfigs,
+            [selectedCourierId]: {
+              ...activeConfig,
+              connectionStatus: updatedStatus
+            }
+          };
+          setLocalConfigs(updatedConfigs);
+          await updateCourierConfigs(updatedConfigs);
+
           setTestLogs(prev => [
             ...prev,
             `[SUCCESS] Connection handshake complete. SOAP response: 200 OK.`,
-            `[INFO] Service Availability: 100% ONLINE`,
-            `[STATUS] ACTIVE & ONLINE (UAT)`
+            `[STATUS] ACTIVE & ONLINE`
           ]);
           setTestResult('success');
         } else {
+          const updatedStatus: CourierConnectionStatus = {
+            state: 'AUTHENTICATION_FAILED',
+            lastTestedAt: new Date().toISOString(),
+            lastTestedMode: activeConfig.currentMode,
+            errorMessage: result.error || 'Authentication failed'
+          };
+          const updatedConfigs = {
+            ...localConfigs,
+            [selectedCourierId]: {
+              ...activeConfig,
+              connectionStatus: updatedStatus
+            }
+          };
+          setLocalConfigs(updatedConfigs);
+          await updateCourierConfigs(updatedConfigs);
+
           setTestLogs(prev => [
             ...prev,
             `[ERROR] Aramex API returned error: ${result.error}`,
@@ -2765,22 +2789,57 @@ function AdminIntegrations() {
           setTestResult('error');
         }
       } else if (selectedCourierId === 'noon') {
-        setTestLogs(prev => [...prev, `[INFO] Dispatching pickup-points list request to Noon Hyperlocal Staging...`]);
+        setTestLogs(prev => [...prev, `[INFO] Dispatching pickup-points list request to Noon Hyperlocal Proxy...`]);
+        const baseUrl = activeConfig.currentMode === 'sandbox' ? activeConfig.baseUrlUat : activeConfig.baseUrlProd;
         const response = await fetch('/api/noon/test-connection', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ apiKey: creds.apiKey || creds.password })
+          body: JSON.stringify({ 
+            apiKey: creds.apiKey || creds.password,
+            baseUrl
+          })
         });
         const result = await response.json();
         if (result.success) {
+          const updatedStatus: CourierConnectionStatus = {
+            state: 'PARTIALLY_VERIFIED',
+            lastTestedAt: new Date().toISOString(),
+            lastTestedMode: activeConfig.currentMode,
+            errorMessage: null
+          };
+          const updatedConfigs = {
+            ...localConfigs,
+            [selectedCourierId]: {
+              ...activeConfig,
+              connectionStatus: updatedStatus
+            }
+          };
+          setLocalConfigs(updatedConfigs);
+          await updateCourierConfigs(updatedConfigs);
+
           setTestLogs(prev => [
             ...prev,
             `[SUCCESS] Connection handshake complete. HTTP status: 200 OK.`,
-            `[INFO] Service Availability: 100% ONLINE`,
-            `[STATUS] ACTIVE & ONLINE (STAGING)`
+            `[STATUS] ACTIVE & ONLINE`
           ]);
           setTestResult('success');
         } else {
+          const updatedStatus: CourierConnectionStatus = {
+            state: 'AUTHENTICATION_FAILED',
+            lastTestedAt: new Date().toISOString(),
+            lastTestedMode: activeConfig.currentMode,
+            errorMessage: result.error || 'Authentication failed'
+          };
+          const updatedConfigs = {
+            ...localConfigs,
+            [selectedCourierId]: {
+              ...activeConfig,
+              connectionStatus: updatedStatus
+            }
+          };
+          setLocalConfigs(updatedConfigs);
+          await updateCourierConfigs(updatedConfigs);
+
           setTestLogs(prev => [
             ...prev,
             `[ERROR] Noon Staging returned error: ${result.error}`,
@@ -2789,16 +2848,47 @@ function AdminIntegrations() {
           setTestResult('error');
         }
       } else {
-        // Generic/DHL/FedEx connection check simulation
+        // Generic/DHL/FedEx connection check fails because no endpoints are implemented
+        const updatedStatus: CourierConnectionStatus = {
+          state: 'CONNECTIVITY_FAILED',
+          lastTestedAt: new Date().toISOString(),
+          lastTestedMode: activeConfig.currentMode,
+          errorMessage: `No test connection handler configured for ${activeConfig.name} endpoint.`
+        };
+        const updatedConfigs = {
+          ...localConfigs,
+          [selectedCourierId]: {
+            ...activeConfig,
+            connectionStatus: updatedStatus
+          }
+        };
+        setLocalConfigs(updatedConfigs);
+        await updateCourierConfigs(updatedConfigs);
+
         setTestLogs(prev => [
           ...prev,
-          `[INFO] Testing integration for custom courier: ${activeConfig.name}`,
-          `[SUCCESS] Simulated custom credentials verification complete.`,
-          `[STATUS] ACTIVE & ONLINE`
+          `[ERROR] Failed to establish connection: Endpoint unavailable.`,
+          `[STATUS] CONNECTION FAILED`
         ]);
-        setTestResult('success');
+        setTestResult('error');
       }
     } catch (e: any) {
+      const updatedStatus: CourierConnectionStatus = {
+        state: 'CONNECTIVITY_FAILED',
+        lastTestedAt: new Date().toISOString(),
+        lastTestedMode: activeConfig.currentMode,
+        errorMessage: e.message || 'Network error'
+      };
+      const updatedConfigs = {
+        ...localConfigs,
+        [selectedCourierId]: {
+          ...activeConfig,
+          connectionStatus: updatedStatus
+        }
+      };
+      setLocalConfigs(updatedConfigs);
+      await updateCourierConfigs(updatedConfigs);
+
       setTestLogs(prev => [
         ...prev,
         `[ERROR] Network error connecting to proxy: ${e.message}`,
@@ -2990,460 +3080,384 @@ function AdminIntegrations() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      {/* Toast Notification */}
+      {/* Toast */}
       {toastMsg && (
-        <div className="fixed bottom-6 right-6 z-50 bg-zinc-900 text-white px-6 py-4 rounded-2xl shadow-xl flex items-center gap-3 border border-zinc-800 animate-bounce">
-          <div className="w-2 h-2 rounded-full bg-orange-500 animate-ping"></div>
+        <div className="fixed bottom-6 right-6 z-50 bg-[#113f36] text-white px-6 py-4 rounded-2xl shadow-xl flex items-center gap-3 border border-[#113f36]/80 animate-in slide-in-from-bottom-4">
+          <div className="w-2 h-2 rounded-full bg-white animate-ping" />
           <span className="text-xs font-bold uppercase tracking-wider">{toastMsg}</span>
         </div>
       )}
 
-      <div className="bg-white border border-zinc-200 rounded-[3rem] p-10 shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-brand/5 rounded-bl-[100px] -z-10 pointer-events-none"></div>
-
-        <div className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <h3 className="text-xl font-display font-medium uppercase tracking-tight text-zinc-900 mb-2">Courier Integration Gateway</h3>
-            <p className="text-sm text-zinc-500 font-medium max-w-2xl">Toggle active environment APIs, verify credentials, and customize rate tables based on applicant user profiles.</p>
-          </div>
-          <div className="flex gap-4">
-            <button
-              onClick={() => setShowAddCourierModal(true)}
-              className="px-6 py-4 border border-zinc-200 text-zinc-700 bg-white rounded-full font-bold text-xs uppercase tracking-widest hover:bg-zinc-50 transition-colors shadow-sm active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <Plus className="w-4 h-4" /> Register Courier
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={isSaving}
-              className="px-8 py-4 bg-orange-500 text-white rounded-full font-bold text-xs uppercase tracking-widest hover:bg-orange-600 transition-colors shadow-lg shadow-orange-500/20 active:scale-95 flex items-center justify-center gap-2 cursor-pointer min-w-[200px]"
-            >
-              {isSaving ? (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                <>
-                  <Check className="w-4 h-4" /> Save Integration Settings
-                </>
-              )}
-            </button>
-          </div>
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-display font-semibold uppercase tracking-tight text-zinc-900">Courier Integration Hub</h2>
+          <p className="text-sm text-zinc-500 mt-1">Manage API credentials, environment modes, and rate matrices for each active courier partner.</p>
         </div>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowAddCourierModal(true)}
+            className="px-5 py-3 border border-zinc-200 text-zinc-700 bg-white rounded-full font-bold text-xs uppercase tracking-widest hover:bg-zinc-50 transition-all flex items-center gap-2 shadow-sm"
+          >
+            <Plus className="w-4 h-4" /> Register Courier
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="px-7 py-3 bg-[#113f36] text-white rounded-full font-bold text-xs uppercase tracking-widest hover:bg-[#0d3029] transition-all flex items-center gap-2 shadow-lg shadow-[#113f36]/20 disabled:opacity-60"
+          >
+            {isSaving ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Check className="w-4 h-4" />}
+            Save All Settings
+          </button>
+        </div>
+      </div>
 
-        {/* Courier Select Tabs */}
-        <div className="flex flex-wrap gap-4 mb-10 border-b border-zinc-100 pb-8">
-          {Object.keys(localConfigs || {}).map((id) => {
-            const cfg = localConfigs[id];
-            const isSelected = selectedCourierId === id;
-            return (
-              <button
-                key={id}
-                onClick={() => setSelectedCourierId(id)}
-                className={`flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer ${
-                  isSelected
-                    ? 'border-orange-500 bg-orange-50/20 text-orange-950 shadow-sm'
-                    : 'border-zinc-200 hover:border-zinc-300 bg-white text-zinc-600'
-                }`}
-              >
-                <div className="w-10 h-10 rounded-xl overflow-hidden bg-zinc-100 shrink-0 border border-zinc-200">
-                  <img src={courierLogos[id] || 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?q=80&w=100&auto=format&fit=crop'} alt={cfg.name} className="w-full h-full object-cover grayscale opacity-80" />
+      {/* Courier Cards Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {Object.keys(localConfigs || {}).map((id) => {
+          const cfg = localConfigs[id];
+          const isSelected = selectedCourierId === id;
+          // Branded colors
+          const brandColor =
+            id === 'aramex' ? { bg: 'bg-[#d12421]', text: 'text-white', ring: 'ring-[#d12421]/30', badge: 'bg-[#d12421]' } :
+            id === 'noon'   ? { bg: 'bg-[#feee00]', text: 'text-black', ring: 'ring-[#feee00]/50', badge: 'bg-amber-400' } :
+            id === 'dhl'    ? { bg: 'bg-yellow-400', text: 'text-red-700', ring: 'ring-yellow-400/40', badge: 'bg-yellow-400' } :
+            id === 'fedex'  ? { bg: 'bg-purple-600', text: 'text-white', ring: 'ring-purple-600/30', badge: 'bg-purple-600' } :
+                              { bg: 'bg-zinc-700', text: 'text-white', ring: 'ring-zinc-400/30', badge: 'bg-zinc-700' };
+
+          // Honest status configuration
+          const connState = cfg.connectionStatus?.state || 'NOT_CONFIGURED';
+          let statusText = 'Not Configured';
+          let dotColor = 'bg-zinc-350';
+          let badgeStyle = 'bg-zinc-100 text-zinc-600 border border-zinc-200';
+
+          if (connState === 'CONFIGURED_NOT_TESTED') {
+            statusText = 'Not Tested';
+            dotColor = 'bg-amber-500';
+            badgeStyle = 'bg-amber-50 text-amber-700 border border-amber-200';
+          } else if (connState === 'AUTHENTICATION_FAILED' || connState === 'CONNECTIVITY_FAILED') {
+            statusText = 'Connection Failed';
+            dotColor = 'bg-red-500 animate-pulse';
+            badgeStyle = 'bg-red-50 text-red-700 border border-red-200';
+          } else if (connState === 'PARTIALLY_VERIFIED' || connState === 'E2E_VERIFIED' || connState === 'OPERATIONAL') {
+            statusText = connState === 'OPERATIONAL' ? 'Operational' : (connState === 'E2E_VERIFIED' ? 'Verified' : 'Partially Verified');
+            dotColor = 'bg-[#6d8c55] animate-ping-slow';
+            badgeStyle = 'bg-[#6d8c55]/10 text-[#344633] border border-[#6d8c55]/30';
+          }
+
+          return (
+            <button
+              key={id}
+              onClick={() => setSelectedCourierId(id)}
+              className={`relative bg-white rounded-[2rem] p-5 border-2 shadow-sm hover:shadow-md transition-all text-left cursor-pointer ${
+                isSelected ? `border-orange-500 ring-4 ${brandColor.ring}` : 'border-zinc-200 hover:border-zinc-300'
+              }`}
+            >
+              {/* Status dot */}
+              <div className="absolute top-4 right-4 flex items-center justify-center">
+                <div className={`w-2.5 h-2.5 rounded-full ${dotColor}`} />
+              </div>
+
+              {/* Logo circle */}
+              <div className={`w-12 h-12 ${brandColor.bg} ${brandColor.text} rounded-2xl flex items-center justify-center font-black text-base mb-4 shadow-sm`}>
+                {id === 'aramex' ? 'ARX' : id === 'noon' ? 'NON' : id === 'dhl' ? 'DHL' : id === 'fedex' ? 'FDX' : id.slice(0,3).toUpperCase()}
+              </div>
+
+              <p className="font-black text-sm text-zinc-900 leading-tight">{cfg.name}</p>
+              <div className="flex items-center gap-2 mt-2 flex-wrap">
+                <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${badgeStyle}`}>
+                  {statusText}
+                </span>
+                <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${cfg.currentMode === 'sandbox' ? 'bg-amber-50 text-amber-700' : 'bg-blue-50 text-blue-700'}`}>
+                  {cfg.currentMode === 'sandbox' ? 'UAT' : 'LIVE'}
+                </span>
+              </div>
+
+              {/* Endpoint URL */}
+              <p className="text-[9px] font-mono text-zinc-400 mt-2 truncate leading-tight">
+                {cfg.currentMode === 'sandbox' ? (cfg.baseUrlUat || '—') : (cfg.baseUrlProd || '—')}
+              </p>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Selected Courier Detail Panel */}
+      {localConfigs && selectedCourierId && localConfigs[selectedCourierId] && (() => {
+        const cfg = localConfigs[selectedCourierId];
+        const creds = cfg.currentMode === 'sandbox' ? cfg.sandboxCreds : cfg.productionCreds;
+        const isAramex = selectedCourierId === 'aramex';
+        const isNoon = selectedCourierId === 'noon';
+
+        // Detail status configuration
+        const connState = cfg.connectionStatus?.state || 'NOT_CONFIGURED';
+        let detailStatusText = 'Not Configured';
+        let detailBadgeStyle = 'bg-zinc-100 text-zinc-600 border border-zinc-200';
+        if (connState === 'CONFIGURED_NOT_TESTED') {
+          detailStatusText = 'Credentials Saved (Not Tested)';
+          detailBadgeStyle = 'bg-amber-50 text-amber-700 border border-amber-200';
+        } else if (connState === 'AUTHENTICATION_FAILED' || connState === 'CONNECTIVITY_FAILED') {
+          detailStatusText = 'Connection Failed';
+          detailBadgeStyle = 'bg-red-50 text-red-700 border border-red-200';
+        } else if (connState === 'PARTIALLY_VERIFIED' || connState === 'E2E_VERIFIED' || connState === 'OPERATIONAL') {
+          detailStatusText = `${connState === 'OPERATIONAL' ? 'Operational' : (connState === 'E2E_VERIFIED' ? 'Verified' : 'Partially Verified')} (${cfg.currentMode === 'sandbox' ? 'Staging/UAT' : 'Production'})`;
+          detailBadgeStyle = 'bg-[#6d8c55]/10 text-[#344633] border border-[#6d8c55]/30';
+        }
+
+        return (
+          <div className="bg-white border border-zinc-200 rounded-[2.5rem] p-8 shadow-sm space-y-8">
+            {/* Panel Header */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-zinc-100">
+              <div className="flex items-center gap-4">
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-base shadow-sm ${
+                  selectedCourierId === 'aramex' ? 'bg-[#d12421] text-white' :
+                  selectedCourierId === 'noon' ? 'bg-[#feee00] text-black' :
+                  selectedCourierId === 'dhl' ? 'bg-yellow-400 text-red-700' :
+                  selectedCourierId === 'fedex' ? 'bg-purple-600 text-white' : 'bg-zinc-700 text-white'
+                }`}>
+                  {selectedCourierId === 'aramex' ? 'ARX' : selectedCourierId === 'noon' ? 'NON' : selectedCourierId === 'dhl' ? 'DHL' : selectedCourierId === 'fedex' ? 'FDX' : selectedCourierId.slice(0,3).toUpperCase()}
                 </div>
-                <div className="text-left">
-                  <p className="font-bold text-xs uppercase tracking-widest text-zinc-800">{cfg.name}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className={`w-1.5 h-1.5 rounded-full ${cfg.status === 'Active' ? 'bg-[#113f36]' : 'bg-zinc-400'}`}></span>
-                    <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">{cfg.status}</span>
-                    <span className="text-[10px] text-zinc-300">•</span>
-                    <span className="text-[10px] font-black uppercase tracking-wider text-zinc-500">{cfg.currentMode}</span>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-lg font-black text-zinc-900">{cfg.name}</h3>
+                    <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${detailBadgeStyle}`}>
+                      {detailStatusText}
+                    </span>
+                  </div>
+                  <p className="text-xs text-zinc-500 mt-0.5">
+                    {cfg.currentMode === 'sandbox' ? `UAT Endpoint: ${cfg.baseUrlUat || 'N/A'}` : `Production Endpoint: ${cfg.baseUrlProd || 'N/A'}`}
+                  </p>
+                  {cfg.connectionStatus?.lastTestedAt && (
+                    <p className="text-[9px] text-zinc-400 mt-0.5">
+                      Last Tested: {new Date(cfg.connectionStatus.lastTestedAt).toLocaleString()}
+                    </p>
+                  )}
+                  {isAramex && (
+                    <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                      <a href="https://www.aramex.com/docs/default-source/resourses/resourcesdata/aramex-rates-calculator-manual.pdf" target="_blank" rel="noopener noreferrer"
+                         className="text-[10px] font-bold text-orange-600 hover:text-orange-800 underline underline-offset-2 flex items-center gap-0.5">Rate Calc Docs ↗</a>
+                      <a href="https://www.aramex.com/docs/default-source/resourses/resourcesdata/shipping-services-api-manual.pdf" target="_blank" rel="noopener noreferrer"
+                         className="text-[10px] font-bold text-orange-600 hover:text-orange-800 underline underline-offset-2 flex items-center gap-0.5">Shipping API Docs ↗</a>
+                      <a href="https://www.aramex.com/docs/default-source/resourses/resourcesdata/shipments-tracking-api-manual.pdf" target="_blank" rel="noopener noreferrer"
+                         className="text-[10px] font-bold text-orange-600 hover:text-orange-800 underline underline-offset-2 flex items-center gap-0.5">Tracking API Docs ↗</a>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Mode Toggle + Status */}
+              <div className="flex items-center gap-4">
+                <div>
+                  <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1.5">Environment</p>
+                  <div className="grid grid-cols-2 gap-1 bg-zinc-100 p-1 rounded-xl">
+                    <button
+                      onClick={() => handleToggleMode('sandbox')}
+                      className={`py-1.5 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${cfg.currentMode === 'sandbox' ? 'bg-amber-400 text-amber-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-800'}`}
+                    >UAT</button>
+                    <button
+                      onClick={() => handleToggleMode('production')}
+                      className={`py-1.5 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${cfg.currentMode === 'production' ? 'bg-[#113f36] text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-800'}`}
+                    >LIVE</button>
                   </div>
                 </div>
-              </button>
-            );
-          })}
-        </div>
 
-        {/* Configurations Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* General & Mode Settings */}
-          <div className="lg:col-span-1 space-y-6">
-            <div className="border border-zinc-200 rounded-[2rem] p-6 bg-zinc-50/50 space-y-6">
-              <h4 className="font-bold text-zinc-900 text-xs uppercase tracking-widest pb-4 border-b border-zinc-200/60">Gateway Status</h4>
-              
-              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-bold text-zinc-800">Integration Active</p>
-                  <p className="text-[11px] text-zinc-400 font-medium">Activate/deactivate this courier channel globally.</p>
-                </div>
-                <button
-                  onClick={handleToggleStatus}
-                  className={`w-12 h-6 rounded-full relative transition-colors ${
-                    currentConfig.status === 'Active' ? 'bg-[#113f36]' : 'bg-zinc-300'
-                  }`}
-                >
-                  <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-all ${
-                    currentConfig.status === 'Active' ? 'right-1' : 'left-1'
-                  }`} />
-                </button>
-              </div>
-
-              <div className="space-y-3">
-                <p className="text-xs font-bold text-zinc-800">API Environment</p>
-                <div className="grid grid-cols-2 gap-2 bg-zinc-200/60 p-1 rounded-xl">
+                  <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1.5">Gateway Status</p>
                   <button
-                    onClick={() => handleToggleMode('sandbox')}
-                    className={`py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${
-                      currentConfig.currentMode === 'sandbox'
-                        ? 'bg-white text-zinc-900 shadow-sm'
-                        : 'text-zinc-500 hover:text-zinc-800'
-                    }`}
+                    onClick={handleToggleStatus}
+                    className={`w-14 h-7 rounded-full relative transition-colors cursor-pointer ${cfg.status === 'Active' ? 'bg-[#113f36]' : 'bg-zinc-300'}`}
                   >
-                    Sandbox
+                    <div className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-all shadow-sm ${cfg.status === 'Active' ? 'right-1' : 'left-1'}`} />
                   </button>
-                  <button
-                    onClick={() => handleToggleMode('production')}
-                    className={`py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${
-                      currentConfig.currentMode === 'production'
-                        ? 'bg-zinc-900 text-white shadow-sm'
-                        : 'text-zinc-500 hover:text-zinc-800'
-                    }`}
-                  >
-                    Production
-                  </button>
+                  <p className={`text-[9px] font-black uppercase tracking-widest mt-1 ${cfg.status === 'Active' ? 'text-[#6d8c55]' : 'text-zinc-400'}`}>{cfg.status}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-orange-50/30 border border-orange-100 rounded-[2rem] p-6 space-y-4">
-              <div className="flex items-center gap-2 text-orange-600">
-                <Activity className="w-4 h-4" />
-                <span className="text-xs font-black uppercase tracking-widest">Sandbox Mock Log</span>
-              </div>
-              <p className="text-xs text-zinc-600 leading-relaxed">
-                When set to <span className="font-bold text-zinc-900">Sandbox</span>, rate calls and airway bill generation dispatch into simulated carrier endpoints. Noon RoD integration is mapped to standard staging structures.
-              </p>
-            </div>
-          </div>
+            {/* 2-COLUMN LAYOUT: API Credentials (left) + Rate Matrix (right) */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
 
-          {/* Credentials Settings Form */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="border border-zinc-200 rounded-[2rem] p-8 bg-white space-y-6">
-              <h4 className="font-bold text-zinc-900 text-xs uppercase tracking-widest pb-4 border-b border-zinc-200/60 flex items-center gap-2">
-                <Code2 className="w-4 h-4 text-orange-500" /> API Connection Parameters ({currentConfig.currentMode.toUpperCase()})
-              </h4>
+              {/* LEFT: API Credentials */}
+              <div className="space-y-6">
+                <div className="flex items-center gap-2 pb-3 border-b border-zinc-100">
+                  <Code2 className="w-4 h-4 text-orange-500" />
+                  <h4 className="font-black text-sm text-zinc-900 uppercase tracking-widest">API Credentials ({cfg.currentMode === 'sandbox' ? 'UAT' : 'LIVE'})</h4>
+                </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 pl-1">API Username</label>
-                  <input
-                    type="text"
-                    value={activeCreds.username || ''}
-                    onChange={(e) => handleCredChange(currentConfig.currentMode, 'username', e.target.value)}
-                    placeholder="Enter API username/email"
-                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800"
-                  />
+                {/* Endpoint Info */}
+                <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-4 space-y-3">
+                  <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Endpoints</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-[9px] font-bold text-amber-600 uppercase tracking-wider mb-1">UAT Base URL</p>
+                      <p className="text-xs font-mono font-bold text-zinc-800 break-all">{cfg.baseUrlUat || '—'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-bold text-[#113f36] uppercase tracking-wider mb-1">Production Base URL</p>
+                      <p className="text-xs font-mono font-bold text-zinc-800 break-all">{cfg.baseUrlProd || '—'}</p>
+                    </div>
+                  </div>
+                  {isAramex && (
+                    <div className="pt-2 border-t border-zinc-200">
+                      <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider mb-1">Services</p>
+                      <div className="flex gap-2 flex-wrap">
+                        <span className="text-[9px] bg-red-50 text-[#d12421] px-2 py-0.5 rounded-full font-bold border border-red-100">Rate Calculator</span>
+                        <span className="text-[9px] bg-red-50 text-[#d12421] px-2 py-0.5 rounded-full font-bold border border-red-100">Shipping Service</span>
+                        <span className="text-[9px] bg-red-50 text-[#d12421] px-2 py-0.5 rounded-full font-bold border border-red-100">Tracking Service</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 pl-1">API Password / Secret</label>
-                  <input
-                    type="password"
-                    value={activeCreds.password || ''}
-                    onChange={(e) => handleCredChange(currentConfig.currentMode, 'password', e.target.value)}
-                    placeholder="••••••••••••••"
-                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 pl-1">Account Number / client ID</label>
-                  <input
-                    type="text"
-                    value={activeCreds.accountNumber || ''}
-                    onChange={(e) => handleCredChange(currentConfig.currentMode, 'accountNumber', e.target.value)}
-                    placeholder="e.g. 45796"
-                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 pl-1">Account Pin / Entity Pin</label>
-                  <input
-                    type="text"
-                    value={activeCreds.accountPin || ''}
-                    onChange={(e) => handleCredChange(currentConfig.currentMode, 'accountPin', e.target.value)}
-                    placeholder="e.g. 116216"
-                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 pl-1">Account Entity / Node Code</label>
-                  <input
-                    type="text"
-                    value={activeCreds.accountEntity || ''}
-                    onChange={(e) => handleCredChange(currentConfig.currentMode, 'accountEntity', e.target.value)}
-                    placeholder="e.g. DXB"
-                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 pl-1">Source ID / Channel Ref</label>
-                  <input
-                    type="text"
-                    value={activeCreds.source || ''}
-                    onChange={(e) => handleCredChange(currentConfig.currentMode, 'source', e.target.value)}
-                    placeholder="e.g. 24"
-                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800"
-                  />
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 pl-1">API Key / Secret Token (Optional)</label>
-                  <input
-                    type="text"
-                    value={activeCreds.apiKey || ''}
-                    onChange={(e) => handleCredChange(currentConfig.currentMode, 'apiKey', e.target.value)}
-                    placeholder="Enter integration private API key"
-                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800"
-                  />
+
+                {/* Credentials Fields */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Username / Email</label>
+                    <input type="text" value={creds?.username || ''} onChange={(e) => handleCredChange(cfg.currentMode, 'username', e.target.value)}
+                      placeholder="API username" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Password / Secret</label>
+                    <input type="password" value={creds?.password || ''} onChange={(e) => handleCredChange(cfg.currentMode, 'password', e.target.value)}
+                      placeholder="••••••••••••" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Account Number</label>
+                    <input type="text" value={creds?.accountNumber || ''} onChange={(e) => handleCredChange(cfg.currentMode, 'accountNumber', e.target.value)}
+                      placeholder={isAramex ? 'e.g. 154454' : isNoon ? 'e.g. 77T4HCOD4G' : 'Account #'} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Account PIN</label>
+                    <input type="text" value={creds?.accountPin || ''} onChange={(e) => handleCredChange(cfg.currentMode, 'accountPin', e.target.value)}
+                      placeholder="e.g. 115216" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Entity / Node</label>
+                    <input type="text" value={creds?.accountEntity || ''} onChange={(e) => handleCredChange(cfg.currentMode, 'accountEntity', e.target.value)}
+                      placeholder="e.g. DXB" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Country Code</label>
+                    <input type="text" value={creds?.accountCountryCode || 'AE'} onChange={(e) => handleCredChange(cfg.currentMode, 'accountCountryCode', e.target.value)}
+                      placeholder="AE" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Source ID</label>
+                    <input type="text" value={creds?.source || ''} onChange={(e) => handleCredChange(cfg.currentMode, 'source', e.target.value)}
+                      placeholder="e.g. 0" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">API Key / Bearer Token</label>
+                    <input type="text" value={creds?.apiKey || ''} onChange={(e) => handleCredChange(cfg.currentMode, 'apiKey', e.target.value)}
+                      placeholder="Optional JWT or API token" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800" />
+                  </div>
                 </div>
 
                 {/* Connection Tester */}
-                <div className="space-y-4 md:col-span-2 pt-6 border-t border-zinc-100">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="pt-4 border-t border-zinc-100 space-y-3">
+                  <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs font-bold text-zinc-800">Connection Handshake Verification</p>
-                      <p className="text-[11px] text-zinc-400 font-medium">Verify your credentials against the active server (Sandbox or Live Production).</p>
+                      <p className="text-xs font-bold text-zinc-800">Connection Handshake</p>
+                      <p className="text-[11px] text-zinc-400">Test credentials against {cfg.currentMode === 'sandbox' ? 'UAT' : 'Production'} gateway.</p>
                     </div>
                     <button
-                      type="button"
                       onClick={handleTestConnection}
                       disabled={isTesting}
-                      className="px-6 py-3 bg-[#113f36] hover:bg-[#0d3029] disabled:bg-zinc-300 text-white rounded-xl font-bold text-xs uppercase tracking-widest transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                      className="px-5 py-2.5 bg-[#113f36] hover:bg-[#0d3029] disabled:bg-zinc-300 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center gap-2 cursor-pointer transition-colors"
                     >
-                      {isTesting ? (
-                        <>
-                          <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          Testing Gateway...
-                        </>
-                      ) : (
-                        'Test Integration Connection'
-                      )}
+                      {isTesting ? <><div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" /> Testing...</> : 'Test Connection'}
                     </button>
                   </div>
 
                   {testLogs.length > 0 && (
-                    <div className="bg-[#113f36]/5 text-[#113f36] border border-[#113f36]/15 font-mono text-[11px] p-4 rounded-xl space-y-1 overflow-x-auto shadow-inner leading-relaxed">
+                    <div className="bg-[#113f36]/5 border border-[#113f36]/15 font-mono text-[10px] p-4 rounded-xl space-y-0.5 overflow-x-auto leading-relaxed">
                       {testLogs.map((log, idx) => (
-                        <div key={idx} className={log.includes('[ERROR]') ? 'text-red-650 font-bold' : log.includes('[SUCCESS]') ? 'text-[#113f36] font-black' : 'text-zinc-600'}>
-                          {log}
-                        </div>
+                        <div key={idx} className={log.includes('[ERROR]') ? 'text-red-600 font-bold' : log.includes('[SUCCESS]') ? 'text-[#113f36] font-black' : log.includes('[WARNING]') ? 'text-amber-600' : 'text-zinc-600'}>{log}</div>
                       ))}
                     </div>
                   )}
-
                   {testResult === 'success' && (
                     <div className="bg-[#6d8c55]/10 border border-[#6d8c55]/30 text-[#344633] px-4 py-3 rounded-xl text-xs font-semibold flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-[#6d8c55] shrink-0" />
-                      Integration channel verified and operational! Credentials are correct.
+                      <CheckCircle2 className="w-4 h-4 text-[#6d8c55] shrink-0" /> Integration verified and operational!
                     </div>
                   )}
-
                   {testResult === 'error' && (
                     <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-xs font-semibold flex items-center gap-2">
-                      <X className="w-4 h-4 text-red-500 shrink-0" />
-                      Handshake failed. Please check your credentials payload and selected API Environment.
+                      <X className="w-4 h-4 text-red-500 shrink-0" /> Handshake failed. Check credentials & environment.
                     </div>
                   )}
                 </div>
               </div>
+
+              {/* RIGHT: Rate Matrix */}
+              <div className="space-y-6">
+                <div className="flex items-center gap-2 pb-3 border-b border-zinc-100">
+                  <DollarSign className="w-4 h-4 text-orange-500" />
+                  <h4 className="font-black text-sm text-zinc-900 uppercase tracking-widest">Tiered Rate Matrix (AED)</h4>
+                </div>
+
+                <div className="overflow-x-auto border border-zinc-200 rounded-2xl">
+                  <table className="w-full text-left border-collapse min-w-[420px]">
+                    <thead>
+                      <tr className="bg-zinc-50 text-zinc-500 text-[10px] font-black uppercase tracking-widest border-b border-zinc-200">
+                        <th className="p-4 w-1/3">Rate Component</th>
+                        <th className="p-4 text-center">Guest</th>
+                        <th className="p-4 text-center">User</th>
+                        <th className="p-4 text-center">Merchant</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-xs font-semibold text-zinc-700">
+                      {[
+                        { field: 'baseFee', label: 'Base Delivery Fee', desc: 'Flat starting charge' },
+                        { field: 'perKgRate', label: 'Per KG Surcharge', desc: 'Per extra kilogram' },
+                        { field: 'perKmRate', label: 'Per KM Distance', desc: 'Per route kilometer' },
+                        { field: 'expressSurcharge', label: 'Express Premium', desc: 'Priority speed add-on' },
+                        { field: 'codFee', label: 'COD Handling Fee', desc: 'Cash on delivery' },
+                      ].map(({ field, label, desc }) => (
+                        <tr key={field} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50">
+                          <td className="p-4">
+                            <p className="font-bold text-zinc-800 text-xs">{label}</p>
+                            <p className="text-[9px] text-zinc-400 font-medium">{desc}</p>
+                          </td>
+                          {(['guest', 'user', 'merchant'] as const).map(userType => (
+                            <td key={userType} className="p-4 text-center">
+                              <input
+                                type="number"
+                                value={cfg.rates[userType][field]}
+                                onChange={(e) => handleRateChange(userType, field, parseFloat(e.target.value) || 0)}
+                                className="w-20 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
+                              />
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Rate Formula Note */}
+                <div className="bg-amber-50/50 border border-amber-100 rounded-2xl p-4">
+                  <p className="text-[10px] font-black text-amber-700 uppercase tracking-widest mb-1.5">How rates are calculated</p>
+                  <p className="text-[11px] text-zinc-600 leading-relaxed">
+                    <span className="font-bold text-zinc-800">Total = Base Fee + (Weight × Per KG Rate) + (Distance × Per KM Rate) + Express Premium (if selected) + COD Fee (if cash payment)</span>
+                    <br />All rates apply per-order. Merchant rates receive bulk discounts. Platform fee (5%) is added separately on top.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        );
+      })()}
 
-        {/* Dynamic Rate Setting Section */}
-        <div className="mt-12 border-t border-zinc-100 pt-12">
-          <div className="mb-8">
-            <h4 className="font-bold text-zinc-900 text-xs uppercase tracking-widest flex items-center gap-2 mb-2">
-              <DollarSign className="w-4 h-4 text-orange-500" /> Tiered Delivery Rates Matrix
-            </h4>
-            <p className="text-xs text-zinc-500">Specify exactly the shipping rates to be billed. Charges adapt programmatically when orders are booked by guest accounts, logged-in portal users, or corporate merchants.</p>
-          </div>
-
-          <div className="overflow-x-auto border border-zinc-200 rounded-3xl">
-            <table className="w-full text-left border-collapse min-w-[600px]">
-              <thead>
-                <tr className="bg-zinc-50 text-zinc-500 text-[11px] font-black uppercase tracking-widest border-b border-zinc-200">
-                  <th className="p-5 w-1/3">Price Component Detail</th>
-                  <th className="p-5 text-center">Guest Checkout (AED)</th>
-                  <th className="p-5 text-center">Standard Portal User (AED)</th>
-                  <th className="p-5 text-center">Premium Corporate Merchant (AED)</th>
-                </tr>
-              </thead>
-              <tbody className="text-xs font-semibold text-zinc-700">
-                <tr className="border-b border-zinc-50 hover:bg-zinc-50/50">
-                  <td className="p-5">
-                    <p className="font-bold text-zinc-800">Base Delivery Fee</p>
-                    <p className="text-[10px] text-zinc-400 font-medium">Standard baseline collection fee for deliveries.</p>
-                  </td>
-                  <td className="p-5 text-center">
-                    <input
-                      type="number"
-                      value={currentConfig.rates.guest.baseFee}
-                      onChange={(e) => handleRateChange('guest', 'baseFee', parseFloat(e.target.value) || 0)}
-                      className="w-24 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
-                    />
-                  </td>
-                  <td className="p-5 text-center">
-                    <input
-                      type="number"
-                      value={currentConfig.rates.user.baseFee}
-                      onChange={(e) => handleRateChange('user', 'baseFee', parseFloat(e.target.value) || 0)}
-                      className="w-24 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
-                    />
-                  </td>
-                  <td className="p-5 text-center">
-                    <input
-                      type="number"
-                      value={currentConfig.rates.merchant.baseFee}
-                      onChange={(e) => handleRateChange('merchant', 'baseFee', parseFloat(e.target.value) || 0)}
-                      className="w-24 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
-                    />
-                  </td>
-                </tr>
-
-                <tr className="border-b border-zinc-50 hover:bg-zinc-50/50">
-                  <td className="p-5">
-                    <p className="font-bold text-zinc-800">Per KG Excess Surcharge</p>
-                    <p className="text-[10px] text-zinc-400 font-medium">Charged per additional kilogram exceeding standard threshold.</p>
-                  </td>
-                  <td className="p-5 text-center">
-                    <input
-                      type="number"
-                      value={currentConfig.rates.guest.perKgRate}
-                      onChange={(e) => handleRateChange('guest', 'perKgRate', parseFloat(e.target.value) || 0)}
-                      className="w-24 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
-                    />
-                  </td>
-                  <td className="p-5 text-center">
-                    <input
-                      type="number"
-                      value={currentConfig.rates.user.perKgRate}
-                      onChange={(e) => handleRateChange('user', 'perKgRate', parseFloat(e.target.value) || 0)}
-                      className="w-24 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
-                    />
-                  </td>
-                  <td className="p-5 text-center">
-                    <input
-                      type="number"
-                      value={currentConfig.rates.merchant.perKgRate}
-                      onChange={(e) => handleRateChange('merchant', 'perKgRate', parseFloat(e.target.value) || 0)}
-                      className="w-24 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
-                    />
-                  </td>
-                </tr>
-
-                <tr className="border-b border-zinc-50 hover:bg-zinc-50/50">
-                  <td className="p-5">
-                    <p className="font-bold text-zinc-800">Per KM Distance Surcharge</p>
-                    <p className="text-[10px] text-zinc-400 font-medium">Extra transit cost computed per kilometer of route distance.</p>
-                  </td>
-                  <td className="p-5 text-center">
-                    <input
-                      type="number"
-                      value={currentConfig.rates.guest.perKmRate}
-                      onChange={(e) => handleRateChange('guest', 'perKmRate', parseFloat(e.target.value) || 0)}
-                      className="w-24 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
-                    />
-                  </td>
-                  <td className="p-5 text-center">
-                    <input
-                      type="number"
-                      value={currentConfig.rates.user.perKmRate}
-                      onChange={(e) => handleRateChange('user', 'perKmRate', parseFloat(e.target.value) || 0)}
-                      className="w-24 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
-                    />
-                  </td>
-                  <td className="p-5 text-center">
-                    <input
-                      type="number"
-                      value={currentConfig.rates.merchant.perKmRate}
-                      onChange={(e) => handleRateChange('merchant', 'perKmRate', parseFloat(e.target.value) || 0)}
-                      className="w-24 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
-                    />
-                  </td>
-                </tr>
-
-                <tr className="border-b border-zinc-50 hover:bg-zinc-50/50">
-                  <td className="p-5">
-                    <p className="font-bold text-zinc-800">Urgent Express Premium</p>
-                    <p className="text-[10px] text-zinc-400 font-medium">Additional speed premium applied for priority on-demand runs.</p>
-                  </td>
-                  <td className="p-5 text-center">
-                    <input
-                      type="number"
-                      value={currentConfig.rates.guest.expressSurcharge}
-                      onChange={(e) => handleRateChange('guest', 'expressSurcharge', parseFloat(e.target.value) || 0)}
-                      className="w-24 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
-                    />
-                  </td>
-                  <td className="p-5 text-center">
-                    <input
-                      type="number"
-                      value={currentConfig.rates.user.expressSurcharge}
-                      onChange={(e) => handleRateChange('user', 'expressSurcharge', parseFloat(e.target.value) || 0)}
-                      className="w-24 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
-                    />
-                  </td>
-                  <td className="p-5 text-center">
-                    <input
-                      type="number"
-                      value={currentConfig.rates.merchant.expressSurcharge}
-                      onChange={(e) => handleRateChange('merchant', 'expressSurcharge', parseFloat(e.target.value) || 0)}
-                      className="w-24 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
-                    />
-                  </td>
-                </tr>
-
-                <tr className="hover:bg-zinc-50/50">
-                  <td className="p-5">
-                    <p className="font-bold text-zinc-800">Cash on Delivery (COD) Fee</p>
-                    <p className="text-[10px] text-zinc-400 font-medium">Extra collection / bank settlement processing handling fee.</p>
-                  </td>
-                  <td className="p-5 text-center">
-                    <input
-                      type="number"
-                      value={currentConfig.rates.guest.codFee}
-                      onChange={(e) => handleRateChange('guest', 'codFee', parseFloat(e.target.value) || 0)}
-                      className="w-24 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
-                    />
-                  </td>
-                  <td className="p-5 text-center">
-                    <input
-                      type="number"
-                      value={currentConfig.rates.user.codFee}
-                      onChange={(e) => handleRateChange('user', 'codFee', parseFloat(e.target.value) || 0)}
-                      className="w-24 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
-                    />
-                  </td>
-                  <td className="p-5 text-center">
-                    <input
-                      type="number"
-                      value={currentConfig.rates.merchant.codFee}
-                      onChange={(e) => handleRateChange('merchant', 'codFee', parseFloat(e.target.value) || 0)}
-                      className="w-24 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 text-center text-xs font-bold outline-none focus:border-orange-500"
-                    />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
+      {/* Register New Courier Modal */}
       {showAddCourierModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowAddCourierModal(false)}></div>
-          <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] w-full max-w-4xl p-8 md:p-10 shadow-2xl relative z-10 flex flex-col max-h-[90vh] overflow-y-auto border border-zinc-150">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowAddCourierModal(false)} />
+          <div className="bg-white rounded-[2.5rem] w-full max-w-4xl p-8 md:p-10 shadow-2xl relative z-10 flex flex-col max-h-[90vh] overflow-y-auto border border-zinc-150">
             <div className="flex items-center justify-between mb-8 pb-6 border-b border-zinc-100">
               <div>
-                <h3 className="text-xl font-display font-semibold uppercase tracking-tight text-zinc-900">Register New Courier Integration</h3>
-                <p className="text-xs text-zinc-500 mt-1">Add a custom logistics partner to the USend system, defining credentials and standard base rates.</p>
+                <h3 className="text-xl font-display font-semibold uppercase tracking-tight text-zinc-900">Register New Courier</h3>
+                <p className="text-xs text-zinc-500 mt-1">Add a logistics partner with API credentials and base rate defaults.</p>
               </div>
               <button onClick={() => setShowAddCourierModal(false)} className="w-10 h-10 rounded-full bg-zinc-50 hover:bg-zinc-100 flex items-center justify-center text-zinc-400 hover:text-zinc-600 transition-colors">
                 <X className="w-5 h-5" />
@@ -3451,12 +3465,11 @@ function AdminIntegrations() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 text-left">
-              {/* Left Column: Details & Sandbox Credentials */}
-              <div className="space-y-6">
-                <h4 className="text-xs font-black uppercase tracking-widest text-[#113f36] pb-2 border-b border-zinc-100">Courier Identity & Sandbox Creds</h4>
+              <div className="space-y-5">
+                <h4 className="text-xs font-black uppercase tracking-widest text-[#113f36] pb-2 border-b border-zinc-100">Identity & Sandbox Credentials</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">Courier ID (Unique, small letters)</label>
+                    <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">Courier ID (lowercase)</label>
                     <input type="text" placeholder="e.g. naqel" value={newCourierId} onChange={e => setNewCourierId(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-xs font-bold text-zinc-800 outline-none focus:border-orange-500" />
                   </div>
                   <div className="space-y-1.5">
@@ -3464,29 +3477,26 @@ function AdminIntegrations() {
                     <input type="text" placeholder="e.g. Naqel Express" value={newCourierName} onChange={e => setNewCourierName(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-xs font-bold text-zinc-800 outline-none focus:border-orange-500" />
                   </div>
                 </div>
-
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">API Username / Account</label>
-                    <input type="text" placeholder="e.g. info@naqel.com.sa" value={newUsername} onChange={e => setNewUsername(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-xs font-semibold text-zinc-800 outline-none focus:border-orange-500" />
+                    <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">UAT Base URL</label>
+                    <input type="text" placeholder="ws.uat.example.com" value={newUsername} onChange={e => setNewUsername(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-xs font-semibold text-zinc-800 outline-none focus:border-orange-500" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">Password / API Key</label>
-                    <input type="password" placeholder="••••••••" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-xs font-semibold text-zinc-800 outline-none focus:border-orange-500" />
+                    <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">Production Base URL</label>
+                    <input type="text" placeholder="ws.example.com" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-xs font-semibold text-zinc-800 outline-none focus:border-orange-500" />
                   </div>
                 </div>
-
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">Account Number</label>
                     <input type="text" placeholder="e.g. 98124012" value={newAccountNumber} onChange={e => setNewAccountNumber(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-xs font-bold text-zinc-800 outline-none focus:border-orange-500" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">Account PIN / Security Token</label>
-                    <input type="text" placeholder="e.g. PIN-9921" value={newAccountPin} onChange={e => setNewAccountPin(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-xs font-bold text-zinc-800 outline-none focus:border-orange-500" />
+                    <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">Account PIN</label>
+                    <input type="text" placeholder="PIN-9921" value={newAccountPin} onChange={e => setNewAccountPin(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-xs font-bold text-zinc-800 outline-none focus:border-orange-500" />
                   </div>
                 </div>
-
                 <div className="grid grid-cols-3 gap-3">
                   <div className="space-y-1.5">
                     <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">Entity</label>
@@ -3503,16 +3513,13 @@ function AdminIntegrations() {
                 </div>
               </div>
 
-              {/* Right Column: Custom API Token & Standard Rates */}
-              <div className="space-y-6">
-                <h4 className="text-xs font-black uppercase tracking-widest text-[#113f36] pb-2 border-b border-zinc-100">Store API Key & Delivery Rates</h4>
-                
+              <div className="space-y-5">
+                <h4 className="text-xs font-black uppercase tracking-widest text-[#113f36] pb-2 border-b border-zinc-100">API Token & Base Rates</h4>
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">Custom OAuth / Bearer API Token (Optional)</label>
-                  <textarea rows={2} placeholder="e.g. eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." value={newApiKey} onChange={e => setNewApiKey(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2 text-xs font-mono text-zinc-700 outline-none focus:border-orange-500" />
+                  <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">API Key / Bearer Token (Optional)</label>
+                  <textarea rows={2} placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." value={newApiKey} onChange={e => setNewApiKey(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2 text-xs font-mono text-zinc-700 outline-none focus:border-orange-500" />
                 </div>
-
-                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-100">
+                <div className="grid grid-cols-2 gap-4 pt-3 border-t border-zinc-100">
                   <div className="space-y-1.5">
                     <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">Guest Base Fee (AED)</label>
                     <input type="number" placeholder="20" value={newDomesticExpress} onChange={e => setNewDomesticExpress(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-xs font-bold text-zinc-800 outline-none focus:border-orange-500" />
@@ -3521,9 +3528,6 @@ function AdminIntegrations() {
                     <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">User Base Fee (AED)</label>
                     <input type="number" placeholder="15" value={newDomesticStandard} onChange={e => setNewDomesticStandard(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-xs font-bold text-zinc-800 outline-none focus:border-orange-500" />
                   </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">Merchant Base Fee (AED)</label>
                     <input type="number" placeholder="12" value={newIntlExpress} onChange={e => setNewIntlExpress(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-xs font-bold text-zinc-800 outline-none focus:border-orange-500" />
@@ -3536,13 +3540,9 @@ function AdminIntegrations() {
               </div>
             </div>
 
-            <div className="flex justify-end gap-4 pt-6 border-t border-zinc-100 bg-zinc-50 -mx-8 -mb-8 p-8 rounded-b-[2.5rem]">
-              <button onClick={() => setShowAddCourierModal(false)} className="px-6 py-3 bg-zinc-150 hover:bg-zinc-200 text-zinc-700 font-bold text-xs uppercase tracking-widest rounded-xl transition-colors">
-                Cancel
-              </button>
-              <button onClick={handleAddCourier} className="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs uppercase tracking-widest rounded-xl transition-colors shadow-md shadow-orange-500/10">
-                Register Partner
-              </button>
+            <div className="flex justify-end gap-4 pt-6 border-t border-zinc-100">
+              <button onClick={() => setShowAddCourierModal(false)} className="px-6 py-3 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold text-xs uppercase tracking-widest rounded-xl transition-colors">Cancel</button>
+              <button onClick={handleAddCourier} className="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs uppercase tracking-widest rounded-xl transition-colors shadow-md shadow-orange-500/10">Register Partner</button>
             </div>
           </div>
         </div>
@@ -3551,120 +3551,8 @@ function AdminIntegrations() {
   );
 }
 
-function UnifiedInventoryDesk() {
-  const [hubsCatalog, setHubsCatalog] = useState([
-    { code: "HUB-DXB-JebelAli", name: "Jebel Ali Regional Fulfillment Depot", region: "Dubai, UAE", activeRiders: 42, activeShipments: 850, capacityUsed: "82%", status: "High Demand" },
-    { code: "HUB-DXB-AlQuoz", name: "Al Quoz Express Delivery Hub", region: "Dubai, UAE", activeRiders: 28, activeShipments: 412, capacityUsed: "48%", status: "Optimal" },
-    { code: "HUB-DXB-Deira", name: "Deira Port Logistics Node", region: "Dubai, UAE", activeRiders: 18, activeShipments: 195, capacityUsed: "31%", status: "Optimal" },
-    { code: "HUB-AUH-Mussafah", name: "Mussafah Abu Dhabi Logistics Depot", region: "Abu Dhabi, UAE", activeRiders: 35, activeShipments: 620, capacityUsed: "75%", status: "High Demand" },
-    { code: "HUB-SHJ-Industrial", name: "Sharjah Industrial Fulfillment Center", region: "Sharjah, UAE", activeRiders: 15, activeShipments: 140, capacityUsed: "22%", status: "Underutilized" }
-  ]);
 
-  const [notif, setNotif] = useState("");
 
-  const triggerRiderDispatch = (code: string) => {
-    setHubsCatalog(prev => prev.map(item => {
-      if (item.code === code) {
-        return { ...item, activeRiders: item.activeRiders + 10, status: "Optimal" };
-      }
-      return item;
-    }));
-    setNotif(`Dispatched 10 on-demand backup riders to ${code} to balance peak demand!`);
-    setTimeout(() => setNotif(""), 4000);
-  };
-
-  return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-xl font-display font-medium text-zinc-900 mb-1 uppercase tracking-tight">UAE Unified Logistics Hubs</h3>
-          <p className="text-sm text-zinc-500">Cross-region fulfillment hubs dashboard. Manage localized dispatch queues, rider allocations, and service coverage.</p>
-        </div>
-      </div>
-
-      {notif && (
-        <div className="bg-[#113f36]/5 border border-[#113f36]/20 text-[#113f36] p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 animate-bounce">
-          <div className="w-1.5 h-1.5 rounded-full bg-[#113f36] animate-ping"></div>
-          {notif}
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white border border-zinc-200 p-6 rounded-[2rem] shadow-sm">
-          <span className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Total Active Hubs</span>
-          <p className="text-2xl font-bold text-zinc-900">5 Regional Hubs</p>
-          <span className="text-[12px] text-zinc-400 mt-2 block">Covering Dubai, Abu Dhabi, and Sharjah</span>
-        </div>
-        <div className="bg-orange-50 border border-orange-100 p-6 rounded-[2rem] shadow-sm">
-          <span className="text-[13px] font-black uppercase tracking-widest text-orange-600 block mb-1">Peak Demand Alert</span>
-          <p className="text-2xl font-bold text-orange-700">2 Hubs Peak</p>
-          <span className="text-[12px] text-orange-500 mt-2 block">Capacity utilization has crossed 70%</span>
-        </div>
-        <div className="bg-green-50 border border-green-100 p-6 rounded-[2rem] shadow-sm">
-          <span className="text-[13px] font-black uppercase tracking-widest text-green-600 block mb-1">Active Deliveries</span>
-          <p className="text-2xl font-bold text-[#113f36]">2,217 runs</p>
-          <span className="text-[12px] text-green-600 mt-2 block">Underway across all registered couriers</span>
-        </div>
-      </div>
-
-      <div className="bg-white border border-zinc-200 rounded-[3rem] p-10 overflow-hidden relative shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[800px]">
-            <thead>
-              <tr className="bg-zinc-50 text-zinc-400 text-[12px] font-black uppercase tracking-widest border-b border-zinc-100">
-                <th className="p-6">Hub Code</th>
-                <th className="p-6">Location & Facility Name</th>
-                <th className="p-6">Region</th>
-                <th className="p-6">Telemetry</th>
-                <th className="p-6">Queue Status</th>
-                <th className="p-6 text-center">Rider Optimization</th>
-              </tr>
-            </thead>
-            <tbody className="text-sm font-medium">
-              {hubsCatalog.map((item, idx) => (
-                <tr key={idx} className="border-b border-zinc-50 hover:bg-zinc-50/50 transition-colors">
-                  <td className="p-6 font-mono text-zinc-900 font-bold text-xs">{item.code}</td>
-                  <td className="p-6">
-                    <span className="text-zinc-800 font-bold block">{item.name}</span>
-                    <span className="text-[12px] text-zinc-400 mt-0.5 block">Capacity Used: {item.capacityUsed}</span>
-                  </td>
-                  <td className="p-6 text-zinc-650">{item.region}</td>
-                  <td className="p-6 text-zinc-500 text-xs">
-                    <span className="block font-bold text-zinc-800">{item.activeRiders} Active Riders</span>
-                    <span className="block text-zinc-400">{item.activeShipments} Shipments Queue</span>
-                  </td>
-                  <td className="p-6">
-                    <span className={`px-2.5 py-1 rounded-full text-[13px] font-black uppercase tracking-widest leading-none ${
-                      item.status === 'Optimal' ? 'bg-[#113f36]/5 text-[#113f36]' :
-                      item.status === 'High Demand' ? 'bg-orange-50 text-orange-600 animate-pulse' :
-                      'bg-blue-50 text-blue-600'
-                    }`}>
-                      {item.status}
-                    </span>
-                  </td>
-                  <td className="p-6 text-center">
-                    {(item.status !== "Optimal" && item.status !== "Underutilized") ? (
-                      <button 
-                        onClick={() => triggerRiderDispatch(item.code)}
-                        className="text-[12px] bg-brand text-white font-black uppercase tracking-widest px-4 py-2.5 rounded-xl hover:bg-brand/90 hover:scale-105 transition-all shadow-md shadow-brand/10"
-                      >
-                        Allocate Riders
-                      </button>
-                    ) : (
-                      <span className="text-[12px] font-bold text-[#113f36] flex items-center justify-center gap-1">
-                        ✓ Balanced
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function CSVBatchControlDesk() {
   const [batchRecords, setBatchRecords] = useState([
@@ -3772,23 +3660,62 @@ function CSVBatchControlDesk() {
 
 function WalletManagementDesk() {
   const { t, isRTL } = useLanguage();
-  const [ledger, setLedger] = useState([
-    { id: "TX-SET-4421", type: "Merchant Settlement", entity: "Noon E-commerce", cycle: "May 15 - May 22", grossAmount: "384,200 AED", feesDeducted: "9,605 AED", netRemittance: "374,595 AED", status: "Pending approval" },
-    { id: "TX-SET-4420", type: "Courier Settlement", entity: "Aramex Express", cycle: "May 10 - May 17", grossAmount: "128,400 AED", feesDeducted: "0 AED", netRemittance: "128,400 AED", status: "Settled" },
-    { id: "TX-REF-4419", type: "Refund", entity: "Customer (John Doe)", cycle: "N/A", grossAmount: "420 AED", feesDeducted: "0 AED", netRemittance: "420 AED", status: "Settled" },
-    { id: "TX-SET-4418", type: "Merchant Settlement", entity: "IKEA UAE", cycle: "Global Monthly Q1", grossAmount: "691,000 AED", feesDeducted: "17,275 AED", netRemittance: "673,725 AED", status: "Under Review" }
-  ]);
-
+  const [financialTab, setFinancialTab] = useState<'merchants' | 'couriers' | 'refunds'>('merchants');
   const [notif, setNotif] = useState("");
 
-  const triggerRemittance = (id: string) => {
-    setLedger(prev => prev.map(item => {
+  // Merchant Settlements Data
+  const [merchantSettlements, setMerchantSettlements] = useState([
+    { id: "TX-MSET-8812", merchant: "Noon E-commerce", cycle: "May 15 - May 22", orderCount: 245, grossCod: "48,200 AED", commission: "1,205 AED", netRemittance: "46,995 AED", status: "Pending approval" },
+    { id: "TX-MSET-8811", merchant: "IKEA UAE", cycle: "May 10 - May 17", orderCount: 182, grossCod: "128,400 AED", commission: "3,210 AED", netRemittance: "125,190 AED", status: "Settled" },
+    { id: "TX-MSET-8810", merchant: "Spinneys Supermarket", cycle: "May 10 - May 17", orderCount: 94, grossCod: "14,500 AED", commission: "362 AED", netRemittance: "14,138 AED", status: "Under Review" },
+    { id: "TX-MSET-8809", merchant: "Al Futtaim Logistics", cycle: "May 01 - May 08", orderCount: 421, grossCod: "285,000 AED", commission: "7,125 AED", netRemittance: "277,875 AED", status: "Settled" }
+  ]);
+
+  // Courier Payouts Data
+  const [courierPayouts, setCourierPayouts] = useState([
+    { id: "TX-CINV-9021", courier: "Aramex Express", cycle: "May 15 - May 22", totalRuns: 412, quotedTotal: "12,450 AED", billedTotal: "13,100 AED", variance: "+650 AED", status: "Audit Discrepancy" },
+    { id: "TX-CINV-9020", courier: "Noon Hyperlocal", cycle: "May 15 - May 22", totalRuns: 188, quotedTotal: "5,640 AED", billedTotal: "5,640 AED", variance: "0 AED", status: "Approved" },
+    { id: "TX-CINV-9019", courier: "DHL Express", cycle: "May 10 - May 17", totalRuns: 89, quotedTotal: "8,900 AED", billedTotal: "9,450 AED", variance: "+550 AED", status: "Paid" },
+    { id: "TX-CINV-9018", courier: "FedEx GCC", cycle: "May 10 - May 17", totalRuns: 120, quotedTotal: "6,800 AED", billedTotal: "6,800 AED", variance: "0 AED", status: "Paid" }
+  ]);
+
+  // Customer Refunds Data
+  const [refundRequests, setRefundRequests] = useState([
+    { id: "TX-REF-4419", customer: "John Doe", orderId: "ORD-99210", reason: "Damaged Package", amount: "420 AED", refundType: "Wallet Credit", status: "Pending approval" },
+    { id: "TX-REF-4418", customer: "Amna Al Maktoum", orderId: "ORD-99182", reason: "Delivery Delay (Urgent Run)", amount: "120 AED", refundType: "Credit Card Return", status: "Refunded" },
+    { id: "TX-REF-4417", customer: "Sarah Jenkins", orderId: "ORD-98402", reason: "Lost in Transit", amount: "1,500 AED", refundType: "Wallet Credit", status: "Refunded" }
+  ]);
+
+  const triggerRemitMerchant = (id: string) => {
+    setMerchantSettlements(prev => prev.map(item => {
       if (item.id === id) {
         return { ...item, status: "Settled" };
       }
       return item;
     }));
-    setNotif(`WPS remittance and ledger transfer authorized successfully.`);
+    setNotif(`WPS merchant remittance authorized successfully.`);
+    setTimeout(() => setNotif(""), 4000);
+  };
+
+  const triggerApproveCourier = (id: string) => {
+    setCourierPayouts(prev => prev.map(item => {
+      if (item.id === id) {
+        return { ...item, status: "Approved" };
+      }
+      return item;
+    }));
+    setNotif(`Courier billing invoice cleared for automated payout.`);
+    setTimeout(() => setNotif(""), 4000);
+  };
+
+  const triggerApproveRefund = (id: string) => {
+    setRefundRequests(prev => prev.map(item => {
+      if (item.id === id) {
+        return { ...item, status: "Refunded" };
+      }
+      return item;
+    }));
+    setNotif(`Customer refund request approved and processed successfully.`);
     setTimeout(() => setNotif(""), 4000);
   };
 
@@ -3796,8 +3723,8 @@ function WalletManagementDesk() {
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-xl font-display font-medium text-zinc-900 mb-1 uppercase tracking-tight">Platform Wallet & Global Ledger</h3>
-          <p className="text-sm text-zinc-500">Manage digital wallets, deposits, withdrawals, transfers, refunds, COD and Delivery Company settlements.</p>
+          <h3 className="text-xl font-display font-medium text-zinc-900 mb-1 uppercase tracking-tight">Platform Financial Hub</h3>
+          <p className="text-sm text-zinc-500">Reconcile COD settlements, manage courier service invoice payouts, and handle customer wallet/card refunds.</p>
         </div>
       </div>
 
@@ -3808,162 +3735,238 @@ function WalletManagementDesk() {
         </div>
       )}
 
+      {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white border border-zinc-200 p-6 rounded-[2rem] shadow-sm">
-          <span className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Total Wallets Balance</span>
-          <p className="text-2xl font-bold text-zinc-900">4,245,600 AED</p>
-          <span className="text-[12px] text-zinc-400 mt-2 block">Customer, Merchant & Driver Funds</span>
+          <span className="text-[11px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Platform Commissions</span>
+          <p className="text-2xl font-bold text-zinc-900">11,902 AED</p>
+          <span className="text-[12px] text-zinc-400 mt-2 block">USend Service Share (COD & Fees)</span>
         </div>
         <div className="bg-white border border-zinc-200 p-6 rounded-[2rem] shadow-sm">
-          <span className="text-[13px] font-black uppercase tracking-widest text-[#4f95cc] block mb-1">Pending COD Settlements</span>
-          <p className="text-2xl font-bold text-[#4f95cc]">951,140 AED</p>
-          <span className="text-[12px] text-zinc-400 mt-2 block">To be remitted to Merchants</span>
+          <span className="text-[11px] font-black uppercase tracking-widest text-[#4f95cc] block mb-1">Pending COD Remittances</span>
+          <p className="text-2xl font-bold text-[#4f95cc]">61,133 AED</p>
+          <span className="text-[12px] text-zinc-400 mt-2 block">Due to active merchants</span>
         </div>
         <div className="bg-white border border-zinc-200 p-6 rounded-[2rem] shadow-sm">
-          <span className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Courier Payouts Due</span>
-          <p className="text-2xl font-bold text-zinc-900">162,280 AED</p>
-          <span className="text-[12px] text-zinc-400 mt-2 block">Carrier allocations</span>
+          <span className="text-[11px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Courier Invoices Due</span>
+          <p className="text-2xl font-bold text-zinc-900">18,740 AED</p>
+          <span className="text-[12px] text-zinc-400 mt-2 block">Awaiting transit clearance</span>
         </div>
         <div className="bg-amber-50 border border-amber-100 p-6 rounded-[2rem] shadow-sm col-span-1">
-          <span className="text-[13px] font-black uppercase tracking-widest text-amber-700 block mb-1">Pending Refunds</span>
-          <p className="text-2xl font-bold text-amber-800 font-sans">5,545 AED</p>
-          <span className="text-[12px] text-amber-600 mt-2 block">Customer wallet credit reversals</span>
+          <span className="text-[11px] font-black uppercase tracking-widest text-amber-700 block mb-1">Pending Refunds</span>
+          <p className="text-2xl font-bold text-amber-800 font-sans">420 AED</p>
+          <span className="text-[12px] text-amber-600 mt-2 block">Awaiting package audit review</span>
         </div>
       </div>
 
-      <div className="bg-white border border-zinc-200 rounded-[3rem] p-10 overflow-hidden relative shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[900px]">
-            <thead>
-              <tr className="bg-zinc-50 text-zinc-400 text-[12px] font-black uppercase tracking-widest border-b border-zinc-100">
-                <th className="p-6">Statement Ref</th>
-                <th className="p-6">Transaction Type</th>
-                <th className="p-6">Beneficiary Entity</th>
-                <th className="p-6">Billing Cycle</th>
-                <th className="p-6 font-mono">Gross Amount</th>
-                <th className="p-6 font-mono">Fees Deducted</th>
-                <th className="p-6">Net Remit Amount</th>
-                <th className="p-6 text-center">Remit Status</th>
-              </tr>
-            </thead>
-            <tbody className="text-sm font-medium">
-              {ledger.map((item, idx) => (
-                <tr key={idx} className="border-b border-zinc-50 hover:bg-zinc-50/50 transition-colors">
-                  <td className="p-6 font-mono text-zinc-900 font-bold text-xs">{item.id}</td>
-                  <td className="p-6"><span className={`px-3 py-1 rounded-full text-[12px] font-bold ${item.type.includes('Refund') ? 'bg-amber-50 text-amber-700' : 'bg-[#113f36]/5 text-[#113f36]'}`}>{item.type}</span></td>
-                  <td className="p-6 font-bold text-zinc-800">{item.entity}</td>
-                  <td className="p-6 text-zinc-500 font-medium">{item.cycle}</td>
-                  <td className="p-6 text-zinc-650 text-xs font-mono">{item.grossAmount}</td>
-                  <td className="p-6 text-red-600 text-xs font-mono">{item.feesDeducted}</td>
-                  <td className="p-6 text-[#113f36] font-bold text-sm tracking-tight">{item.netRemittance}</td>
-                  <td className="p-6 text-center">
-                    {item.status === 'Pending approval' ? (
-                      <button 
-                        onClick={() => triggerRemittance(item.id)}
-                        className="text-[12px] bg-[#1a5c4e] text-white font-black uppercase tracking-widest px-4 py-2.5 rounded-xl hover:bg-[#113f36] hover:scale-105 transition-all shadow-md shadow-brand/10"
-                      >
-                        Authorize Payment
-                      </button>
-                    ) : item.status === 'Under Review' ? (
-                      <div className="flex gap-2 items-center justify-center font-mono text-xs">
-                        <span className="text-[12px] text-amber-600 uppercase font-black tracking-widest">Auditing...</span>
-                        <button 
-                          onClick={() => triggerRemittance(item.id)}
-                          className="text-[13px] bg-zinc-900 text-white font-black uppercase px-3 py-1.5 rounded-lg hover:bg-black"
+      {/* Financial Segment Tabs */}
+      <div className="flex border-b border-zinc-200 gap-6">
+        <button
+          onClick={() => setFinancialTab('merchants')}
+          className={`pb-4 text-xs font-black uppercase tracking-widest border-b-2 transition-all cursor-pointer ${
+            financialTab === 'merchants' ? 'border-orange-500 text-zinc-950 font-bold' : 'border-transparent text-zinc-400 hover:text-zinc-700'
+          }`}
+        >
+          Merchant Settlements
+        </button>
+        <button
+          onClick={() => setFinancialTab('couriers')}
+          className={`pb-4 text-xs font-black uppercase tracking-widest border-b-2 transition-all cursor-pointer ${
+            financialTab === 'couriers' ? 'border-orange-500 text-zinc-950 font-bold' : 'border-transparent text-zinc-400 hover:text-zinc-700'
+          }`}
+        >
+          Courier Payouts
+        </button>
+        <button
+          onClick={() => setFinancialTab('refunds')}
+          className={`pb-4 text-xs font-black uppercase tracking-widest border-b-2 transition-all cursor-pointer ${
+            financialTab === 'refunds' ? 'border-orange-500 text-zinc-950 font-bold' : 'border-transparent text-zinc-400 hover:text-zinc-700'
+          }`}
+        >
+          Customer Refunds
+        </button>
+      </div>
+
+      {/* Tab Contents */}
+      <div className="bg-white border border-zinc-200 rounded-[3rem] p-8 overflow-hidden relative shadow-sm">
+        {financialTab === 'merchants' && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[900px]">
+              <thead>
+                <tr className="bg-zinc-50 text-zinc-400 text-[11px] font-black uppercase tracking-widest border-b border-zinc-100">
+                  <th className="p-5">Settlement ID</th>
+                  <th className="p-5">Merchant Name</th>
+                  <th className="p-5">Billing Cycle</th>
+                  <th className="p-5 text-center">Orders Count</th>
+                  <th className="p-5 font-mono">Gross COD</th>
+                  <th className="p-5 font-mono">USend Commission</th>
+                  <th className="p-5">Net Remittance</th>
+                  <th className="p-5 text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody className="text-xs font-semibold text-zinc-700">
+                {merchantSettlements.map((item, idx) => (
+                  <tr key={idx} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
+                    <td className="p-5 font-mono text-zinc-900 font-bold text-xs">{item.id}</td>
+                    <td className="p-5 font-bold text-zinc-800">{item.merchant}</td>
+                    <td className="p-5 text-zinc-500 font-medium">{item.cycle}</td>
+                    <td className="p-5 text-center text-zinc-650">{item.orderCount}</td>
+                    <td className="p-5 text-zinc-650 font-mono">{item.grossCod}</td>
+                    <td className="p-5 text-red-650 font-mono">{item.commission}</td>
+                    <td className="p-5 text-[#113f36] font-bold text-sm tracking-tight">{item.netRemittance}</td>
+                    <td className="p-5 text-center">
+                      {item.status === 'Pending approval' ? (
+                        <button
+                          onClick={() => triggerRemitMerchant(item.id)}
+                          className="bg-[#113f36] text-white font-black uppercase tracking-widest px-4 py-2 rounded-xl hover:bg-[#0d3029] transition-all shadow-md shadow-brand/10 cursor-pointer"
                         >
-                          Overrule
+                          Authorize Remit
                         </button>
-                      </div>
-                    ) : (
-                      <span className="px-3 py-1.5 rounded-full text-[13px] font-black uppercase tracking-widest bg-[#113f36]/5 text-[#113f36] inline-block font-mono">
-                        ✓ remitted settled
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                      ) : item.status === 'Under Review' ? (
+                        <span className="px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-amber-50 text-amber-700 inline-block font-mono border border-amber-100">
+                          Under Review
+                        </span>
+                      ) : (
+                        <span className="px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-green-50 text-[#113f36] inline-block font-mono border border-[#6d8c55]/20">
+                          ✓ Remitted Settled
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
-      <div className="flex items-center justify-between mt-12 mb-4">
-        <div>
-          <h3 className="text-xl font-display font-medium text-zinc-900 mb-1 uppercase tracking-tight">{t('financial_reconciliation') || 'Courier Financial Reconciliation'}</h3>
-          <p className="text-sm text-zinc-500">{t('financial_reconciliation_desc') || 'Compare estimated quotes vs. actual volumetric billing invoices from couriers to detect margin leaks.'}</p>
-        </div>
-      </div>
-      
-      <div className="bg-white border border-zinc-200 rounded-[3rem] p-10 overflow-hidden relative shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[900px]">
-             <thead>
-               <tr className="bg-zinc-50 text-zinc-400 text-[12px] font-black uppercase tracking-widest border-b border-zinc-100">
-                 <th className={`p-6 ${isRTL ? 'text-right' : 'text-left'}`}>{t('tracking_awb') || 'Tracking / AWB'}</th>
-                 <th className={`p-6 ${isRTL ? 'text-right' : 'text-left'}`}>{t('courier') || 'Courier'}</th>
-                 <th className={`p-6 ${isRTL ? 'text-right' : 'text-left'}`}>{t('est_weight') || 'Est. Weight'}</th>
-                 <th className={`p-6 ${isRTL ? 'text-right' : 'text-left'}`}>{t('actual_weight') || 'Actual Volumetric Weight'}</th>
-                 <th className={`p-6 ${isRTL ? 'text-right' : 'text-left'}`}>{t('quoted_price') || 'Quoted Price'}</th>
-                 <th className={`p-6 text-red-600 ${isRTL ? 'text-right' : 'text-left'}`}>{t('billed_invoice') || 'Billed Invoice'}</th>
-                 <th className="p-6 text-center">{t('margin_leak') || 'Margin Leak'}</th>
-               </tr>
-             </thead>
-             <tbody className="text-sm font-medium">
-                <tr className="border-b border-zinc-50 hover:bg-zinc-50/50 transition-colors">
-                   <td className="p-6 font-mono text-zinc-900 font-bold text-xs">3849102931</td>
-                   <td className="p-6 font-bold text-zinc-800">Aramex</td>
-                   <td className="p-6 text-zinc-500 text-xs">1.50 Kg</td>
-                   <td className="p-6 font-bold text-amber-600 text-xs text-center">4.20 Kg</td>
-                   <td className="p-6 text-zinc-500 font-mono text-xs">AED 16.50</td>
-                   <td className="p-6 text-red-600 font-bold font-mono text-xs">AED 28.00</td>
-                   <td className="p-6 text-center">
-                     <span className="px-3 py-1 rounded bg-red-50 text-red-600 font-mono text-xs font-bold">-11.50 AED</span>
-                   </td>
+        {financialTab === 'couriers' && (
+          <div className="overflow-x-auto space-y-6">
+            <table className="w-full text-left border-collapse min-w-[900px]">
+              <thead>
+                <tr className="bg-zinc-50 text-zinc-400 text-[11px] font-black uppercase tracking-widest border-b border-zinc-100">
+                  <th className="p-5">Invoice ID</th>
+                  <th className="p-5">Courier Partner</th>
+                  <th className="p-5">Billing Cycle</th>
+                  <th className="p-5 text-center">Total Runs</th>
+                  <th className="p-5 font-mono">Quoted Amount</th>
+                  <th className="p-5 font-mono">Billed Amount</th>
+                  <th className="p-5">Discrepancy Variance</th>
+                  <th className="p-5 text-center">Reconciliation Status</th>
                 </tr>
-                <tr className="border-b border-zinc-50 hover:bg-zinc-50/50 transition-colors">
-                   <td className="p-6 font-mono text-zinc-900 font-bold text-xs">3849102932</td>
-                   <td className="p-6 font-bold text-zinc-800">Aramex</td>
-                   <td className="p-6 text-zinc-500 text-xs">0.50 Kg</td>
-                   <td className="p-6 font-bold text-zinc-800 text-xs text-center">0.50 Kg</td>
-                   <td className="p-6 text-zinc-500 font-mono text-xs">AED 12.00</td>
-                   <td className="p-6 text-zinc-800 font-bold font-mono text-xs">AED 12.00</td>
-                   <td className="p-6 text-center">
-                     <span className="px-3 py-1 text-blue-505 font-bold font-mono text-[13px] uppercase tracking-widest"><Check className="inline w-3 h-3 -mt-0.5" /> {t('matched') || 'Matched'}</span>
-                   </td>
+              </thead>
+              <tbody className="text-xs font-semibold text-zinc-700">
+                {courierPayouts.map((item, idx) => (
+                  <tr key={idx} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
+                    <td className="p-5 font-mono text-zinc-900 font-bold text-xs">{item.id}</td>
+                    <td className="p-5 font-bold text-zinc-800">{item.courier}</td>
+                    <td className="p-5 text-zinc-500 font-medium">{item.cycle}</td>
+                    <td className="p-5 text-center text-zinc-650">{item.totalRuns}</td>
+                    <td className="p-5 text-zinc-650 font-mono">{item.quotedTotal}</td>
+                    <td className="p-5 text-zinc-800 font-bold font-mono">{item.billedTotal}</td>
+                    <td className="p-5 font-mono">
+                      <span className={`px-2 py-0.5 rounded font-bold ${item.variance === '0 AED' ? 'bg-zinc-50 text-zinc-500' : 'bg-red-50 text-red-600'}`}>
+                        {item.variance}
+                      </span>
+                    </td>
+                    <td className="p-5 text-center">
+                      {item.status === 'Audit Discrepancy' ? (
+                        <div className="flex gap-2 items-center justify-center">
+                          <button
+                            onClick={() => triggerApproveCourier(item.id)}
+                            className="bg-orange-500 text-white font-black uppercase tracking-widest px-3 py-1.5 rounded-lg hover:bg-orange-600 transition-all cursor-pointer text-[10px]"
+                          >
+                            Approve Override
+                          </button>
+                        </div>
+                      ) : item.status === 'Approved' ? (
+                        <span className="px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-blue-50 text-blue-700 inline-block font-mono border border-blue-100">
+                          Approved (Payout Queue)
+                        </span>
+                      ) : (
+                        <span className="px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-green-50 text-[#113f36] inline-block font-mono border border-[#6d8c55]/20">
+                          ✓ Settled Paid
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Reconciliation Discrepancy Alert */}
+            <div className="bg-red-50 border border-red-100 rounded-2xl p-4 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold text-red-800">Variance Surcharge Warning Detected</p>
+                <p className="text-[11px] text-red-650 mt-0.5">Aramex Express billed invoice exceeds quoted delivery rates by +650 AED due to volumetric adjustments on 4 shipments.</p>
+              </div>
+              <a href="#/integrations" className="text-[11px] font-black uppercase tracking-widest text-red-800 hover:underline">Verify Courier Rate Table →</a>
+            </div>
+          </div>
+        )}
+
+        {financialTab === 'refunds' && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[900px]">
+              <thead>
+                <tr className="bg-zinc-50 text-zinc-400 text-[11px] font-black uppercase tracking-widest border-b border-zinc-100">
+                  <th className="p-5">Request ID</th>
+                  <th className="p-5">Customer Name</th>
+                  <th className="p-5">Order Reference</th>
+                  <th className="p-5">Refund Reason</th>
+                  <th className="p-5 font-mono">Amount</th>
+                  <th className="p-5">Payout Destination</th>
+                  <th className="p-5 text-center">Status</th>
                 </tr>
-                <tr className="border-b border-zinc-50 hover:bg-zinc-50/50 transition-colors">
-                   <td className="p-6 font-mono text-zinc-900 font-bold text-xs">7498124933</td>
-                   <td className="p-6 font-bold text-zinc-800">DHL Express</td>
-                   <td className="p-6 text-zinc-500 text-xs">3.00 Kg</td>
-                   <td className="p-6 font-bold text-amber-600 text-xs text-center">3.80 Kg</td>
-                   <td className="p-6 text-zinc-500 font-mono text-xs">AED 41.50</td>
-                   <td className="p-6 text-red-600 font-bold font-mono text-xs">AED 52.00</td>
-                   <td className="p-6 text-center">
-                     <span className="px-3 py-1 rounded bg-red-50 text-red-600 font-mono text-xs font-bold">-10.50 AED</span>
-                   </td>
-                </tr>
-             </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="text-xs font-semibold text-zinc-700">
+                {refundRequests.map((item, idx) => (
+                  <tr key={idx} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
+                    <td className="p-5 font-mono text-zinc-900 font-bold text-xs">{item.id}</td>
+                    <td className="p-5 font-bold text-zinc-800">{item.customer}</td>
+                    <td className="p-5 font-mono text-zinc-500 font-bold text-xs">{item.orderId}</td>
+                    <td className="p-5 text-zinc-650">{item.reason}</td>
+                    <td className="p-5 text-zinc-850 font-bold font-mono text-sm">{item.amount}</td>
+                    <td className="p-5 font-mono text-[11px] text-zinc-500">{item.refundType}</td>
+                    <td className="p-5 text-center">
+                      {item.status === 'Pending approval' ? (
+                        <div className="flex gap-2 justify-center">
+                          <button
+                            onClick={() => triggerApproveRefund(item.id)}
+                            className="bg-[#113f36] text-white font-black uppercase tracking-widest px-3 py-1.5 rounded-lg hover:bg-[#0d3029] transition-all cursor-pointer text-[10px]"
+                          >
+                            Approve Payout
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-green-50 text-[#113f36] inline-block font-mono border border-[#6d8c55]/20">
+                          ✓ Refunded Returned
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
+
 export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
   const { t, isRTL, language, setLanguage } = useLanguage();
-  const [activeTab, setActiveTab] = useState<'overview' | 'requests' | 'inventory' | 'batches' | 'finance' | 'merchants' | 'users' | 'couriers' | 'integrations' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'requests' | 'batches' | 'finance' | 'merchants' | 'users' | 'integrations' | 'settings'>('overview');
   const [searchQuery, setSearchQuery] = useState('');
 
   const renderContent = () => {
     switch (activeTab) {
       case 'overview': return <AdminOverview onTabChange={setActiveTab} />;
       case 'requests': return <RequestsHub />;
-      case 'inventory': return <UnifiedInventoryDesk />;
       case 'batches': return <CSVBatchControlDesk />;
       case 'finance': return <WalletManagementDesk />;
       case 'users': return <UsersDirectory />;
-      case 'couriers': return <CouriersDirectory />;
       case 'merchants': return <MerchantDirectory />;
       case 'integrations': return <AdminIntegrations />;
       case 'settings': return <AdminSettings />;
@@ -3998,13 +4001,11 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
             {[
               { id: 'overview', icon: <LayoutDashboard className="w-[17px] h-[17px]" />, label: t('dashboard') || 'Dashboard' },
               { id: 'requests', icon: <Inbox className="w-[17px] h-[17px]" />, label: t('requests_freight') || 'Requests & Freight' },
-              { id: 'inventory', icon: <Boxes className="w-[17px] h-[17px]" />, label: t('unified_stock_catalog') || 'Unified Stock Catalog' },
               { id: 'batches', icon: <ClipboardList className="w-[17px] h-[17px]" />, label: t('csv_batch_dispatches') || 'CSV Batch Dispatches' },
               { id: 'finance', icon: <Coins className="w-[17px] h-[17px]" />, label: t('ledger_cod_settling') || 'Platform Wallets & Ledger' },
               { id: 'merchants', icon: <Building2 className="w-[17px] h-[17px]" />, label: t('merchant_directory') || 'Merchant Directory' },
               { id: 'users', icon: <UserCircle2 className="w-[17px] h-[17px]" />, label: t('users_directory') || 'Users Directory' },
-              { id: 'couriers', icon: <Truck className="w-[17px] h-[17px]" />, label: t('couriers_directory') || 'Couriers Directory' },
-              { id: 'integrations', icon: <Code2 className="w-[17px] h-[17px]" />, label: t('apis_webhooks') || 'APIs & Webhooks' },
+              { id: 'integrations', icon: <Code2 className="w-[17px] h-[17px]" />, label: 'Courier Integrations' },
               { id: 'settings', icon: <Settings className="w-[17px] h-[17px]" />, label: t('settings') || 'Settings' },
             ].map((item) => {
               const isActive = activeTab === item.id;

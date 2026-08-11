@@ -497,6 +497,8 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
       const outletCode = noonCreds?.accountNumber || "77T4HCOD4G";
       const apiKey = noonCreds?.apiKey || "";
 
+      const baseUrl = noonConfig?.currentMode === 'sandbox' ? noonConfig.baseUrlUat : noonConfig?.baseUrlProd;
+
       const requestPayload = {
         outlet_code: outletCode, // default staging outlet
         order_reference: targetOrder.id,
@@ -516,7 +518,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
         payment_method: (numericCod > 0 ? 'COD' : 'PAID') as 'COD' | 'PAID'
       };
 
-      const res = await noonService.createDeliveryTask(requestPayload, apiKey);
+      const res = await noonService.createDeliveryTask(requestPayload, apiKey, baseUrl);
 
       const logTimestamp = new Date().toISOString();
       const newLogs = {
