@@ -1611,468 +1611,9 @@ function UsersDirectory() {
       )}
     </div>
   );
-}
-
-function CouriersDirectory() {
-  const { isRTL, t } = useLanguage();
-  const { users } = useApp();
-
-  // Load and enhance real drivers
-  const [courierList, setCourierList] = useState<any[]>([]);
-  useEffect(() => {
-    const list = users.filter(u => u.type === 'Driver' || u.role === 'driver');
-    const enhanced = list.map((u, i) => {
-      const idNum = parseInt(u.id.replace(/\D/g, '')) || i;
-      const vehicleVal = idNum % 3 === 0 ? 'sedan' : idNum % 3 === 1 ? 'van' : 'motorcycle';
-      const rawCODVal = Math.floor((idNum * 23.4) % 1250);
-      const lat = 25.07 + ((idNum % 25) * 0.012) - 0.1;
-      const lng = 55.15 + ((idNum % 20) * 0.015) - 0.1;
-      const rate = 95.8 + ((idNum * 4) % 3.7);
-      return {
-        ...u,
-        vehicle: vehicleVal,
-        rawCOD: rawCODVal,
-        position: [lat, lng] as [number, number],
-        successRate: rate.toFixed(1),
-        currentRoute: idNum % 2 === 0 ? 'Dubai Marina → Downtown' : 'Zayed Port → Al Reem Island',
-        activeJobsCount: idNum % 4
-      };
-    });
-    setCourierList(enhanced);
-  }, [users]);
-
-  const [selectedCourier, setSelectedCourier] = useState<any>(null);
-  const [isAddingCourier, setIsAddingCourier] = useState(false);
-  const [newCourier, setNewCourier] = useState({ name: '', phone: '', vehicle: 'motorcycle', email: '' });
-  const [searchQuery, setSearchQuery] = useState('');
-  const [vehicleFilter, setVehicleFilter] = useState('All');
-  const [statusFilter, setStatusFilter] = useState('All');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(12);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-  const triggerToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
   };
 
-  const handleAddCourier = () => {
-    if (!newCourier.name.trim() || !newCourier.phone.trim()) return;
-    const cid = `USR-DRV-${String(courierList.length + 1).padStart(3, '0')}`;
-    const added = {
-      id: cid,
-      uid: cid,
-      name: newCourier.name,
-      type: 'Driver',
-      role: 'driver',
-      status: 'Active',
-      rating: 5.0,
-      deliveries: 0,
-      phone: newCourier.phone,
-      email: newCourier.email || `${newCourier.name.toLowerCase().replace(/\s+/g, '')}@usend.ae`,
-      vehicle: newCourier.vehicle,
-      rawCOD: 0,
-      position: [25.074, 55.132] as [number, number],
-      successRate: '100.0',
-      currentRoute: 'Ready for dispatch',
-      activeDeliveryId: null
-    };
-    setCourierList(prev => [added, ...prev]);
-    setIsAddingCourier(false);
-    setNewCourier({ name: '', phone: '', vehicle: 'motorcycle', email: '' });
-    triggerToast(`Added Courier ${added.name} successfully!`);
-  };
 
-  const handleSettleCash = (cid: string) => {
-    setCourierList(prev => prev.map(c => {
-      if (c.id === cid) {
-        return { ...c, rawCOD: 0 };
-      }
-      return c;
-    }));
-    if (selectedCourier && selectedCourier.id === cid) {
-      setSelectedCourier((prev: any) => ({ ...prev, rawCOD: 0 }));
-    }
-    triggerToast(t('cash_settled_success') || 'COD Cash settled!');
-  };
-
-  const handleToggleStatus = (cid: string) => {
-    setCourierList(prev => prev.map(c => {
-      if (c.id === cid) {
-        const nextStatus = c.status === 'Active' ? 'Inactive' : 'Active';
-        return { ...c, status: nextStatus };
-      }
-      return c;
-    }));
-    if (selectedCourier && selectedCourier.id === cid) {
-      setSelectedCourier((prev: any) => ({ ...prev, status: prev.status === 'Active' ? 'Inactive' : 'Active' }));
-    }
-    triggerToast(`Courier status updated!`);
-  };
-
-  const filteredCouriers = courierList.filter(c => {
-    const sTerm = searchQuery.toLowerCase();
-    const matchesSearch = c.name.toLowerCase().includes(sTerm) || 
-                          c.id.toLowerCase().includes(sTerm) || 
-                          c.phone.toLowerCase().includes(sTerm) || 
-                          c.email.toLowerCase().includes(sTerm);
-    
-    const matchesVehicle = vehicleFilter === 'All' || c.vehicle === vehicleFilter;
-    const matchesStatus = statusFilter === 'All' || c.status === statusFilter;
-
-    return matchesSearch && matchesVehicle && matchesStatus;
-  });
-
-  const totalItems = filteredCouriers.length;
-  const totalPages = Math.ceil(totalItems / pageSize) || 1;
-  const paginatedCouriers = filteredCouriers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, vehicleFilter, statusFilter, pageSize]);
-
-  return (
-    <div className="space-y-6 animate-in fade-in duration-500 relative text-left">
-      {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-zinc-900 border border-zinc-800 text-white rounded-2xl px-6 py-4 shadow-2xl flex items-center gap-3 font-medium text-xs tracking-wider uppercase animate-bounce">
-          <span className="w-2 h-2 rounded-full bg-brand animate-ping"></span>
-          {toastMessage}
-        </div>
-      )}
-
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h3 className="text-xl font-display font-medium text-zinc-900 mb-1 uppercase tracking-tight">
-            {t('couriers_directory') || 'Couriers & Fleet Directory'} ({totalItems.toLocaleString()})
-          </h3>
-          <p className="text-sm text-zinc-500">
-            {t('couriers_desc') || 'Track, monitor, and configure active drivers, vehicle types, and COD cash on hand.'}
-          </p>
-        </div>
-        <button onClick={() => setIsAddingCourier(true)} className="px-6 py-3 rounded-full bg-brand text-white font-black text-[12px] uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-brand/20 self-start md:self-auto">
-          {t('add_courier') || 'Add Courier'}
-        </button>
-      </div>
-
-      {/* Control Console */}
-      <div className="bg-zinc-50 border border-zinc-200 rounded-[2.5rem] p-6 grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-          <input 
-            type="text" 
-            placeholder="Search name, phone, courier ID..." 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white border border-zinc-200 rounded-2xl py-3 pl-11 pr-4 text-xs font-semibold placeholder-zinc-400 text-zinc-800 outline-none focus:border-brand"
-          />
-        </div>
-
-        <div>
-          <select 
-            value={vehicleFilter} 
-            onChange={(e) => setVehicleFilter(e.target.value)}
-            className="w-full bg-white border border-zinc-200 rounded-2xl py-3 px-4 text-xs font-semibold text-zinc-700 outline-none cursor-pointer"
-          >
-            <option value="All">{t('all_vehicles') || 'All Vehicles'}</option>
-            <option value="motorcycle">{t('courier_motorcycle') || 'Motorcycle'}</option>
-            <option value="van">{t('van') || 'Delivery Van'}</option>
-            <option value="sedan">{t('sedan') || 'Sedan'}</option>
-          </select>
-        </div>
-
-        <div>
-          <select 
-            value={statusFilter} 
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full bg-white border border-zinc-200 rounded-2xl py-3 px-4 text-xs font-semibold text-zinc-700 outline-none cursor-pointer"
-          >
-            <option value="All">All Statuses</option>
-            <option value="Active">Active / On Road</option>
-            <option value="Inactive">Inactive</option>
-          </select>
-        </div>
-
-        <div>
-          <select 
-            value={pageSize} 
-            onChange={(e) => setPageSize(Number(e.target.value))}
-            className="w-full bg-white border border-zinc-200 rounded-2xl py-3 px-4 text-xs font-semibold text-zinc-700 outline-none cursor-pointer"
-          >
-            <option value="12">12 Items / Page</option>
-            <option value="24">24 Items / Page</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Main Panel split mapping */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Side: Paginated List */}
-        <div className={`space-y-6 ${selectedCourier ? 'lg:col-span-8' : 'lg:col-span-12'}`}>
-          {paginatedCouriers.length === 0 ? (
-            <div className="bg-white border-2 border-dashed border-zinc-200 rounded-[2.5rem] p-16 text-center">
-              <Truck className="w-12 h-12 text-zinc-300 mx-auto mb-4" />
-              <h4 className="text-lg font-bold text-zinc-800">No Couriers Registered</h4>
-              <p className="text-zinc-500 text-xs mt-1">Refine your active search criteria or add a new driver.</p>
-            </div>
-          ) : (
-            <div className={`grid grid-cols-1 ${selectedCourier ? 'sm:grid-cols-1 md:grid-cols-2' : 'sm:grid-cols-2 lg:grid-cols-3'} gap-6`}>
-              {paginatedCouriers.map((courier) => (
-                <div 
-                  key={courier.id}
-                  onClick={() => setSelectedCourier(courier)}
-                  className={`bg-white border cursor-pointer ${selectedCourier?.id === courier.id ? 'border-brand ring-2 ring-brand/10' : 'border-zinc-200'} rounded-[2.5rem] p-6 shadow-sm hover:shadow-md transition-all relative overflow-hidden flex flex-col justify-between group`}
-                >
-                  <div className="space-y-5">
-                    {/* Header */}
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-2xl bg-zinc-100 overflow-hidden relative border border-zinc-200">
-                          <img src={`https://i.pravatar.cc/100?u=${courier.id}`} alt="Courier" className="w-full h-full object-cover" />
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-bold text-zinc-900 group-hover:text-brand transition-colors">{courier.name}</h4>
-                          <span className="text-[12px] font-mono font-extrabold text-zinc-400 block mt-0.5">{courier.id}</span>
-                        </div>
-                      </div>
-                      <span className={`px-2.5 py-1 rounded-full text-[13px] font-black uppercase tracking-widest flex items-center gap-1.5 ${
-                        courier.status === 'Active' 
-                          ? 'bg-[#113f36]/5 text-[#113f36]' 
-                          : 'bg-zinc-100 text-zinc-500'
-                      }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${courier.status === 'Active' ? 'bg-[#113f36] animate-pulse' : 'bg-zinc-400'}`} />
-                        {courier.status}
-                      </span>
-                    </div>
-
-                    {/* Stats Grid */}
-                    <div className="grid grid-cols-2 gap-3 bg-zinc-50 p-4 rounded-2xl text-left">
-                      <div>
-                        <span className="text-[13px] font-bold text-zinc-400 uppercase tracking-wider block mb-0.5">Vehicle</span>
-                        <div className="flex items-center gap-1">
-                          <span className="text-[12px] font-bold text-zinc-700 capitalize">
-                            {courier.vehicle === 'motorcycle' ? '🏍️ Motorcycle' : courier.vehicle === 'van' ? '🚐 Cargo Van' : '🚗 Sedan'}
-                          </span>
-                        </div>
-                      </div>
-                      <div>
-                        <span className="text-[13px] font-bold text-zinc-400 uppercase tracking-wider block mb-0.5">Rating</span>
-                        <span className="text-[12px] font-bold text-zinc-700 flex items-center gap-1">
-                          ⭐ {courier.rating}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* COD & Deliveries Section */}
-                    <div className="border-t border-zinc-100 pt-4 flex items-center justify-between">
-                      <div>
-                        <span className="text-[13px] font-bold text-zinc-400 uppercase tracking-widest block mb-0.5">{t('total_completed_trips') || 'Deliveries'}</span>
-                        <span className="text-xs font-black text-zinc-800">{courier.deliveries} trips</span>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-[13px] font-semibold text-[#113f36] uppercase tracking-widest block mb-0.5">{t('cod_collected_cash') || 'COD Cash'}</span>
-                        <span className="text-sm font-black text-zinc-950 font-mono">AED {courier.rawCOD.toFixed(2)}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Actions inside Card */}
-                  <div className="mt-5 pt-4 border-t border-zinc-100 grid grid-cols-2 gap-3">
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); handleSettleCash(courier.id); }}
-                      className="py-2 rounded-xl bg-zinc-100 text-zinc-750 font-bold text-[13px] uppercase tracking-widest hover:bg-[#113f36]/10 hover:text-[#113f36] transition"
-                    >
-                      {t('settle_cash') || 'Settle Cash'}
-                    </button>
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); handleToggleStatus(courier.id); }}
-                      className={`py-2 rounded-xl font-bold text-[13px] uppercase tracking-widest transition ${
-                        courier.status === 'Active' 
-                          ? 'bg-red-50 text-red-600 hover:bg-red-100' 
-                          : 'bg-brand/10 text-brand hover:bg-brand/20'
-                      }`}
-                    >
-                      {courier.status === 'Active' ? 'Suspend' : 'Activate'}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between pt-6 border-t border-zinc-200">
-              <span className="text-xs font-semibold text-zinc-500">
-                Page {currentPage} of {totalPages}
-              </span>
-              <div className="flex gap-2">
-                <button 
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  className="px-4 py-2 bg-white border border-zinc-200 rounded-xl text-xs font-bold text-zinc-650 hover:bg-zinc-50 disabled:opacity-50 transition"
-                >
-                  Previous
-                </button>
-                <button 
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  className="px-4 py-2 bg-white border border-zinc-200 rounded-xl text-xs font-bold text-zinc-650 hover:bg-zinc-50 disabled:opacity-50 transition"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Right Side: Courier Profile & Current Status */}
-        {selectedCourier && (
-          <div className="lg:col-span-4 bg-white border border-zinc-200 rounded-[2.5rem] p-6 shadow-xl space-y-6 animate-in slide-in-from-right-10 duration-300">
-            <div className="flex justify-between items-center pb-4 border-b border-zinc-100">
-              <div>
-                <h4 className="font-display font-medium uppercase text-zinc-900 tracking-tight">{t('availability_status') || 'Courier Details'}</h4>
-                <p className="text-[12px] uppercase font-bold tracking-wider text-zinc-400">Secure Live Connection</p>
-              </div>
-              <button 
-                onClick={() => setSelectedCourier(null)}
-                className="w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-205 flex items-center justify-center text-zinc-400 hover:text-zinc-600 transition"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Profile Highlight */}
-            <div className="flex items-center gap-4 text-left">
-              <div className="w-16 h-16 rounded-2xl bg-zinc-100 overflow-hidden relative border border-zinc-200">
-                <img src={`https://i.pravatar.cc/150?u=${selectedCourier.id}`} alt="Courier" className="w-full h-full object-cover" />
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-zinc-950">{selectedCourier.name}</h3>
-                <p className="text-xs text-zinc-500 font-medium">{selectedCourier.phone}</p>
-                <p className="text-[12px] text-zinc-400 font-semibold">{selectedCourier.email}</p>
-              </div>
-            </div>
-
-            {/* Quick telemetry indicators */}
-            <div className="grid grid-cols-2 gap-4 text-left">
-              <div className="bg-zinc-50 p-4 rounded-2xl">
-                <span className="text-[13px] font-black uppercase text-zinc-400 block tracking-widest mb-1">Success Rate</span>
-                <span className="text-base font-black text-zinc-900">{selectedCourier.successRate}%</span>
-              </div>
-              <div className="bg-zinc-50 p-4 rounded-2xl">
-                <span className="text-[13px] font-black uppercase text-zinc-400 block tracking-widest mb-1">Ongoing Route</span>
-                <span className="text-xs font-bold text-zinc-805 line-clamp-1">{selectedCourier.currentRoute || 'Standby'}</span>
-              </div>
-            </div>
-
-            {/* COD Cash Settle Card */}
-            {selectedCourier.rawCOD > 0 && (
-              <div className="bg-amber-50 border border-amber-200/50 p-4 font-sans rounded-2xl flex items-center justify-between text-left">
-                <div>
-                  <span className="text-[13px] font-bold text-amber-800 uppercase block">Pending Settlement</span>
-                  <span className="text-lg font-black text-amber-950 font-mono">AED {selectedCourier.rawCOD.toFixed(2)}</span>
-                </div>
-                <button 
-                  onClick={() => handleSettleCash(selectedCourier.id)}
-                  className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-[13px] uppercase tracking-widest rounded-xl transition"
-                >
-                  {t('settle_cash') || 'Settle'}
-                </button>
-              </div>
-            )}
-
-            {/* Live Leaflet Map */}
-            <div className="space-y-2 text-left">
-              <span className="text-[13px] font-black uppercase text-zinc-400 block tracking-widest">{t('tracking_map') || 'Live Courier Map'}</span>
-              <div className="h-[240px] w-full rounded-2xl overflow-hidden relative border border-zinc-200 z-0">
-                <MapContainer key={selectedCourier.id} center={selectedCourier.position} zoom={12} scrollWheelZoom={false} style={{ height: '100%', width: '100%', backgroundColor: '#f4f4f5' }} zoomControl={false} dragging={true}>
-                  <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  />
-                  <Marker position={selectedCourier.position} icon={createCustomMarker('bg-brand', '#113f36')} />
-                </MapContainer>
-              </div>
-              <span className="text-[12px] text-zinc-400 flex items-center gap-1.5 mt-2 justify-center">
-                <span className="w-1.5 h-1.5 rounded-full bg-brand animate-ping" />
-                Live GSM GPS Signals: Lat {selectedCourier.position[0].toFixed(4)}, Lng {selectedCourier.position[1].toFixed(4)}
-              </span>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Add Courier Modal */}
-      {isAddingCourier && (
-        <div className="fixed inset-0 bg-black/55 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl space-y-5 text-left">
-            <div className="flex justify-between items-center border-b border-zinc-150 pb-4">
-              <h3 className="text-xl font-display font-medium uppercase tracking-tight text-zinc-900">{t('add_courier') || 'Add Courier'}</h3>
-              <button onClick={() => setIsAddingCourier(false)} className="text-zinc-400 hover:text-zinc-650">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1.5 block">Courier Full Name</label>
-                <input 
-                  type="text" 
-                  value={newCourier.name}
-                  onChange={(e) => setNewCourier({...newCourier, name: e.target.value})}
-                  className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 outline-none text-xs font-semibold focus:border-brand" 
-                  placeholder="e.g. Saeed Al Remeithi"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1.5 block">Active Phone Number</label>
-                <input 
-                  type="text" 
-                  value={newCourier.phone}
-                  onChange={(e) => setNewCourier({...newCourier, phone: e.target.value})}
-                  className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 outline-none text-xs font-semibold focus:border-brand" 
-                  placeholder="+971 50 123 4567"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1.5 block">Internal Email Address</label>
-                <input 
-                  type="email" 
-                  value={newCourier.email}
-                  onChange={(e) => setNewCourier({...newCourier, email: e.target.value})}
-                  className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 outline-none text-xs font-semibold focus:border-brand" 
-                  placeholder="name@usend.ae"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1.5 block">{t('vehicle_type') || 'Vehicle Type'}</label>
-                <select 
-                  value={newCourier.vehicle}
-                  onChange={(e) => setNewCourier({...newCourier, vehicle: e.target.value})}
-                  className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 outline-none text-xs font-semibold focus:border-brand"
-                >
-                  <option value="motorcycle">🏍️ Motorcycle</option>
-                  <option value="van">🚐 Cargo Van</option>
-                  <option value="sedan">🚗 Sedan</option>
-                </select>
-              </div>
-
-              <button 
-                onClick={handleAddCourier}
-                className="w-full mt-2 py-4 rounded-xl bg-brand text-white font-bold text-[12px] uppercase tracking-widest hover:bg-brand/90 transition shadow-lg shadow-brand/25"
-              >
-                Register into Fleet
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 function MerchantDirectory() {
   const { merchants } = useApp();
@@ -2651,7 +2192,7 @@ function AdminSettings() {
   );
 }
 
-function AdminIntegrations() {
+function CouriersIntegrationsHub() {
   const { courierConfigs, updateCourierConfigs } = useApp();
   const [selectedCourierId, setSelectedCourierId] = useState<string>('aramex');
   const [localConfigs, setLocalConfigs] = useState<any>(null);
@@ -2733,70 +2274,15 @@ function AdminIntegrations() {
     setTestLogs(prev => [...prev, `[INFO] Building authentication headers...`]);
 
     try {
-      if (selectedCourierId === 'aramex') {
-        setTestLogs(prev => [...prev, `[INFO] Dispatching CalculateRate SOAP packet to Aramex Proxy...`]);
-        const response = await fetch('/api/aramex/test-connection', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ credentials: creds })
-        });
-        const result = await response.json();
-        if (result.success) {
-          const updatedStatus: CourierConnectionStatus = {
-            state: 'PARTIALLY_VERIFIED',
-            lastTestedAt: new Date().toISOString(),
-            lastTestedMode: activeConfig.currentMode,
-            errorMessage: null
-          };
-          const updatedConfigs = {
-            ...localConfigs,
-            [selectedCourierId]: {
-              ...activeConfig,
-              connectionStatus: updatedStatus
-            }
-          };
-          setLocalConfigs(updatedConfigs);
-          await updateCourierConfigs(updatedConfigs);
-
-          setTestLogs(prev => [
-            ...prev,
-            `[SUCCESS] Connection handshake complete. SOAP response: 200 OK.`,
-            `[STATUS] ACTIVE & ONLINE`
-          ]);
-          setTestResult('success');
-        } else {
-          const updatedStatus: CourierConnectionStatus = {
-            state: 'AUTHENTICATION_FAILED',
-            lastTestedAt: new Date().toISOString(),
-            lastTestedMode: activeConfig.currentMode,
-            errorMessage: result.error || 'Authentication failed'
-          };
-          const updatedConfigs = {
-            ...localConfigs,
-            [selectedCourierId]: {
-              ...activeConfig,
-              connectionStatus: updatedStatus
-            }
-          };
-          setLocalConfigs(updatedConfigs);
-          await updateCourierConfigs(updatedConfigs);
-
-          setTestLogs(prev => [
-            ...prev,
-            `[ERROR] Aramex API returned error: ${result.error}`,
-            `[STATUS] CONNECTION FAILED`
-          ]);
-          setTestResult('error');
-        }
-      } else if (selectedCourierId === 'noon') {
-        setTestLogs(prev => [...prev, `[INFO] Dispatching pickup-points list request to Noon Hyperlocal Proxy...`]);
-        const baseUrl = activeConfig.currentMode === 'sandbox' ? activeConfig.baseUrlUat : activeConfig.baseUrlProd;
-        const response = await fetch('/api/noon/test-connection', {
+      if (selectedCourierId === 'aramex' || selectedCourierId === 'noon') {
+        setTestLogs(prev => [...prev, `[INFO] Dispatching test payload to Courier Engine...`]);
+        const response = await fetch('/api/courier/test-connection', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
-            apiKey: creds.apiKey || creds.password,
-            baseUrl
+            courierId: selectedCourierId, 
+            credentials: creds, 
+            environment: activeConfig.currentMode 
           })
         });
         const result = await response.json();
@@ -2819,7 +2305,7 @@ function AdminIntegrations() {
 
           setTestLogs(prev => [
             ...prev,
-            `[SUCCESS] Connection handshake complete. HTTP status: 200 OK.`,
+            `[SUCCESS] Connection handshake complete. Provider responded with 200 OK.`,
             `[STATUS] ACTIVE & ONLINE`
           ]);
           setTestResult('success');
@@ -2842,7 +2328,7 @@ function AdminIntegrations() {
 
           setTestLogs(prev => [
             ...prev,
-            `[ERROR] Noon Staging returned error: ${result.error}`,
+            `[ERROR] Provider API returned error: ${result.error}`,
             `[STATUS] CONNECTION FAILED`
           ]);
           setTestResult('error');
@@ -2967,6 +2453,16 @@ function AdminIntegrations() {
   };
 
   const handleToggleStatus = () => {
+    const activeConfig = localConfigs[selectedCourierId];
+    if (activeConfig.status !== 'Active') {
+      // Trying to activate
+      // If we are activating production mode, require verification
+      if (activeConfig.currentMode === 'production' && activeConfig.connectionStatus?.state !== 'PARTIALLY_VERIFIED' && activeConfig.connectionStatus?.state !== 'E2E_VERIFIED') {
+        alert("PRODUCTION ACTIVATION BLOCKED: You cannot activate a courier in Production mode until the connection is successfully tested and verified. Please use the Test Center to verify credentials.");
+        return;
+      }
+    }
+
     setLocalConfigs((prev: any) => ({
       ...prev,
       [selectedCourierId]: {
@@ -2977,13 +2473,26 @@ function AdminIntegrations() {
   };
 
   const handleToggleMode = (mode: 'sandbox' | 'production') => {
-    setLocalConfigs((prev: any) => ({
-      ...prev,
-      [selectedCourierId]: {
-        ...prev[selectedCourierId],
-        currentMode: mode
+    setLocalConfigs((prev: any) => {
+      const config = prev[selectedCourierId];
+      let newStatus = config.status;
+
+      if (mode === 'production' && config.status === 'Active') {
+        if (config.connectionStatus?.state !== 'PARTIALLY_VERIFIED' && config.connectionStatus?.state !== 'E2E_VERIFIED') {
+           alert("PRODUCTION ACTIVATION SAFETY: This courier is not verified for production. It has been deactivated. Please test the connection before reactivating.");
+           newStatus = 'Inactive';
+        }
       }
-    }));
+
+      return {
+        ...prev,
+        [selectedCourierId]: {
+          ...config,
+          currentMode: mode,
+          status: newStatus
+        }
+      };
+    });
   };
 
   const handleSave = async () => {
@@ -3659,72 +3168,64 @@ function CSVBatchControlDesk() {
 }
 
 function WalletManagementDesk() {
-  const { t, isRTL } = useLanguage();
-  const [financialTab, setFinancialTab] = useState<'merchants' | 'couriers' | 'refunds'>('merchants');
+  const { t } = useLanguage();
+  const [financialTab, setFinancialTab] = useState<'ap_merchants' | 'ap_couriers' | 'ar_cod' | 'revenue'>('ap_merchants');
   const [notif, setNotif] = useState("");
 
-  // Merchant Settlements Data
-  const [merchantSettlements, setMerchantSettlements] = useState([
-    { id: "TX-MSET-8812", merchant: "Noon E-commerce", cycle: "May 15 - May 22", orderCount: 245, grossCod: "48,200 AED", commission: "1,205 AED", netRemittance: "46,995 AED", status: "Pending approval" },
-    { id: "TX-MSET-8811", merchant: "IKEA UAE", cycle: "May 10 - May 17", orderCount: 182, grossCod: "128,400 AED", commission: "3,210 AED", netRemittance: "125,190 AED", status: "Settled" },
-    { id: "TX-MSET-8810", merchant: "Spinneys Supermarket", cycle: "May 10 - May 17", orderCount: 94, grossCod: "14,500 AED", commission: "362 AED", netRemittance: "14,138 AED", status: "Under Review" },
-    { id: "TX-MSET-8809", merchant: "Al Futtaim Logistics", cycle: "May 01 - May 08", orderCount: 421, grossCod: "285,000 AED", commission: "7,125 AED", netRemittance: "277,875 AED", status: "Settled" }
+  // Accounts Payable: Merchants (COD Remittance)
+  const [apMerchants, setApMerchants] = useState([
+    { id: "SET-M-8812", merchant: "Noon E-commerce", cycle: "May 15 - May 22", grossCod: 48200, deliveryFees: 1200, commission: 482, netPayable: 46518, status: "Pending Approval" },
+    { id: "SET-M-8811", merchant: "IKEA UAE", cycle: "May 10 - May 17", grossCod: 128400, deliveryFees: 4500, commission: 1284, netPayable: 122616, status: "Remitted" },
+    { id: "SET-M-8810", merchant: "Spinneys Supermarket", cycle: "May 10 - May 17", grossCod: 14500, deliveryFees: 800, commission: 145, netPayable: 13555, status: "Under Review" }
   ]);
 
-  // Courier Payouts Data
-  const [courierPayouts, setCourierPayouts] = useState([
-    { id: "TX-CINV-9021", courier: "Aramex Express", cycle: "May 15 - May 22", totalRuns: 412, quotedTotal: "12,450 AED", billedTotal: "13,100 AED", variance: "+650 AED", status: "Audit Discrepancy" },
-    { id: "TX-CINV-9020", courier: "Noon Hyperlocal", cycle: "May 15 - May 22", totalRuns: 188, quotedTotal: "5,640 AED", billedTotal: "5,640 AED", variance: "0 AED", status: "Approved" },
-    { id: "TX-CINV-9019", courier: "DHL Express", cycle: "May 10 - May 17", totalRuns: 89, quotedTotal: "8,900 AED", billedTotal: "9,450 AED", variance: "+550 AED", status: "Paid" },
-    { id: "TX-CINV-9018", courier: "FedEx GCC", cycle: "May 10 - May 17", totalRuns: 120, quotedTotal: "6,800 AED", billedTotal: "6,800 AED", variance: "0 AED", status: "Paid" }
+  // Accounts Payable: Couriers (Delivery Fees)
+  const [apCouriers, setApCouriers] = useState([
+    { id: "INV-C-9021", courier: "Aramex Express", cycle: "May 15 - May 22", deliveries: 412, grossFees: 12450, penalties: 650, netPayable: 11800, status: "Audit Discrepancy" },
+    { id: "INV-C-9020", courier: "Noon Hyperlocal", cycle: "May 15 - May 22", deliveries: 188, grossFees: 5640, penalties: 0, netPayable: 5640, status: "Approved" },
+    { id: "INV-C-9019", courier: "DHL Express", cycle: "May 10 - May 17", deliveries: 89, grossFees: 8900, penalties: 0, netPayable: 8900, status: "Paid" }
   ]);
 
-  // Customer Refunds Data
-  const [refundRequests, setRefundRequests] = useState([
-    { id: "TX-REF-4419", customer: "John Doe", orderId: "ORD-99210", reason: "Damaged Package", amount: "420 AED", refundType: "Wallet Credit", status: "Pending approval" },
-    { id: "TX-REF-4418", customer: "Amna Al Maktoum", orderId: "ORD-99182", reason: "Delivery Delay (Urgent Run)", amount: "120 AED", refundType: "Credit Card Return", status: "Refunded" },
-    { id: "TX-REF-4417", customer: "Sarah Jenkins", orderId: "ORD-98402", reason: "Lost in Transit", amount: "1,500 AED", refundType: "Wallet Credit", status: "Refunded" }
+  // Accounts Receivable: COD Collection (Cash on Hand)
+  const [arCod, setArCod] = useState([
+    { id: "AR-COD-110", entity: "Aramex Express", type: "3PL Partner", outstandingCash: 24500, lastDeposit: "May 21, 2023", status: "Pending Deposit" },
+    { id: "AR-COD-111", entity: "Saeed Al Remeithi", type: "In-House Driver", outstandingCash: 1250, lastDeposit: "May 22, 2023", status: "Overdue" },
+    { id: "AR-COD-112", entity: "Noon Hyperlocal", type: "3PL Partner", outstandingCash: 0, lastDeposit: "May 23, 2023", status: "Reconciled" }
   ]);
 
-  const triggerRemitMerchant = (id: string) => {
-    setMerchantSettlements(prev => prev.map(item => {
-      if (item.id === id) {
-        return { ...item, status: "Settled" };
-      }
-      return item;
-    }));
-    setNotif(`WPS merchant remittance authorized successfully.`);
+  // Platform Revenue Ledger
+  const [revenueLedger] = useState([
+    { id: "REV-9921", type: "Commission", source: "Noon E-commerce (SET-M-8812)", amount: 482, date: "2023-05-23" },
+    { id: "REV-9920", type: "Delivery Margin", source: "Order ORD-1192", amount: 5, date: "2023-05-23" },
+    { id: "REV-9919", type: "Delivery Margin", source: "Order ORD-1193", amount: 12, date: "2023-05-22" }
+  ]);
+
+  const triggerAction = (message: string) => {
+    setNotif(message);
     setTimeout(() => setNotif(""), 4000);
   };
 
-  const triggerApproveCourier = (id: string) => {
-    setCourierPayouts(prev => prev.map(item => {
-      if (item.id === id) {
-        return { ...item, status: "Approved" };
-      }
-      return item;
-    }));
-    setNotif(`Courier billing invoice cleared for automated payout.`);
-    setTimeout(() => setNotif(""), 4000);
+  const handleRemitMerchant = (id: string) => {
+    setApMerchants(prev => prev.map(item => item.id === id ? { ...item, status: "Remitted" } : item));
+    triggerAction(`WPS remittance authorized for ${id}.`);
   };
 
-  const triggerApproveRefund = (id: string) => {
-    setRefundRequests(prev => prev.map(item => {
-      if (item.id === id) {
-        return { ...item, status: "Refunded" };
-      }
-      return item;
-    }));
-    setNotif(`Customer refund request approved and processed successfully.`);
-    setTimeout(() => setNotif(""), 4000);
+  const handleApproveCourier = (id: string) => {
+    setApCouriers(prev => prev.map(item => item.id === id ? { ...item, status: "Approved" } : item));
+    triggerAction(`Courier invoice ${id} approved for payout.`);
+  };
+
+  const handleReconcileCOD = (id: string) => {
+    setArCod(prev => prev.map(item => item.id === id ? { ...item, status: "Reconciled", outstandingCash: 0, lastDeposit: new Date().toLocaleDateString() } : item));
+    triggerAction(`COD cash collection reconciled for ${id}.`);
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-8 animate-in fade-in duration-500 text-left">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-xl font-display font-medium text-zinc-900 mb-1 uppercase tracking-tight">Platform Financial Hub</h3>
-          <p className="text-sm text-zinc-500">Reconcile COD settlements, manage courier service invoice payouts, and handle customer wallet/card refunds.</p>
+          <h3 className="text-xl font-display font-medium text-zinc-900 mb-1 uppercase tracking-tight">Platform Financial Controller</h3>
+          <p className="text-sm text-zinc-500">Reconcile Accounts Payable (Merchants & Couriers), Accounts Receivable (COD), and Platform Revenue.</p>
         </div>
       </div>
 
@@ -3735,61 +3236,69 @@ function WalletManagementDesk() {
         </div>
       )}
 
-      {/* Summary KPI Cards */}
+      {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white border border-zinc-200 p-6 rounded-[2rem] shadow-sm">
-          <span className="text-[11px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Platform Commissions</span>
-          <p className="text-2xl font-bold text-zinc-900">11,902 AED</p>
-          <span className="text-[12px] text-zinc-400 mt-2 block">USend Service Share (COD & Fees)</span>
+          <span className="text-[11px] font-black uppercase tracking-widest text-[#4f95cc] block mb-1">AP: Merchants (COD)</span>
+          <p className="text-2xl font-bold text-[#4f95cc]">60,073 AED</p>
+          <span className="text-[12px] text-zinc-400 mt-2 block">Pending remittance to merchants</span>
         </div>
         <div className="bg-white border border-zinc-200 p-6 rounded-[2rem] shadow-sm">
-          <span className="text-[11px] font-black uppercase tracking-widest text-[#4f95cc] block mb-1">Pending COD Remittances</span>
-          <p className="text-2xl font-bold text-[#4f95cc]">61,133 AED</p>
-          <span className="text-[12px] text-zinc-400 mt-2 block">Due to active merchants</span>
+          <span className="text-[11px] font-black uppercase tracking-widest text-orange-600 block mb-1">AP: Couriers (Fees)</span>
+          <p className="text-2xl font-bold text-orange-600">11,800 AED</p>
+          <span className="text-[12px] text-zinc-400 mt-2 block">Pending payout to 3PL partners</span>
         </div>
         <div className="bg-white border border-zinc-200 p-6 rounded-[2rem] shadow-sm">
-          <span className="text-[11px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Courier Invoices Due</span>
-          <p className="text-2xl font-bold text-zinc-900">18,740 AED</p>
-          <span className="text-[12px] text-zinc-400 mt-2 block">Awaiting transit clearance</span>
+          <span className="text-[11px] font-black uppercase tracking-widest text-red-600 block mb-1">AR: Outstanding COD</span>
+          <p className="text-2xl font-bold text-red-600 font-sans">25,750 AED</p>
+          <span className="text-[12px] text-zinc-400 mt-2 block">Cash with couriers pending deposit</span>
         </div>
-        <div className="bg-amber-50 border border-amber-100 p-6 rounded-[2rem] shadow-sm col-span-1">
-          <span className="text-[11px] font-black uppercase tracking-widest text-amber-700 block mb-1">Pending Refunds</span>
-          <p className="text-2xl font-bold text-amber-800 font-sans">420 AED</p>
-          <span className="text-[12px] text-amber-600 mt-2 block">Awaiting package audit review</span>
+        <div className="bg-[#113f36]/5 border border-[#113f36]/10 p-6 rounded-[2rem] shadow-sm col-span-1">
+          <span className="text-[11px] font-black uppercase tracking-widest text-[#113f36] block mb-1">Net Revenue (MTD)</span>
+          <p className="text-2xl font-bold text-[#113f36]">18,405 AED</p>
+          <span className="text-[12px] text-[#113f36]/70 mt-2 block">USend Commissions & Margins</span>
         </div>
       </div>
 
       {/* Financial Segment Tabs */}
       <div className="flex border-b border-zinc-200 gap-6">
         <button
-          onClick={() => setFinancialTab('merchants')}
+          onClick={() => setFinancialTab('ap_merchants')}
           className={`pb-4 text-xs font-black uppercase tracking-widest border-b-2 transition-all cursor-pointer ${
-            financialTab === 'merchants' ? 'border-orange-500 text-zinc-950 font-bold' : 'border-transparent text-zinc-400 hover:text-zinc-700'
+            financialTab === 'ap_merchants' ? 'border-[#4f95cc] text-[#4f95cc] font-bold' : 'border-transparent text-zinc-400 hover:text-zinc-700'
           }`}
         >
-          Merchant Settlements
+          AP: Merchants
         </button>
         <button
-          onClick={() => setFinancialTab('couriers')}
+          onClick={() => setFinancialTab('ap_couriers')}
           className={`pb-4 text-xs font-black uppercase tracking-widest border-b-2 transition-all cursor-pointer ${
-            financialTab === 'couriers' ? 'border-orange-500 text-zinc-950 font-bold' : 'border-transparent text-zinc-400 hover:text-zinc-700'
+            financialTab === 'ap_couriers' ? 'border-orange-500 text-orange-600 font-bold' : 'border-transparent text-zinc-400 hover:text-zinc-700'
           }`}
         >
-          Courier Payouts
+          AP: Couriers
         </button>
         <button
-          onClick={() => setFinancialTab('refunds')}
+          onClick={() => setFinancialTab('ar_cod')}
           className={`pb-4 text-xs font-black uppercase tracking-widest border-b-2 transition-all cursor-pointer ${
-            financialTab === 'refunds' ? 'border-orange-500 text-zinc-950 font-bold' : 'border-transparent text-zinc-400 hover:text-zinc-700'
+            financialTab === 'ar_cod' ? 'border-red-500 text-red-600 font-bold' : 'border-transparent text-zinc-400 hover:text-zinc-700'
           }`}
         >
-          Customer Refunds
+          AR: COD Collections
+        </button>
+        <button
+          onClick={() => setFinancialTab('revenue')}
+          className={`pb-4 text-xs font-black uppercase tracking-widest border-b-2 transition-all cursor-pointer ${
+            financialTab === 'revenue' ? 'border-[#113f36] text-[#113f36] font-bold' : 'border-transparent text-zinc-400 hover:text-zinc-700'
+          }`}
+        >
+          Revenue Ledger
         </button>
       </div>
 
       {/* Tab Contents */}
       <div className="bg-white border border-zinc-200 rounded-[3rem] p-8 overflow-hidden relative shadow-sm">
-        {financialTab === 'merchants' && (
+        {financialTab === 'ap_merchants' && (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[900px]">
               <thead>
@@ -3797,38 +3306,38 @@ function WalletManagementDesk() {
                   <th className="p-5">Settlement ID</th>
                   <th className="p-5">Merchant Name</th>
                   <th className="p-5">Billing Cycle</th>
-                  <th className="p-5 text-center">Orders Count</th>
-                  <th className="p-5 font-mono">Gross COD</th>
-                  <th className="p-5 font-mono">USend Commission</th>
-                  <th className="p-5">Net Remittance</th>
+                  <th className="p-5 font-mono text-right">Gross COD</th>
+                  <th className="p-5 font-mono text-right">- Delivery Fees</th>
+                  <th className="p-5 font-mono text-right">- Commission</th>
+                  <th className="p-5 font-mono text-right text-[#4f95cc]">Net Payable (AED)</th>
                   <th className="p-5 text-center">Status</th>
                 </tr>
               </thead>
               <tbody className="text-xs font-semibold text-zinc-700">
-                {merchantSettlements.map((item, idx) => (
+                {apMerchants.map((item, idx) => (
                   <tr key={idx} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
-                    <td className="p-5 font-mono text-zinc-900 font-bold text-xs">{item.id}</td>
+                    <td className="p-5 font-mono text-zinc-900 font-bold">{item.id}</td>
                     <td className="p-5 font-bold text-zinc-800">{item.merchant}</td>
                     <td className="p-5 text-zinc-500 font-medium">{item.cycle}</td>
-                    <td className="p-5 text-center text-zinc-650">{item.orderCount}</td>
-                    <td className="p-5 text-zinc-650 font-mono">{item.grossCod}</td>
-                    <td className="p-5 text-red-650 font-mono">{item.commission}</td>
-                    <td className="p-5 text-[#113f36] font-bold text-sm tracking-tight">{item.netRemittance}</td>
+                    <td className="p-5 text-zinc-650 font-mono text-right">{item.grossCod.toLocaleString()}</td>
+                    <td className="p-5 text-red-650 font-mono text-right">{item.deliveryFees.toLocaleString()}</td>
+                    <td className="p-5 text-red-650 font-mono text-right">{item.commission.toLocaleString()}</td>
+                    <td className="p-5 text-[#4f95cc] font-bold text-sm tracking-tight text-right">{item.netPayable.toLocaleString()}</td>
                     <td className="p-5 text-center">
-                      {item.status === 'Pending approval' ? (
+                      {item.status === 'Pending Approval' ? (
                         <button
-                          onClick={() => triggerRemitMerchant(item.id)}
-                          className="bg-[#113f36] text-white font-black uppercase tracking-widest px-4 py-2 rounded-xl hover:bg-[#0d3029] transition-all shadow-md shadow-brand/10 cursor-pointer"
+                          onClick={() => handleRemitMerchant(item.id)}
+                          className="bg-[#4f95cc] text-white font-black uppercase tracking-widest px-4 py-2 rounded-xl hover:bg-[#3b7cb3] transition-all cursor-pointer text-[10px]"
                         >
-                          Authorize Remit
+                          Approve
                         </button>
                       ) : item.status === 'Under Review' ? (
                         <span className="px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-amber-50 text-amber-700 inline-block font-mono border border-amber-100">
-                          Under Review
+                          Review
                         </span>
                       ) : (
-                        <span className="px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-green-50 text-[#113f36] inline-block font-mono border border-[#6d8c55]/20">
-                          ✓ Remitted Settled
+                        <span className="px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-zinc-100 text-zinc-500 inline-block font-mono">
+                          ✓ Remitted
                         </span>
                       )}
                     </td>
@@ -3839,52 +3348,46 @@ function WalletManagementDesk() {
           </div>
         )}
 
-        {financialTab === 'couriers' && (
-          <div className="overflow-x-auto space-y-6">
+        {financialTab === 'ap_couriers' && (
+          <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[900px]">
               <thead>
                 <tr className="bg-zinc-50 text-zinc-400 text-[11px] font-black uppercase tracking-widest border-b border-zinc-100">
                   <th className="p-5">Invoice ID</th>
                   <th className="p-5">Courier Partner</th>
                   <th className="p-5">Billing Cycle</th>
-                  <th className="p-5 text-center">Total Runs</th>
-                  <th className="p-5 font-mono">Quoted Amount</th>
-                  <th className="p-5 font-mono">Billed Amount</th>
-                  <th className="p-5">Discrepancy Variance</th>
-                  <th className="p-5 text-center">Reconciliation Status</th>
+                  <th className="p-5 text-center">Deliveries</th>
+                  <th className="p-5 font-mono text-right">Gross Fees</th>
+                  <th className="p-5 font-mono text-right">- Penalties</th>
+                  <th className="p-5 font-mono text-right text-orange-600">Net Payable (AED)</th>
+                  <th className="p-5 text-center">Status</th>
                 </tr>
               </thead>
               <tbody className="text-xs font-semibold text-zinc-700">
-                {courierPayouts.map((item, idx) => (
+                {apCouriers.map((item, idx) => (
                   <tr key={idx} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
-                    <td className="p-5 font-mono text-zinc-900 font-bold text-xs">{item.id}</td>
+                    <td className="p-5 font-mono text-zinc-900 font-bold">{item.id}</td>
                     <td className="p-5 font-bold text-zinc-800">{item.courier}</td>
                     <td className="p-5 text-zinc-500 font-medium">{item.cycle}</td>
-                    <td className="p-5 text-center text-zinc-650">{item.totalRuns}</td>
-                    <td className="p-5 text-zinc-650 font-mono">{item.quotedTotal}</td>
-                    <td className="p-5 text-zinc-800 font-bold font-mono">{item.billedTotal}</td>
-                    <td className="p-5 font-mono">
-                      <span className={`px-2 py-0.5 rounded font-bold ${item.variance === '0 AED' ? 'bg-zinc-50 text-zinc-500' : 'bg-red-50 text-red-600'}`}>
-                        {item.variance}
-                      </span>
-                    </td>
+                    <td className="p-5 text-center text-zinc-650">{item.deliveries}</td>
+                    <td className="p-5 text-zinc-650 font-mono text-right">{item.grossFees.toLocaleString()}</td>
+                    <td className="p-5 text-red-650 font-mono text-right">{item.penalties.toLocaleString()}</td>
+                    <td className="p-5 text-orange-600 font-bold font-mono text-sm text-right">{item.netPayable.toLocaleString()}</td>
                     <td className="p-5 text-center">
                       {item.status === 'Audit Discrepancy' ? (
-                        <div className="flex gap-2 items-center justify-center">
-                          <button
-                            onClick={() => triggerApproveCourier(item.id)}
-                            className="bg-orange-500 text-white font-black uppercase tracking-widest px-3 py-1.5 rounded-lg hover:bg-orange-600 transition-all cursor-pointer text-[10px]"
-                          >
-                            Approve Override
-                          </button>
-                        </div>
+                        <button
+                          onClick={() => handleApproveCourier(item.id)}
+                          className="bg-orange-500 text-white font-black uppercase tracking-widest px-3 py-1.5 rounded-lg hover:bg-orange-600 transition-all cursor-pointer text-[10px]"
+                        >
+                          Override & Approve
+                        </button>
                       ) : item.status === 'Approved' ? (
                         <span className="px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-blue-50 text-blue-700 inline-block font-mono border border-blue-100">
-                          Approved (Payout Queue)
+                          In Queue
                         </span>
                       ) : (
-                        <span className="px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-green-50 text-[#113f36] inline-block font-mono border border-[#6d8c55]/20">
-                          ✓ Settled Paid
+                        <span className="px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-zinc-100 text-zinc-500 inline-block font-mono">
+                          ✓ Paid
                         </span>
                       )}
                     </td>
@@ -3892,57 +3395,75 @@ function WalletManagementDesk() {
                 ))}
               </tbody>
             </table>
-
-            {/* Reconciliation Discrepancy Alert */}
-            <div className="bg-red-50 border border-red-100 rounded-2xl p-4 flex items-center justify-between">
-              <div>
-                <p className="text-xs font-bold text-red-800">Variance Surcharge Warning Detected</p>
-                <p className="text-[11px] text-red-650 mt-0.5">Aramex Express billed invoice exceeds quoted delivery rates by +650 AED due to volumetric adjustments on 4 shipments.</p>
-              </div>
-              <a href="#/integrations" className="text-[11px] font-black uppercase tracking-widest text-red-800 hover:underline">Verify Courier Rate Table →</a>
-            </div>
           </div>
         )}
 
-        {financialTab === 'refunds' && (
+        {financialTab === 'ar_cod' && (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[900px]">
               <thead>
                 <tr className="bg-zinc-50 text-zinc-400 text-[11px] font-black uppercase tracking-widest border-b border-zinc-100">
-                  <th className="p-5">Request ID</th>
-                  <th className="p-5">Customer Name</th>
-                  <th className="p-5">Order Reference</th>
-                  <th className="p-5">Refund Reason</th>
-                  <th className="p-5 font-mono">Amount</th>
-                  <th className="p-5">Payout Destination</th>
-                  <th className="p-5 text-center">Status</th>
+                  <th className="p-5">AR Reference</th>
+                  <th className="p-5">Entity Name</th>
+                  <th className="p-5">Entity Type</th>
+                  <th className="p-5">Last Deposit Date</th>
+                  <th className="p-5 font-mono text-right text-red-600">Outstanding Cash (AED)</th>
+                  <th className="p-5 text-center">Reconciliation Status</th>
                 </tr>
               </thead>
               <tbody className="text-xs font-semibold text-zinc-700">
-                {refundRequests.map((item, idx) => (
+                {arCod.map((item, idx) => (
                   <tr key={idx} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
-                    <td className="p-5 font-mono text-zinc-900 font-bold text-xs">{item.id}</td>
-                    <td className="p-5 font-bold text-zinc-800">{item.customer}</td>
-                    <td className="p-5 font-mono text-zinc-500 font-bold text-xs">{item.orderId}</td>
-                    <td className="p-5 text-zinc-650">{item.reason}</td>
-                    <td className="p-5 text-zinc-850 font-bold font-mono text-sm">{item.amount}</td>
-                    <td className="p-5 font-mono text-[11px] text-zinc-500">{item.refundType}</td>
+                    <td className="p-5 font-mono text-zinc-900 font-bold">{item.id}</td>
+                    <td className="p-5 font-bold text-zinc-800">{item.entity}</td>
+                    <td className="p-5 text-zinc-500 font-medium">{item.type}</td>
+                    <td className="p-5 text-zinc-650">{item.lastDeposit}</td>
+                    <td className="p-5 text-red-650 font-bold font-mono text-sm text-right">{item.outstandingCash.toLocaleString()}</td>
                     <td className="p-5 text-center">
-                      {item.status === 'Pending approval' ? (
-                        <div className="flex gap-2 justify-center">
-                          <button
-                            onClick={() => triggerApproveRefund(item.id)}
-                            className="bg-[#113f36] text-white font-black uppercase tracking-widest px-3 py-1.5 rounded-lg hover:bg-[#0d3029] transition-all cursor-pointer text-[10px]"
-                          >
-                            Approve Payout
-                          </button>
-                        </div>
+                      {item.status === 'Pending Deposit' || item.status === 'Overdue' ? (
+                        <button
+                          onClick={() => handleReconcileCOD(item.id)}
+                          className={`text-white font-black uppercase tracking-widest px-3 py-1.5 rounded-lg transition-all cursor-pointer text-[10px] ${item.status === 'Overdue' ? 'bg-red-600 hover:bg-red-700' : 'bg-zinc-800 hover:bg-zinc-900'}`}
+                        >
+                          Mark Deposited
+                        </button>
                       ) : (
-                        <span className="px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-green-50 text-[#113f36] inline-block font-mono border border-[#6d8c55]/20">
-                          ✓ Refunded Returned
+                        <span className="px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-zinc-100 text-zinc-500 inline-block font-mono">
+                          ✓ Reconciled
                         </span>
                       )}
                     </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {financialTab === 'revenue' && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[900px]">
+              <thead>
+                <tr className="bg-zinc-50 text-zinc-400 text-[11px] font-black uppercase tracking-widest border-b border-zinc-100">
+                  <th className="p-5">Transaction ID</th>
+                  <th className="p-5">Revenue Type</th>
+                  <th className="p-5">Source Reference</th>
+                  <th className="p-5">Date</th>
+                  <th className="p-5 font-mono text-right text-[#113f36]">Amount (AED)</th>
+                </tr>
+              </thead>
+              <tbody className="text-xs font-semibold text-zinc-700">
+                {revenueLedger.map((item, idx) => (
+                  <tr key={idx} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
+                    <td className="p-5 font-mono text-zinc-900 font-bold">{item.id}</td>
+                    <td className="p-5 font-bold text-zinc-800">
+                      <span className={`px-2 py-1 rounded text-[10px] uppercase font-black tracking-wider ${item.type === 'Commission' ? 'bg-[#4f95cc]/10 text-[#4f95cc]' : 'bg-[#113f36]/10 text-[#113f36]'}`}>
+                        {item.type}
+                      </span>
+                    </td>
+                    <td className="p-5 text-zinc-650">{item.source}</td>
+                    <td className="p-5 text-zinc-500 font-mono">{item.date}</td>
+                    <td className="p-5 text-[#113f36] font-bold font-mono text-sm text-right">+{item.amount.toLocaleString()}</td>
                   </tr>
                 ))}
               </tbody>
@@ -3968,7 +3489,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
       case 'finance': return <WalletManagementDesk />;
       case 'users': return <UsersDirectory />;
       case 'merchants': return <MerchantDirectory />;
-      case 'integrations': return <AdminIntegrations />;
+      case 'integrations': return <CouriersIntegrationsHub />;
       case 'settings': return <AdminSettings />;
       default: return <AdminOverview onTabChange={setActiveTab} />;
     }

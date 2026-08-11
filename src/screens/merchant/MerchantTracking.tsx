@@ -6,7 +6,6 @@ import { useState, useEffect, ReactNode, FC } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useApp, USendRequest } from '../../context/AppContext';
 import { courierIntegrationService, defaultAramexCreds } from '../../services/courierIntegration';
-import { noonService } from '../../services/noonIntegration';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -181,65 +180,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
     }
   };
 
-  const handleTestIntegration = async (req: USendRequest) => {
-    setIsDispatching(true);
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    const mockTrackingNumber = `TST-${Math.floor(10000000 + Math.random() * 90000000)}`;
-    const mockNoonId = `MP-${Math.floor(1000000 + Math.random() * 9000000)}`;
-    
-    // Respect the order's actual carrier — don't override it
-    const orderCarrier = (req.carrier || 'aramex');
 
-    if (orderCarrier === 'noon') {
-      await updateRequest(req.id, {
-        status: 'Assigned',
-        carrier: 'noon',
-        externalTrackingNumber: mockTrackingNumber,
-        noonLogs: {
-          request: {
-            test_mode: true,
-            order_reference: req.id,
-            integration_type: 'USend-Noon-STG'
-          },
-          response: {
-            status: 'SUCCESS',
-            mp_task_nr: mockTrackingNumber,
-            request_id: mockNoonId,
-            message: 'Integration Successful'
-          },
-          timestamp: new Date().toISOString()
-        }
-      });
-      alert(`USend Noon API Signal: Integration Successful! Mock Waybill: ${mockTrackingNumber}`);
-    } else {
-      // Default to aramex mock for aramex / usend / dhl orders
-      const mockAramexId = `AWB-${Math.floor(10000000 + Math.random() * 90000000)}`;
-      await updateRequest(req.id, {
-        status: 'Assigned',
-        carrier: orderCarrier,
-        externalTrackingNumber: mockAramexId,
-        aramexLogs: {
-          request: {
-            test_mode: true,
-            order_reference: req.id,
-            carrier: orderCarrier,
-            integration_type: 'USend-Aramex-STG'
-          },
-          response: {
-            HasErrors: false,
-            Shipments: [{ ID: mockAramexId, Label: null }],
-            Status: 'SUCCESS',
-            message: 'Aramex Waybill Generated'
-          },
-          timestamp: new Date().toISOString()
-        }
-      });
-      alert(`USend Aramex API Signal: Integration Successful! Mock AWB: ${mockAramexId}`);
-    }
-    setIsDispatching(false);
-  };
 
   const handleNoonDispatch = async (req: USendRequest) => {
     setIsDispatching(true);
@@ -258,57 +199,49 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
       const noonConfig = courierConfigs?.noon;
       const noonCreds = noonConfig
         ? (noonConfig.currentMode === 'sandbox' ? noonConfig.sandboxCreds : noonConfig.productionCreds)
-        : null;
-      const outletCode = noonCreds?.accountNumber || "77T4HCOD4G";
-      const apiKey = noonCreds?.apiKey || "";
-      const baseUrl = noonConfig?.currentMode === 'sandbox' ? noonConfig.baseUrlUat : noonConfig?.baseUrlProd;
+        : undefined;
 
-      console.log(`[Noon Dispatch] Processing order ${req.id} through Noon Staging API...`);
-      const res = await noonService.createDeliveryTask({
-        outlet_code: outletCode, // Custom outlet code from admin config
-        order_reference: req.id,
-        customer_name: req.name || "Recipient Buyer",
-        customer_phone: req.phone || "+971520000000",
-        drop_off_address: {
-          address: req.address || "Corniche Street, Dubai, UAE",
-          lat: 25.1998,
-          lng: 55.2738,
-          contact_name: req.name || "Recipient Buyer",
-          contact_phone_number: req.phone || "+971520000000",
-          country_code: "ARE"
-        },
-        lat: 25.1998,
-        lng: 55.2738,
-        cod_value: codValueFils,
-        payment_method: numericCod > 0 ? 'COD' : 'PAID'
-      }, apiKey, baseUrl);
+      console.log(`[Noon Dispatch] Processing order ${req.id} through Noon API...`);
+      const payload = {
+        senderName: "USend Merchant",
+        senderPhone: "+971500000000",
+        senderCity: "Dubai",
+        senderCountry: "AE",
+        senderAddress: "Merchant Location",
+        receiverName: req.name || "Recipient Buyer",
+        receiverPhone: req.phone || "+971520000000",
+        receiverCity: "Dubai",
+        receiverCountry: "AE",
+        receiverAddress: req.address || "Corniche Street, Dubai, UAE",
+        goodsDescription: req.description || "Package",
+        weightKg: 1,
+        codAmountAED: numericCod,
+        reference: req.id,
+        credentials: noonCreds ? { ...noonCreds, apiEnv: noonConfig?.currentMode } : { apiEnv: 'sandbox' }
+      };
 
-      if (res.success && res.data?.mp_task_nr) {
+      const res = await courierIntegrationService.createShipment('noon', payload);
+
+      if (res.success && res.trackingNumber) {
         await updateRequest(req.id, {
           status: 'Assigned',
           carrier: 'noon',
-          externalTrackingNumber: res.data.mp_task_nr,
-          noonLogs: {
-            request: {
-              outlet_code: "77T4HCOD4G",
-              order_reference: req.id,
-              customer_name: req.name || "Recipient Buyer",
-              customer_phone: req.phone || "+971520000000",
-              cod_value: codValueFils,
-              payment_method: numericCod > 0 ? 'COD' : 'PAID'
-            },
-            response: res.data,
+          externalTrackingNumber: res.trackingNumber,
+          carrierLogs: {
+            request: payload,
+            response: res,
             timestamp: new Date().toISOString()
           }
         });
-        alert(`Noon Staging Dispatch Succeeded! mp_task_nr: ${res.data.mp_task_nr}`);
+        alert(`Noon Dispatch Succeeded! mp_task_nr: ${res.trackingNumber}`);
       } else {
-        alert("Noon Dispatch Failed: " + (res.error || res.data?.message || "Unknown error generating Noon delivery task."));
+        alert("Noon Dispatch Failed: " + (res.error || "Unknown error generating Noon delivery task."));
         await updateRequest(req.id, {
-          noonLogs: {
-            request: { order_reference: req.id },
-            response: res.data || { error: res.error },
-            timestamp: new Date().toISOString()
+          carrierLogs: {
+            request: payload,
+            response: res,
+            timestamp: new Date().toISOString(),
+            error: res.error
           }
         });
       }

@@ -4,8 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useLanguage } from '../context/LanguageContext';
 import { useApp } from '../context/AppContext';
 import { Screen } from '../types';
-import { aramexService } from '../services/aramexIntegration';
-import { noonService } from '../services/noonIntegration';
+// Removed frontend courier mock services in favor of unified CourierEngine backend api
 import { updateDocument } from '../lib/firebaseUtils';
 import MapPicker from './MapPicker';
 import Modal from './Modal';
@@ -400,17 +399,46 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
         localStorage.setItem('guestOrders', JSON.stringify(storedGuest));
       }
       
-      if (shipmentData.courier === 'aramex') {
-        const aramexConfig = courierConfigs?.aramex;
-        const activeCreds = aramexConfig
-          ? (aramexConfig.currentMode === 'sandbox' ? aramexConfig.sandboxCreds : aramexConfig.productionCreds)
+      if (shipmentData.courier === 'aramex' || shipmentData.courier === 'noon') {
+        const config = courierConfigs?.[shipmentData.courier];
+        const activeCreds = config
+          ? (config.currentMode === 'sandbox' ? config.sandboxCreds : config.productionCreds)
           : undefined;
-        const aramexRes = await aramexService.createDeliveryJob(
-          reqPayload,
-          activeCreds && activeCreds.username ? { ...activeCreds, apiEnv: aramexConfig?.currentMode } : undefined
-        );
-        if (aramexRes.success === false) {
-           console.error("Aramex failed (non-blocking for USend UI)", aramexRes.error);
+          
+        const canonicalPayload = {
+          senderName: shipperData.name || "USend Hub",
+          senderPhone: shipperData.phone || "+971500000000",
+          senderCity: shipperData.city || "Dubai",
+          senderCountry: "AE",
+          senderAddress: shipperData.street || "Main Street",
+          receiverName: receiverData.name || "Recipient",
+          receiverPhone: receiverData.phone || "+971520000000",
+          receiverCity: receiverData.city || "Dubai",
+          receiverCountry: "AE",
+          receiverAddress: receiverData.street || "Delivery Street",
+          goodsDescription: shipmentData.description || "Package",
+          weightKg: parseFloat(shipmentData.weight) || 1,
+          codAmountAED: parseFloat(shipmentData.codAmount || '0') || 0,
+          reference: newOrderId
+        };
+
+        try {
+          const res = await fetch('/api/courier/shipment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+               courierId: shipmentData.courier,
+               payload: canonicalPayload,
+               credentials: activeCreds ? { ...activeCreds, apiEnv: config?.currentMode } : undefined,
+               environment: config?.currentMode || 'sandbox'
+            })
+          });
+          const courierRes = await res.json();
+          if (!courierRes.success) {
+             console.error(`${shipmentData.courier} failed (non-blocking for USend UI)`, courierRes.error);
+          }
+        } catch (e) {
+           console.error(`${shipmentData.courier} Network Error`, e);
         }
       }
       
@@ -447,16 +475,41 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
         ? (aramexConfig.currentMode === 'sandbox' ? aramexConfig.sandboxCreds : aramexConfig.productionCreds)
         : undefined;
 
-      const reqPayload = { ...targetOrder };
-      const logTimestamp = new Date().toISOString();
-      const res = await aramexService.createDeliveryJob(reqPayload, activeCreds && activeCreds.username ? { ...activeCreds, apiEnv: aramexConfig?.currentMode } : undefined);
+      const canonicalPayload = {
+          senderName: shipperData.name || "USend Hub",
+          senderPhone: shipperData.phone || "+971500000000",
+          senderCity: shipperData.city || "Dubai",
+          senderCountry: "AE",
+          senderAddress: shipperData.street || "Main Street",
+          receiverName: targetOrder.name || "Recipient",
+          receiverPhone: targetOrder.phone || "+971520000000",
+          receiverCity: targetOrder.toDestination?.split(',')[1]?.trim() || "Dubai",
+          receiverCountry: "AE",
+          receiverAddress: targetOrder.address || "Delivery Street",
+          goodsDescription: targetOrder.description || "Package",
+          weightKg: parseFloat(shipmentData.weight) || 1,
+          codAmountAED: parseFloat(targetOrder.orderAmount?.replace(/[^0-9.]/g, '') || '0') || 0,
+          reference: targetOrder.id
+      };
+
+      const res = await fetch('/api/courier/shipment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+           courierId: 'aramex',
+           payload: canonicalPayload,
+           credentials: activeCreds ? { ...activeCreds, apiEnv: aramexConfig?.currentMode } : undefined,
+           environment: aramexConfig?.currentMode || 'sandbox'
+        })
+      });
+      const courierRes = await res.json();
 
       setAramexTestingLogs({
-        request: reqPayload,
-        response: res
+        request: canonicalPayload,
+        response: courierRes
       });
 
-      if (res.success) {
+      if (courierRes.success) {
         setAramexTestingSuccess(true);
       } else {
         setAramexTestingSuccess(false);
@@ -479,7 +532,6 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
     setNoonTestingSuccess(null);
 
     try {
-      // Find the actual order object in memory
       const targetOrder = activeRequests.find(r => r.id === createdOrderId);
       if (!targetOrder) {
         alert("Error: Order not found in system state.");
@@ -488,61 +540,59 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
       }
 
       const numericCod = parseFloat(targetOrder.orderAmount?.replace(/[^0-9.]/g, '') || '0');
-      const codValueFils = Math.round(numericCod * 100);
 
       const noonConfig = courierConfigs?.noon;
       const noonCreds = noonConfig
         ? (noonConfig.currentMode === 'sandbox' ? noonConfig.sandboxCreds : noonConfig.productionCreds)
-        : null;
-      const outletCode = noonCreds?.accountNumber || "77T4HCOD4G";
-      const apiKey = noonCreds?.apiKey || "";
+        : undefined;
 
-      const baseUrl = noonConfig?.currentMode === 'sandbox' ? noonConfig.baseUrlUat : noonConfig?.baseUrlProd;
-
-      const requestPayload = {
-        outlet_code: outletCode, // default staging outlet
-        order_reference: targetOrder.id,
-        customer_name: targetOrder.name || "Recipient Buyer",
-        customer_phone: targetOrder.phone || "+971520000000",
-        drop_off_address: {
-          address: targetOrder.address || "Corniche Street, Dubai, UAE",
-          lat: targetOrder.position?.[0] || 25.1998,
-          lng: targetOrder.position?.[1] || 55.2738,
-          contact_name: targetOrder.name || "Recipient Buyer",
-          contact_phone_number: targetOrder.phone || "+971520000000",
-          country_code: "ARE"
-        },
-        lat: targetOrder.position?.[0] || 25.1998,
-        lng: targetOrder.position?.[1] || 55.2738,
-        cod_value: codValueFils,
-        payment_method: (numericCod > 0 ? 'COD' : 'PAID') as 'COD' | 'PAID'
+      const canonicalPayload = {
+          senderName: shipperData.name || "USend Hub",
+          senderPhone: shipperData.phone || "+971500000000",
+          senderCity: shipperData.city || "Dubai",
+          senderCountry: "AE",
+          senderAddress: shipperData.street || "Main Street",
+          receiverName: targetOrder.name || "Recipient",
+          receiverPhone: targetOrder.phone || "+971520000000",
+          receiverCity: targetOrder.toDestination?.split(',')[1]?.trim() || "Dubai",
+          receiverCountry: "AE",
+          receiverAddress: targetOrder.address || "Delivery Street",
+          goodsDescription: targetOrder.description || "Package",
+          weightKg: parseFloat(shipmentData.weight) || 1,
+          codAmountAED: numericCod,
+          reference: targetOrder.id
       };
 
-      const res = await noonService.createDeliveryTask(requestPayload, apiKey, baseUrl);
+      const res = await fetch('/api/courier/shipment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+           courierId: 'noon',
+           payload: canonicalPayload,
+           credentials: noonCreds ? { ...noonCreds, apiEnv: noonConfig?.currentMode } : undefined,
+           environment: noonConfig?.currentMode || 'sandbox'
+        })
+      });
+      
+      const courierRes = await res.json();
+      
+      setNoonTestingLogs({
+        request: canonicalPayload,
+        response: courierRes
+      });
 
-      const logTimestamp = new Date().toISOString();
-      const newLogs = {
-        request: requestPayload,
-        response: res.data || { error: res.error || "No data received" },
-        timestamp: logTimestamp
-      };
-
-      setNoonTestingLogs(newLogs);
-
-      if (res.success && res.data?.mp_task_nr) {
+      if (courierRes.success) {
         setNoonTestingSuccess(true);
-        // Sync back into our reactive state and Firestore
         updateRequest(targetOrder.id, {
           status: 'Assigned',
           carrier: 'noon',
-          externalTrackingNumber: res.data.mp_task_nr,
-          noonLogs: newLogs
+          externalTrackingNumber: courierRes.trackingNumber,
+          noonLogs: { request: canonicalPayload, response: courierRes }
         });
       } else {
         setNoonTestingSuccess(false);
-        // Save failure logs so they can be viewed
         updateRequest(targetOrder.id, {
-          noonLogs: newLogs
+          noonLogs: { request: canonicalPayload, response: courierRes }
         });
       }
     } catch (err: any) {
@@ -550,8 +600,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
       setNoonTestingSuccess(false);
       setNoonTestingLogs({
         request: { orderId: createdOrderId },
-        response: { error: err.message || String(err) },
-        timestamp: new Date().toISOString()
+        response: { error: err.message }
       });
     } finally {
       setNoonTestingLoading(false);

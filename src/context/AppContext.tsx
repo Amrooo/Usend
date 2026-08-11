@@ -4,7 +4,7 @@ import { db, auth } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 
-export type RequestStatus = 'Pending' | 'Reviewing' | 'Approved' | 'assigning' | 'in_transit' | 'delivered' | 'Rejected' | 'En-route' | 'Assigned' | 'Completed';
+export type RequestStatus = 'PENDING' | 'IN_TRANSIT' | 'DELIVERED' | 'FAILED' | 'Pending' | 'Reviewing' | 'Approved' | 'assigning' | 'in_transit' | 'delivered' | 'Rejected' | 'En-route' | 'Assigned' | 'Completed';
 
 export interface USendRequest {
   id: string;
@@ -33,6 +33,7 @@ export interface USendRequest {
   awbLabelUrl?: string;
   aramexLogs?: { request: any; response: any; timestamp: string, pickupId?: string };
   noonLogs?: { request: any; response: any; timestamp: string };
+  courierTrackingLogs?: Array<{ status: string; providerStatus?: string; timestamp: string; location?: string; message?: string }>;
   phone?: string;
   pickupAddress?: string;
   printFormat?: 'PDF' | 'ZPL';

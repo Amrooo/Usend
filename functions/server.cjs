@@ -41,6 +41,488 @@ var import_dotenv = __toESM(require("dotenv"), 1);
 var import_firebase_admin = __toESM(require("firebase-admin"), 1);
 var import_firestore = require("firebase-admin/firestore");
 var import_fs = __toESM(require("fs"), 1);
+
+// src/backend/adapters/AramexAdapter.ts
+var AramexAdapter = class {
+  constructor() {
+    this.id = "aramex";
+    this.name = "Aramex";
+    this.capabilities = ["RATE", "SHIPMENT", "TRACKING", "LABEL"];
+  }
+  getBaseUrl(env) {
+    return env === "production" ? "https://ws.aramex.net" : "https://ws.uat.aramex.net";
+  }
+  async validateCredentials(credentials, environment) {
+    const baseUrl = this.getBaseUrl(environment);
+    const path2 = "/ShippingAPI.V2/RateCalculator/Service_1_0.svc/json/CalculateRate";
+    const payload = {
+      ClientInfo: {
+        UserName: credentials.username,
+        Password: credentials.password || "",
+        Version: credentials.version || "v1.0",
+        AccountNumber: credentials.accountNumber,
+        AccountPin: credentials.accountPin,
+        AccountEntity: credentials.accountEntity,
+        AccountCountryCode: credentials.accountCountryCode,
+        Source: parseInt(credentials.source || "0", 10) || 0
+      },
+      Transaction: {
+        Reference1: "Connection Verification",
+        Reference2: "",
+        Reference3: "",
+        Reference4: "",
+        Reference5: ""
+      },
+      OriginAddress: { City: "Dubai", CountryCode: "AE" },
+      DestinationAddress: { City: "Abu Dhabi", CountryCode: "AE" },
+      ShipmentDetails: {
+        PaymentType: "P",
+        ProductGroup: "DOM",
+        ProductType: "OND",
+        ActualWeight: { Value: 1, Unit: "KG" },
+        ChargeableWeight: { Value: 1, Unit: "KG" },
+        NumberOfPieces: 1
+      }
+    };
+    try {
+      const response = await fetch(`${baseUrl}${path2}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json"
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(15e3)
+      });
+      if (!response.ok) {
+        return { success: false, error: `Aramex returned status code ${response.status}` };
+      }
+      const data2 = await response.json();
+      if (data2.HasErrors) {
+        return { success: false, error: data2.Notifications?.[0]?.Message || "Aramex API credentials validation failed" };
+      }
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message || "Network error while connecting to Aramex" };
+    }
+  }
+  async calculateRate(payload, credentials, environment) {
+    const baseUrl = this.getBaseUrl(environment);
+    const path2 = "/ShippingAPI.V2/RateCalculator/Service_1_0.svc/json/CalculateRate";
+    const aramexPayload = {
+      ClientInfo: {
+        UserName: credentials.username,
+        Password: credentials.password,
+        Version: credentials.version || "v1.0",
+        AccountNumber: credentials.accountNumber,
+        AccountPin: credentials.accountPin,
+        AccountEntity: credentials.accountEntity,
+        AccountCountryCode: credentials.accountCountryCode,
+        Source: parseInt(credentials.source || "0", 10) || 0
+      },
+      Transaction: {
+        Reference1: "Rate Calculation",
+        Reference2: "",
+        Reference3: "",
+        Reference4: "",
+        Reference5: ""
+      },
+      OriginAddress: {
+        City: payload.originCity,
+        CountryCode: payload.originCountry
+      },
+      DestinationAddress: {
+        City: payload.destCity,
+        CountryCode: payload.destCountry
+      },
+      ShipmentDetails: {
+        PaymentType: payload.codAmount ? "C" : "P",
+        // C = COD, P = Prepaid
+        ProductGroup: payload.originCountry === payload.destCountry ? "DOM" : "EXP",
+        ProductType: payload.isExpress ? "PPX" : "OND",
+        ActualWeight: { Value: payload.weightKg, Unit: "KG" },
+        ChargeableWeight: { Value: payload.weightKg, Unit: "KG" },
+        NumberOfPieces: 1,
+        Services: payload.codAmount ? "CODS" : ""
+      }
+    };
+    try {
+      const response = await fetch(`${baseUrl}${path2}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(aramexPayload)
+      });
+      const data2 = await response.json();
+      if (data2.HasErrors) {
+        return { success: false, error: data2.Notifications?.[0]?.Message || "Unknown Error" };
+      }
+      return {
+        success: true,
+        totalAmount: data2.TotalAmount?.Value,
+        currency: data2.TotalAmount?.CurrencyCode,
+        serviceName: payload.isExpress ? "Aramex Priority Express" : "Aramex Value Parcel"
+      };
+    } catch (e) {
+      return { success: false, error: e.message };
+    }
+  }
+  async createShipment(payload, credentials, environment) {
+    const baseUrl = this.getBaseUrl(environment);
+    const path2 = "/ShippingAPI.V2/Shipping/Service_1_0.svc/json/CreateShipments";
+    const isDomestic = payload.senderCountry === payload.receiverCountry;
+    const aramexPayload = {
+      ClientInfo: {
+        UserName: credentials.username,
+        Password: credentials.password,
+        Version: credentials.version || "v1.0",
+        AccountNumber: credentials.accountNumber,
+        AccountPin: credentials.accountPin,
+        AccountEntity: credentials.accountEntity,
+        AccountCountryCode: credentials.accountCountryCode,
+        Source: parseInt(credentials.source || "0", 10) || 0
+      },
+      Transaction: {
+        Reference1: payload.reference || "USend Shipment",
+        Reference2: "",
+        Reference3: "",
+        Reference4: "",
+        Reference5: ""
+      },
+      Shipments: [
+        {
+          Reference1: payload.reference || "",
+          Reference2: "",
+          Reference3: "",
+          Shipper: {
+            Reference1: "USend Central Depot",
+            Reference2: "",
+            AccountNumber: credentials.accountNumber,
+            PartyAddress: {
+              Line1: payload.senderAddress,
+              Line2: "",
+              Line3: "",
+              City: payload.senderCity,
+              CountryCode: payload.senderCountry
+            },
+            Contact: {
+              PersonName: payload.senderName,
+              CompanyName: "USend Hub",
+              PhoneNumber1: payload.senderPhone,
+              EmailAddress: "dispatch@usend.ae"
+            }
+          },
+          Consignee: {
+            Reference1: "",
+            Reference2: "",
+            AccountNumber: "",
+            PartyAddress: {
+              Line1: payload.receiverAddress,
+              Line2: "",
+              Line3: "",
+              City: payload.receiverCity,
+              CountryCode: payload.receiverCountry
+            },
+            Contact: {
+              PersonName: payload.receiverName,
+              CompanyName: payload.receiverName,
+              PhoneNumber1: payload.receiverPhone,
+              EmailAddress: ""
+            }
+          },
+          ThirdParty: null,
+          Reference4: "",
+          Reference5: "",
+          ShippingDateTime: `/Date(${(/* @__PURE__ */ new Date()).getTime()})/`,
+          DueDate: `/Date(${new Date((/* @__PURE__ */ new Date()).getTime() + 864e5).getTime()})/`,
+          Comments: "USend Aggregation Dispatch",
+          PickupLocation: "Reception",
+          OperationsInstructions: "Handle with care",
+          AccountingInstrcutions: "",
+          Details: {
+            Dimensions: { Length: 10, Width: 10, Height: 10, Unit: "CM" },
+            ActualWeight: { Value: payload.weightKg, Unit: "KG" },
+            ChargeableWeight: { Value: payload.weightKg, Unit: "KG" },
+            DescriptionOfGoods: payload.goodsDescription,
+            GoodsOriginCountry: payload.senderCountry,
+            NumberOfPieces: 1,
+            ProductGroup: isDomestic ? "DOM" : "EXP",
+            ProductType: "OND",
+            PaymentType: payload.codAmountAED > 0 ? "C" : "P",
+            PaymentOptions: "",
+            Services: payload.codAmountAED > 0 ? "CODS" : "",
+            CashOnDeliveryAmount: payload.codAmountAED > 0 ? {
+              Value: payload.codAmountAED,
+              CurrencyCode: "AED"
+            } : null,
+            CustomsValueAmount: null
+          }
+        }
+      ],
+      LabelInfo: {
+        ReportID: 9729,
+        ReportType: "URL"
+      }
+    };
+    try {
+      const response = await fetch(`${baseUrl}${path2}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(aramexPayload)
+      });
+      const data2 = await response.json();
+      if (data2.HasErrors) {
+        return { success: false, error: data2.Notifications?.[0]?.Message || "Unknown Error" };
+      }
+      const shipment = data2.Shipments?.[0];
+      if (!shipment) {
+        return { success: false, error: "No shipment data returned" };
+      }
+      return {
+        success: true,
+        trackingNumber: shipment.ID,
+        labelUrl: shipment.ShipmentLabel?.LabelURL,
+        base64Label: shipment.ShipmentLabel?.LabelFileContents,
+        providerStatus: "Generated"
+      };
+    } catch (e) {
+      return { success: false, error: e.message };
+    }
+  }
+  async trackShipment(trackingId, credentials, environment) {
+    const baseUrl = this.getBaseUrl(environment);
+    const path2 = "/ShippingAPI.V2/Tracking/Service_1_0.svc/json/TrackShipments";
+    const payload = {
+      ClientInfo: {
+        UserName: credentials.username,
+        Password: credentials.password,
+        Version: credentials.version || "v1.0",
+        AccountNumber: credentials.accountNumber,
+        AccountPin: credentials.accountPin,
+        AccountEntity: credentials.accountEntity,
+        AccountCountryCode: credentials.accountCountryCode,
+        Source: parseInt(credentials.source || "0", 10) || 0
+      },
+      Transaction: { Reference1: "", Reference2: "", Reference3: "", Reference4: "", Reference5: "" },
+      Shipments: [trackingId]
+    };
+    try {
+      const response = await fetch(`${baseUrl}${path2}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data2 = await response.json();
+      if (data2.HasErrors) {
+        return { success: false, providerStatus: "Error", usendStatus: "FAILED", timestamp: (/* @__PURE__ */ new Date()).toISOString(), error: data2.Notifications?.[0]?.Message || "Tracking Error" };
+      }
+      const results = data2.TrackingResults;
+      if (!results || results.length === 0) {
+        return { success: false, providerStatus: "No Data", usendStatus: "PENDING", timestamp: (/* @__PURE__ */ new Date()).toISOString(), error: "No tracking data found" };
+      }
+      const updates = results[0].Value;
+      if (!updates || updates.length === 0) {
+        return { success: true, providerStatus: "No Updates", usendStatus: "PENDING", timestamp: (/* @__PURE__ */ new Date()).toISOString() };
+      }
+      const latest = updates[updates.length - 1];
+      const newest = updates[0];
+      return {
+        success: true,
+        providerStatus: newest.UpdateDescription,
+        usendStatus: this.mapStatus(newest.UpdateCode),
+        location: newest.UpdateLocation,
+        timestamp: newest.UpdateDateTime
+      };
+    } catch (e) {
+      return { success: false, providerStatus: "Error", usendStatus: "FAILED", timestamp: (/* @__PURE__ */ new Date()).toISOString(), error: e.message };
+    }
+  }
+  async cancelShipment(trackingId, credentials, environment) {
+    return false;
+  }
+  mapStatus(aramexCode) {
+    const code = aramexCode.toUpperCase();
+    if (["SH005", "SH006", "SH007", "SH014", "SH164"].includes(code)) return "DELIVERED";
+    if (["SH012", "SH069", "SH234"].includes(code)) return "IN_TRANSIT";
+    if (["SH047", "SH048", "SH049"].includes(code)) return "FAILED";
+    return "PENDING";
+  }
+};
+
+// src/backend/adapters/NoonAdapter.ts
+var NoonAdapter = class {
+  constructor() {
+    this.id = "noon";
+    this.name = "Noon";
+    this.capabilities = ["SHIPMENT", "TRACKING", "CANCEL"];
+  }
+  getBaseUrl(env) {
+    return env === "production" ? "https://merchants.noon.com" : "https://food-api-team.noonstg.team";
+  }
+  async validateCredentials(credentials, environment) {
+    const baseUrl = this.getBaseUrl(environment);
+    try {
+      const apiKey2 = credentials.apiKey || credentials.password || "";
+      if (!apiKey2) {
+        return { success: false, error: "Missing API key parameter" };
+      }
+      const response = await fetch(`${baseUrl}/public/v1/pickup-points/list`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-KEY": apiKey2,
+          "Api-Key": apiKey2,
+          "Authorization": `Bearer ${apiKey2}`
+        },
+        signal: AbortSignal.timeout(1e4)
+      });
+      const responseText = await response.text();
+      if (responseText.includes("FortiGuard") || responseText.includes("Web Filter") || responseText.includes("Access Blocked")) {
+        return { success: false, error: "Access blocked by FortiGuard Corporate Firewall/Web Filter. The Noon Staging domain is restricted on this network." };
+      }
+      if (!response.ok) {
+        let errorMsg = `Noon returned status code ${response.status}`;
+        try {
+          const errData = JSON.parse(responseText);
+          if (errData.message) errorMsg = errData.message;
+        } catch (e) {
+        }
+        return { success: false, error: errorMsg };
+      }
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message || "Network error while connecting to Noon" };
+    }
+  }
+  async calculateRate(payload, credentials, environment) {
+    return {
+      success: true,
+      totalAmount: payload.isExpress ? 25 : 15,
+      currency: "AED",
+      serviceName: "Noon Hyperlocal"
+    };
+  }
+  async createShipment(payload, credentials, environment) {
+    const baseUrl = this.getBaseUrl(environment);
+    const codInFils = Math.round((payload.codAmountAED || 0) * 100);
+    const noonPayload = {
+      outlet_code: credentials.accountNumber || "DEFAULT_OUTLET",
+      // Often provided as accountNumber
+      order_reference: payload.reference || `USEND-${Date.now()}`,
+      customer_name: payload.receiverName,
+      customer_phone: payload.receiverPhone,
+      drop_off_address: {
+        address: payload.receiverAddress,
+        lat: 25.2048,
+        // In a real scenario we'd use actual geocoded lat/lng
+        lng: 55.2708,
+        contact_name: payload.receiverName,
+        contact_phone_number: payload.receiverPhone,
+        country_code: payload.receiverCountry || "AE"
+      },
+      lat: 25.2048,
+      lng: 55.2708,
+      cod_value: codInFils,
+      payment_method: codInFils > 0 ? "COD" : "PAID"
+    };
+    try {
+      const response = await fetch(`${baseUrl}/public/v1/task`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-KEY": credentials.apiKey || credentials.password || "",
+          "Api-Key": credentials.apiKey || credentials.password || "",
+          "Authorization": `Bearer ${credentials.apiKey || credentials.password}`
+        },
+        body: JSON.stringify(noonPayload)
+      });
+      const data2 = await response.json();
+      if (!response.ok || data2.status === "ERROR" || !data2.mp_task_nr) {
+        return { success: false, error: data2.message || "Failed to create Noon Task" };
+      }
+      return {
+        success: true,
+        trackingNumber: data2.mp_task_nr,
+        providerStatus: data2.status || "CREATED"
+      };
+    } catch (e) {
+      return { success: false, error: e.message };
+    }
+  }
+  async trackShipment(trackingId, credentials, environment) {
+    const baseUrl = this.getBaseUrl(environment);
+    try {
+      const response = await fetch(`${baseUrl}/public/v1/task/${trackingId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-KEY": credentials.apiKey || credentials.password || "",
+          "Api-Key": credentials.apiKey || credentials.password || "",
+          "Authorization": `Bearer ${credentials.apiKey || credentials.password}`
+        }
+      });
+      const data2 = await response.json();
+      if (!response.ok || data2.status === "ERROR") {
+        return { success: false, providerStatus: "Error", usendStatus: "FAILED", timestamp: (/* @__PURE__ */ new Date()).toISOString(), error: data2.message || "Tracking Error" };
+      }
+      return {
+        success: true,
+        providerStatus: data2.status,
+        usendStatus: this.mapStatus(data2.status),
+        timestamp: (/* @__PURE__ */ new Date()).toISOString()
+      };
+    } catch (e) {
+      return { success: false, providerStatus: "Error", usendStatus: "FAILED", timestamp: (/* @__PURE__ */ new Date()).toISOString(), error: e.message };
+    }
+  }
+  async cancelShipment(trackingId, credentials, environment) {
+    const baseUrl = this.getBaseUrl(environment);
+    try {
+      const response = await fetch(`${baseUrl}/public/v1/task/${trackingId}/cancel`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-KEY": credentials.apiKey || credentials.password || "",
+          "Api-Key": credentials.apiKey || credentials.password || "",
+          "Authorization": `Bearer ${credentials.apiKey || credentials.password}`
+        },
+        body: JSON.stringify({ reason: "USend Automated Cancellation" })
+      });
+      const data2 = await response.json();
+      return response.ok && data2.status === "SUCCESS";
+    } catch (e) {
+      return false;
+    }
+  }
+  mapStatus(noonStatus) {
+    const status = (noonStatus || "").toUpperCase();
+    if (["DELIVERED", "COMPLETED", "SUCCESS"].includes(status)) return "DELIVERED";
+    if (["CANCELLED", "REJECTED", "FAILED"].includes(status)) return "FAILED";
+    if (["CREATED", "ASSIGNED", "DISPATCHED", "IN_PROGRESS"].includes(status)) return "IN_TRANSIT";
+    return "PENDING";
+  }
+};
+
+// src/backend/adapters/CourierEngine.ts
+var CourierEngine = class {
+  constructor() {
+    this.adapters = /* @__PURE__ */ new Map();
+    this.registerAdapter(new AramexAdapter());
+    this.registerAdapter(new NoonAdapter());
+  }
+  registerAdapter(adapter) {
+    this.adapters.set(adapter.id, adapter);
+  }
+  getAdapter(id) {
+    const adapter = this.adapters.get(id);
+    if (!adapter) {
+      throw new Error(`Courier adapter for '${id}' not found`);
+    }
+    return adapter;
+  }
+};
+var courierEngine = new CourierEngine();
+
+// server.ts
 import_dotenv.default.config();
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 if (process.env.NODE_ENV !== "production" && !process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
@@ -145,8 +627,8 @@ app.post("/api/payments/create-intent", async (req, res) => {
       try {
         const orderSnap = await dbAdmin.collection("requests").doc(orderId).get();
         if (orderSnap.exists) {
-          const data = orderSnap.data();
-          const dbAmountStr = data?.orderAmount || "";
+          const data2 = orderSnap.data();
+          const dbAmountStr = data2?.orderAmount || "";
           const dbAmount = parseFloat(dbAmountStr.replace(/[^0-9.]/g, ""));
           if (!isNaN(dbAmount) && Math.abs(dbAmount - amountAED) > 0.01) {
             console.warn(`Amount mismatch for order ${orderId}: expected ${dbAmount}, got ${amountAED}`);
@@ -223,27 +705,55 @@ function broadcastEvent(event) {
 }
 app.post("/api/webhooks/aramex", import_express.default.json(), async (req, res) => {
   console.log("Webhook Received:", req.body);
-  const data = req.body;
-  if (data?.UpdateCode && data?.WaybillNumber) {
+  const data2 = req.body;
+  if (data2?.UpdateCode && data2?.WaybillNumber) {
     broadcastEvent({
       type: "WEBHOOK_UPDATE",
-      trackingNumber: data.WaybillNumber,
-      updateCode: data.UpdateCode,
-      updateDescription: data.UpdateDescription,
+      trackingNumber: data2.WaybillNumber,
+      updateCode: data2.UpdateCode,
+      updateDescription: data2.UpdateDescription,
       timestamp: (/* @__PURE__ */ new Date()).toISOString(),
-      location: data.UpdateLocation || "Hub"
+      location: data2.UpdateLocation || "Hub"
     });
-    dbAdmin.collection("requests").doc(data.WaybillNumber).collection("tracking_history").add({
-      updateCode: data.UpdateCode,
-      updateDescription: data.UpdateDescription,
-      location: data.UpdateLocation || "Hub",
+    dbAdmin.collection("requests").doc(data2.WaybillNumber).collection("tracking_history").add({
+      updateCode: data2.UpdateCode,
+      updateDescription: data2.UpdateDescription,
+      location: data2.UpdateLocation || "Hub",
       timestamp: import_firestore.FieldValue.serverTimestamp(),
-      rawPayload: data
+      rawPayload: data2
     }).catch((err) => console.error("Failed to append tracking history:", err));
-    dbAdmin.collection("requests").doc(data.WaybillNumber).update({
-      status: data.UpdateDescription,
+    dbAdmin.collection("requests").doc(data2.WaybillNumber).update({
+      status: data2.UpdateDescription,
       updatedAt: import_firestore.FieldValue.serverTimestamp()
     }).catch((err) => console.error("Failed to update tracking status:", err));
+  }
+  res.status(200).json({ status: "acknowledged" });
+});
+app.post("/api/webhooks/noon", import_express.default.json(), async (req, res) => {
+  console.log("Noon Webhook Received:", req.body);
+  const data2 = req.body;
+  if (data2?.order_reference || data2?.task_nr) {
+    const trackingRef = data2.order_reference || data2.task_nr;
+    const statusDesc = data2.status_description || data2.status_code || "Updated";
+    broadcastEvent({
+      type: "WEBHOOK_UPDATE",
+      trackingNumber: trackingRef,
+      updateCode: data2.status_code,
+      updateDescription: statusDesc,
+      timestamp: data2.event_time || (/* @__PURE__ */ new Date()).toISOString(),
+      location: data2.location || "Noon Hub"
+    });
+    dbAdmin.collection("requests").doc(trackingRef).collection("tracking_history").add({
+      updateCode: data2.status_code || "UPDATE",
+      updateDescription: statusDesc,
+      location: data2.location || "Noon Hub",
+      timestamp: import_firestore.FieldValue.serverTimestamp(),
+      rawPayload: data2
+    }).catch((err) => console.error("Failed to append Noon tracking history:", err));
+    dbAdmin.collection("requests").doc(trackingRef).update({
+      status: statusDesc,
+      updatedAt: import_firestore.FieldValue.serverTimestamp()
+    }).catch((err) => console.error("Failed to update Noon tracking status:", err));
   }
   res.status(200).json({ status: "acknowledged" });
 });
@@ -299,122 +809,41 @@ app.post("/api/aramex/:serviceType", async (req, res) => {
         Notifications: [{ Code: "ERR_ROUTING", Message: "Invalid Aramex service type" }]
       });
     }
-    let aramexRes;
-    let data;
-    const isMockCreds = finalUserName === "dxbit@aramex.com" || finalUserName === "testingapi@aramex.com";
-    let useFallback = isMockCreds;
-    if (!useFallback) {
+    try {
+      aramexRes = await fetch(`${baseUrl}${path2}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json"
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(15e3)
+        // 15 second timeout
+      });
+      if (!aramexRes.ok) {
+        return res.status(aramexRes.status).json({ error: `Aramex API returned status ${aramexRes.status}` });
+      }
+      const textData = await aramexRes.text();
       try {
-        aramexRes = await fetch(`${baseUrl}${path2}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json"
-          },
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(15e3)
-          // 15 second timeout
-        });
-        if (!aramexRes.ok) {
-          console.warn(`Aramex API returned non-OK status: ${aramexRes.status}. Using mock fallback.`);
-          useFallback = true;
-        } else {
-          const textData = await aramexRes.text();
-          try {
-            data = JSON.parse(textData);
-          } catch (parseError) {
-            console.warn("Aramex returned non-JSON response. Using mock fallback.");
-            useFallback = true;
-          }
-        }
-      } catch (fetchError) {
-        console.warn(`Aramex API connection failed: ${fetchError.message}. Using mock fallback.`);
-        useFallback = true;
+        data = JSON.parse(textData);
+        return res.json(data);
+      } catch (parseError) {
+        return res.status(500).json({ error: "Aramex returned non-JSON response." });
       }
+    } catch (fetchError) {
+      return res.status(500).json({ error: `Aramex API connection failed: ${fetchError.message}` });
     }
-    if (useFallback) {
-      if (serviceType === "rate") {
-        const isDomestic = payload.ShipmentDetails?.ProductGroup === "DOM";
-        const weight = payload.ShipmentDetails?.ActualWeight?.Value || 1;
-        const calculatedFee = 15 + weight * (isDomestic ? 4.5 : 15);
-        data = {
-          HasErrors: false,
-          Notifications: [],
-          TotalAmount: {
-            Value: calculatedFee,
-            CurrencyCode: "AED"
-          }
-        };
-      } else if (serviceType === "shipping") {
-        const trackingId = "ARX" + Math.floor(1e7 + Math.random() * 9e7);
-        data = {
-          HasErrors: false,
-          Notifications: [],
-          Shipments: [
-            {
-              ProcessedShipment: {
-                ID: trackingId
-              },
-              ShipmentLabel: {
-                LabelURL: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
-              }
-            }
-          ]
-        };
-      } else if (serviceType === "tracking") {
-        const trackingNumber = payload.Shipments && payload.Shipments[0] || "ARX-AWB-DEFAULT";
-        data = {
-          HasErrors: false,
-          Notifications: [],
-          TrackingResults: [
-            {
-              Key: trackingNumber,
-              Value: [
-                {
-                  UpdateCode: "SH014",
-                  UpdateLocation: "Dubai Hub (Jebel Ali)",
-                  UpdateDateTime: new Date(Date.now() - 36e5 * 4).toISOString(),
-                  UpdateDescription: "Electronic order data registered with dispatch carrier system. Courier collection request generated."
-                },
-                {
-                  UpdateCode: "SH005",
-                  UpdateLocation: "Dubai Sorting Facility (DXB)",
-                  UpdateDateTime: new Date(Date.now() - 36e5 * 2).toISOString(),
-                  UpdateDescription: "Package collected, weight audits finalized."
-                },
-                {
-                  UpdateCode: "SH006",
-                  UpdateLocation: "Cross-UAE Transit",
-                  UpdateDateTime: new Date(Date.now() - 36e5 * 1).toISOString(),
-                  UpdateDescription: "Dispatched from regional logistics sorting terminal to last-mile hub location."
-                }
-              ]
-            }
-          ]
-        };
-      } else if (serviceType === "pickup") {
-        const randomPickNo = Math.floor(1e4 + Math.random() * 9e4);
-        data = {
-          HasErrors: false,
-          Notifications: [],
-          ProcessedPickup: {
-            ID: `ARX-PIK-${randomPickNo}`,
-            GUID: `PRQ-GUID-${randomPickNo}`
-          }
-        };
-      }
-    }
-    return res.json(data);
   } catch (error) {
     console.error("Aramex Error:", error);
     return res.status(500).json({ error: error.message });
   }
 });
-var NOON_STAGING_KEY = "SstJi9Ho0EHG2t7kQVSz7nA2hOeL3iiwVxHxb0Njk60QJ0LfmvoXoOsimw1zQC7VugHXiIRRMnWyU6f0uHcEcLlco5Eujqbd5pTwDlfBXpacuRI4m4AAj61NwM0B7Ihk";
-var NOON_STAGING_URL = "https://food-api-team.noonstg.team";
+var getNoonBaseUrl = (req) => {
+  return req.headers["x-noon-base-url"] || req.query.baseUrl || req.body && req.body.baseUrl || "https://merchants.staging.noon.com";
+};
 var getNoonHeaders = (req) => {
   const clientApiKey = req.headers["x-noon-api-key"] || req.query.apiKey || req.body && req.body.apiKey;
-  const apiKey2 = clientApiKey && clientApiKey !== "noon_secret_key_123" ? clientApiKey : NOON_STAGING_KEY;
+  const apiKey2 = clientApiKey && clientApiKey !== "noon_secret_key_123" ? clientApiKey : "";
   return {
     "Content-Type": "application/json",
     "X-API-KEY": apiKey2,
@@ -422,258 +851,149 @@ var getNoonHeaders = (req) => {
     "Authorization": `Bearer ${apiKey2}`
   };
 };
-app.post("/api/aramex/test-connection", import_express.default.json(), async (req, res) => {
+app.post("/api/courier/test-connection", import_express.default.json(), async (req, res) => {
   try {
-    const { credentials } = req.body;
-    if (!credentials) {
-      return res.status(400).json({ error: "Missing credentials parameter" });
+    const { courierId, credentials, environment } = req.body;
+    if (!courierId || !credentials || !environment) {
+      return res.status(400).json({ success: false, error: "Missing required parameters" });
     }
-    const isProduction = credentials.apiEnv === "production";
-    const baseUrl = isProduction ? "https://ws.aramex.net" : "https://ws.uat.aramex.net";
-    const path2 = "/ShippingAPI.V2/RateCalculator/Service_1_0.svc/json/CalculateRate";
-    const payload = {
-      ClientInfo: {
-        UserName: credentials.username,
-        Password: credentials.password || "",
-        Version: credentials.version || "v1.0",
-        AccountNumber: credentials.accountNumber,
-        AccountPin: credentials.accountPin,
-        AccountEntity: credentials.accountEntity,
-        AccountCountryCode: credentials.accountCountryCode,
-        Source: parseInt(credentials.source, 10) || 0
-      },
-      Transaction: {
-        Reference1: "Connection Verification",
-        Reference2: "",
-        Reference3: "",
-        Reference4: "",
-        Reference5: ""
-      },
-      OriginAddress: { City: "Dubai", CountryCode: "AE" },
-      DestinationAddress: { City: "Abu Dhabi", CountryCode: "AE" },
-      ShipmentDetails: {
-        PaymentType: "P",
-        ProductGroup: "DOM",
-        ProductType: "OND",
-        ActualWeight: { Value: 1, Unit: "KG" },
-        ChargeableWeight: { Value: 1, Unit: "KG" },
-        NumberOfPieces: 1
-      }
-    };
-    console.log(`[Aramex Connection Test] Testing against ${baseUrl}...`);
-    const aramexRes = await fetch(`${baseUrl}${path2}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json"
-      },
-      body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(15e3)
-    });
-    if (!aramexRes.ok) {
-      return res.status(200).json({
-        success: false,
-        error: `HTTP Error: Server returned status code ${aramexRes.status}`
-      });
+    const adapter = courierEngine.getAdapter(courierId);
+    const result = await adapter.validateCredentials(credentials, environment);
+    if (!result.success) {
+      return res.json({ success: false, error: result.error });
     }
-    const data = await aramexRes.json();
-    if (data.HasErrors) {
-      return res.status(200).json({
-        success: false,
-        error: data.Notifications?.[0]?.Message || "Aramex API credentials validation failed"
-      });
-    }
-    return res.json({ success: true, message: "Handshake verified successfully!" });
+    return res.json({ success: true });
   } catch (error) {
-    console.error("[Aramex Connection Test] Error:", error);
     return res.status(200).json({ success: false, error: error.message });
   }
 });
-app.post("/api/noon/test-connection", import_express.default.json(), async (req, res) => {
+app.post("/api/courier/rate", import_express.default.json(), async (req, res) => {
   try {
-    const { apiKey: apiKey2 } = req.body;
-    if (!apiKey2) {
-      return res.status(400).json({ error: "Missing API key parameter" });
-    }
-    console.log("[Noon Connection Test] Testing API Key against Noon Staging...");
-    const response = await fetch(`${NOON_STAGING_URL}/public/v1/pickup-points/list`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "X-API-KEY": apiKey2,
-        "Api-Key": apiKey2,
-        "Authorization": `Bearer ${apiKey2}`
-      },
-      signal: AbortSignal.timeout(1e4)
-    });
-    const responseText = await response.text();
-    if (responseText.includes("FortiGuard") || responseText.includes("Web Filter") || responseText.includes("Access Blocked")) {
-      return res.status(200).json({
-        success: false,
-        error: "Access blocked by FortiGuard Corporate Firewall/Web Filter. The Noon Staging domain is restricted on this network."
-      });
-    }
-    if (response.ok) {
-      try {
-        const data = JSON.parse(responseText);
-        if (data.status === "SUCCESS" || Array.isArray(data.pickup_points)) {
-          return res.json({ success: true, message: "Noon credentials handshake verified successfully!" });
-        }
-      } catch (parseErr) {
-        if (responseText.includes("pickup_points") || responseText.includes("SUCCESS")) {
-          return res.json({ success: true, message: "Noon credentials handshake verified successfully!" });
-        }
-      }
-    }
-    return res.status(200).json({
-      success: false,
-      error: `Handshake failed: Noon Staging returned status ${response.status}. Details: ${responseText.substring(0, 150) || "Invalid API Key"}`
-    });
+    const { courierId, payload, credentials, environment } = req.body;
+    const adapter = courierEngine.getAdapter(courierId);
+    const result = await adapter.calculateRate(payload, credentials, environment);
+    return res.json(result);
   } catch (error) {
-    console.error("[Noon Connection Test] Error:", error);
-    let errorMsg = error.message || "Unknown connection error";
-    if (errorMsg.includes("fetch failed") || error.code === "ENOTFOUND" || error.code === "ECONNREFUSED") {
-      errorMsg = "Connection failed. Staging server is unreachable (DNS resolution failed or connection blocked by firewall).";
-    }
-    return res.status(200).json({ success: false, error: errorMsg });
+    return res.json({ success: false, error: error.message });
+  }
+});
+app.post("/api/courier/shipment", import_express.default.json(), async (req, res) => {
+  try {
+    const { courierId, payload, credentials, environment } = req.body;
+    const adapter = courierEngine.getAdapter(courierId);
+    const result = await adapter.createShipment(payload, credentials, environment);
+    return res.json(result);
+  } catch (error) {
+    return res.json({ success: false, error: error.message });
+  }
+});
+app.post("/api/courier/track", import_express.default.json(), async (req, res) => {
+  try {
+    const { courierId, trackingId, credentials, environment } = req.body;
+    const adapter = courierEngine.getAdapter(courierId);
+    const result = await adapter.trackShipment(trackingId, credentials, environment);
+    return res.json(result);
+  } catch (error) {
+    return res.json({ success: false, error: error.message });
+  }
+});
+app.post("/api/courier/cancel", import_express.default.json(), async (req, res) => {
+  try {
+    const { courierId, trackingId, credentials, environment } = req.body;
+    const adapter = courierEngine.getAdapter(courierId);
+    const result = await adapter.cancelShipment(trackingId, credentials, environment);
+    return res.json({ success: result });
+  } catch (error) {
+    return res.json({ success: false, error: error.message });
   }
 });
 app.get("/api/noon/pickup-addresses", async (req, res) => {
   try {
-    console.log("[Noon Proxy] Fetching pickup points from Noon Staging...");
-    const response = await fetch(`${NOON_STAGING_URL}/public/v1/pickup-points/list`, {
+    const baseUrl = getNoonBaseUrl(req);
+    console.log(`[Noon Proxy] Fetching pickup points from ${baseUrl}...`);
+    const response = await fetch(`${baseUrl}/public/v1/pickup-points/list`, {
       method: "GET",
       headers: getNoonHeaders(req),
       signal: AbortSignal.timeout(1e4)
     });
     if (response.ok) {
-      const data = await response.json();
-      console.log("[Noon Proxy] Successfully fetched pickup points from Noon Staging API.");
-      return res.json(data);
+      const data2 = await response.json();
+      console.log("[Noon Proxy] Successfully fetched pickup points from Noon API.");
+      return res.json(data2);
     } else {
-      console.warn(`[Noon Proxy] Noon Staging API returned ${response.status}. Using high-fidelity staging fallback.`);
+      console.error(`[Noon Proxy] Noon API returned ${response.status}.`);
+      return res.status(response.status).json({ error: `Noon API returned ${response.status}` });
     }
   } catch (error) {
-    console.warn(`[Noon Proxy] Failed to connect to Noon Staging: ${error.message}. Using offline fallback.`);
+    console.error(`[Noon Proxy] Failed to connect to Noon: ${error.message}.`);
+    return res.status(500).json({ error: `Connection failed: ${error.message}` });
   }
-  res.json({
-    status: "SUCCESS",
-    pickup_points: [
-      {
-        code: "77T4HCOD4G",
-        name: "Jebel Ali Main Staging Outlet",
-        phone_number: "+971501112222",
-        address_details: "Jebel Ali industrial area, Dubai, UAE",
-        coordinates: { latitude: 251998377, longitude: 552738694 }
-      },
-      {
-        code: "BDLLHTRQC6",
-        name: "Dubai Downtown Staging Outlet",
-        phone_number: "+971503334444",
-        address_details: "Downtown Blvd near Fountain, Dubai, UAE",
-        coordinates: { latitude: 251101359, longitude: 551958038 }
-      },
-      {
-        code: "CMFRTF2DXS",
-        name: "Deira Old Port Staging Outlet",
-        phone_number: "+971505556666",
-        address_details: "Deira Wharfage, Dubai, UAE",
-        coordinates: { latitude: 252519665, longitude: 553150403 }
-      }
-    ]
-  });
 });
 app.post("/api/noon/create-task", async (req, res) => {
   const params = req.body;
   try {
-    console.log("[Noon Proxy] Sending create-task payload to Noon Staging...", JSON.stringify(params));
-    const response = await fetch(`${NOON_STAGING_URL}/public/v1/create-task`, {
+    const baseUrl = getNoonBaseUrl(req);
+    console.log(`[Noon Proxy] Sending create-task payload to ${baseUrl}...`, JSON.stringify(params));
+    const response = await fetch(`${baseUrl}/public/v1/create-task`, {
       method: "POST",
       headers: getNoonHeaders(req),
       body: JSON.stringify(params),
       signal: AbortSignal.timeout(1e4)
     });
-    const data = await response.json();
-    console.log(`[Noon Proxy] Noon Staging API returned status ${response.status}:`, data);
-    if (response.ok || data.status === "SUCCESS" || !!data.mp_task_nr) {
-      return res.status(response.status).json(data);
+    const data2 = await response.json();
+    console.log(`[Noon Proxy] Noon Staging API returned status ${response.status}:`, data2);
+    if (response.ok || data2.status === "SUCCESS") {
+      return res.status(response.status).json(data2);
     } else {
-      console.warn(`[Noon Proxy] Noon Staging API returned error structure. Falling back to simulated successful creation.`);
+      console.error(`[Noon Proxy] Noon API returned error structure.`);
+      return res.status(response.status).json(data2);
     }
   } catch (error) {
-    console.warn(`[Noon Proxy] Noon Staging create-task connection failed: ${error.message}. Using fallback.`);
+    console.error(`[Noon Proxy] Noon create-task connection failed: ${error.message}.`);
+    return res.status(500).json({ error: `Connection failed: ${error.message}` });
   }
-  const mockTaskNr = `MP-NOON-${Math.floor(1e5 + Math.random() * 9e5)}`;
-  res.status(200).json({
-    status: "SUCCESS",
-    message: "Delivery task successfully queued (Simulated)",
-    mp_task_nr: mockTaskNr,
-    outlet_code: params.outlet_code || "77T4HCOD4G",
-    order_reference: params.order_reference || `REF-${Math.floor(1e4 + Math.random() * 9e4)}`,
-    courier_assigned: {
-      name: "Rider On Demand (Staging)",
-      phone: "+971509876543",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100&auto=format&fit=crop"
-    }
-  });
 });
 app.get("/api/noon/tasks/:mp_task_nr", async (req, res) => {
   const { mp_task_nr } = req.params;
   try {
-    console.log(`[Noon Proxy] Fetching task details for ${mp_task_nr} from Noon Staging...`);
-    const response = await fetch(`${NOON_STAGING_URL}/public/v1/tasks/${mp_task_nr}`, {
+    const baseUrl = getNoonBaseUrl(req);
+    console.log(`[Noon Proxy] Fetching task details for ${mp_task_nr} from ${baseUrl}...`);
+    const response = await fetch(`${baseUrl}/public/v1/tasks/${mp_task_nr}`, {
       method: "GET",
       headers: getNoonHeaders(req),
       signal: AbortSignal.timeout(1e4)
     });
     if (response.ok) {
-      const data = await response.json();
-      return res.json(data);
+      const data2 = await response.json();
+      return res.json(data2);
     }
+    return res.status(response.status).json({ error: `Noon API returned ${response.status}` });
   } catch (error) {
-    console.warn(`[Noon Proxy] Noon Staging fetch task details failed: ${error.message}. Using fallback.`);
+    console.error(`[Noon Proxy] Noon fetch task details failed: ${error.message}.`);
+    return res.status(500).json({ error: `Connection failed: ${error.message}` });
   }
-  res.json({
-    status: "SUCCESS",
-    mp_task_nr,
-    current_status: "assigned",
-    // states: pending_assignment, assigned, arrived_at_pickup_location, picked_up, arrived_at_delivery, delivered
-    delivery_agent: {
-      name: "Ahmed Al Mansoori",
-      phone_number: "+971588123456",
-      current_latitude: 25.1998,
-      current_longitude: 55.2738,
-      telemetry_updated_at: (/* @__PURE__ */ new Date()).toISOString()
-    },
-    history: [
-      { status: "pending_assignment", timestamp: new Date(Date.now() - 36e5).toISOString() },
-      { status: "assigned", timestamp: new Date(Date.now() - 18e5).toISOString() }
-    ]
-  });
 });
 app.post("/api/noon/tasks/:mp_task_nr/cancel", async (req, res) => {
   const { mp_task_nr } = req.params;
   const { reason } = req.body;
   try {
+    const baseUrl = getNoonBaseUrl(req);
     console.log(`[Noon Proxy] Sending cancellation request for ${mp_task_nr}...`);
-    const response = await fetch(`${NOON_STAGING_URL}/public/v1/tasks/${mp_task_nr}/cancel`, {
+    const response = await fetch(`${baseUrl}/public/v1/tasks/${mp_task_nr}/cancel`, {
       method: "POST",
       headers: getNoonHeaders(req),
       body: JSON.stringify({ reason }),
       signal: AbortSignal.timeout(1e4)
     });
     if (response.ok) {
-      const data = await response.json();
-      return res.json(data);
+      const data2 = await response.json();
+      return res.json(data2);
     }
+    return res.status(response.status).json({ error: `Noon API returned ${response.status}` });
   } catch (error) {
-    console.warn(`[Noon Proxy] Noon Staging task cancellation failed: ${error.message}. Using fallback.`);
+    console.error(`[Noon Proxy] Noon task cancellation failed: ${error.message}.`);
+    return res.status(500).json({ error: `Connection failed: ${error.message}` });
   }
-  res.json({
-    status: "SUCCESS",
-    mp_task_nr,
-    message: "Delivery task cancelled successfully."
-  });
 });
 var apiKey = process.env.GEMINI_API_KEY;
 var ai = new import_genai.GoogleGenAI({
@@ -700,16 +1020,16 @@ app.post("/api/gemini/analyze-item", async (req, res) => {
       const matches = photoBase64.match(
         /^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,(.+)$/
       );
-      let data = photoBase64;
+      let data2 = photoBase64;
       let mimeType = "image/jpeg";
       if (matches && matches.length === 3) {
         mimeType = matches[1];
-        data = matches[2];
+        data2 = matches[2];
       }
       parts.push({
         inlineData: {
           mimeType,
-          data
+          data: data2
         }
       });
     }

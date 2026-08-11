@@ -1,0 +1,26 @@
+import { CourierAdapter } from './CourierAdapter';
+import { AramexAdapter } from './AramexAdapter';
+import { NoonAdapter } from './NoonAdapter';
+
+export class CourierEngine {
+  private adapters: Map<string, CourierAdapter> = new Map();
+
+  constructor() {
+    this.registerAdapter(new AramexAdapter());
+    this.registerAdapter(new NoonAdapter());
+  }
+
+  public registerAdapter(adapter: CourierAdapter) {
+    this.adapters.set(adapter.id, adapter);
+  }
+
+  public getAdapter(id: string): CourierAdapter {
+    const adapter = this.adapters.get(id);
+    if (!adapter) {
+      throw new Error(`Courier adapter for '${id}' not found`);
+    }
+    return adapter;
+  }
+}
+
+export const courierEngine = new CourierEngine();

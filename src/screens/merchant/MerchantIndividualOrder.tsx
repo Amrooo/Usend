@@ -27,8 +27,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useLanguage } from '../../context/LanguageContext';
-import { aramexService } from '../../services/aramexIntegration';
-import { noonService } from '../../services/noonIntegration';
+// Removed legacy frontend mocked wrappers in favor of CourierEngine backend
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
@@ -229,71 +228,56 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
 
     await addRequest(payload);
     
-    if (formData.carrier === 'aramex') {
+    if (formData.carrier === 'aramex' || formData.carrier === 'noon') {
       try {
-        const aramexRes = await aramexService.createDeliveryJob(payload);
-        if (aramexRes.success === false) {
-           throw new Error(aramexRes.error || "Aramex API failed to create shipment.");
-        }
-        await updateRequest(reqId, { status: 'Assigned' });
-      } catch (err: any) {
-        console.error("Aramex Sandbox Dispatch failed", err);
-        setIsSubmitting(false);
-        window.dispatchEvent(new CustomEvent('app_toast', { detail: { title: 'Aramex Integration Error', message: err.message, type: 'error' } }));
-        return;
-      }
-    } else if (formData.carrier === 'noon') {
-      try {
-        const numericCod = parseFloat(formData.amount || '0') || 0;
-        const codValueFils = Math.round(numericCod * 100);
-        const noonConfig = courierConfigs?.noon;
-        const noonCreds = noonConfig?.currentMode === 'sandbox' ? noonConfig.sandboxCreds : noonConfig?.productionCreds;
-        const noonApiKey = noonCreds?.apiKey || noonCreds?.password;
-        const noonBaseUrl = noonConfig?.currentMode === 'sandbox' ? noonConfig.baseUrlUat : noonConfig?.baseUrlProd;
+        const config = courierConfigs?.[formData.carrier];
+        const activeCreds = config
+          ? (config.currentMode === 'sandbox' ? config.sandboxCreds : config.productionCreds)
+          : undefined;
+          
+        const canonicalPayload = {
+          senderName: "USend Merchant",
+          senderPhone: formData.pickupPhone || "+971500000000",
+          senderCity: formData.pickupCity || "Dubai",
+          senderCountry: "AE",
+          senderAddress: formData.pickupAddress || "Merchant Store",
+          receiverName: formData.customerName || "Recipient",
+          receiverPhone: formData.phone || "+971520000000",
+          receiverCity: formData.address?.split(',')[1]?.trim() || "Dubai",
+          receiverCountry: "AE",
+          receiverAddress: formData.address || "Delivery Address",
+          goodsDescription: formData.notes || "E-commerce Goods",
+          weightKg: formData.weight ? parseFloat(formData.weight) : 1.0,
+          codAmountAED: parseFloat(formData.amount || '0') || 0,
+          reference: reqId
+        };
 
-        const res = await noonService.createDeliveryTask({
-          outlet_code: "77T4HCOD4G",
-          order_reference: reqId,
-          customer_name: formData.customerName || "Recipient Buyer",
-          customer_phone: formData.phone || "+971520000000",
-          drop_off_address: {
-            address: formData.address || "Corniche Street, Dubai, UAE",
-            lat: formData.position ? formData.position[0] : 25.1998,
-            lng: formData.position ? formData.position[1] : 55.2738,
-            contact_name: formData.customerName || "Recipient Buyer",
-            contact_phone_number: formData.phone || "+971520000000",
-            country_code: "ARE"
-          },
-          lat: formData.position ? formData.position[0] : 25.1998,
-          lng: formData.position ? formData.position[1] : 55.2738,
-          cod_value: codValueFils,
-          payment_method: numericCod > 0 ? 'COD' : 'PAID'
-        }, noonApiKey, noonBaseUrl);
+        const res = await fetch('/api/courier/shipment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            courierId: formData.carrier,
+            payload: canonicalPayload,
+            credentials: activeCreds ? { ...activeCreds, apiEnv: config?.currentMode } : undefined,
+            environment: config?.currentMode || 'sandbox'
+          })
+        });
 
-        if (res.success && res.data?.mp_task_nr) {
-          await updateRequest(reqId, {
+        const courierRes = await res.json();
+        
+        if (courierRes.success) {
+          await updateRequest(reqId, { 
             status: 'Assigned',
-            externalTrackingNumber: res.data.mp_task_nr,
-            noonLogs: {
-              request: {
-                outlet_code: "77T4HCOD4G",
-                order_reference: reqId,
-                customer_name: formData.customerName,
-                customer_phone: formData.phone,
-                cod_value: codValueFils,
-                payment_method: numericCod > 0 ? 'COD' : 'PAID'
-              },
-              response: res.data,
-              timestamp: new Date().toISOString()
-            }
+            externalTrackingNumber: courierRes.trackingNumber,
+            carrierLogs: { request: canonicalPayload, response: courierRes }
           });
         } else {
-          throw new Error(res.error || (res.data ? JSON.stringify(res.data) : "Noon API failed to create shipment."));
+          throw new Error(courierRes.error || `${formData.carrier} API failed to create shipment.`);
         }
       } catch (err: any) {
-        console.error("Noon Staging Dispatch failed", err);
+        console.error(`${formData.carrier} Sandbox Dispatch failed`, err);
         setIsSubmitting(false);
-        window.dispatchEvent(new CustomEvent('app_toast', { detail: { title: 'Noon Integration Error', message: err.message, type: 'error' } }));
+        window.dispatchEvent(new CustomEvent('app_toast', { detail: { title: `${formData.carrier} Integration Error`, message: err.message, type: 'error' } }));
         return;
       }
     }
@@ -555,71 +539,56 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
       
       await addRequest(payload);
 
-      if (formData.carrier === 'aramex') {
+      if (formData.carrier === 'aramex' || formData.carrier === 'noon') {
         try {
-          const aramexRes = await aramexService.createDeliveryJob(payload);
-          if (aramexRes.success === false) {
-             throw new Error(aramexRes.error || "Aramex API failed to create shipment.");
-          }
-          await updateRequest(reqId, { status: 'Assigned' });
-        } catch (err: any) {
-          console.error("Aramex Sandbox Dispatch failed", err);
-          setIsSubmitting(false);
-          window.dispatchEvent(new CustomEvent('app_toast', { detail: { title: 'Aramex Integration Error', message: err.message, type: 'error' } }));
-          return;
-        }
-      } else if (formData.carrier === 'noon') {
-        try {
-          const numericCod = parseFloat(formData.amount || '0') || 0;
-          const codValueFils = Math.round(numericCod * 100);
-          const noonConfig = courierConfigs?.noon;
-          const noonCreds = noonConfig?.currentMode === 'sandbox' ? noonConfig.sandboxCreds : noonConfig?.productionCreds;
-          const noonApiKey = noonCreds?.apiKey || noonCreds?.password;
-          const noonBaseUrl = noonConfig?.currentMode === 'sandbox' ? noonConfig.baseUrlUat : noonConfig?.baseUrlProd;
+          const config = courierConfigs?.[formData.carrier];
+          const activeCreds = config
+            ? (config.currentMode === 'sandbox' ? config.sandboxCreds : config.productionCreds)
+            : undefined;
+            
+          const canonicalPayload = {
+            senderName: "USend Merchant",
+            senderPhone: formData.pickupPhone || "+971500000000",
+            senderCity: formData.pickupCity || "Dubai",
+            senderCountry: "AE",
+            senderAddress: formData.pickupAddress || "Merchant Store",
+            receiverName: formData.customerName || "Recipient",
+            receiverPhone: formData.phone || "+971520000000",
+            receiverCity: formData.address?.split(',')[1]?.trim() || "Dubai",
+            receiverCountry: "AE",
+            receiverAddress: formData.address || "Delivery Address",
+            goodsDescription: formData.notes || "E-commerce Goods",
+            weightKg: formData.weight ? parseFloat(formData.weight) : 1.0,
+            codAmountAED: parseFloat(formData.amount || '0') || 0,
+            reference: reqId
+          };
 
-          const res = await noonService.createDeliveryTask({
-            outlet_code: "77T4HCOD4G", // Default staging outlet
-            order_reference: reqId,
-            customer_name: formData.customerName || "Recipient Buyer",
-            customer_phone: formData.phone || "+971520000000",
-            drop_off_address: {
-              address: formData.address || "Corniche Street, Dubai, UAE",
-              lat: formData.position ? formData.position[0] : 25.1998,
-              lng: formData.position ? formData.position[1] : 55.2738,
-              contact_name: formData.customerName || "Recipient Buyer",
-              contact_phone_number: formData.phone || "+971520000000",
-              country_code: "ARE"
-            },
-            lat: formData.position ? formData.position[0] : 25.1998,
-            lng: formData.position ? formData.position[1] : 55.2738,
-            cod_value: codValueFils,
-            payment_method: numericCod > 0 ? 'COD' : 'PAID'
-          }, noonApiKey, noonBaseUrl);
+          const res = await fetch('/api/courier/shipment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              courierId: formData.carrier,
+              payload: canonicalPayload,
+              credentials: activeCreds ? { ...activeCreds, apiEnv: config?.currentMode } : undefined,
+              environment: config?.currentMode || 'sandbox'
+            })
+          });
 
-          if (res.success && res.data?.mp_task_nr) {
-            await updateRequest(reqId, {
+          const courierRes = await res.json();
+          
+          if (courierRes.success) {
+            await updateRequest(reqId, { 
               status: 'Assigned',
-              externalTrackingNumber: res.data.mp_task_nr,
-              noonLogs: {
-                request: {
-                  outlet_code: "77T4HCOD4G",
-                  order_reference: reqId,
-                  customer_name: formData.customerName,
-                  customer_phone: formData.phone,
-                  cod_value: codValueFils,
-                  payment_method: numericCod > 0 ? 'COD' : 'PAID'
-                },
-                response: res.data,
-                timestamp: new Date().toISOString()
-              }
+              externalTrackingNumber: courierRes.trackingNumber,
+              carrierLogs: { request: canonicalPayload, response: courierRes }
             });
           } else {
-            throw new Error(res.error || (res.data ? JSON.stringify(res.data) : "Noon API failed to create shipment."));
+            throw new Error(courierRes.error || `${formData.carrier} API failed to create shipment.`);
           }
         } catch (err: any) {
-          console.error("Noon Staging Dispatch failed", err);
+          console.error(`${formData.carrier} Sandbox Dispatch failed`, err);
           setIsSubmitting(false);
-          window.dispatchEvent(new CustomEvent('app_toast', { detail: { title: 'Noon Integration Error', message: err.message, type: 'error' } }));
+          window.dispatchEvent(new CustomEvent('app_toast', { detail: { title: `${formData.carrier} Integration Error`, message: err.message, type: 'error' } }));
           return;
         }
       }
