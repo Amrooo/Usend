@@ -9,13 +9,12 @@ import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import fs from "fs";
 import { courierEngine } from "./src/backend/adapters/CourierEngine";
 
-// Load environment variables from parent directory if it exists, otherwise use local directory
-const parentEnvPath = path.resolve(process.cwd(), '../.env');
-if (fs.existsSync(parentEnvPath)) {
-  dotenv.config({ path: parentEnvPath });
-} else {
-  dotenv.config();
+// Load environment variables: check __dirname first, then fallback to cwd
+let envPath = path.resolve(__dirname, '.env');
+if (!fs.existsSync(envPath)) {
+  envPath = path.resolve(process.cwd(), '.env');
 }
+dotenv.config({ path: envPath });
 
 // Disable TLS validation errors for UAT/Staging proxy handshakes
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
@@ -35,10 +34,9 @@ if (process.env.NODE_ENV !== 'production' && !process.env.FIREBASE_SERVICE_ACCOU
 // Read firebase-applet-config.json for target project and database info
 let firebaseConfig: { projectId?: string; firestoreDatabaseId?: string } = {};
 try {
-  let configPath = path.resolve(process.cwd(), "firebase-applet-config.json");
-  const parentConfigPath = path.resolve(process.cwd(), "../firebase-applet-config.json");
-  if (fs.existsSync(parentConfigPath)) {
-    configPath = parentConfigPath;
+  let configPath = path.resolve(__dirname, "firebase-applet-config.json");
+  if (!fs.existsSync(configPath)) {
+    configPath = path.resolve(process.cwd(), "firebase-applet-config.json");
   }
   if (fs.existsSync(configPath)) {
     firebaseConfig = JSON.parse(fs.readFileSync(configPath, "utf8"));
@@ -767,6 +765,69 @@ app.post("/api/gemini/analyze-item", async (req, res) => {
 const isProd = process.env.NODE_ENV === "production";
 
 async function startServer() {
+  // Non-blocking firestore seed for courier integrations configuration
+  try {
+    dbAdmin.collection('settings').doc('courier_configs').get().then((docSnap) => {
+      if (!docSnap.exists) {
+        const initialConfigs = {
+          aramex: {
+            id: 'aramex',
+            name: 'Aramex Express',
+            status: 'Active',
+            currentMode: 'sandbox',
+            baseUrlUat: 'ws.aramex.net',
+            baseUrlProd: 'ws.aramex.net',
+            connectionStatus: 'UNTESTED',
+            sandboxCreds: {
+              username: "testingapi@aramex.com",
+              password: "R123456789$r",
+              accountNumber: "45796",
+              accountPin: "116216",
+              accountEntity: "DXB",
+              accountCountryCode: "AE",
+              source: "24",
+              version: "v1"
+            },
+            productionCreds: {
+              username: "",
+              password: "",
+              accountNumber: "",
+              accountPin: "",
+              accountEntity: "",
+              accountCountryCode: "",
+              source: "",
+              version: ""
+            }
+          },
+          noon: {
+            id: 'noon',
+            name: 'Noon Hyperlocal',
+            status: 'Active',
+            currentMode: 'sandbox',
+            baseUrlUat: 'https://food-api-team.noonstg.team',
+            baseUrlProd: 'https://food-api.noon.com',
+            connectionStatus: 'UNTESTED',
+            sandboxCreds: {
+              apiKey: 'noon_secret_key_123',
+              storeId: ''
+            },
+            productionCreds: {
+              apiKey: '',
+              storeId: ''
+            }
+          }
+        };
+        dbAdmin.collection('settings').doc('courier_configs').set(initialConfigs)
+          .then(() => console.log("[Firestore Seed] Successfully initialized default courier configurations."))
+          .catch((err: any) => console.error("[Firestore Seed] Failed to set default courier configs:", err.message));
+      }
+    }).catch((err: any) => {
+      console.warn("[Firestore Seed] Failed to read settings/courier_configs:", err.message);
+    });
+  } catch (err: any) {
+    console.error("[Firestore Seed] Failed to initialize check:", err.message);
+  }
+
   if (!isProd) {
     const vite = await createViteServer({
       server: { middlewareMode: true },

@@ -588,10 +588,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
         
         setCourierConfigs(data);
-      } else {
-        setDoc(doc(db, 'settings', 'courier_configs'), INITIAL_COURIER_CONFIGS).catch(e => {
-          console.warn("Failed to initialize courier_configs document on Firestore:", e.message);
-        });
       }
     }, (error) => {
       console.warn('Courier Configs Firestore sync skipped (will use fallback mock data):', error.message);

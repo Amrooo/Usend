@@ -598,12 +598,11 @@ var CourierEngine = class {
 var courierEngine = new CourierEngine();
 
 // server.ts
-var parentEnvPath = import_path.default.resolve(process.cwd(), "../.env");
-if (import_fs.default.existsSync(parentEnvPath)) {
-  import_dotenv.default.config({ path: parentEnvPath });
-} else {
-  import_dotenv.default.config();
+var envPath = import_path.default.resolve(__dirname, ".env");
+if (!import_fs.default.existsSync(envPath)) {
+  envPath = import_path.default.resolve(process.cwd(), ".env");
 }
+import_dotenv.default.config({ path: envPath });
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 if (process.env.NODE_ENV !== "production" && !process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
   process.env.GCE_METADATA_HOST = "127.0.0.1";
@@ -614,10 +613,9 @@ if (process.env.NODE_ENV !== "production" && !process.env.FIREBASE_SERVICE_ACCOU
 }
 var firebaseConfig = {};
 try {
-  let configPath = import_path.default.resolve(process.cwd(), "firebase-applet-config.json");
-  const parentConfigPath = import_path.default.resolve(process.cwd(), "../firebase-applet-config.json");
-  if (import_fs.default.existsSync(parentConfigPath)) {
-    configPath = parentConfigPath;
+  let configPath = import_path.default.resolve(__dirname, "firebase-applet-config.json");
+  if (!import_fs.default.existsSync(configPath)) {
+    configPath = import_path.default.resolve(process.cwd(), "firebase-applet-config.json");
   }
   if (import_fs.default.existsSync(configPath)) {
     firebaseConfig = JSON.parse(import_fs.default.readFileSync(configPath, "utf8"));
@@ -1201,6 +1199,65 @@ app.post("/api/gemini/analyze-item", async (req, res) => {
 });
 var isProd = process.env.NODE_ENV === "production";
 async function startServer() {
+  try {
+    dbAdmin.collection("settings").doc("courier_configs").get().then((docSnap) => {
+      if (!docSnap.exists) {
+        const initialConfigs = {
+          aramex: {
+            id: "aramex",
+            name: "Aramex Express",
+            status: "Active",
+            currentMode: "sandbox",
+            baseUrlUat: "ws.aramex.net",
+            baseUrlProd: "ws.aramex.net",
+            connectionStatus: "UNTESTED",
+            sandboxCreds: {
+              username: "testingapi@aramex.com",
+              password: "R123456789$r",
+              accountNumber: "45796",
+              accountPin: "116216",
+              accountEntity: "DXB",
+              accountCountryCode: "AE",
+              source: "24",
+              version: "v1"
+            },
+            productionCreds: {
+              username: "",
+              password: "",
+              accountNumber: "",
+              accountPin: "",
+              accountEntity: "",
+              accountCountryCode: "",
+              source: "",
+              version: ""
+            }
+          },
+          noon: {
+            id: "noon",
+            name: "Noon Hyperlocal",
+            status: "Active",
+            currentMode: "sandbox",
+            baseUrlUat: "https://food-api-team.noonstg.team",
+            baseUrlProd: "https://food-api.noon.com",
+            connectionStatus: "UNTESTED",
+            sandboxCreds: {
+              apiKey: "noon_secret_key_123",
+              storeId: ""
+            },
+            productionCreds: {
+              apiKey: "",
+              storeId: ""
+            }
+          }
+        };
+        dbAdmin.collection("settings").doc("courier_configs").set(initialConfigs).then(() => console.log("[Firestore Seed] Successfully initialized default courier configurations.")).catch((err) => console.error("[Firestore Seed] Failed to set default courier configs:", err.message));
+      }
+    }).catch((err) => {
+      console.warn("[Firestore Seed] Failed to read settings/courier_configs:", err.message);
+    });
+  } catch (err) {
+    console.error("[Firestore Seed] Failed to initialize check:", err.message);
+  }
   if (!isProd) {
     const vite = await (0, import_vite.createServer)({
       server: { middlewareMode: true },
