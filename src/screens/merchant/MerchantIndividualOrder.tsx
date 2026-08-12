@@ -121,10 +121,14 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
     weight: 'light',
     carrier: 'aramex',
     printFormat: 'PDF',
-    enableCod: false
+    enableCod: false,
+    length: '10',
+    width: '10',
+    height: '10'
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAramexBoxModalOpen, setIsAramexBoxModalOpen] = useState(false);
 
   const dynamicPricing = useMemo(() => {
     const carrierKey = formData.carrier || 'aramex';
@@ -256,7 +260,12 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
           goodsDescription: formData.notes || "E-commerce Goods",
           weightKg: formData.weight ? parseFloat(formData.weight) : 1.0,
           codAmountAED: parseFloat(formData.amount || '0') || 0,
-          reference: reqId
+          reference: reqId,
+          dimensions: {
+            length: parseFloat(formData.length) || 10,
+            width: parseFloat(formData.width) || 10,
+            height: parseFloat(formData.height) || 10
+          }
         };
 
         const res = await fetch('/api/courier/shipment', {
@@ -567,7 +576,12 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
             goodsDescription: formData.notes || "E-commerce Goods",
             weightKg: formData.weight ? parseFloat(formData.weight) : 1.0,
             codAmountAED: formData.enableCod ? (parseFloat(formData.amount || '0') || 0) : 0,
-            reference: reqId
+            reference: reqId,
+            dimensions: {
+              length: parseFloat(formData.length) || 10,
+              width: parseFloat(formData.width) || 10,
+              height: parseFloat(formData.height) || 10
+            }
           };
 
           const res = await fetch('/api/courier/shipment', {
@@ -1052,7 +1066,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                       <div className="space-y-2">
                         <button
                           type="button"
-                          onClick={() => setFormData({...formData, carrier: 'aramex'})}
+                          onClick={() => { setFormData({...formData, carrier: 'aramex'}); setIsAramexBoxModalOpen(true); }}
                           className={`flex items-center justify-between p-5 rounded-2xl border-2 text-left transition-all cursor-pointer w-full relative overflow-hidden ${
                             formData.carrier === 'aramex'
                               ? 'border-[#d12421] bg-[#d12421]/5 text-zinc-950 shadow-sm'
@@ -1514,6 +1528,53 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
           )}
         </motion.div>
       </main>
+
+      {/* Aramex Box Size Picker Modal */}
+      <Modal isOpen={isAramexBoxModalOpen} onClose={() => setIsAramexBoxModalOpen(false)} title={isRTL ? "اختر حجم الصندوق (أرامكس)" : "Choose Aramex Box Size"}>
+         <div className="space-y-6 p-1 select-none text-slate-800">
+            <p className="text-xs text-zinc-500 font-bold uppercase tracking-wider">
+               {isRTL ? "سيتم ملء الوزن والأبعاد تلقائياً بناءً على حجم الصندوق المحدد:" : "Weight and dimensions will be auto-filled based on your selection:"}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+               {[
+                 { id: 'large', name: 'Large & In Charge', nameAr: 'صندوق كبير - شحن ثقيل', size: '65 × 50 × 46', weight: '30', length: '65', width: '50', height: '46', img: '📦', desc: 'Max 30 kg' },
+                 { id: 'medium', name: 'Medium easy', nameAr: 'صندوق متوسط - عادي', size: '50 × 40 × 37', weight: '15', length: '50', width: '40', height: '37', img: '📦', desc: 'Max 15 kg' },
+                 { id: 'small', name: 'Small Wonder', nameAr: 'صندوق صغير - خفيف', size: '30 × 22 × 15', weight: '2', length: '30', width: '22', height: '15', img: '📦', desc: 'Max 2 kg' },
+                 { id: 'envelope', name: 'A4 Envelope', nameAr: 'ظرف مستندات A4', size: '33 × 24 × 3', weight: '0.5', length: '33', width: '24', height: '3', img: '✉️', desc: 'Max 0.5 kg' }
+               ].map((box) => (
+                  <div
+                     key={box.id}
+                     onClick={() => {
+                       setFormData(p => ({
+                         ...p,
+                         weight: box.weight,
+                         length: box.length,
+                         width: box.width,
+                         height: box.height
+                       }));
+                       setIsAramexBoxModalOpen(false);
+                     }}
+                     className="flex items-center gap-4 p-4 rounded-xl border border-zinc-200 hover:border-[#d12421] hover:bg-red-500/5 cursor-pointer transition-all duration-200 group"
+                  >
+                     <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-2xl group-hover:bg-[#d12421]/10 transition-colors">
+                        {box.img}
+                     </div>
+                     <div className="space-y-1 text-start">
+                        <h4 className="text-xs font-black uppercase text-slate-800 tracking-wide group-hover:text-[#d12421] transition-colors">
+                           {isRTL ? box.nameAr : box.name}
+                        </h4>
+                        <p className="text-[11px] font-bold text-zinc-500">
+                           {box.size} cm • {box.weight} kg
+                        </p>
+                        <p className="text-[9px] uppercase tracking-wider font-extrabold text-[#d12421]">
+                           {box.desc}
+                        </p>
+                     </div>
+                  </div>
+               ))}
+            </div>
+         </div>
+      </Modal>
 
       {/* Map Address Picker Modal */}
       <Modal 
