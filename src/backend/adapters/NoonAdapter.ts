@@ -94,10 +94,11 @@ export class NoonAdapter implements CourierAdapter {
     };
 
     try {
-      const response = await fetch(`${baseUrl}/public/v1/task`, {
+      const response = await fetch(`${baseUrl}/public/v1/create-task`, {
         method: 'POST',
         headers: {
           "Content-Type": "application/json",
+          "Accept": "application/json",
           "X-API-KEY": credentials.apiKey || credentials.password || "",
           "Api-Key": credentials.apiKey || credentials.password || "",
           "Authorization": `Bearer ${credentials.apiKey || credentials.password}`
@@ -105,7 +106,14 @@ export class NoonAdapter implements CourierAdapter {
         body: JSON.stringify(noonPayload)
       });
 
-      const data = await response.json();
+      const responseText = await response.text();
+      let data: any = {};
+      try {
+        data = JSON.parse(responseText);
+      } catch (e) {
+        return { success: false, error: `Noon server returned non-JSON response (status ${response.status}): ${responseText.substring(0, 100)}...` };
+      }
+
       if (!response.ok || data.status === 'ERROR' || !data.mp_task_nr) {
         return { success: false, error: data.message || `Failed to create Noon Task. Raw response: ${JSON.stringify(data)}` };
       }
@@ -124,17 +132,25 @@ export class NoonAdapter implements CourierAdapter {
     const baseUrl = this.getBaseUrl(environment);
     
     try {
-      const response = await fetch(`${baseUrl}/public/v1/task/${trackingId}`, {
+      const response = await fetch(`${baseUrl}/public/v1/tasks/${trackingId}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+          "Accept": "application/json",
           "X-API-KEY": credentials.apiKey || credentials.password || "",
           "Api-Key": credentials.apiKey || credentials.password || "",
           "Authorization": `Bearer ${credentials.apiKey || credentials.password}`
         }
       });
       
-      const data = await response.json();
+      const responseText = await response.text();
+      let data: any = {};
+      try {
+        data = JSON.parse(responseText);
+      } catch (e) {
+        return { success: false, providerStatus: 'Error', usendStatus: 'FAILED', timestamp: new Date().toISOString(), error: `Noon server returned non-JSON response (status ${response.status})` };
+      }
+
       if (!response.ok || data.status === 'ERROR') {
         return { success: false, providerStatus: 'Error', usendStatus: 'FAILED', timestamp: new Date().toISOString(), error: data.message || "Tracking Error" };
       }
@@ -154,10 +170,11 @@ export class NoonAdapter implements CourierAdapter {
     const baseUrl = this.getBaseUrl(environment);
     
     try {
-      const response = await fetch(`${baseUrl}/public/v1/task/${trackingId}/cancel`, {
+      const response = await fetch(`${baseUrl}/public/v1/tasks/${trackingId}/cancel`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Accept": "application/json",
           "X-API-KEY": credentials.apiKey || credentials.password || "",
           "Api-Key": credentials.apiKey || credentials.password || "",
           "Authorization": `Bearer ${credentials.apiKey || credentials.password}`
@@ -165,7 +182,11 @@ export class NoonAdapter implements CourierAdapter {
         body: JSON.stringify({ reason: "USend Automated Cancellation" })
       });
       
-      const data = await response.json();
+      const responseText = await response.text();
+      let data: any = {};
+      try {
+        data = JSON.parse(responseText);
+      } catch (e) {}
       return response.ok && data.status === 'SUCCESS';
     } catch (e) {
       return false;
