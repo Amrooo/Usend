@@ -40,6 +40,11 @@ export interface ShipmentParams {
   weightKg: number;
   codAmountAED: number;
   printFormat?: 'PDF' | 'ZPL';
+  dimensions?: {
+    length: number;
+    width: number;
+    height: number;
+  };
 }
 
 export const defaultAramexCreds: CourierCredentials = {
@@ -141,6 +146,7 @@ export const courierIntegrationService = {
         goodsDescription: params.goodsDescription,
         weightKg: params.weightKg,
         codAmountAED: params.codAmountAED,
+        dimensions: params.dimensions
       };
 
       const res = await fetch('/api/courier/shipment', {

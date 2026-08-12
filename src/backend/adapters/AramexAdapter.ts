@@ -294,7 +294,12 @@ export class AramexAdapter implements CourierAdapter {
           OperationsInstructions: "Handle with care",
           AccountingInstrcutions: "",
           Details: {
-            Dimensions: { Length: 10, Width: 10, Height: 10, Unit: "CM" },
+            Dimensions: payload.dimensions ? {
+              Length: payload.dimensions.length,
+              Width: payload.dimensions.width,
+              Height: payload.dimensions.height,
+              Unit: "CM"
+            } : { Length: 10, Width: 10, Height: 10, Unit: "CM" },
             ActualWeight: { Value: payload.weightKg, Unit: "KG" },
             ChargeableWeight: { Value: payload.weightKg, Unit: "KG" },
             DescriptionOfGoods: payload.goodsDescription || "Goods",

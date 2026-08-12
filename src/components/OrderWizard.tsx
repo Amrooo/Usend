@@ -133,7 +133,10 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
     collectCashFromCustomer: false,
     collectAmount: '',
     codAmount: String(Math.floor(110 + Math.random() * 125)),
-    receiverPaymentMode: 'wallet' as 'wallet' | 'card'
+    receiverPaymentMode: 'wallet' as 'wallet' | 'card',
+    length: '10',
+    width: '10',
+    height: '10'
   });
 
   // Sender Delivery Fee payment details
@@ -159,6 +162,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
   const [createdOrderId, setCreatedOrderId] = useState('');
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [mapTarget, setMapTarget] = useState<'shipper' | 'receiver'>('shipper');
+  const [isAramexBoxModalOpen, setIsAramexBoxModalOpen] = useState(false);
   
   // Noon integration testing states
   const [noonTestingLoading, setNoonTestingLoading] = useState(false);
@@ -419,7 +423,12 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
           goodsDescription: shipmentData.description || "Package",
           weightKg: parseFloat(shipmentData.weight) || 1,
           codAmountAED: parseFloat(shipmentData.codAmount || '0') || 0,
-          reference: newOrderId
+          reference: newOrderId,
+          dimensions: {
+            length: parseFloat(shipmentData.length) || 10,
+            width: parseFloat(shipmentData.width) || 10,
+            height: parseFloat(shipmentData.height) || 10
+          }
         };
 
         try {
@@ -659,6 +668,52 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
          <MapPicker onSelect={handleMapSelect} onClose={() => setIsMapOpen(false)} />
       </Modal>
 
+      <Modal isOpen={isAramexBoxModalOpen} onClose={() => setIsAramexBoxModalOpen(false)} title={isRTL ? "اختر حجم الصندوق (أرامكس)" : "Choose Aramex Box Size"}>
+         <div className="space-y-6 p-1 select-none text-slate-800">
+            <p className="text-xs text-zinc-500 font-bold uppercase tracking-wider">
+               {isRTL ? "سيتم ملء الوزن والأبعاد تلقائياً بناءً على حجم الصندوق المحدد:" : "Weight and dimensions will be auto-filled based on your selection:"}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+               {[
+                 { id: 'large', name: 'Large & In Charge', nameAr: 'صندوق كبير - شحن ثقيل', size: '65 × 50 × 46', weight: '30', length: '65', width: '50', height: '46', img: '📦', desc: 'Max 30 kg' },
+                 { id: 'medium', name: 'Medium easy', nameAr: 'صندوق متوسط - عادي', size: '50 × 40 × 37', weight: '15', length: '50', width: '40', height: '37', img: '📦', desc: 'Max 15 kg' },
+                 { id: 'small', name: 'Small Wonder', nameAr: 'صندوق صغير - خفيف', size: '30 × 22 × 15', weight: '2', length: '30', width: '22', height: '15', img: '📦', desc: 'Max 2 kg' },
+                 { id: 'envelope', name: 'A4 Envelope', nameAr: 'ظرف مستندات A4', size: '33 × 24 × 3', weight: '0.5', length: '33', width: '24', height: '3', img: '✉️', desc: 'Max 0.5 kg' }
+               ].map((box) => (
+                  <div
+                     key={box.id}
+                     onClick={() => {
+                       setShipmentData(p => ({
+                         ...p,
+                         weight: box.weight,
+                         length: box.length,
+                         width: box.width,
+                         height: box.height
+                       }));
+                       setIsAramexBoxModalOpen(false);
+                     }}
+                     className="flex items-center gap-4 p-4 rounded-xl border border-zinc-200 hover:border-[#E31B23] hover:bg-red-500/5 cursor-pointer transition-all duration-200 group"
+                  >
+                     <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-2xl group-hover:bg-[#E31B23]/10 transition-colors">
+                        {box.img}
+                     </div>
+                     <div className="space-y-1 text-start">
+                        <h4 className="text-xs font-black uppercase text-slate-800 tracking-wide group-hover:text-[#E31B23] transition-colors">
+                           {isRTL ? box.nameAr : box.name}
+                        </h4>
+                        <p className="text-[11px] font-bold text-zinc-500">
+                           {box.size} cm • {box.weight} kg
+                        </p>
+                        <p className="text-[9px] uppercase tracking-wider font-extrabold text-[#E31B23]">
+                           {box.desc}
+                        </p>
+                     </div>
+                  </div>
+               ))}
+            </div>
+         </div>
+      </Modal>
+
 
       <AnimatePresence mode="wait">
         {wizardStep === 0 && (
@@ -864,8 +919,11 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
                     </label>
 
                     {/* Aramex Option */}
-                    <label className={`flex flex-col justify-between p-5 rounded-2xl border-2 cursor-pointer transition-all ${shipmentData.courier === 'aramex' ? 'border-[#E31B23] bg-red-500/5 shadow-md shadow-red-500/5' : 'border-zinc-200 bg-white hover:border-zinc-300'}`}>
-                      <input type="radio" value="aramex" checked={shipmentData.courier === 'aramex'} onChange={() => setShipmentData(p =>({...p, courier: 'aramex'}))} className="hidden"/>
+                    <label 
+                      onClick={() => { setShipmentData(p =>({...p, courier: 'aramex'})); setIsAramexBoxModalOpen(true); }}
+                      className={`flex flex-col justify-between p-5 rounded-2xl border-2 cursor-pointer transition-all ${shipmentData.courier === 'aramex' ? 'border-[#E31B23] bg-red-500/5 shadow-md shadow-red-500/5' : 'border-zinc-200 bg-white hover:border-zinc-300'}`}
+                    >
+                      <input type="radio" value="aramex" checked={shipmentData.courier === 'aramex'} onChange={() => {}} className="hidden"/>
                       <div className="space-y-3">
                         <div className="flex items-center gap-1.5 font-sans select-none shrink-0">
                           <span className="text-[#E31B23] font-black text-xl tracking-tighter italic">aramex</span>

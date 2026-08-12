@@ -46,6 +46,11 @@ export interface CanonicalShipmentPayload {
   weightKg: number;
   codAmountAED: number;
   reference?: string;
+  dimensions?: {
+    length: number;
+    width: number;
+    height: number;
+  };
 }
 
 export interface CanonicalShipmentResponse {
