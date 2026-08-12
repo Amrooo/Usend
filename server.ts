@@ -9,8 +9,19 @@ import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import fs from "fs";
 import { courierEngine } from "./src/backend/adapters/CourierEngine";
 
-// Load environment variables: check __dirname first, then fallback to cwd
-let envPath = path.resolve(__dirname, '.env');
+import { fileURLToPath } from "url";
+
+let dirName = "";
+try {
+  // @ts-ignore
+  dirName = __dirname;
+} catch (e) {
+  // @ts-ignore
+  dirName = path.dirname(fileURLToPath(import.meta.url));
+}
+
+// Load environment variables: check dirName first, then fallback to cwd
+let envPath = path.resolve(dirName, '.env');
 if (!fs.existsSync(envPath)) {
   envPath = path.resolve(process.cwd(), '.env');
 }
@@ -34,7 +45,7 @@ if (process.env.NODE_ENV !== 'production' && !process.env.FIREBASE_SERVICE_ACCOU
 // Read firebase-applet-config.json for target project and database info
 let firebaseConfig: { projectId?: string; firestoreDatabaseId?: string } = {};
 try {
-  let configPath = path.resolve(__dirname, "firebase-applet-config.json");
+  let configPath = path.resolve(dirName, "firebase-applet-config.json");
   if (!fs.existsSync(configPath)) {
     configPath = path.resolve(process.cwd(), "firebase-applet-config.json");
   }

@@ -598,7 +598,15 @@ var CourierEngine = class {
 var courierEngine = new CourierEngine();
 
 // server.ts
-var envPath = import_path.default.resolve(__dirname, ".env");
+var import_url = require("url");
+var import_meta = {};
+var dirName = "";
+try {
+  dirName = __dirname;
+} catch (e) {
+  dirName = import_path.default.dirname((0, import_url.fileURLToPath)(import_meta.url));
+}
+var envPath = import_path.default.resolve(dirName, ".env");
 if (!import_fs.default.existsSync(envPath)) {
   envPath = import_path.default.resolve(process.cwd(), ".env");
 }
@@ -613,7 +621,7 @@ if (process.env.NODE_ENV !== "production" && !process.env.FIREBASE_SERVICE_ACCOU
 }
 var firebaseConfig = {};
 try {
-  let configPath = import_path.default.resolve(__dirname, "firebase-applet-config.json");
+  let configPath = import_path.default.resolve(dirName, "firebase-applet-config.json");
   if (!import_fs.default.existsSync(configPath)) {
     configPath = import_path.default.resolve(process.cwd(), "firebase-applet-config.json");
   }
