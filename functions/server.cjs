@@ -598,7 +598,12 @@ var CourierEngine = class {
 var courierEngine = new CourierEngine();
 
 // server.ts
-import_dotenv.default.config();
+var parentEnvPath = import_path.default.resolve(process.cwd(), "../.env");
+if (import_fs.default.existsSync(parentEnvPath)) {
+  import_dotenv.default.config({ path: parentEnvPath });
+} else {
+  import_dotenv.default.config();
+}
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 if (process.env.NODE_ENV !== "production" && !process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
   process.env.GCE_METADATA_HOST = "127.0.0.1";
@@ -609,7 +614,11 @@ if (process.env.NODE_ENV !== "production" && !process.env.FIREBASE_SERVICE_ACCOU
 }
 var firebaseConfig = {};
 try {
-  const configPath = import_path.default.resolve(process.cwd(), "firebase-applet-config.json");
+  let configPath = import_path.default.resolve(process.cwd(), "firebase-applet-config.json");
+  const parentConfigPath = import_path.default.resolve(process.cwd(), "../firebase-applet-config.json");
+  if (import_fs.default.existsSync(parentConfigPath)) {
+    configPath = parentConfigPath;
+  }
   if (import_fs.default.existsSync(configPath)) {
     firebaseConfig = JSON.parse(import_fs.default.readFileSync(configPath, "utf8"));
   }

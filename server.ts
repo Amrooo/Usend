@@ -9,7 +9,13 @@ import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import fs from "fs";
 import { courierEngine } from "./src/backend/adapters/CourierEngine";
 
-dotenv.config();
+// Load environment variables from parent directory if it exists, otherwise use local directory
+const parentEnvPath = path.resolve(process.cwd(), '../.env');
+if (fs.existsSync(parentEnvPath)) {
+  dotenv.config({ path: parentEnvPath });
+} else {
+  dotenv.config();
+}
 
 // Disable TLS validation errors for UAT/Staging proxy handshakes
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
@@ -29,7 +35,11 @@ if (process.env.NODE_ENV !== 'production' && !process.env.FIREBASE_SERVICE_ACCOU
 // Read firebase-applet-config.json for target project and database info
 let firebaseConfig: { projectId?: string; firestoreDatabaseId?: string } = {};
 try {
-  const configPath = path.resolve(process.cwd(), "firebase-applet-config.json");
+  let configPath = path.resolve(process.cwd(), "firebase-applet-config.json");
+  const parentConfigPath = path.resolve(process.cwd(), "../firebase-applet-config.json");
+  if (fs.existsSync(parentConfigPath)) {
+    configPath = parentConfigPath;
+  }
   if (fs.existsSync(configPath)) {
     firebaseConfig = JSON.parse(fs.readFileSync(configPath, "utf8"));
   }
