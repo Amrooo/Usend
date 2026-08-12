@@ -15,7 +15,7 @@ export class AramexAdapter implements CourierAdapter {
   capabilities = ['RATE', 'SHIPMENT', 'TRACKING', 'LABEL'];
 
   private getBaseUrl(env: CourierEnvironment): string {
-    return "https://ws.aramex.net";
+    return env === "production" ? "https://ws.aramex.net" : "https://ws.dev.aramex.net";
   }
 
   private sanitizeCity(city: string, address: string = "", countryCode: string = "AE"): string {

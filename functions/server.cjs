@@ -50,7 +50,7 @@ var AramexAdapter = class {
     this.capabilities = ["RATE", "SHIPMENT", "TRACKING", "LABEL"];
   }
   getBaseUrl(env) {
-    return "https://ws.aramex.net";
+    return env === "production" ? "https://ws.aramex.net" : "https://ws.dev.aramex.net";
   }
   sanitizeCity(city, address = "", countryCode = "AE") {
     if (!city) return countryCode === "AE" ? "Dubai" : "";
