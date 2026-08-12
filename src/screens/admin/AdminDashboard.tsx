@@ -185,7 +185,7 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
           </div>
           
           <div className="h-[300px] w-full mt-4">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minHeight={100} minWidth={100}>
               <AreaChart data={revenueData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
@@ -2008,7 +2008,7 @@ function MerchantDirectory() {
                   </div>
 
                   <div className="h-32 w-full mt-2 select-none">
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height="100%" minHeight={100} minWidth={100}>
                       <AreaChart data={successData} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
                         <defs>
                           <linearGradient id="colorRate" x1="0" y1="0" x2="0" y2="1">

@@ -93,7 +93,7 @@ export default function MerchantDashboard({ onNavigate }: MerchantDashboardProps
                   {t('merchant_intelligence') || 'Merchant Hub'}
                 </span>
                 <h1 className="text-2xl md:text-5xl font-display font-black text-[#1C2C1E] tracking-tight leading-tight md:leading-none uppercase">
-                  OAK Merchant Intel
+                  USend Merchant Intel
                 </h1>
                 <p className="text-[#364935] text-[10px] md:text-xs font-bold uppercase tracking-wider mt-1 md:mt-2.5">
                   {t('welcome_back_merchant') || "Manage logistics, customer cash settlements, and dispatch stats securely."}
@@ -103,7 +103,7 @@ export default function MerchantDashboard({ onNavigate }: MerchantDashboardProps
               {/* Stats - floating on top of the wavy architecture gradient banner! */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 xl:max-w-5xl mt-4">
                 {stats.map((stat, i) => (
-                  <div key={i} className="bg-white/95 backdrop-blur-md rounded-[2rem] p-6 flex flex-col justify-between shadow-sm border border-white/40 h-[125px] group hover:scale-[1.02] hover:bg-white transition-all">
+                  <div key={i} className="bg-white/95 backdrop-blur-md rounded-[2rem] px-5 py-4 flex flex-col justify-between shadow-sm border border-white/40 min-h-[125px] h-auto group hover:scale-[1.02] hover:bg-white transition-all">
                     <div className="flex justify-between items-start">
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-xl bg-[#344633]/15 text-[#344633] flex items-center justify-center pointer-events-none">
@@ -115,11 +115,20 @@ export default function MerchantDashboard({ onNavigate }: MerchantDashboardProps
                       </div>
                     </div>
                     
-                    <div className="flex justify-between items-end mt-2">
-                      <h3 className="text-2xl font-black text-[#1C2C1E] tracking-tight">{stat.value}</h3>
+                    <div className="flex justify-between items-end mt-4 gap-2">
+                      <div className="min-w-0 flex-1">
+                        {stat.value.startsWith('AED ') ? (
+                          <div className="flex items-baseline gap-0.5 flex-wrap">
+                            <span className="text-[10px] md:text-xs font-bold text-zinc-500 uppercase mr-0.5">AED</span>
+                            <span className="text-lg md:text-xl lg:text-2xl font-black text-[#1C2C1E] tracking-tight">{stat.value.replace('AED ', '')}</span>
+                          </div>
+                        ) : (
+                          <h3 className="text-xl md:text-2xl lg:text-3xl font-black text-[#1C2C1E] tracking-tight">{stat.value}</h3>
+                        )}
+                      </div>
                       <button 
                         onClick={() => onNavigate('merchant_tracking')}
-                        className="w-8 h-8 rounded-full bg-white shadow-xs border border-zinc-100 flex items-center justify-center text-[#344633] cursor-pointer hover:bg-zinc-50 transition-colors"
+                        className="flex-shrink-0 w-8 h-8 rounded-full bg-white shadow-xs border border-zinc-100 flex items-center justify-center text-[#344633] cursor-pointer hover:bg-zinc-50 transition-colors"
                       >
                         <ArrowUpRight className="w-4 h-4" />
                       </button>

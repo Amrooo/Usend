@@ -176,6 +176,11 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
     try {
       setStripeError(null);
       setIsSubmitting(true);
+
+      const configRes = await fetch('/api/payments/config');
+      const { publishableKey } = await configRes.json();
+      setStripePubKey(publishableKey);
+
       const res = await fetch("/api/payments/create-intent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -192,7 +197,6 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to initialize Stripe session.");
       
-      setStripePubKey(data.publishableKey);
       setStripeClientSecret(data.clientSecret);
     } catch (err: any) {
       console.error(err);
@@ -530,7 +534,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
         itemType: formData.items || 'General Goods',
         description: formData.notes,
         amountType: 'packages' as const,
-        paymentMethod: formData.paymentType === 'card' ? 'Credit Card' : 'Cash on Delivery',
+        paymentMethod: formData.paymentType === 'card' ? 'Credit Card' : 'Merchant Wallet',
         orderAmount: `${formData.amount || Math.floor(95 + Math.random() * 190)} AED`,
         applicantType: 'Merchant' as const,
         fromDestination: formData.pickupAddress,
@@ -1006,8 +1010,8 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                     <label className="text-[12px] font-black uppercase tracking-wider text-zinc-400">Payout Settlement Option</label>
                     <div className="grid grid-cols-1 gap-2">
                       {[
-                        { key: 'card', label: 'E-Payment (Prepaid)', desc: 'Billed to Merchant Wallet' },
-                        { key: 'cash', label: 'Cash on Delivery (COD)', desc: 'Collect from recipient at door' }
+                        { key: 'card', label: 'Pay with Card (Stripe)', desc: 'Securely pay via Credit/Debit card' },
+                        { key: 'wallet', label: 'Pay from Wallet', desc: 'Deduct from USend Merchant Wallet' }
                       ].map((type) => (
                         <button
                           key={type.key}

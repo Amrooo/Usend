@@ -186,9 +186,9 @@ const INITIAL_COURIER_CONFIGS: Record<string, CourierIntegrationConfig> = {
   aramex: {
     id: 'aramex',
     name: 'Aramex Express',
-    status: 'Inactive',
+    status: 'Active',
     currentMode: 'sandbox',
-    baseUrlUat: 'ws.uat.aramex.net',
+    baseUrlUat: 'ws.aramex.net',
     baseUrlProd: 'ws.aramex.net',
     connectionStatus: UNTESTED_STATUS,
     sandboxCreds: {
@@ -220,7 +220,7 @@ const INITIAL_COURIER_CONFIGS: Record<string, CourierIntegrationConfig> = {
   noon: {
     id: 'noon',
     name: 'Noon RoD',
-    status: 'Inactive',
+    status: 'Active',
     currentMode: 'sandbox',
     baseUrlUat: 'https://food-api-team.noonstg.team',
     baseUrlProd: 'https://food-api-team.noon.team',
@@ -548,7 +548,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             noon: {
               id: 'noon',
               name: 'Noon RoD',
-              status: data.noon?.status || 'Inactive',
+              status: data.noon?.status || 'Active',
               currentMode: data.noon?.currentMode || 'sandbox',
               baseUrlUat: 'https://food-api-team.noonstg.team',
               baseUrlProd: 'https://food-api-team.noon.team',

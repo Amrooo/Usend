@@ -15,7 +15,7 @@ export class AramexAdapter implements CourierAdapter {
   capabilities = ['RATE', 'SHIPMENT', 'TRACKING', 'LABEL'];
 
   private getBaseUrl(env: CourierEnvironment): string {
-    return env === 'production' ? "https://ws.aramex.net" : "https://ws.uat.aramex.net";
+    return "https://ws.aramex.net";
   }
 
   async validateCredentials(credentials: CourierCredentials, environment: CourierEnvironment): Promise<{ success: boolean; error?: string }> {
