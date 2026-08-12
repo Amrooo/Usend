@@ -518,7 +518,7 @@ const [botOpen, setBotOpen] = useState(false);
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         >
           <LogoIcon className={`h-10 md:h-13 w-auto transition-all duration-300 ${!isScrolled ? 'brightness-0 invert' : ''}`} />
-          <div className="flex flex-col text-start">
+          <div className="hidden md:flex flex-col text-start">
             <span className={`text-lg md:text-xl font-black tracking-tight leading-none transition-colors duration-300 ${isScrolled ? 'text-slate-900' : 'text-white'}`}>{isRTL ? 'يو سند' : 'USend'}</span>
             <span className={`text-[9px] md:text-[10px] font-bold uppercase tracking-wider leading-none mt-1 md:mt-1.5 transition-colors duration-300 ${isScrolled ? 'text-[#113f36]' : 'text-[#cca073]'}`}>{isRTL ? 'الشحن الذكي' : 'Smart Shipping'}</span>
           </div>
@@ -543,7 +543,7 @@ const [botOpen, setBotOpen] = useState(false);
           {/* Language Switcher */}
           <button
             onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
-            className={`px-3 py-1.5 rounded-lg border font-bold text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2 ${
+            className={`hidden md:flex px-3 py-1.5 rounded-lg border font-bold text-xs uppercase tracking-wider transition-all cursor-pointer items-center gap-2 ${
               isScrolled 
                 ? 'border-zinc-200 text-[#113f36] hover:bg-[#113f36]/5' 
                 : 'border-white/20 text-white hover:bg-white/10'
