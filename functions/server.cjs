@@ -52,6 +52,53 @@ var AramexAdapter = class {
   getBaseUrl(env) {
     return "https://ws.aramex.net";
   }
+  sanitizeCity(city, address = "", countryCode = "AE") {
+    if (!city) return countryCode === "AE" ? "Dubai" : "";
+    if (countryCode !== "AE") return city;
+    const clean = city.trim().toLowerCase();
+    const validCities = [
+      { key: "dubai", name: "Dubai" },
+      { key: "abu dhabi", name: "Abu Dhabi" },
+      { key: "al ain", name: "Al Ain" },
+      { key: "sharjah", name: "Sharjah" },
+      { key: "ajman", name: "Ajman" },
+      { key: "fujairah", name: "Fujairah" },
+      { key: "ras al khaimah", name: "Ras Al Khaimah" },
+      { key: "umm al quwain", name: "Umm Al Quwain" }
+    ];
+    for (const vc of validCities) {
+      if (clean.includes(vc.key)) {
+        return vc.name;
+      }
+    }
+    if (address) {
+      const addressLower = address.toLowerCase();
+      for (const vc of validCities) {
+        if (addressLower.includes(vc.key)) {
+          return vc.name;
+        }
+      }
+    }
+    return "Dubai";
+  }
+  async postRequest(url, payload) {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+    const contentType = response.headers.get("content-type") || "";
+    if (!response.ok || !contentType.includes("application/json")) {
+      const errorText = await response.text();
+      const match = errorText.match(/<p xmlns="">([\s\S]*?)<\/p>/) || errorText.match(/<p>([\s\S]*?)<\/p>/);
+      const errMsg = match ? match[1].replace(/<[^>]*>/g, "").trim() : `Aramex server error (status ${response.status})`;
+      throw new Error(errMsg);
+    }
+    return await response.json();
+  }
   async validateCredentials(credentials, environment) {
     const baseUrl = this.getBaseUrl(environment);
     const path2 = "/ShippingAPI.V2/RateCalculator/Service_1_0.svc/json/CalculateRate";
@@ -73,31 +120,39 @@ var AramexAdapter = class {
         Reference4: "",
         Reference5: ""
       },
-      OriginAddress: { City: "Dubai", CountryCode: "AE" },
-      DestinationAddress: { City: "Abu Dhabi", CountryCode: "AE" },
+      OriginAddress: {
+        Line1: "Origin Address",
+        Line2: "",
+        Line3: "",
+        PostCode: "",
+        StateOrProvince: "",
+        City: "Dubai",
+        CountryCode: "AE"
+      },
+      DestinationAddress: {
+        Line1: "Destination Address",
+        Line2: "",
+        Line3: "",
+        PostCode: "",
+        StateOrProvince: "",
+        City: "Abu Dhabi",
+        CountryCode: "AE"
+      },
       ShipmentDetails: {
         PaymentType: "P",
         ProductGroup: "DOM",
         ProductType: "OND",
         ActualWeight: { Value: 1, Unit: "KG" },
         ChargeableWeight: { Value: 1, Unit: "KG" },
-        NumberOfPieces: 1
+        NumberOfPieces: 1,
+        Dimensions: { Length: 10, Width: 10, Height: 10, Unit: "CM" },
+        DescriptionOfGoods: "Verification",
+        GoodsOriginCountry: "AE",
+        PaymentOptions: ""
       }
     };
     try {
-      const response = await fetch(`${baseUrl}${path2}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json"
-        },
-        body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(15e3)
-      });
-      if (!response.ok) {
-        return { success: false, error: `Aramex returned status code ${response.status}` };
-      }
-      const data2 = await response.json();
+      const data2 = await this.postRequest(`${baseUrl}${path2}`, payload);
       if (data2.HasErrors) {
         return { success: false, error: data2.Notifications?.[0]?.Message || `Aramex API credentials validation failed. Raw response: ${JSON.stringify(data2)}` };
       }
@@ -109,6 +164,8 @@ var AramexAdapter = class {
   async calculateRate(payload, credentials, environment) {
     const baseUrl = this.getBaseUrl(environment);
     const path2 = "/ShippingAPI.V2/RateCalculator/Service_1_0.svc/json/CalculateRate";
+    const sanitizedOriginCity = this.sanitizeCity(payload.originCity, "", payload.originCountry);
+    const sanitizedDestCity = this.sanitizeCity(payload.destCity, "", payload.destCountry);
     const aramexPayload = {
       ClientInfo: {
         UserName: credentials.username,
@@ -128,11 +185,21 @@ var AramexAdapter = class {
         Reference5: ""
       },
       OriginAddress: {
-        City: payload.originCity,
+        Line1: "Origin Address",
+        Line2: "",
+        Line3: "",
+        PostCode: "",
+        StateOrProvince: "",
+        City: sanitizedOriginCity,
         CountryCode: payload.originCountry
       },
       DestinationAddress: {
-        City: payload.destCity,
+        Line1: "Destination Address",
+        Line2: "",
+        Line3: "",
+        PostCode: "",
+        StateOrProvince: "",
+        City: sanitizedDestCity,
         CountryCode: payload.destCountry
       },
       ShipmentDetails: {
@@ -143,16 +210,15 @@ var AramexAdapter = class {
         ActualWeight: { Value: payload.weightKg, Unit: "KG" },
         ChargeableWeight: { Value: payload.weightKg, Unit: "KG" },
         NumberOfPieces: 1,
-        Services: payload.codAmount ? "CODS" : ""
+        Services: payload.codAmount ? "CODS" : "",
+        Dimensions: { Length: 10, Width: 10, Height: 10, Unit: "CM" },
+        DescriptionOfGoods: "Rate check",
+        GoodsOriginCountry: payload.originCountry,
+        PaymentOptions: ""
       }
     };
     try {
-      const response = await fetch(`${baseUrl}${path2}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(aramexPayload)
-      });
-      const data2 = await response.json();
+      const data2 = await this.postRequest(`${baseUrl}${path2}`, aramexPayload);
       if (data2.HasErrors) {
         return { success: false, error: data2.Notifications?.[0]?.Message || `Unknown Error. Raw response: ${JSON.stringify(data2)}` };
       }
@@ -170,6 +236,8 @@ var AramexAdapter = class {
     const baseUrl = this.getBaseUrl(environment);
     const path2 = "/ShippingAPI.V2/Shipping/Service_1_0.svc/json/CreateShipments";
     const isDomestic = payload.senderCountry === payload.receiverCountry;
+    const sanitizedSenderCity = this.sanitizeCity(payload.senderCity, payload.senderAddress, payload.senderCountry);
+    const sanitizedReceiverCity = this.sanitizeCity(payload.receiverCity, payload.receiverAddress, payload.receiverCountry);
     const aramexPayload = {
       ClientInfo: {
         UserName: credentials.username,
@@ -198,17 +266,26 @@ var AramexAdapter = class {
             Reference2: "",
             AccountNumber: credentials.accountNumber,
             PartyAddress: {
-              Line1: payload.senderAddress,
+              Line1: payload.senderAddress || "Dubai Warehouse",
               Line2: "",
               Line3: "",
-              City: payload.senderCity,
+              City: sanitizedSenderCity,
+              StateOrProvince: "",
+              PostCode: "",
               CountryCode: payload.senderCountry
             },
             Contact: {
-              PersonName: payload.senderName,
+              Department: "",
+              PersonName: payload.senderName || "Sender",
               CompanyName: "USend Hub",
-              PhoneNumber1: payload.senderPhone,
-              EmailAddress: "dispatch@usend.ae"
+              PhoneNumber1: payload.senderPhone || "+971500000000",
+              PhoneNumber1Ext: "",
+              PhoneNumber2: "",
+              PhoneNumber2Ext: "",
+              FaxNumber: "",
+              CellPhone: payload.senderPhone || "+971500000000",
+              EmailAddress: "dispatch@usend.ae",
+              Type: 0
             }
           },
           Consignee: {
@@ -216,17 +293,26 @@ var AramexAdapter = class {
             Reference2: "",
             AccountNumber: "",
             PartyAddress: {
-              Line1: payload.receiverAddress,
+              Line1: payload.receiverAddress || "Delivery Address",
               Line2: "",
               Line3: "",
-              City: payload.receiverCity,
+              City: sanitizedReceiverCity,
+              StateOrProvince: "",
+              PostCode: "",
               CountryCode: payload.receiverCountry
             },
             Contact: {
-              PersonName: payload.receiverName,
-              CompanyName: payload.receiverName,
-              PhoneNumber1: payload.receiverPhone,
-              EmailAddress: ""
+              Department: "",
+              PersonName: payload.receiverName || "Recipient",
+              CompanyName: payload.receiverName || "Recipient",
+              PhoneNumber1: payload.receiverPhone || "+971520000000",
+              PhoneNumber1Ext: "",
+              PhoneNumber2: "",
+              PhoneNumber2Ext: "",
+              FaxNumber: "",
+              CellPhone: payload.receiverPhone || "+971520000000",
+              EmailAddress: "",
+              Type: 0
             }
           },
           ThirdParty: null,
@@ -242,7 +328,7 @@ var AramexAdapter = class {
             Dimensions: { Length: 10, Width: 10, Height: 10, Unit: "CM" },
             ActualWeight: { Value: payload.weightKg, Unit: "KG" },
             ChargeableWeight: { Value: payload.weightKg, Unit: "KG" },
-            DescriptionOfGoods: payload.goodsDescription,
+            DescriptionOfGoods: payload.goodsDescription || "Goods",
             GoodsOriginCountry: payload.senderCountry,
             NumberOfPieces: 1,
             ProductGroup: isDomestic ? "DOM" : "EXP",
@@ -264,12 +350,7 @@ var AramexAdapter = class {
       }
     };
     try {
-      const response = await fetch(`${baseUrl}${path2}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(aramexPayload)
-      });
-      const data2 = await response.json();
+      const data2 = await this.postRequest(`${baseUrl}${path2}`, aramexPayload);
       if (data2.HasErrors) {
         return { success: false, error: data2.Notifications?.[0]?.Message || `Unknown Error. Raw response: ${JSON.stringify(data2)}` };
       }
@@ -306,12 +387,7 @@ var AramexAdapter = class {
       Shipments: [trackingId]
     };
     try {
-      const response = await fetch(`${baseUrl}${path2}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      const data2 = await response.json();
+      const data2 = await this.postRequest(`${baseUrl}${path2}`, payload);
       if (data2.HasErrors) {
         return { success: false, providerStatus: "Error", usendStatus: "FAILED", timestamp: (/* @__PURE__ */ new Date()).toISOString(), error: data2.Notifications?.[0]?.Message || `Tracking Error. Raw response: ${JSON.stringify(data2)}` };
       }
@@ -323,7 +399,6 @@ var AramexAdapter = class {
       if (!updates || updates.length === 0) {
         return { success: true, providerStatus: "No Updates", usendStatus: "PENDING", timestamp: (/* @__PURE__ */ new Date()).toISOString() };
       }
-      const latest = updates[updates.length - 1];
       const newest = updates[0];
       return {
         success: true,
