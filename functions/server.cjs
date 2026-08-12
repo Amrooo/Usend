@@ -50,7 +50,7 @@ var AramexAdapter = class {
     this.capabilities = ["RATE", "SHIPMENT", "TRACKING", "LABEL"];
   }
   getBaseUrl(env) {
-    return env === "production" ? "https://ws.aramex.net" : "https://ws.uat.aramex.net";
+    return "https://ws.aramex.net";
   }
   async validateCredentials(credentials, environment) {
     const baseUrl = this.getBaseUrl(environment);
@@ -99,7 +99,7 @@ var AramexAdapter = class {
       }
       const data2 = await response.json();
       if (data2.HasErrors) {
-        return { success: false, error: data2.Notifications?.[0]?.Message || "Aramex API credentials validation failed" };
+        return { success: false, error: data2.Notifications?.[0]?.Message || `Aramex API credentials validation failed. Raw response: ${JSON.stringify(data2)}` };
       }
       return { success: true };
     } catch (error) {
@@ -154,7 +154,7 @@ var AramexAdapter = class {
       });
       const data2 = await response.json();
       if (data2.HasErrors) {
-        return { success: false, error: data2.Notifications?.[0]?.Message || "Unknown Error" };
+        return { success: false, error: data2.Notifications?.[0]?.Message || `Unknown Error. Raw response: ${JSON.stringify(data2)}` };
       }
       return {
         success: true,
@@ -271,7 +271,7 @@ var AramexAdapter = class {
       });
       const data2 = await response.json();
       if (data2.HasErrors) {
-        return { success: false, error: data2.Notifications?.[0]?.Message || "Unknown Error" };
+        return { success: false, error: data2.Notifications?.[0]?.Message || `Unknown Error. Raw response: ${JSON.stringify(data2)}` };
       }
       const shipment = data2.Shipments?.[0];
       if (!shipment) {
@@ -313,7 +313,7 @@ var AramexAdapter = class {
       });
       const data2 = await response.json();
       if (data2.HasErrors) {
-        return { success: false, providerStatus: "Error", usendStatus: "FAILED", timestamp: (/* @__PURE__ */ new Date()).toISOString(), error: data2.Notifications?.[0]?.Message || "Tracking Error" };
+        return { success: false, providerStatus: "Error", usendStatus: "FAILED", timestamp: (/* @__PURE__ */ new Date()).toISOString(), error: data2.Notifications?.[0]?.Message || `Tracking Error. Raw response: ${JSON.stringify(data2)}` };
       }
       const results = data2.TrackingResults;
       if (!results || results.length === 0) {
@@ -435,15 +435,9 @@ var NoonAdapter = class {
         },
         body: JSON.stringify(noonPayload)
       });
-      const responseText = await response.text();
-      let data2;
-      try {
-        data2 = JSON.parse(responseText);
-      } catch (err) {
-        return { success: false, error: `Noon API Error: Status ${response.status}. Body: ${responseText.substring(0, 100)}` };
-      }
+      const data2 = await response.json();
       if (!response.ok || data2.status === "ERROR" || !data2.mp_task_nr) {
-        return { success: false, error: data2.message || "Failed to create Noon Task" };
+        return { success: false, error: data2.message || `Failed to create Noon Task. Raw response: ${JSON.stringify(data2)}` };
       }
       return {
         success: true,
@@ -466,13 +460,7 @@ var NoonAdapter = class {
           "Authorization": `Bearer ${credentials.apiKey || credentials.password}`
         }
       });
-      const responseText = await response.text();
-      let data2;
-      try {
-        data2 = JSON.parse(responseText);
-      } catch (err) {
-        return { success: false, providerStatus: "Error", usendStatus: "FAILED", timestamp: (/* @__PURE__ */ new Date()).toISOString(), error: `Noon API Error: Status ${response.status}. Body: ${responseText.substring(0, 100)}` };
-      }
+      const data2 = await response.json();
       if (!response.ok || data2.status === "ERROR") {
         return { success: false, providerStatus: "Error", usendStatus: "FAILED", timestamp: (/* @__PURE__ */ new Date()).toISOString(), error: data2.message || "Tracking Error" };
       }
