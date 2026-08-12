@@ -492,7 +492,7 @@ const [botOpen, setBotOpen] = useState(false);
       {/* ── HEADER (FLOATING & OVERLAY) ── */}
       <header className={`z-50 transition-all duration-300 ${
         isScrolled 
-          ? 'fixed top-0 inset-x-0 py-2.5 shadow-md bg-white/95 backdrop-blur-md border-b border-zinc-100 text-slate-900 px-6 md:px-16 flex items-center justify-between' 
+          ? 'fixed top-2 md:top-0 left-3 md:left-0 right-3 md:right-0 py-2.5 shadow-md bg-white/95 backdrop-blur-md border border-zinc-100 md:border-b md:border-x-0 md:border-t-0 text-slate-900 px-4 md:px-16 rounded-2xl md:rounded-none flex items-center justify-between' 
           : 'absolute top-8 left-6 md:left-24 right-6 md:right-24 bg-transparent text-white px-0 py-0 flex items-center justify-between'
       }`}>
         {/* Mobile Menu Button (Hamburger) */}
@@ -589,8 +589,10 @@ const [botOpen, setBotOpen] = useState(false);
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     transition={{ duration: 0.15 }}
-                    className={`absolute mt-2.5 w-[320px] sm:w-[380px] bg-white border border-slate-200/80 rounded-2xl shadow-2xl p-4 z-50 overflow-hidden ${
-                      isRTL ? 'left-0 origin-top-left' : 'right-0 origin-top-right'
+                    className={`fixed md:absolute top-18 md:top-auto left-3 md:left-auto right-3 md:right-auto md:mt-2.5 md:w-[380px] bg-white border border-slate-200/80 rounded-2xl shadow-2xl p-4 z-50 overflow-hidden ${
+                      isRTL 
+                        ? 'md:left-0 md:right-auto md:origin-top-left' 
+                        : 'md:right-0 md:left-auto md:origin-top-right'
                     }`}
                   >
                     {/* Header */}
@@ -724,14 +726,14 @@ const [botOpen, setBotOpen] = useState(false);
           ) : (
             <button
               onClick={() => { setLoginRole('user'); setLoginModalOpen(true); }}
-              className={`px-5 py-2.5 rounded-lg font-bold transition-all cursor-pointer shadow-sm text-[13px] flex items-center gap-2 ${
+              className={`px-3 sm:px-5 py-1.5 sm:py-2.5 rounded-lg font-bold transition-all cursor-pointer shadow-sm text-[11px] sm:text-[13px] flex items-center gap-1.5 sm:gap-2 ${
                 isScrolled 
                   ? 'bg-[#113f36] hover:bg-[#0d3029] text-white' 
                   : 'bg-white hover:bg-slate-100 text-zinc-950 shadow-md'
               }`}
             >
               {isRTL ? 'ابدأ الآن' : 'Get Started'}
-              <ArrowUpRight className="w-4 h-4" />
+              <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           )}
         </div>
@@ -763,15 +765,27 @@ const [botOpen, setBotOpen] = useState(false);
           <a href="#solutions" onClick={(e) => { handleScrollTo(e, 'solutions'); document.getElementById('mobile-nav-overlay')!.style.display = 'none'; }} className="hover:text-[#cca073] transition-colors">{isRTL ? 'الحلول' : 'Resources'}</a>
           <a href="#about"     onClick={(e) => { handleScrollTo(e, 'about'); document.getElementById('mobile-nav-overlay')!.style.display = 'none'; }}     className="hover:text-[#cca073] transition-colors">{isRTL ? 'من نحن' : 'About'}</a>
           <a href="#faq"       onClick={(e) => { handleScrollTo(e, 'faq'); document.getElementById('mobile-nav-overlay')!.style.display = 'none'; }}       className="hover:text-[#cca073] transition-colors">{isRTL ? 'اتصل بنا' : 'Contact'}</a>
+          
+          {/* Language Switcher in Mobile Drawer */}
+          <button
+            onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
+            className="mt-4 px-5 py-2.5 rounded-xl border border-white/20 text-white hover:bg-white/10 font-bold text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2"
+            title={language === 'en' ? 'تغيير اللغة إلى العربية' : 'Switch Language to English'}
+          >
+            <span className="text-base select-none leading-none">
+              {language === 'en' ? '🇦🇪' : '🇬🇧'}
+            </span>
+            <span>{language === 'en' ? 'العربية' : 'English'}</span>
+          </button>
         </div>
         <div className="p-10 border-t border-white/10 flex flex-col gap-4">
            {!user ? (
              <button
                onClick={() => { setLoginRole('user'); setLoginModalOpen(true); document.getElementById('mobile-nav-overlay')!.style.display = 'none'; }}
-               className="w-full py-4 bg-white text-zinc-950 rounded-2xl font-black uppercase tracking-widest text-sm flex items-center justify-center gap-2"
+               className="w-full py-3 bg-white text-zinc-950 rounded-xl font-black uppercase tracking-widest text-[12px] flex items-center justify-center gap-2"
              >
                {isRTL ? 'ابدأ الآن' : 'Get Started'}
-               <ArrowUpRight className="w-5 h-5" />
+               <ArrowUpRight className="w-4 h-4" />
              </button>
            ) : (
              <button
@@ -782,7 +796,7 @@ const [botOpen, setBotOpen] = useState(false);
                   onNavigate(dest);
                   document.getElementById('mobile-nav-overlay')!.style.display = 'none';
                 }}
-                className="w-full py-4 bg-white text-zinc-950 rounded-2xl font-black uppercase tracking-widest text-sm flex items-center justify-center gap-2"
+                className="w-full py-3 bg-white text-zinc-950 rounded-xl font-black uppercase tracking-widest text-[12px] flex items-center justify-center gap-2"
               >
                 {isRTL ? 'لوحة التحكم' : 'Dashboard'}
               </button>
