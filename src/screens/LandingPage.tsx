@@ -495,32 +495,35 @@ const [botOpen, setBotOpen] = useState(false);
           ? 'fixed top-2 md:top-0 left-3 md:left-0 right-3 md:right-0 py-2.5 shadow-md bg-white/95 backdrop-blur-md border border-zinc-100 md:border-b md:border-x-0 md:border-t-0 text-slate-900 px-4 md:px-16 rounded-2xl md:rounded-none flex items-center justify-between' 
           : 'absolute top-8 left-6 md:left-24 right-6 md:right-24 bg-transparent text-white px-0 py-0 flex items-center justify-between'
       }`}>
-        {/* Mobile Menu Button (Hamburger) */}
-        <div className="flex md:hidden items-center gap-2">
-          <button 
-            onClick={() => {
-              const menu = document.getElementById('mobile-nav-overlay');
-              if (menu) menu.style.display = 'flex';
-            }}
-            className={`p-2 rounded-lg transition-all border ${
-              isScrolled 
-                ? 'border-zinc-200 text-[#113f36] hover:bg-zinc-50' 
-                : 'border-white/20 text-white hover:bg-white/10'
-            }`}
-          >
-            <Menu className="w-5 h-5" />
-          </button>
-        </div>
+        {/* Mobile Menu Button (Hamburger) & Logo Group */}
+        <div className="flex items-center gap-2 md:gap-0">
+          {/* Mobile Menu Button (Hamburger) */}
+          <div className="flex md:hidden items-center gap-2">
+            <button 
+              onClick={() => {
+                const menu = document.getElementById('mobile-nav-overlay');
+                if (menu) menu.style.display = 'flex';
+              }}
+              className={`p-2 rounded-lg transition-all border ${
+                isScrolled 
+                  ? 'border-zinc-200 text-[#113f36] hover:bg-zinc-50' 
+                  : 'border-white/20 text-white hover:bg-white/10'
+              }`}
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+          </div>
 
-        {/* Logo */}
-        <div
-          className="flex items-center gap-2 md:gap-3.5 cursor-pointer select-none"
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        >
-          <LogoIcon className={`h-10 md:h-13 w-auto transition-all duration-300 ${!isScrolled ? 'brightness-0 invert' : ''}`} />
-          <div className="hidden md:flex flex-col text-start">
-            <span className={`text-lg md:text-xl font-black tracking-tight leading-none transition-colors duration-300 ${isScrolled ? 'text-slate-900' : 'text-white'}`}>{isRTL ? 'يو سند' : 'USend'}</span>
-            <span className={`text-[9px] md:text-[10px] font-bold uppercase tracking-wider leading-none mt-1 md:mt-1.5 transition-colors duration-300 ${isScrolled ? 'text-[#113f36]' : 'text-[#cca073]'}`}>{isRTL ? 'الشحن الذكي' : 'Smart Shipping'}</span>
+          {/* Logo */}
+          <div
+            className="flex items-center gap-2 md:gap-3.5 cursor-pointer select-none"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          >
+            <LogoIcon className={`h-10 md:h-13 w-auto transition-all duration-300 ${!isScrolled ? 'brightness-0 invert' : ''}`} />
+            <div className="hidden md:flex flex-col text-start">
+              <span className={`text-lg md:text-xl font-black tracking-tight leading-none transition-colors duration-300 ${isScrolled ? 'text-slate-900' : 'text-white'}`}>{isRTL ? 'يو سند' : 'USend'}</span>
+              <span className={`text-[9px] md:text-[10px] font-bold uppercase tracking-wider leading-none mt-1 md:mt-1.5 transition-colors duration-300 ${isScrolled ? 'text-[#113f36]' : 'text-[#cca073]'}`}>{isRTL ? 'الشحن الذكي' : 'Smart Shipping'}</span>
+            </div>
           </div>
         </div>
         

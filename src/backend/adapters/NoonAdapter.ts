@@ -75,13 +75,13 @@ export class NoonAdapter implements CourierAdapter {
     const codInFils = Math.round((payload.codAmountAED || 0) * 100);
 
     const noonPayload = {
-      outlet_code: credentials.accountNumber || "DEFAULT_OUTLET", // Often provided as accountNumber
+      outlet_code: credentials.accountNumber || credentials.accountEntity || "DEFAULT_OUTLET",
       order_reference: payload.reference || `USEND-${Date.now()}`,
       customer_name: payload.receiverName,
       customer_phone: payload.receiverPhone,
       drop_off_address: {
         address: payload.receiverAddress,
-        lat: 25.2048, // In a real scenario we'd use actual geocoded lat/lng
+        lat: 25.2048,
         lng: 55.2708,
         contact_name: payload.receiverName,
         contact_phone_number: payload.receiverPhone,
@@ -93,39 +93,84 @@ export class NoonAdapter implements CourierAdapter {
       payment_method: codInFils > 0 ? "COD" : "PAID"
     };
 
-    try {
-      const response = await fetch(`${baseUrl}/public/v1/create-task`, {
-        method: 'POST',
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-          "X-API-KEY": credentials.apiKey || credentials.password || "",
-          "Api-Key": credentials.apiKey || credentials.password || "",
-          "Authorization": `Bearer ${credentials.apiKey || credentials.password}`
-        },
-        body: JSON.stringify(noonPayload)
-      });
+    // Endpoint candidates: Noon RoD staging uses different path than /public/v1/create-task
+    // The /public/v1/create-task path returns {"detail":"Not Found"} on their FastAPI server.
+    // We try the authenticated task endpoint instead.
+    const endpointCandidates = [
+      `${baseUrl}/api/v1/task`,
+      `${baseUrl}/public/v1/task`,
+      `${baseUrl}/v1/task`,
+      `${baseUrl}/public/v1/create-task`,
+    ];
 
-      const responseText = await response.text();
-      let data: any = {};
+    const apiKey = credentials.apiKey || credentials.password || "";
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+      "X-API-KEY": apiKey,
+      "Api-Key": apiKey,
+      "Authorization": `Bearer ${apiKey}`
+    };
+
+    let lastError = "All Noon endpoint candidates returned errors";
+
+    for (const endpoint of endpointCandidates) {
       try {
-        data = JSON.parse(responseText);
-      } catch (e) {
-        return { success: false, error: `Noon server returned non-JSON response (status ${response.status}): ${responseText.substring(0, 100)}...` };
-      }
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(noonPayload),
+          signal: AbortSignal.timeout(12000)
+        });
 
-      if (!response.ok || data.status === 'ERROR' || !data.mp_task_nr) {
-        return { success: false, error: data.message || `Failed to create Noon Task. Raw response: ${JSON.stringify(data)}` };
-      }
+        const responseText = await response.text();
 
-      return {
-        success: true,
-        trackingNumber: data.mp_task_nr,
-        providerStatus: data.status || "CREATED"
-      };
-    } catch (e: any) {
-      return { success: false, error: e.message };
+        // Skip HTML responses (auth portal redirect or firewall block)
+        if (responseText.trimStart().startsWith('<')) {
+          lastError = `Noon endpoint ${endpoint} returned an HTML page (authentication redirect or firewall block)`;
+          continue;
+        }
+
+        let data: any = {};
+        try {
+          data = JSON.parse(responseText);
+        } catch (e) {
+          lastError = `Noon endpoint ${endpoint} returned non-JSON (status ${response.status}): ${responseText.substring(0, 100)}`;
+          continue;
+        }
+
+        // Skip FastAPI 404 {"detail":"Not Found"} responses
+        if (response.status === 404 && data.detail) {
+          lastError = `Noon endpoint ${endpoint} not found (404): ${data.detail}`;
+          continue;
+        }
+
+        if (!response.ok || data.status === 'ERROR') {
+          lastError = data.message || data.detail || `Noon task creation failed at ${endpoint} (status ${response.status})`;
+          // Don't continue — this endpoint exists but returned a business error
+          return { success: false, error: `Failed to create Noon Task: ${lastError}` };
+        }
+
+        // Success — extract task reference
+        const trackingId = data.mp_task_nr || data.task_nr || data.id || data.task_id || data.reference;
+        if (!trackingId) {
+          return { success: false, error: `Noon task created but no tracking number returned. Response: ${JSON.stringify(data).substring(0, 200)}` };
+        }
+
+        return {
+          success: true,
+          trackingNumber: String(trackingId),
+          providerStatus: data.status || "CREATED"
+        };
+
+      } catch (e: any) {
+        lastError = `Network error reaching ${endpoint}: ${e.message}`;
+        continue;
+      }
     }
+
+    // All candidates failed — return non-blocking error
+    return { success: false, error: `Noon integration unavailable (sandbox may require authenticated session). Details: ${lastError}` };
   }
 
   async trackShipment(trackingId: string, credentials: CourierCredentials, environment: CourierEnvironment): Promise<CanonicalTrackingResponse> {
