@@ -192,14 +192,14 @@ const INITIAL_COURIER_CONFIGS: Record<string, CourierIntegrationConfig> = {
     baseUrlProd: 'ws.aramex.net',
     connectionStatus: UNTESTED_STATUS,
     sandboxCreds: {
-      username: "dxbit@aramex.com",
-      password: "Ar@m3x$h1pp1ng",
-      accountNumber: "154454",
-      accountPin: "115216",
+      username: "testingapi@aramex.com",
+      password: "R123456789$r",
+      accountNumber: "45796",
+      accountPin: "116216",
       accountEntity: "DXB",
       accountCountryCode: "AE",
-      source: "0",
-      version: "v1.0"
+      source: "24",
+      version: "v1"
     },
     productionCreds: {
       username: "",
@@ -588,6 +588,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
         
         setCourierConfigs(data);
+      } else {
+        setDoc(doc(db, 'settings', 'courier_configs'), INITIAL_COURIER_CONFIGS).catch(e => {
+          console.warn("Failed to initialize courier_configs document on Firestore:", e.message);
+        });
       }
     }, (error) => {
       console.warn('Courier Configs Firestore sync skipped (will use fallback mock data):', error.message);
