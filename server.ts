@@ -480,7 +480,7 @@ app.post("/api/aramex/:serviceType", async (req, res) => {
     }
 
     try {
-      aramexRes = await fetch(`${baseUrl}${path}`, {
+      const aramexRes = await fetch(`${baseUrl}${path}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -496,7 +496,7 @@ app.post("/api/aramex/:serviceType", async (req, res) => {
 
       const textData = await aramexRes.text();
       try {
-        data = JSON.parse(textData);
+        const data = JSON.parse(textData);
         return res.json(data);
       } catch (parseError) {
         return res.status(500).json({ error: "Aramex returned non-JSON response." });

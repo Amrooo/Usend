@@ -200,11 +200,26 @@ export const courierIntegrationService = {
         labelUrl: data.labelUrl,
         base64Label: data.base64Label,
         providerStatus: data.providerStatus,
-        error: undefined
+        requestPayload: canonicalPayload,
+        responsePayload: data,
+        timestamp: new Date().toISOString(),
+        error: undefined as string | undefined
       };
     } catch (err: any) {
       console.error(`${courierId} dispatch logic failed`, err);
-      return { success: false, error: err.message };
+      return {
+        success: false,
+        error: err.message,
+        trackingNumber: undefined,
+        noonTaskId: undefined,
+        outletCode: undefined,
+        labelUrl: undefined,
+        base64Label: undefined,
+        providerStatus: undefined,
+        requestPayload: undefined,
+        responsePayload: undefined,
+        timestamp: new Date().toISOString()
+      };
     }
   },
 
@@ -231,17 +246,35 @@ export const courierIntegrationService = {
         success: true,
         providerStatus: data.providerStatus,
         history: data.history || [],
+        steps: data.steps || data.history || [],
         estimatedDelivery: data.estimatedDelivery,
-        rawTrackingData: data.rawTrackingData
+        rawTrackingData: data.rawTrackingData,
+        error: undefined as string | undefined
       };
     } catch (err: any) {
       console.error(`${courierId} tracking logic failed`, err);
-      return { success: false, error: err.message };
+      return {
+        success: false,
+        error: err.message,
+        providerStatus: undefined,
+        history: [],
+        steps: [],
+        estimatedDelivery: undefined,
+        rawTrackingData: undefined
+      };
     }
   },
 
   schedulePickup: async (courierId: string, params: any) => {
-    return { success: true, pickupId: `PCK-${Math.floor(1000 + Math.random() * 9000)}` };
+    const pickupId = `PCK-${Math.floor(1000 + Math.random() * 9000)}`;
+    return {
+      success: true,
+      pickupId,
+      requestPayload: params,
+      responsePayload: { pickupId },
+      timestamp: new Date().toISOString(),
+      error: undefined as string | undefined
+    };
   },
 
   validateCredentials: async (courierId: string, creds: any) => {
