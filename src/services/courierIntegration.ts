@@ -39,7 +39,15 @@ export interface ShipmentParams {
   goodsDescription: string;
   weightKg: number;
   codAmountAED: number;
+  prepaidAmountAED?: number;   // Non-COD prepaid value (AED)
   printFormat?: 'PDF' | 'ZPL';
+  // Noon-specific
+  outletCode?: string;         // Noon pickup point outlet_code
+  orderId?: string;            // USend order ID (used for idempotency)
+  pickupLat?: number;
+  pickupLng?: number;
+  dropLat?: number;
+  dropLng?: number;
   dimensions?: {
     length: number;
     width: number;
@@ -132,6 +140,11 @@ export const courierIntegrationService = {
 
   createShipment: async (courierId: string, params: ShipmentParams) => {
     try {
+      // Generate idempotency key for Noon (required; prevents duplicate tasks)
+      const idempotencyKey = params.orderId
+        ? `usend-${params.orderId}-${courierId}`
+        : `usend-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
       const canonicalPayload = {
         senderName: params.senderName,
         senderPhone: params.senderPhone,
@@ -146,7 +159,16 @@ export const courierIntegrationService = {
         goodsDescription: params.goodsDescription,
         weightKg: params.weightKg,
         codAmountAED: params.codAmountAED,
-        dimensions: params.dimensions
+        prepaidAmountAED: params.prepaidAmountAED,
+        dimensions: params.dimensions,
+        // Noon-specific
+        outletCode: params.outletCode,
+        orderId: params.orderId,
+        idempotencyKey,
+        pickupLat: params.pickupLat,
+        pickupLng: params.pickupLng,
+        dropLat: params.dropLat,
+        dropLng: params.dropLng,
       };
 
       const res = await fetch('/api/courier/shipment', {
@@ -173,8 +195,11 @@ export const courierIntegrationService = {
       return {
         success: true,
         trackingNumber: data.trackingNumber,
+        noonTaskId: data.noonTaskId,
+        outletCode: data.outletCode,
         labelUrl: data.labelUrl,
         base64Label: data.base64Label,
+        providerStatus: data.providerStatus,
         error: undefined
       };
     } catch (err: any) {
@@ -230,5 +255,59 @@ export const courierIntegrationService = {
         })
       });
       return await res.json();
-  }
+  },
+
+  // ─── Noon-specific methods ────────────────────────────────────────────────
+
+  /** Fetch all Noon pickup points for the configured environment */
+  getNoonPickupPoints: async (apiKey: string, baseUrl?: string): Promise<any[]> => {
+    try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (apiKey) headers['x-noon-api-key'] = apiKey;
+      if (baseUrl) headers['x-noon-base-url'] = baseUrl;
+      const res = await fetch('/api/noon/pickup-points', { method: 'GET', headers });
+      const data = await res.json();
+      // Noon returns an array directly or { pickup_points: [...] }
+      if (Array.isArray(data)) return data;
+      if (Array.isArray(data.pickup_points)) return data.pickup_points;
+      return [];
+    } catch (e) {
+      console.error('Failed to fetch Noon pickup points', e);
+      return [];
+    }
+  },
+
+  /** Get full task details from Noon (includes driver info and status history) */
+  getNoonTaskDetails: async (taskNr: string, apiKey: string, baseUrl?: string): Promise<any> => {
+    try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (apiKey) headers['x-noon-api-key'] = apiKey;
+      if (baseUrl) headers['x-noon-base-url'] = baseUrl;
+      const res = await fetch(`/api/noon/tasks/${taskNr}`, { method: 'GET', headers });
+      return await res.json();
+    } catch (e) {
+      console.error('Failed to get Noon task details', e);
+      return null;
+    }
+  },
+
+  /** Cancel a Noon delivery task */
+  cancelNoonTask: async (taskNr: string, credentials: CourierCredentials, reason?: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const res = await fetch('/api/courier/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          courierId: 'noon',
+          trackingId: taskNr,
+          credentials,
+          environment: credentials.apiEnv || 'sandbox',
+        })
+      });
+      const data = await res.json();
+      return data;
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  },
 };

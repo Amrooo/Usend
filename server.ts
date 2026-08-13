@@ -292,37 +292,113 @@ app.post("/api/webhooks/aramex", express.json(), async (req, res) => {
   res.status(200).json({ status: "acknowledged" });
 });
 
-// NOON WEBHOOK LISTENER
-app.post("/api/webhooks/noon", express.json(), async (req, res) => {
-  console.log("Noon Webhook Received:", req.body);
-  const data = req.body;
-  if (data?.order_reference || data?.task_nr) {
-     const trackingRef = data.order_reference || data.task_nr;
-     const statusDesc = data.status_description || data.status_code || "Updated";
-     
-     broadcastEvent({
-         type: 'WEBHOOK_UPDATE',
-         trackingNumber: trackingRef,
-         updateCode: data.status_code,
-         updateDescription: statusDesc,
-         timestamp: data.event_time || new Date().toISOString(),
-         location: data.location || 'Noon Hub'
-     });
+// NOON STATUS WEBHOOK — canonical status mapping + deduplication
+async function processNoonStatusWebhook(data: any) {
+  const taskNr = data.mp_task_nr || data.task_nr || data.order_reference;
+  const statusCode: string = data.status_code || data.status || 'unknown';
+  const eventId: string = data.event_id || `${taskNr}-${statusCode}-${data.event_time || Date.now()}`;
+  if (!taskNr) return;
 
-     dbAdmin.collection('requests').doc(trackingRef).collection('tracking_history').add({
-         updateCode: data.status_code || 'UPDATE',
-         updateDescription: statusDesc,
-         location: data.location || 'Noon Hub',
-         timestamp: FieldValue.serverTimestamp(),
-         rawPayload: data
-     }).catch(err => console.error("Failed to append Noon tracking history:", err));
-
-     dbAdmin.collection('requests').doc(trackingRef).update({
-         status: statusDesc,
-         updatedAt: FieldValue.serverTimestamp()
-     }).catch(err => console.error("Failed to update Noon tracking status:", err));
+  // Deduplication: skip if this exact event was already processed
+  const eventRef = dbAdmin.collection('noon_webhook_events').doc(eventId);
+  try {
+    const existing = await eventRef.get();
+    if (existing.exists) {
+      console.log('[NoonWebhook] NOON_WEBHOOK_DUPLICATE skipped', { eventId });
+      return;
+    }
+    await eventRef.set({ taskNr, statusCode, processedAt: FieldValue.serverTimestamp(), raw: data });
+  } catch (e) {
+    console.error('[NoonWebhook] Dedup check failed (non-blocking):', e);
   }
+
+  // Map Noon status to USend canonical status
+  const STATUS_MAP: Record<string, { usendStatus: string; label: string }> = {
+    pending_assignment:         { usendStatus: 'PENDING',    label: 'Finding Driver'    },
+    assigned:                   { usendStatus: 'IN_TRANSIT', label: 'Driver Assigned'   },
+    arrived_at_pickup_location: { usendStatus: 'IN_TRANSIT', label: 'Driver at Pickup'  },
+    picked_up:                  { usendStatus: 'IN_TRANSIT', label: 'Picked Up'         },
+    arrived_at_delivery:        { usendStatus: 'IN_TRANSIT', label: 'Driver Arriving'   },
+    delivered:                  { usendStatus: 'DELIVERED',  label: 'Delivered'         },
+    cancelled:                  { usendStatus: 'FAILED',     label: 'Cancelled'         },
+    undelivered:                { usendStatus: 'FAILED',     label: 'Undelivered'       },
+  };
+  const mapped = STATUS_MAP[statusCode] || { usendStatus: 'PENDING', label: statusCode };
+  const ts = data.event_time || new Date().toISOString();
+
+  // Find matching USend order by externalTrackingNumber or noonTaskId
+  console.log('[NoonWebhook] NOON_WEBHOOK_RECEIVED', { taskNr, statusCode, label: mapped.label });
+
+  broadcastEvent({
+    type: 'WEBHOOK_UPDATE',
+    provider: 'noon',
+    trackingNumber: taskNr,
+    updateCode: statusCode,
+    updateDescription: mapped.label,
+    usendStatus: mapped.usendStatus,
+    timestamp: ts,
+  });
+
+  // Update order by querying for matching externalTrackingNumber
+  try {
+    const snap = await dbAdmin.collection('requests')
+      .where('externalTrackingNumber', '==', taskNr)
+      .limit(1).get();
+    if (!snap.empty) {
+      const docId = snap.docs[0].id;
+      await dbAdmin.collection('requests').doc(docId).update({
+        status: mapped.usendStatus,
+        noonProviderStatus: statusCode,
+        noonStatusLabel: mapped.label,
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+      await dbAdmin.collection('requests').doc(docId).collection('tracking_history').add({
+        updateCode: statusCode,
+        updateDescription: mapped.label,
+        provider: 'noon',
+        timestamp: FieldValue.serverTimestamp(),
+        rawPayload: data,
+      });
+      console.log('[NoonWebhook] NOON_WEBHOOK_PROCESSED', { docId, statusCode });
+    }
+  } catch (e) {
+    console.error('[NoonWebhook] Firestore update failed:', e);
+  }
+}
+
+app.post("/api/webhooks/noon", express.json(), async (req, res) => {
+  res.status(200).json({ status: "acknowledged" }); // Acknowledge immediately
+  processNoonStatusWebhook(req.body).catch(e => console.error('[NoonWebhook] Processing error:', e));
+});
+
+app.post("/api/webhooks/noon/status", express.json(), async (req, res) => {
   res.status(200).json({ status: "acknowledged" });
+  processNoonStatusWebhook(req.body).catch(e => console.error('[NoonWebhook/status] Processing error:', e));
+});
+
+// NOON DRIVER LOCATION WEBHOOK
+app.post("/api/webhooks/noon/location", express.json(), async (req, res) => {
+  res.status(200).json({ status: "acknowledged" });
+  const data = req.body;
+  const taskNr = data.mp_task_nr || data.task_nr;
+  if (!taskNr || data.latitude == null || data.longitude == null) return;
+
+  const driverLat = Number(data.latitude) > 1000000 ? Number(data.latitude) / 1e7 : Number(data.latitude);
+  const driverLng = Number(data.longitude) > 1000000 ? Number(data.longitude) / 1e7 : Number(data.longitude);
+
+  broadcastEvent({ type: 'DRIVER_LOCATION', provider: 'noon', trackingNumber: taskNr, driverLat, driverLng, timestamp: new Date().toISOString() });
+
+  try {
+    const snap = await dbAdmin.collection('requests').where('externalTrackingNumber', '==', taskNr).limit(1).get();
+    if (!snap.empty) {
+      const prev = snap.docs[0].data();
+      // Only write if coordinates changed by more than ~10 metres (0.0001 degrees)
+      if (Math.abs((prev.noonDriverLat || 0) - driverLat) > 0.0001 || Math.abs((prev.noonDriverLng || 0) - driverLng) > 0.0001) {
+        await dbAdmin.collection('requests').doc(snap.docs[0].id).update({ noonDriverLat: driverLat, noonDriverLng: driverLng, updatedAt: FieldValue.serverTimestamp() });
+        console.log('[NoonWebhook] NOON_DRIVER_LOCATION_UPDATE', { taskNr, driverLat, driverLng });
+      }
+    }
+  } catch (e) { console.error('[NoonWebhook] Location update failed:', e); }
 });
 // ARAMEX API PROXY
 app.post("/api/aramex/:serviceType", async (req, res) => {
@@ -436,19 +512,33 @@ app.post("/api/aramex/:serviceType", async (req, res) => {
 
 // --- NOON HYPERLOCAL LOGISTICS API PROXY ---
 
-const getNoonBaseUrl = (req: any) => {
-  return req.headers["x-noon-base-url"] || req.query.baseUrl || (req.body && req.body.baseUrl) || "https://merchants.staging.noon.com";
+const getNoonBaseUrl = (req: any): string => {
+  return req.headers["x-noon-base-url"]
+    || req.query.baseUrl
+    || (req.body && req.body.baseUrl)
+    || process.env.NOON_API_BASE_URL
+    || "https://food-api-team.noonstg.team";
 };
 
-const getNoonHeaders = (req: any) => {
+const getNoonApiKey = (req: any): string => {
+  // Prefer env var (server-side only), fallback to request header for internal calls
+  const envKey = process.env.NOON_API_KEY;
+  if (envKey) return envKey;
   const clientApiKey = req.headers["x-noon-api-key"] || req.query.apiKey || (req.body && req.body.apiKey);
-  const apiKey = clientApiKey && clientApiKey !== "noon_secret_key_123" ? clientApiKey : "";
-  return {
+  // Reject obvious placeholder keys
+  if (clientApiKey && clientApiKey !== "noon_secret_key_123") return clientApiKey;
+  return "";
+};
+
+const getNoonHeaders = (req: any, idempotencyKey?: string): Record<string, string> => {
+  const apiKey = getNoonApiKey(req);
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
+    "Accept": "application/json",
     "X-API-KEY": apiKey,
-    "Api-Key": apiKey,
-    "Authorization": `Bearer ${apiKey}`
   };
+  if (idempotencyKey) headers["X-Idempotency-Key"] = idempotencyKey;
+  return headers;
 };
 
 // --- GENERIC COURIER ENGINE API ENDPOINTS ---
@@ -514,55 +604,96 @@ app.post("/api/courier/cancel", express.json(), async (req, res) => {
 });
 
 
-// 1. GET Pickup Addresses / Pickup Points
-app.get("/api/noon/pickup-addresses", async (req, res) => {
+// 1. GET Pickup Points (list)
+app.get("/api/noon/pickup-points", async (req, res) => {
   try {
     const baseUrl = getNoonBaseUrl(req);
-    console.log(`[Noon Proxy] Fetching pickup points from ${baseUrl}...`);
     const response = await fetch(`${baseUrl}/public/v1/pickup-points/list`, {
       method: "GET",
       headers: getNoonHeaders(req),
       signal: AbortSignal.timeout(10000)
     });
-    
-    if (response.ok) {
-      const data = await response.json();
-      console.log("[Noon Proxy] Successfully fetched pickup points from Noon API.");
-      return res.json(data);
-    } else {
-      console.error(`[Noon Proxy] Noon API returned ${response.status}.`);
-      return res.status(response.status).json({ error: `Noon API returned ${response.status}` });
-    }
+    if (response.ok) return res.json(await response.json());
+    return res.status(response.status).json({ error: `Noon API returned ${response.status}` });
   } catch (error: any) {
-    console.error(`[Noon Proxy] Failed to connect to Noon: ${error.message}.`);
     return res.status(500).json({ error: `Connection failed: ${error.message}` });
   }
 });
 
-// 2. POST Create Delivery Task
+// 1b. Legacy alias
+app.get("/api/noon/pickup-addresses", async (req, res) => {
+  try {
+    const baseUrl = getNoonBaseUrl(req);
+    const response = await fetch(`${baseUrl}/public/v1/pickup-points/list`, {
+      method: "GET", headers: getNoonHeaders(req), signal: AbortSignal.timeout(10000)
+    });
+    if (response.ok) return res.json(await response.json());
+    return res.status(response.status).json({ error: `Noon API returned ${response.status}` });
+  } catch (error: any) { return res.status(500).json({ error: error.message }); }
+});
+
+// POST Create Pickup Point
+app.post("/api/noon/pickup-points", async (req, res) => {
+  try {
+    const baseUrl = getNoonBaseUrl(req);
+    const response = await fetch(`${baseUrl}/public/v1/pickup-points/create`, {
+      method: "POST", headers: getNoonHeaders(req), body: JSON.stringify(req.body), signal: AbortSignal.timeout(10000)
+    });
+    const data = await response.json();
+    return res.status(response.status).json(data);
+  } catch (error: any) { return res.status(500).json({ error: error.message }); }
+});
+
+// GET single pickup point
+app.get("/api/noon/pickup-points/:code", async (req, res) => {
+  try {
+    const baseUrl = getNoonBaseUrl(req);
+    const response = await fetch(`${baseUrl}/public/v1/pickup-points/${req.params.code}`, {
+      method: "GET", headers: getNoonHeaders(req), signal: AbortSignal.timeout(10000)
+    });
+    const data = await response.json();
+    return res.status(response.status).json(data);
+  } catch (error: any) { return res.status(500).json({ error: error.message }); }
+});
+
+// POST Update pickup point
+app.post("/api/noon/pickup-points/:code/update", async (req, res) => {
+  try {
+    const baseUrl = getNoonBaseUrl(req);
+    const response = await fetch(`${baseUrl}/public/v1/pickup-points/${req.params.code}/update`, {
+      method: "POST", headers: getNoonHeaders(req), body: JSON.stringify(req.body), signal: AbortSignal.timeout(10000)
+    });
+    const data = await response.json();
+    return res.status(response.status).json(data);
+  } catch (error: any) { return res.status(500).json({ error: error.message }); }
+});
+
+// 2. POST Create Delivery Task (with idempotency key injection)
 app.post("/api/noon/create-task", async (req, res) => {
   const params = req.body;
   try {
     const baseUrl = getNoonBaseUrl(req);
-    console.log(`[Noon Proxy] Sending create-task payload to ${baseUrl}...`, JSON.stringify(params));
+    const idempotencyKey = req.headers['x-idempotency-key'] as string
+      || params.idempotencyKey
+      || `usend-${params.order_reference || Date.now()}`;
+    console.log(`[NoonProxy] NOON_TASK_CREATE_REQUEST to ${baseUrl}, idempotency: ${idempotencyKey}`);
     const response = await fetch(`${baseUrl}/public/v1/create-task`, {
       method: "POST",
-      headers: getNoonHeaders(req),
+      headers: getNoonHeaders(req, idempotencyKey),
       body: JSON.stringify(params),
-      signal: AbortSignal.timeout(10000)
+      signal: AbortSignal.timeout(15000)
     });
-
-    const data = await response.json();
-    console.log(`[Noon Proxy] Noon Staging API returned status ${response.status}:`, data);
-    
-    if (response.ok || data.status === "SUCCESS") {
-      return res.status(response.status).json(data);
-    } else {
-      console.error(`[Noon Proxy] Noon API returned error structure.`);
-      return res.status(response.status).json(data);
+    const text = await response.text();
+    let data: any = {};
+    try { data = JSON.parse(text); } catch { return res.status(500).json({ error: 'Noon returned non-JSON response', raw: text.substring(0, 200) }); }
+    if (response.ok) {
+      console.log(`[NoonProxy] NOON_TASK_CREATE_SUCCESS`, data);
+      return res.json(data);
     }
+    console.error(`[NoonProxy] NOON_TASK_CREATE_FAILED HTTP ${response.status}`, data);
+    return res.status(response.status).json(data);
   } catch (error: any) {
-    console.error(`[Noon Proxy] Noon create-task connection failed: ${error.message}.`);
+    console.error(`[NoonProxy] NOON_TASK_CREATE_FAILED network: ${error.message}`);
     return res.status(500).json({ error: `Connection failed: ${error.message}` });
   }
 });

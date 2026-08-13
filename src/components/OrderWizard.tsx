@@ -549,11 +549,20 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
       }
 
       const numericCod = parseFloat(targetOrder.orderAmount?.replace(/[^0-9.]/g, '') || '0');
-
       const noonConfig = courierConfigs?.noon;
       const noonCreds = noonConfig
         ? (noonConfig.currentMode === 'sandbox' ? noonConfig.sandboxCreds : noonConfig.productionCreds)
         : undefined;
+
+      // Outlet code: prefer config, fallback to accountNumber (some setups store it there)
+      const outletCode = noonCreds?.outletCode || noonCreds?.accountNumber || '';
+
+      // Use receiver map position for drop-off coords if available
+      const receiverPos = receiverData.position;
+      const shipperPos = shipperData.position;
+
+      // Idempotency key
+      const idempotencyKey = `usend-${targetOrder.id}-noon-${Date.now()}`;
 
       const canonicalPayload = {
           senderName: shipperData.name || "USend Hub",
@@ -569,7 +578,17 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
           goodsDescription: targetOrder.description || "Package",
           weightKg: parseFloat(shipmentData.weight) || 1,
           codAmountAED: numericCod,
-          reference: targetOrder.id
+          // If order is prepaid (codAmountAED === 0), Noon still needs prepaidAmountAED > 0
+          prepaidAmountAED: numericCod === 0 ? 1 : 0,
+          reference: targetOrder.id,
+          orderId: targetOrder.id,
+          idempotencyKey,
+          outletCode,
+          // Coordinates (decimal degrees - NoonAdapter converts to int microdegrees internally)
+          pickupLat: shipperPos ? shipperPos[0] : undefined,
+          pickupLng: shipperPos ? shipperPos[1] : undefined,
+          dropLat: receiverPos ? receiverPos[0] : undefined,
+          dropLng: receiverPos ? receiverPos[1] : undefined,
       };
 
       const res = await fetch('/api/courier/shipment', {
@@ -584,10 +603,12 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
       });
       
       const courierRes = await res.json();
+      const noonTaskId = courierRes.noonTaskId || courierRes.trackingNumber;
       
       setNoonTestingLogs({
         request: canonicalPayload,
-        response: courierRes
+        response: courierRes,
+        timestamp: new Date().toISOString()
       });
 
       if (courierRes.success) {
@@ -595,21 +616,27 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
         updateRequest(targetOrder.id, {
           status: 'Assigned',
           carrier: 'noon',
-          externalTrackingNumber: courierRes.trackingNumber,
-          noonLogs: { request: canonicalPayload, response: courierRes }
+          externalTrackingNumber: noonTaskId,
+          noonTaskId: noonTaskId,
+          noonOutletCode: outletCode,
+          noonProviderStatus: 'pending_assignment',
+          noonStatusLabel: 'Finding Driver',
+          noonCancellable: true,
+          noonLogs: { request: canonicalPayload, response: courierRes, timestamp: new Date().toISOString() }
         });
       } else {
         setNoonTestingSuccess(false);
         updateRequest(targetOrder.id, {
-          noonLogs: { request: canonicalPayload, response: courierRes }
+          noonLogs: { request: canonicalPayload, response: courierRes, timestamp: new Date().toISOString() }
         });
       }
     } catch (err: any) {
-      console.error("Noon manual test error:", err);
+      console.error("Noon dispatch error:", err);
       setNoonTestingSuccess(false);
       setNoonTestingLogs({
         request: { orderId: createdOrderId },
-        response: { error: err.message }
+        response: { error: err.message },
+        timestamp: new Date().toISOString()
       });
     } finally {
       setNoonTestingLoading(false);

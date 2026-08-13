@@ -33,6 +33,15 @@ export interface USendRequest {
   awbLabelUrl?: string;
   aramexLogs?: { request: any; response: any; timestamp: string, pickupId?: string };
   noonLogs?: { request: any; response: any; timestamp: string };
+  noonTaskId?: string;           // Noon mp_task_nr
+  noonOutletCode?: string;       // Noon outlet_code used
+  noonProviderStatus?: string;   // Raw Noon status_code
+  noonStatusLabel?: string;      // Human-readable Noon status
+  noonDriverLat?: number;
+  noonDriverLng?: number;
+  noonDriverName?: string;
+  noonDriverPhone?: string;
+  noonCancellable?: boolean;
   courierTrackingLogs?: Array<{ status: string; providerStatus?: string; timestamp: string; location?: string; message?: string }>;
   phone?: string;
   pickupAddress?: string;
