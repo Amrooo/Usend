@@ -1,18 +1,10 @@
-import admin from 'firebase-admin';
-import dotenv from 'dotenv';
-dotenv.config();
-console.log("Starting test...");
-try {
-  if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-    console.log("Found key in env");
-  } else {
-    console.log("No key in env, initializing default...");
-    admin.initializeApp();
-    console.log("Initialized default admin");
-  }
-  const db = admin.firestore();
-  console.log("Got firestore reference");
-} catch (e: any) {
-  console.error("Caught error:", e.message, e.stack);
-}
-console.log("End of test");
+console.log("1. Starting scratch_test.ts");
+process.on("uncaughtException", (err) => console.error("Uncaught exception:", err));
+process.on("unhandledRejection", (reason) => console.error("Unhandled rejection:", reason));
+
+console.log("2. About to import ./server.ts");
+import("./server.ts").then(() => {
+  console.log("3. Import of ./server.ts finished successfully!");
+}).catch((err) => {
+  console.error("4. Import of ./server.ts failed:", err);
+});
