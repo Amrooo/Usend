@@ -196,7 +196,7 @@ const INITIAL_COURIER_CONFIGS: Record<string, CourierIntegrationConfig> = {
     id: 'aramex',
     name: 'Aramex Express',
     status: 'Active',
-    currentMode: 'sandbox',
+    currentMode: 'production',
     baseUrlUat: 'ws.aramex.net',
     baseUrlProd: 'ws.aramex.net',
     connectionStatus: UNTESTED_STATUS,
@@ -211,13 +211,13 @@ const INITIAL_COURIER_CONFIGS: Record<string, CourierIntegrationConfig> = {
       version: "v1"
     },
     productionCreds: {
-      username: "",
-      password: "",
-      accountNumber: "",
-      accountPin: "",
-      accountEntity: "",
+      username: "octman.sam@gmail.com",
+      password: "cug.Nv95-npNxaQ",
+      accountNumber: "75788705",
+      accountPin: "217147",
+      accountEntity: "DXB",
       accountCountryCode: "AE",
-      source: "",
+      source: "0",
       version: "v1.0"
     },
     rates: {

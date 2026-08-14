@@ -56,15 +56,15 @@ export interface ShipmentParams {
 }
 
 export const defaultAramexCreds: CourierCredentials = {
-  version: "v1",
-  accountNumber: "45796",
-  accountPin: "116216",
+  version: "v1.0",
+  accountNumber: "75788705",
+  accountPin: "217147",
   accountEntity: "DXB",
   accountCountryCode: "AE",
-  source: "24",
-  username: "testingapi@aramex.com",
-  password: "R123456789$r",
-  apiEnv: 'sandbox'
+  source: "0",
+  username: "octman.sam@gmail.com",
+  password: "cug.Nv95-npNxaQ",
+  apiEnv: 'production'
 };
 
 export const defaultDhlCreds: CourierCredentials = {

@@ -14,7 +14,6 @@ import Stripe from "stripe";
 import dotenv from "dotenv";
 import admin from 'firebase-admin';
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
-import fs from "fs";
 import { fileURLToPath } from "url";
 let dirName = "";
 try {
@@ -467,19 +466,19 @@ app.post("/api/webhooks/noon/location", express.json(), async (req, res) => {
 // ARAMEX API PROXY
 app.post("/api/rates/calculate", async (req, res) => {
   try {
-    const { serviceType } = req.params;
+    const { serviceType } = req.params as { serviceType?: string };
     let payload = req.body;
 
     const userClientInfo = payload.ClientInfo || {};
 
-    const isProduction = (process.env.ARAMEX_ENV === "production") || (req.headers["x-aramex-env"] === "production");
+    const isProduction = (process.env.ARAMEX_ENV !== "sandbox") && (req.headers["x-aramex-env"] !== "sandbox");
     const baseUrl = process.env.ARAMEX_BASE_URL || (isProduction ? "https://ws.aramex.net" : "https://ws.uat.aramex.net");
 
-    // Default test credentials according to the attached Aramex JSON environment
-    const defaultUserName = "dxbit@aramex.com";
-    const defaultPassword = "Ar@m3x$h1pp1ng";
-    const defaultAccountNumber = "154454";
-    const defaultAccountPin = "115216";
+    // Default production credentials
+    const defaultUserName = "octman.sam@gmail.com";
+    const defaultPassword = "cug.Nv95-npNxaQ";
+    const defaultAccountNumber = "75788705";
+    const defaultAccountPin = "217147";
     const defaultAccountEntity = "DXB";
     const defaultAccountCountryCode = "AE";
     const defaultSource = 0;
@@ -986,7 +985,7 @@ async function startServer() {
             id: 'aramex',
             name: 'Aramex Express',
             status: 'Active',
-            currentMode: 'sandbox',
+            currentMode: 'production',
             baseUrlUat: 'ws.aramex.net',
             baseUrlProd: 'ws.aramex.net',
             connectionStatus: 'UNTESTED',
@@ -1001,14 +1000,14 @@ async function startServer() {
               version: "v1"
             },
             productionCreds: {
-              username: "",
-              password: "",
-              accountNumber: "",
-              accountPin: "",
-              accountEntity: "",
-              accountCountryCode: "",
-              source: "",
-              version: ""
+              username: "octman.sam@gmail.com",
+              password: "cug.Nv95-npNxaQ",
+              accountNumber: "75788705",
+              accountPin: "217147",
+              accountEntity: "DXB",
+              accountCountryCode: "AE",
+              source: "0",
+              version: "v1.0"
             }
           },
           noon: {

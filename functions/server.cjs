@@ -1,1 +1,1703 @@
-const a0_0x57f14e=a0_0x39ac;(function(_0x511309,_0x16dae0){const _0x1a1d7a=a0_0x39ac,_0x255082=_0x511309();while(!![]){try{const _0x2eb1cd=parseInt(_0x1a1d7a(0x294))/0x1*(-parseInt(_0x1a1d7a(0x38a))/0x2)+-parseInt(_0x1a1d7a(0x32f))/0x3*(-parseInt(_0x1a1d7a(0x3a2))/0x4)+-parseInt(_0x1a1d7a(0x2ed))/0x5*(-parseInt(_0x1a1d7a(0x277))/0x6)+parseInt(_0x1a1d7a(0x319))/0x7*(parseInt(_0x1a1d7a(0x2dc))/0x8)+parseInt(_0x1a1d7a(0x1db))/0x9+-parseInt(_0x1a1d7a(0x1d0))/0xa+-parseInt(_0x1a1d7a(0x26e))/0xb*(parseInt(_0x1a1d7a(0x1ea))/0xc);if(_0x2eb1cd===_0x16dae0)break;else _0x255082['push'](_0x255082['shift']());}catch(_0x38ddf4){_0x255082['push'](_0x255082['shift']());}}}(a0_0x24a9,0x869cf));const a0_0x3b5e79=(function(){let _0x4c4a6f=!![];return function(_0x32a729,_0x2fd26b){const _0x4f2cf3=a0_0x39ac;if(_0x4f2cf3(0x2f4)===_0x4f2cf3(0x2f4)){const _0x21759d=_0x4c4a6f?function(){const _0x2ea9bd=_0x4f2cf3;if(_0x2ea9bd(0x3cb)!=='xCfNO')_0x308edb[_0x2ea9bd(0x39b)](_0x2ea9bd(0x237));else{if(_0x2fd26b){if(_0x2ea9bd(0x31a)===_0x2ea9bd(0x31a)){const _0x103f2c=_0x2fd26b['apply'](_0x32a729,arguments);return _0x2fd26b=null,_0x103f2c;}else{const _0x1eb0d9=_0x4de7a7[_0x2ea9bd(0x1d9)]();if([_0x2ea9bd(0x21e),_0x2ea9bd(0x24d),_0x2ea9bd(0x324),_0x2ea9bd(0x321),_0x2ea9bd(0x379)][_0x2ea9bd(0x1cf)](_0x1eb0d9))return _0x2ea9bd(0x1f0);if([_0x2ea9bd(0x354),_0x2ea9bd(0x1f6),_0x2ea9bd(0x2ac)]['includes'](_0x1eb0d9))return _0x2ea9bd(0x33b);if([_0x2ea9bd(0x2b3),'SH048',_0x2ea9bd(0x22f)]['includes'](_0x1eb0d9))return'FAILED';return _0x2ea9bd(0x1dc);}}}}:function(){};return _0x4c4a6f=![],_0x21759d;}else return{'success':![],'error':_0x327e39[_0x4f2cf3(0x24a)]?.[0x0]?.[_0x4f2cf3(0x1d6)]||_0x4f2cf3(0x380)+_0x40cd31[_0x4f2cf3(0x1dd)](_0x992684)};};}()),a0_0x4021e6=a0_0x3b5e79(this,function(){const _0x548dd1=a0_0x39ac;if(a0_0x4021e6[_0x548dd1(0x3db)]()[_0x548dd1(0x38f)]()[_0x548dd1(0x1e2)]('\x0a')!==-0x1)return;return a0_0x4021e6['toString']()[_0x548dd1(0x33d)](_0x548dd1(0x1e4))[_0x548dd1(0x38f)]()[_0x548dd1(0x288)](a0_0x4021e6)[_0x548dd1(0x33d)](_0x548dd1(0x1e4));});function a0_0x39ac(_0x1a9aec,_0x463310){_0x1a9aec=_0x1a9aec-0x1c1;const _0x6b7807=a0_0x24a9();let _0x4021e6=_0x6b7807[_0x1a9aec];if(a0_0x39ac['WgWgFN']===undefined){var _0x3b5e79=function(_0x55736c){const _0x3e604d='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let _0x21bf16='',_0xb7d31b='',_0x1859fc=_0x21bf16+_0x3b5e79,_0x210ecb=(''+function(){return 0x0;})['indexOf']('\x0a')!==-0x1;for(let _0x185224=0x0,_0x1d1283,_0x465668,_0x279dd5=0x0;_0x465668=_0x55736c['charAt'](_0x279dd5++);~_0x465668&&(_0x1d1283=_0x185224%0x4?_0x1d1283*0x40+_0x465668:_0x465668,_0x185224++%0x4)?_0x21bf16+=_0x210ecb||_0x1859fc['charCodeAt'](_0x279dd5+0xa)-0xa!==0x0?String['fromCharCode'](0xff&_0x1d1283>>(-0x2*_0x185224&0x6)):_0x185224:0x0){_0x465668=_0x3e604d['indexOf'](_0x465668);}for(let _0x234e78=0x0,_0x2f865e=_0x21bf16['length'];_0x234e78<_0x2f865e;_0x234e78++){_0xb7d31b+='%'+('00'+_0x21bf16['charCodeAt'](_0x234e78)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(_0xb7d31b);};a0_0x39ac['RnzOLp']=_0x3b5e79,a0_0x39ac['dVBrCN']={},a0_0x39ac['WgWgFN']=!![];}const _0x24a956=_0x6b7807[0x0],_0x39acfe=_0x1a9aec+_0x24a956,_0x2987d6=a0_0x39ac['dVBrCN'][_0x39acfe];if(!_0x2987d6){const _0x24a8d9=function(_0x799853){this['rYKoKU']=_0x799853,this['cQqoWP']=[0x1,0x0,0x0],this['LscsQK']=function(){return'newState';},this['hWcdXg']='\x5c\x77\x2b\x20\x2a\x5c\x28\x5c\x29\x20\x2a\x7b\x5c\x77\x2b\x20\x2a',this['PrQREI']='\x5b\x27\x7c\x22\x5d\x2e\x2b\x5b\x27\x7c\x22\x5d\x3b\x3f\x20\x2a\x7d';};_0x24a8d9['prototype']['nrOhtR']=function(){const _0x21e4d3=new RegExp(this['hWcdXg']+this['PrQREI']),_0x3c4917=_0x21e4d3['test'](this['LscsQK']['toString']())?--this['cQqoWP'][0x1]:--this['cQqoWP'][0x0];return this['KATCNN'](_0x3c4917);},_0x24a8d9['prototype']['KATCNN']=function(_0x29b5ef){if(!Boolean(~_0x29b5ef))return _0x29b5ef;return this['ajNemF'](this['rYKoKU']);},_0x24a8d9['prototype']['ajNemF']=function(_0x1e1c66){for(let _0x2cfc2d=0x0,_0x458d74=this['cQqoWP']['length'];_0x2cfc2d<_0x458d74;_0x2cfc2d++){this['cQqoWP']['push'](Math['round'](Math['random']())),_0x458d74=this['cQqoWP']['length'];}return _0x1e1c66(this['cQqoWP'][0x0]);},(''+function(){return 0x0;})['indexOf']('\x0a')===-0x1&&new _0x24a8d9(a0_0x39ac)['nrOhtR'](),_0x4021e6=a0_0x39ac['RnzOLp'](_0x4021e6),a0_0x39ac['dVBrCN'][_0x39acfe]=_0x4021e6;}else _0x4021e6=_0x2987d6;return _0x4021e6;}a0_0x4021e6();var __create=Object[a0_0x57f14e(0x25d)],__defProp=Object[a0_0x57f14e(0x263)],__getOwnPropDesc=Object[a0_0x57f14e(0x280)],__getOwnPropNames=Object['getOwnPropertyNames'],__getProtoOf=Object[a0_0x57f14e(0x1c4)],__hasOwnProp=Object['prototype'][a0_0x57f14e(0x21c)],__export=(_0x468387,_0x941498)=>{for(var _0x59f04 in _0x941498)__defProp(_0x468387,_0x59f04,{'get':_0x941498[_0x59f04],'enumerable':!![]});},__copyProps=(_0x17c766,_0x2e5919,_0x169e73,_0x4fb8ce)=>{const _0x5b3cb0=a0_0x57f14e;if(_0x2e5919&&typeof _0x2e5919===_0x5b3cb0(0x344)||typeof _0x2e5919===_0x5b3cb0(0x274)){for(let _0x44f9d8 of __getOwnPropNames(_0x2e5919))if(!__hasOwnProp[_0x5b3cb0(0x225)](_0x17c766,_0x44f9d8)&&_0x44f9d8!==_0x169e73)__defProp(_0x17c766,_0x44f9d8,{'get':()=>_0x2e5919[_0x44f9d8],'enumerable':!(_0x4fb8ce=__getOwnPropDesc(_0x2e5919,_0x44f9d8))||_0x4fb8ce[_0x5b3cb0(0x3b7)]});}return _0x17c766;},__toESM=(_0x3ea688,_0xd73406,_0x425672)=>(_0x425672=_0x3ea688!=null?__create(__getProtoOf(_0x3ea688)):{},__copyProps(_0xd73406||!_0x3ea688||!_0x3ea688[a0_0x57f14e(0x1f5)]?__defProp(_0x425672,a0_0x57f14e(0x21b),{'value':_0x3ea688,'enumerable':!![]}):_0x425672,_0x3ea688)),__toCommonJS=_0x6b3f33=>__copyProps(__defProp({},'__esModule',{'value':!![]}),_0x6b3f33),server_exports={};__export(server_exports,{'app':()=>app}),module['exports']=__toCommonJS(server_exports);var import_express=__toESM(require(a0_0x57f14e(0x39d)),0x1),import_path=__toESM(require(a0_0x57f14e(0x2b1)),0x1),import_vite=require('vite'),import_genai=require('@google/genai'),import_stripe=__toESM(require(a0_0x57f14e(0x37c)),0x1),import_dotenv=__toESM(require(a0_0x57f14e(0x2d3)),0x1),import_firebase_admin=__toESM(require(a0_0x57f14e(0x368)),0x1),import_firestore=require(a0_0x57f14e(0x1e9)),import_fs=__toESM(require('fs'),0x1),AramexAdapter=class{constructor(){const _0x3a7c8b=a0_0x57f14e;this['id']=_0x3a7c8b(0x335),this[_0x3a7c8b(0x228)]=_0x3a7c8b(0x2c7),this['capabilities']=[_0x3a7c8b(0x361),'SHIPMENT',_0x3a7c8b(0x32a),_0x3a7c8b(0x215)];}[a0_0x57f14e(0x231)](_0x564a40){const _0x3889d8=a0_0x57f14e;return _0x564a40===_0x3889d8(0x245)?_0x3889d8(0x2dd):'https://ws.dev.aramex.net';}[a0_0x57f14e(0x272)](_0x3f2d4c,_0x4c1e92='',_0x51f573='AE'){const _0x14032a=a0_0x57f14e;if(!_0x3f2d4c)return _0x51f573==='AE'?'Dubai':'';if(_0x51f573!=='AE')return _0x3f2d4c;const _0xcbacf9=_0x3f2d4c[_0x14032a(0x27e)]()[_0x14032a(0x2d8)](),_0x2197c0=[{'key':_0x14032a(0x2b4),'name':'Dubai'},{'key':'abu\x20dhabi','name':'Abu\x20Dhabi'},{'key':_0x14032a(0x331),'name':_0x14032a(0x1f3)},{'key':_0x14032a(0x2df),'name':_0x14032a(0x337)},{'key':_0x14032a(0x3b1),'name':_0x14032a(0x255)},{'key':'fujairah','name':_0x14032a(0x3ea)},{'key':_0x14032a(0x23b),'name':'Ras\x20Al\x20Khaimah'},{'key':_0x14032a(0x27d),'name':_0x14032a(0x34e)}];for(const _0x3c651b of _0x2197c0){if(_0x14032a(0x221)!==_0x14032a(0x244)){if(_0xcbacf9[_0x14032a(0x1cf)](_0x3c651b[_0x14032a(0x2d2)]))return _0x14032a(0x3cd)!==_0x14032a(0x396)?_0x3c651b[_0x14032a(0x228)]:_0x56372c[_0x14032a(0x325)]({'success':![],'error':_0x4401d4[_0x14032a(0x29a)]});}else{const _0xdfc86a=_0x5b4e0e[_0x14032a(0x1c3)][_0x14032a(0x2b0)]||_0x39c018[_0x14032a(0x34a)][_0x14032a(0x35d)]||_0x63aa99[_0x14032a(0x1fa)]&&_0x30fa25[_0x14032a(0x1fa)][_0x14032a(0x35d)],_0x291095=_0xdfc86a&&_0xdfc86a!==_0x14032a(0x2d5)?_0xdfc86a:'';return{'Content-Type':'application/json','X-API-KEY':_0x291095,'Api-Key':_0x291095,'Authorization':_0x14032a(0x1f9)+_0x291095};}}if(_0x4c1e92){if(_0x14032a(0x310)===_0x14032a(0x310)){const _0x42b3d6=_0x4c1e92[_0x14032a(0x2d8)]();for(const _0x4f50ce of _0x2197c0){if(_0x42b3d6['includes'](_0x4f50ce[_0x14032a(0x2d2)])){if(_0x14032a(0x334)===_0x14032a(0x2da))_0x31e49c[_0x14032a(0x24e)](_0x14032a(0x28e))['doc']('courier_configs')[_0x14032a(0x20e)]()['then'](_0xef5206=>{const _0x20878e=_0x14032a;if(!_0xef5206[_0x20878e(0x2ba)]){const _0x2d2186={'aramex':{'id':_0x20878e(0x335),'name':_0x20878e(0x3d1),'status':_0x20878e(0x202),'currentMode':_0x20878e(0x2a2),'baseUrlUat':_0x20878e(0x23e),'baseUrlProd':_0x20878e(0x23e),'connectionStatus':_0x20878e(0x286),'sandboxCreds':{'username':'testingapi@aramex.com','password':_0x20878e(0x366),'accountNumber':_0x20878e(0x29f),'accountPin':_0x20878e(0x266),'accountEntity':'DXB','accountCountryCode':'AE','source':'24','version':'v1'},'productionCreds':{'username':'','password':'','accountNumber':'','accountPin':'','accountEntity':'','accountCountryCode':'','source':'','version':''}},'noon':{'id':_0x20878e(0x22c),'name':_0x20878e(0x1fb),'status':_0x20878e(0x202),'currentMode':_0x20878e(0x2a2),'baseUrlUat':_0x20878e(0x31f),'baseUrlProd':_0x20878e(0x29d),'connectionStatus':_0x20878e(0x286),'sandboxCreds':{'apiKey':_0x20878e(0x2d5),'storeId':''},'productionCreds':{'apiKey':'','storeId':''}}};_0x14eae3[_0x20878e(0x24e)](_0x20878e(0x28e))['doc'](_0x20878e(0x1ed))[_0x20878e(0x2c1)](_0x2d2186)[_0x20878e(0x1f7)](()=>_0x33a117[_0x20878e(0x36b)](_0x20878e(0x1ca)))['catch'](_0x1718bc=>_0x4d8e32['error'](_0x20878e(0x2c3),_0x1718bc[_0x20878e(0x29a)]));}})[_0x14032a(0x1fc)](_0xf51549=>{const _0x4c3b95=_0x14032a;_0x53540f[_0x4c3b95(0x39b)](_0x4c3b95(0x384),_0xf51549[_0x4c3b95(0x29a)]);});else return _0x4f50ce[_0x14032a(0x228)];}}}else _0x226144=_0x1bb7a2[_0x14032a(0x3d4)](_0x11ddaa);}return _0x14032a(0x1c7);}async[a0_0x57f14e(0x2de)](_0x51bdaa,_0x308905){const _0x46a099=a0_0x57f14e,_0x4f0044=await fetch(_0x51bdaa,{'method':_0x46a099(0x3b8),'headers':{'Content-Type':_0x46a099(0x1c5),'Accept':_0x46a099(0x1c5)},'body':JSON[_0x46a099(0x1dd)](_0x308905)}),_0x4ea4e7=_0x4f0044['headers']['get']('content-type')||'';if(!_0x4f0044['ok']||!_0x4ea4e7[_0x46a099(0x1cf)](_0x46a099(0x1c5))){const _0x200ea8=await _0x4f0044[_0x46a099(0x3a8)](),_0xee84c2=_0x200ea8[_0x46a099(0x3b5)](/<p xmlns="">([\s\S]*?)<\/p>/)||_0x200ea8['match'](/<p>([\s\S]*?)<\/p>/),_0x54b3d4=_0xee84c2?_0xee84c2[0x1]['replace'](/<[^>]*>/g,'')[_0x46a099(0x27e)]():'Aramex\x20server\x20error\x20(status\x20'+_0x4f0044[_0x46a099(0x3dc)]+')';throw new Error(_0x54b3d4);}return await _0x4f0044[_0x46a099(0x325)]();}async[a0_0x57f14e(0x238)](_0xb377c2,_0x6a3a19){const _0x2fb7ca=a0_0x57f14e,_0x28c746=this['getBaseUrl'](_0x6a3a19),_0x446701=_0x2fb7ca(0x350),_0x2d9f59={'ClientInfo':{'UserName':_0xb377c2['username'],'Password':_0xb377c2[_0x2fb7ca(0x328)]||'','Version':_0xb377c2['version']||_0x2fb7ca(0x2f1),'AccountNumber':_0xb377c2[_0x2fb7ca(0x213)],'AccountPin':_0xb377c2[_0x2fb7ca(0x376)],'AccountEntity':_0xb377c2[_0x2fb7ca(0x303)],'AccountCountryCode':_0xb377c2[_0x2fb7ca(0x2ca)],'Source':parseInt(_0xb377c2['source']||'0',0xa)||0x0},'Transaction':{'Reference1':_0x2fb7ca(0x36a),'Reference2':'','Reference3':'','Reference4':'','Reference5':''},'OriginAddress':{'Line1':_0x2fb7ca(0x365),'Line2':'','Line3':'','PostCode':'','StateOrProvince':'','City':_0x2fb7ca(0x1c7),'CountryCode':'AE'},'DestinationAddress':{'Line1':_0x2fb7ca(0x3c7),'Line2':'','Line3':'','PostCode':'','StateOrProvince':'','City':_0x2fb7ca(0x21f),'CountryCode':'AE'},'ShipmentDetails':{'PaymentType':'P','ProductGroup':_0x2fb7ca(0x298),'ProductType':'OND','ActualWeight':{'Value':0x1,'Unit':'KG'},'ChargeableWeight':{'Value':0x1,'Unit':'KG'},'NumberOfPieces':0x1,'Dimensions':{'Length':0xa,'Width':0xa,'Height':0xa,'Unit':'CM'},'DescriptionOfGoods':_0x2fb7ca(0x33c),'GoodsOriginCountry':'AE','PaymentOptions':''}};try{if(_0x2fb7ca(0x3b4)!==_0x2fb7ca(0x3b4))this[_0x2fb7ca(0x1c8)]=new _0xec0b0c(),this['registerAdapter'](new _0x3f8e87()),this[_0x2fb7ca(0x2ce)](new _0x5e5061());else{const _0x4e5cf4=await this['postRequest'](''+_0x28c746+_0x446701,_0x2d9f59);if(_0x4e5cf4[_0x2fb7ca(0x3bc)])return{'success':![],'error':_0x4e5cf4['Notifications']?.[0x0]?.['Message']||'Aramex\x20API\x20credentials\x20validation\x20failed.\x20Raw\x20response:\x20'+JSON[_0x2fb7ca(0x1dd)](_0x4e5cf4)};return{'success':!![]};}}catch(_0x22da05){return{'success':![],'error':_0x22da05[_0x2fb7ca(0x29a)]||_0x2fb7ca(0x1cb)};}}async[a0_0x57f14e(0x349)](_0x532318,_0xba1ac,_0x3d4874){const _0x4411d6=a0_0x57f14e,_0x4ca2c7=this[_0x4411d6(0x231)](_0x3d4874),_0x4c2356='/ShippingAPI.V2/RateCalculator/Service_1_0.svc/json/CalculateRate',_0x368ec4=this[_0x4411d6(0x272)](_0x532318[_0x4411d6(0x393)],'',_0x532318['originCountry']),_0xee7b3b=this[_0x4411d6(0x272)](_0x532318[_0x4411d6(0x3d6)],'',_0x532318['destCountry']),_0x3be448={'ClientInfo':{'UserName':_0xba1ac[_0x4411d6(0x203)],'Password':_0xba1ac[_0x4411d6(0x328)],'Version':_0xba1ac['version']||_0x4411d6(0x2f1),'AccountNumber':_0xba1ac[_0x4411d6(0x213)],'AccountPin':_0xba1ac[_0x4411d6(0x376)],'AccountEntity':_0xba1ac['accountEntity'],'AccountCountryCode':_0xba1ac[_0x4411d6(0x2ca)],'Source':parseInt(_0xba1ac[_0x4411d6(0x382)]||'0',0xa)||0x0},'Transaction':{'Reference1':_0x4411d6(0x2bc),'Reference2':'','Reference3':'','Reference4':'','Reference5':''},'OriginAddress':{'Line1':_0x4411d6(0x365),'Line2':'','Line3':'','PostCode':'','StateOrProvince':'','City':_0x368ec4,'CountryCode':_0x532318[_0x4411d6(0x317)]},'DestinationAddress':{'Line1':'Destination\x20Address','Line2':'','Line3':'','PostCode':'','StateOrProvince':'','City':_0xee7b3b,'CountryCode':_0x532318[_0x4411d6(0x3cc)]},'ShipmentDetails':{'PaymentType':_0x532318['codAmount']?'C':'P','ProductGroup':_0x532318[_0x4411d6(0x317)]===_0x532318[_0x4411d6(0x3cc)]?_0x4411d6(0x298):_0x4411d6(0x2db),'ProductType':_0x532318[_0x4411d6(0x38d)]?_0x4411d6(0x3e0):'OND','ActualWeight':{'Value':_0x532318[_0x4411d6(0x3e4)],'Unit':'KG'},'ChargeableWeight':{'Value':_0x532318[_0x4411d6(0x3e4)],'Unit':'KG'},'NumberOfPieces':0x1,'Services':_0x532318[_0x4411d6(0x299)]?_0x4411d6(0x283):'','Dimensions':{'Length':0xa,'Width':0xa,'Height':0xa,'Unit':'CM'},'DescriptionOfGoods':_0x4411d6(0x3a1),'GoodsOriginCountry':_0x532318[_0x4411d6(0x317)],'PaymentOptions':''}};try{if('vtseB'!==_0x4411d6(0x26f))return _0x53a5b0[_0x4411d6(0x325)]({'success':![],'error':_0xa76040[_0x4411d6(0x29a)]});else{const _0x31cde3=await this['postRequest'](''+_0x4ca2c7+_0x4c2356,_0x3be448);if(_0x31cde3[_0x4411d6(0x3bc)]){if(_0x4411d6(0x3e2)==='uTnVK')_0x70dd1d='/ShippingAPI.V2/Tracking/Service_1_0.svc/json/TrackShipments';else return{'success':![],'error':_0x31cde3[_0x4411d6(0x24a)]?.[0x0]?.[_0x4411d6(0x1d6)]||_0x4411d6(0x3c3)+JSON['stringify'](_0x31cde3)};}return{'success':!![],'totalAmount':_0x31cde3[_0x4411d6(0x31c)]?.[_0x4411d6(0x2f5)],'currency':_0x31cde3[_0x4411d6(0x31c)]?.[_0x4411d6(0x392)],'serviceName':_0x532318[_0x4411d6(0x38d)]?_0x4411d6(0x34c):_0x4411d6(0x1f1)};}}catch(_0x2605a9){return{'success':![],'error':_0x2605a9['message']};}}async[a0_0x57f14e(0x2e1)](_0x4e32b8,_0x2c98a6,_0x399b69){const _0x2e0657=a0_0x57f14e,_0x538815=this[_0x2e0657(0x231)](_0x399b69),_0x2757a9='/ShippingAPI.V2/Shipping/Service_1_0.svc/json/CreateShipments',_0x5d3ad3=_0x4e32b8[_0x2e0657(0x2e2)]===_0x4e32b8[_0x2e0657(0x38c)],_0x49d513=this[_0x2e0657(0x272)](_0x4e32b8[_0x2e0657(0x386)],_0x4e32b8[_0x2e0657(0x357)],_0x4e32b8['senderCountry']),_0x2f9866=this[_0x2e0657(0x272)](_0x4e32b8[_0x2e0657(0x30d)],_0x4e32b8[_0x2e0657(0x2bb)],_0x4e32b8[_0x2e0657(0x38c)]),_0x3e67dd={'ClientInfo':{'UserName':_0x2c98a6[_0x2e0657(0x203)],'Password':_0x2c98a6['password'],'Version':_0x2c98a6['version']||_0x2e0657(0x2f1),'AccountNumber':_0x2c98a6[_0x2e0657(0x213)],'AccountPin':_0x2c98a6[_0x2e0657(0x376)],'AccountEntity':_0x2c98a6[_0x2e0657(0x303)],'AccountCountryCode':_0x2c98a6[_0x2e0657(0x2ca)],'Source':parseInt(_0x2c98a6[_0x2e0657(0x382)]||'0',0xa)||0x0},'Transaction':{'Reference1':_0x4e32b8[_0x2e0657(0x399)]||_0x2e0657(0x2ad),'Reference2':'','Reference3':'','Reference4':'','Reference5':''},'Shipments':[{'Reference1':_0x4e32b8[_0x2e0657(0x399)]||'','Reference2':'','Reference3':'','Shipper':{'Reference1':_0x2e0657(0x2a6),'Reference2':'','AccountNumber':_0x2c98a6['accountNumber'],'PartyAddress':{'Line1':_0x4e32b8[_0x2e0657(0x357)]||_0x2e0657(0x389),'Line2':'','Line3':'','City':_0x49d513,'StateOrProvince':'','PostCode':'','CountryCode':_0x4e32b8[_0x2e0657(0x2e2)]},'Contact':{'Department':'','PersonName':_0x4e32b8[_0x2e0657(0x356)]||_0x2e0657(0x2ae),'CompanyName':'USend\x20Hub','PhoneNumber1':_0x4e32b8[_0x2e0657(0x2c4)]||_0x2e0657(0x329),'PhoneNumber1Ext':'','PhoneNumber2':'','PhoneNumber2Ext':'','FaxNumber':'','CellPhone':_0x4e32b8[_0x2e0657(0x2c4)]||_0x2e0657(0x329),'EmailAddress':_0x2e0657(0x2cf),'Type':0x0}},'Consignee':{'Reference1':'','Reference2':'','AccountNumber':'','PartyAddress':{'Line1':_0x4e32b8[_0x2e0657(0x2bb)]||_0x2e0657(0x296),'Line2':'','Line3':'','City':_0x2f9866,'StateOrProvince':'','PostCode':'','CountryCode':_0x4e32b8['receiverCountry']},'Contact':{'Department':'','PersonName':_0x4e32b8[_0x2e0657(0x23a)]||_0x2e0657(0x3d5),'CompanyName':_0x4e32b8[_0x2e0657(0x23a)]||_0x2e0657(0x3d5),'PhoneNumber1':_0x4e32b8[_0x2e0657(0x275)]||_0x2e0657(0x3bd),'PhoneNumber1Ext':'','PhoneNumber2':'','PhoneNumber2Ext':'','FaxNumber':'','CellPhone':_0x4e32b8[_0x2e0657(0x275)]||_0x2e0657(0x3bd),'EmailAddress':'','Type':0x0}},'ThirdParty':null,'Reference4':'','Reference5':'','ShippingDateTime':_0x2e0657(0x305)+new Date()['getTime']()+')/','DueDate':_0x2e0657(0x305)+new Date(new Date()['getTime']()+0x5265c00)[_0x2e0657(0x219)]()+')/','Comments':_0x2e0657(0x24b),'PickupLocation':'Reception','OperationsInstructions':_0x2e0657(0x236),'AccountingInstrcutions':'','Details':{'Dimensions':_0x4e32b8[_0x2e0657(0x32b)]?{'Length':_0x4e32b8[_0x2e0657(0x32b)][_0x2e0657(0x2a3)],'Width':_0x4e32b8['dimensions'][_0x2e0657(0x3c1)],'Height':_0x4e32b8[_0x2e0657(0x32b)]['height'],'Unit':'CM'}:{'Length':0xa,'Width':0xa,'Height':0xa,'Unit':'CM'},'ActualWeight':{'Value':_0x4e32b8['weightKg'],'Unit':'KG'},'ChargeableWeight':{'Value':_0x4e32b8[_0x2e0657(0x3e4)],'Unit':'KG'},'DescriptionOfGoods':_0x4e32b8[_0x2e0657(0x388)]||_0x2e0657(0x226),'GoodsOriginCountry':_0x4e32b8[_0x2e0657(0x2e2)],'NumberOfPieces':0x1,'ProductGroup':_0x5d3ad3?_0x2e0657(0x298):_0x2e0657(0x2db),'ProductType':_0x2e0657(0x2aa),'PaymentType':_0x4e32b8[_0x2e0657(0x351)]>0x0?'C':'P','PaymentOptions':'','Services':_0x4e32b8[_0x2e0657(0x351)]>0x0?_0x2e0657(0x283):'','CashOnDeliveryAmount':_0x4e32b8[_0x2e0657(0x351)]>0x0?{'Value':_0x4e32b8['codAmountAED'],'CurrencyCode':_0x2e0657(0x27f)}:null,'CustomsValueAmount':null}}],'LabelInfo':{'ReportID':0x2601,'ReportType':_0x2e0657(0x390)}};try{if(_0x2e0657(0x261)!==_0x2e0657(0x214)){const _0x4da9c2=await this[_0x2e0657(0x2de)](''+_0x538815+_0x2757a9,_0x3e67dd);if(_0x4da9c2[_0x2e0657(0x3bc)])return{'success':![],'error':_0x4da9c2[_0x2e0657(0x24a)]?.[0x0]?.[_0x2e0657(0x1d6)]||_0x2e0657(0x3c3)+JSON[_0x2e0657(0x1dd)](_0x4da9c2)};const _0x38bfbc=_0x4da9c2[_0x2e0657(0x338)]?.[0x0];if(!_0x38bfbc)return _0x2e0657(0x21a)===_0x2e0657(0x252)?_0x53e160[_0x2e0657(0x325)]({'success':![],'error':_0x12fbcd[_0x2e0657(0x29a)]}):{'success':![],'error':_0x2e0657(0x30f)};return{'success':!![],'trackingNumber':_0x38bfbc['ID'],'labelUrl':_0x38bfbc[_0x2e0657(0x235)]?.[_0x2e0657(0x1e0)],'base64Label':_0x38bfbc[_0x2e0657(0x235)]?.[_0x2e0657(0x352)],'providerStatus':_0x2e0657(0x284)};}else _0x1ec7b2[_0x2e0657(0x39b)](_0x2e0657(0x384),_0x4ba3f3['message']);}catch(_0x1592cb){return'DkRhw'==='BxCeE'?{'success':!![],'providerStatus':_0x2e0657(0x268),'usendStatus':_0x2e0657(0x1dc),'timestamp':new _0x139754()[_0x2e0657(0x22a)]()}:{'success':![],'error':_0x1592cb[_0x2e0657(0x29a)]};}}async['trackShipment'](_0x143297,_0x586c77,_0x4b0780){const _0x2368f6=a0_0x57f14e,_0x32484b=this[_0x2368f6(0x231)](_0x4b0780),_0xd9236d=_0x2368f6(0x3b2),_0x5042d5={'ClientInfo':{'UserName':_0x586c77['username'],'Password':_0x586c77[_0x2368f6(0x328)],'Version':_0x586c77[_0x2368f6(0x39c)]||_0x2368f6(0x2f1),'AccountNumber':_0x586c77[_0x2368f6(0x213)],'AccountPin':_0x586c77[_0x2368f6(0x376)],'AccountEntity':_0x586c77[_0x2368f6(0x303)],'AccountCountryCode':_0x586c77[_0x2368f6(0x2ca)],'Source':parseInt(_0x586c77[_0x2368f6(0x382)]||'0',0xa)||0x0},'Transaction':{'Reference1':'','Reference2':'','Reference3':'','Reference4':'','Reference5':''},'Shipments':[_0x143297]};try{const _0x571e0c=await this[_0x2368f6(0x2de)](''+_0x32484b+_0xd9236d,_0x5042d5);if(_0x571e0c[_0x2368f6(0x3bc)])return{'success':![],'providerStatus':_0x2368f6(0x26b),'usendStatus':_0x2368f6(0x370),'timestamp':new Date()[_0x2368f6(0x22a)](),'error':_0x571e0c[_0x2368f6(0x24a)]?.[0x0]?.[_0x2368f6(0x1d6)]||_0x2368f6(0x340)+JSON[_0x2368f6(0x1dd)](_0x571e0c)};const _0x1f2b20=_0x571e0c[_0x2368f6(0x304)];if(!_0x1f2b20||_0x1f2b20[_0x2368f6(0x2a3)]===0x0){if('nplKA'!==_0x2368f6(0x256))_0x3ed454['error'](_0x2368f6(0x278),_0x41262a);else return{'success':![],'providerStatus':'No\x20Data','usendStatus':_0x2368f6(0x1dc),'timestamp':new Date()[_0x2368f6(0x22a)](),'error':_0x2368f6(0x1c1)};}const _0xda34f5=_0x1f2b20[0x0][_0x2368f6(0x2f5)];if(!_0xda34f5||_0xda34f5['length']===0x0){if('VECqV'===_0x2368f6(0x3c6))_0x119ba9[_0x2368f6(0x325)]({'publishableKey':_0x27b9eb.env.STRIPE_PUBLISHABLE_KEY||_0x5d5f2e.env.VITE_STRIPE_PUBLISHABLE_KEY});else return{'success':!![],'providerStatus':_0x2368f6(0x268),'usendStatus':'PENDING','timestamp':new Date()['toISOString']()};}const _0x402612=_0xda34f5[0x0];return{'success':!![],'providerStatus':_0x402612[_0x2368f6(0x383)],'usendStatus':this[_0x2368f6(0x206)](_0x402612[_0x2368f6(0x271)]),'location':_0x402612['UpdateLocation'],'timestamp':_0x402612[_0x2368f6(0x2a1)]};}catch(_0x40c9ea){return{'success':![],'providerStatus':_0x2368f6(0x26b),'usendStatus':'FAILED','timestamp':new Date()[_0x2368f6(0x22a)](),'error':_0x40c9ea[_0x2368f6(0x29a)]};}}async['cancelShipment'](_0x13fc2d,_0x305262,_0x2e3b8d){return![];}['mapStatus'](_0xcf8cd3){const _0x16be84=a0_0x57f14e,_0x334cf5=_0xcf8cd3[_0x16be84(0x1d9)]();if(['SH005',_0x16be84(0x24d),_0x16be84(0x324),_0x16be84(0x321),'SH164']['includes'](_0x334cf5))return _0x16be84(0x1f0);if(['SH012',_0x16be84(0x1f6),_0x16be84(0x2ac)][_0x16be84(0x1cf)](_0x334cf5))return _0x16be84(0x33b);if([_0x16be84(0x2b3),_0x16be84(0x2e8),'SH049'][_0x16be84(0x1cf)](_0x334cf5))return _0x16be84(0x370);return _0x16be84(0x1dc);}},NoonAdapter=class{constructor(){const _0x2c798c=a0_0x57f14e;this['id']=_0x2c798c(0x22c),this[_0x2c798c(0x228)]=_0x2c798c(0x20d),this[_0x2c798c(0x2c6)]=[_0x2c798c(0x3aa),'TRACKING',_0x2c798c(0x2e9)];}['getBaseUrl'](_0x51d385){const _0x147323=a0_0x57f14e;return _0x51d385===_0x147323(0x245)?'https://merchants.noon.com':'https://food-api-team.noonstg.team';}async[a0_0x57f14e(0x238)](_0xab2b49,_0x3202e2){const _0x10f436=a0_0x57f14e,_0x1b2861=this[_0x10f436(0x231)](_0x3202e2);try{const _0x2e7945=_0xab2b49[_0x10f436(0x35d)]||_0xab2b49[_0x10f436(0x328)]||'';if(!_0x2e7945)return{'success':![],'error':'Missing\x20API\x20key\x20parameter'};const _0x6e7e5d=await fetch(_0x1b2861+_0x10f436(0x2a8),{'method':_0x10f436(0x2f0),'headers':{'Content-Type':_0x10f436(0x1c5),'X-API-KEY':_0x2e7945,'Api-Key':_0x2e7945,'Authorization':_0x10f436(0x1f9)+_0x2e7945},'signal':AbortSignal['timeout'](0x2710)}),_0x17f178=await _0x6e7e5d[_0x10f436(0x3a8)]();if(_0x17f178[_0x10f436(0x1cf)]('FortiGuard')||_0x17f178['includes'](_0x10f436(0x205))||_0x17f178['includes']('Access\x20Blocked'))return{'success':![],'error':_0x10f436(0x3e7)};if(!_0x6e7e5d['ok']){let _0x323e92='Noon\x20returned\x20status\x20code\x20'+_0x6e7e5d[_0x10f436(0x3dc)];try{if(_0x10f436(0x2e7)!==_0x10f436(0x3a5)){const _0x5ef72b=JSON['parse'](_0x17f178);if(_0x5ef72b['message'])_0x323e92=_0x5ef72b['message'];}else return{'success':![],'error':_0x10f436(0x3bb)+_0x510270['stringify'](_0x63a3fc)['substring'](0x0,0xc8)};}catch(_0x4bee3e){}return{'success':![],'error':_0x323e92};}return{'success':!![]};}catch(_0xf25b97){if('DuZiE'!==_0x10f436(0x37d))return{'success':![],'error':_0xf25b97[_0x10f436(0x29a)]||'Network\x20error\x20while\x20connecting\x20to\x20Noon'};else _0x3694e6({'type':_0x10f436(0x333),'trackingNumber':_0x21f4bd[_0x10f436(0x371)],'updateCode':_0x1d519c[_0x10f436(0x271)],'updateDescription':_0x34f540[_0x10f436(0x383)],'timestamp':new _0x1b594f()[_0x10f436(0x22a)](),'location':_0x1a2bd8[_0x10f436(0x395)]||_0x10f436(0x2d9)}),_0x22d594['collection'](_0x10f436(0x2be))[_0x10f436(0x2cd)](_0x455a84[_0x10f436(0x371)])[_0x10f436(0x24e)](_0x10f436(0x38e))['add']({'updateCode':_0x276765['UpdateCode'],'updateDescription':_0x53e7c4['UpdateDescription'],'location':_0x2dd75f[_0x10f436(0x395)]||_0x10f436(0x2d9),'timestamp':_0x4efbfc['FieldValue'][_0x10f436(0x1c6)](),'rawPayload':_0x54bde2})[_0x10f436(0x1fc)](_0xbbf6be=>_0x11d3fe[_0x10f436(0x2c5)](_0x10f436(0x36c),_0xbbf6be)),_0x3cb34e[_0x10f436(0x24e)](_0x10f436(0x2be))[_0x10f436(0x2cd)](_0x8c7839[_0x10f436(0x371)])['update']({'status':_0x1d3dc2[_0x10f436(0x383)],'updatedAt':_0x208aa4[_0x10f436(0x224)][_0x10f436(0x1c6)]()})[_0x10f436(0x1fc)](_0x125919=>_0x5c6d2a[_0x10f436(0x2c5)](_0x10f436(0x3e3),_0x125919));}}async['calculateRate'](_0x44710f,_0x9b98ee,_0x1718e3){const _0x1ccee2=a0_0x57f14e;return{'success':!![],'totalAmount':_0x44710f['isExpress']?0x19:0xf,'currency':_0x1ccee2(0x27f),'serviceName':'Noon\x20Hyperlocal'};}async[a0_0x57f14e(0x2e1)](_0x179f96,_0x35e424,_0x5f40ee){const _0x2948be=a0_0x57f14e,_0x1cedd4=this['getBaseUrl'](_0x5f40ee),_0x42477a=Math[_0x2948be(0x3b3)]((_0x179f96[_0x2948be(0x351)]||0x0)*0x64),_0x462dbd={'outlet_code':_0x35e424[_0x2948be(0x213)]||_0x35e424[_0x2948be(0x303)]||_0x2948be(0x249),'order_reference':_0x179f96[_0x2948be(0x399)]||_0x2948be(0x1f8)+Date[_0x2948be(0x369)](),'customer_name':_0x179f96[_0x2948be(0x23a)],'customer_phone':_0x179f96['receiverPhone'],'drop_off_address':{'address':_0x179f96[_0x2948be(0x2bb)],'lat':25.2048,'lng':55.2708,'contact_name':_0x179f96[_0x2948be(0x23a)],'contact_phone_number':_0x179f96[_0x2948be(0x275)],'country_code':_0x179f96[_0x2948be(0x38c)]||'AE'},'lat':25.2048,'lng':55.2708,'cod_value':_0x42477a,'payment_method':_0x42477a>0x0?_0x2948be(0x355):_0x2948be(0x1ef)},_0x5c70b0=[_0x1cedd4+_0x2948be(0x311),_0x1cedd4+_0x2948be(0x2fa),_0x1cedd4+'/v1/task',_0x1cedd4+_0x2948be(0x341)],_0x441ded=_0x35e424[_0x2948be(0x35d)]||_0x35e424['password']||'',_0x53af76={'Content-Type':_0x2948be(0x1c5),'Accept':_0x2948be(0x1c5),'X-API-KEY':_0x441ded,'Api-Key':_0x441ded,'Authorization':_0x2948be(0x1f9)+_0x441ded};let _0x526e7d=_0x2948be(0x2eb);for(const _0x3822c4 of _0x5c70b0){if(_0x2948be(0x28b)!==_0x2948be(0x3ac))try{const _0x187b52=await fetch(_0x3822c4,{'method':_0x2948be(0x3b8),'headers':_0x53af76,'body':JSON['stringify'](_0x462dbd),'signal':AbortSignal[_0x2948be(0x359)](0x2ee0)}),_0x225579=await _0x187b52['text']();if(_0x225579[_0x2948be(0x28f)]()[_0x2948be(0x1cc)]('<')){if('INhkH'===_0x2948be(0x2e0)){_0x526e7d=_0x2948be(0x28a)+_0x3822c4+'\x20returned\x20an\x20HTML\x20page\x20(authentication\x20redirect\x20or\x20firewall\x20block)';continue;}else throw new _0x1f7003('Courier\x20adapter\x20for\x20\x27'+_0x1ef38f+_0x2948be(0x30a));}let _0x102482={};try{_0x102482=JSON[_0x2948be(0x3d4)](_0x225579);}catch(_0x496172){if(_0x2948be(0x36d)!==_0x2948be(0x36d))return _0x3dc3da[_0x2948be(0x1c3)][_0x2948be(0x3dd)]||_0x25048e[_0x2948be(0x34a)][_0x2948be(0x2b6)]||_0x1feff7[_0x2948be(0x1fa)]&&_0x17fa70[_0x2948be(0x1fa)][_0x2948be(0x2b6)]||_0x2948be(0x2e4);else{_0x526e7d=_0x2948be(0x28a)+_0x3822c4+_0x2948be(0x2b9)+_0x187b52[_0x2948be(0x3dc)]+_0x2948be(0x2b2)+_0x225579[_0x2948be(0x372)](0x0,0x64);continue;}}if(_0x187b52[_0x2948be(0x3dc)]===0x194&&_0x102482['detail']){_0x526e7d=_0x2948be(0x28a)+_0x3822c4+_0x2948be(0x332)+_0x102482[_0x2948be(0x3b6)];continue;}if(!_0x187b52['ok']||_0x102482[_0x2948be(0x3dc)]==='ERROR')return _0x526e7d=_0x102482[_0x2948be(0x29a)]||_0x102482[_0x2948be(0x3b6)]||_0x2948be(0x29b)+_0x3822c4+_0x2948be(0x35a)+_0x187b52[_0x2948be(0x3dc)]+')',{'success':![],'error':'Failed\x20to\x20create\x20Noon\x20Task:\x20'+_0x526e7d};const _0x3d9dcd=_0x102482[_0x2948be(0x301)]||_0x102482[_0x2948be(0x1ec)]||_0x102482['id']||_0x102482[_0x2948be(0x265)]||_0x102482[_0x2948be(0x399)];if(!_0x3d9dcd)return{'success':![],'error':'Noon\x20task\x20created\x20but\x20no\x20tracking\x20number\x20returned.\x20Response:\x20'+JSON[_0x2948be(0x1dd)](_0x102482)[_0x2948be(0x372)](0x0,0xc8)};return{'success':!![],'trackingNumber':String(_0x3d9dcd),'providerStatus':_0x102482[_0x2948be(0x3dc)]||_0x2948be(0x2cb)};}catch(_0x11fe4e){_0x526e7d=_0x2948be(0x23c)+_0x3822c4+':\x20'+_0x11fe4e['message'];continue;}else{const _0x336aa0=_0x4cc742[_0x2948be(0x1cc)](_0x2948be(0x312))?_0x2948be(0x1eb):_0x2948be(0x316);_0x3a81e6['log']('[Stripe\x20Console]\x20SUCCESS!\x20Successfully\x20authenticated\x20&\x20connected\x20with\x20Stripe\x20API\x20in\x20'+_0x336aa0+'\x20mode.'),_0x11f27b[_0x2948be(0x36b)](_0x2948be(0x24c)+(_0x4b38f1[_0x2948be(0x35b)][_0x2948be(0x1ee)](_0x24d58b=>(_0x24d58b['amount']/0x64)['toFixed'](0x2)+'\x20'+_0x24d58b['currency'][_0x2948be(0x1d9)]())[_0x2948be(0x358)](',\x20')||_0x2948be(0x3ec)));}}return{'success':![],'error':'Noon\x20integration\x20unavailable\x20(sandbox\x20may\x20require\x20authenticated\x20session).\x20Details:\x20'+_0x526e7d};}async[a0_0x57f14e(0x3e5)](_0x7b65f4,_0xc2e3d7,_0x2c88ed){const _0x432f21=a0_0x57f14e,_0x1a9689=this[_0x432f21(0x231)](_0x2c88ed);try{if(_0x432f21(0x3c9)===_0x432f21(0x3c9)){const _0x491630=await fetch(_0x1a9689+_0x432f21(0x320)+_0x7b65f4,{'method':_0x432f21(0x2f0),'headers':{'Content-Type':'application/json','Accept':_0x432f21(0x1c5),'X-API-KEY':_0xc2e3d7[_0x432f21(0x35d)]||_0xc2e3d7[_0x432f21(0x328)]||'','Api-Key':_0xc2e3d7[_0x432f21(0x35d)]||_0xc2e3d7[_0x432f21(0x328)]||'','Authorization':_0x432f21(0x1f9)+(_0xc2e3d7[_0x432f21(0x35d)]||_0xc2e3d7[_0x432f21(0x328)])}}),_0x14012b=await _0x491630[_0x432f21(0x3a8)]();let _0x346a73={};try{_0x346a73=JSON['parse'](_0x14012b);}catch(_0x42675c){if(_0x432f21(0x345)!==_0x432f21(0x345)){const _0x3c8d74=this[_0x432f21(0x1c8)]['get'](_0x42210e);if(!_0x3c8d74)throw new _0x238bea(_0x432f21(0x201)+_0x21f4f8+'\x27\x20not\x20found');return _0x3c8d74;}else return{'success':![],'providerStatus':_0x432f21(0x26b),'usendStatus':_0x432f21(0x370),'timestamp':new Date()[_0x432f21(0x22a)](),'error':_0x432f21(0x3c5)+_0x491630['status']+')'};}if(!_0x491630['ok']||_0x346a73[_0x432f21(0x3dc)]==='ERROR')return{'success':![],'providerStatus':_0x432f21(0x26b),'usendStatus':_0x432f21(0x370),'timestamp':new Date()[_0x432f21(0x22a)](),'error':_0x346a73['message']||_0x432f21(0x217)};return{'success':!![],'providerStatus':_0x346a73[_0x432f21(0x3dc)],'usendStatus':this[_0x432f21(0x206)](_0x346a73[_0x432f21(0x3dc)]),'timestamp':new Date()[_0x432f21(0x22a)]()};}else{const _0x53592c=_0x15fcc5[_0x432f21(0x3b5)](/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,(.+)$/);let _0xde4672=_0x41e1d9,_0x570d66=_0x432f21(0x290);_0x53592c&&_0x53592c[_0x432f21(0x2a3)]===0x3&&(_0x570d66=_0x53592c[0x1],_0xde4672=_0x53592c[0x2]),_0x239049[_0x432f21(0x347)]({'inlineData':{'mimeType':_0x570d66,'data':_0xde4672}});}}catch(_0x743ede){return{'success':![],'providerStatus':_0x432f21(0x26b),'usendStatus':'FAILED','timestamp':new Date()[_0x432f21(0x22a)](),'error':_0x743ede[_0x432f21(0x29a)]};}}async['cancelShipment'](_0x1a277d,_0x1b6836,_0x4a61ce){const _0x4ee047=a0_0x57f14e,_0x47d1e1=this[_0x4ee047(0x231)](_0x4a61ce);try{if(_0x4ee047(0x381)!==_0x4ee047(0x381))this['id']=_0x4ee047(0x335),this[_0x4ee047(0x228)]=_0x4ee047(0x2c7),this['capabilities']=[_0x4ee047(0x361),'SHIPMENT',_0x4ee047(0x32a),_0x4ee047(0x215)];else{const _0x23cbd9=await fetch(_0x47d1e1+_0x4ee047(0x320)+_0x1a277d+_0x4ee047(0x289),{'method':_0x4ee047(0x3b8),'headers':{'Content-Type':_0x4ee047(0x1c5),'Accept':_0x4ee047(0x1c5),'X-API-KEY':_0x1b6836[_0x4ee047(0x35d)]||_0x1b6836[_0x4ee047(0x328)]||'','Api-Key':_0x1b6836[_0x4ee047(0x35d)]||_0x1b6836[_0x4ee047(0x328)]||'','Authorization':'Bearer\x20'+(_0x1b6836[_0x4ee047(0x35d)]||_0x1b6836[_0x4ee047(0x328)])},'body':JSON[_0x4ee047(0x1dd)]({'reason':'USend\x20Automated\x20Cancellation'})}),_0x4bc84e=await _0x23cbd9['text']();let _0x48b35d={};try{_0x48b35d=JSON['parse'](_0x4bc84e);}catch(_0x270c5a){}return _0x23cbd9['ok']&&_0x48b35d[_0x4ee047(0x3dc)]===_0x4ee047(0x2b7);}}catch(_0x7e9e59){return _0x4ee047(0x2f8)===_0x4ee047(0x2f8)?![]:{'success':![],'error':_0x1ff570['message']};}}[a0_0x57f14e(0x206)](_0x44e5b0){const _0x5d9979=a0_0x57f14e,_0x24eb34=(_0x44e5b0||'')[_0x5d9979(0x1d9)]();if(['DELIVERED',_0x5d9979(0x342),'SUCCESS'][_0x5d9979(0x1cf)](_0x24eb34))return'DELIVERED';if([_0x5d9979(0x3a7),'REJECTED',_0x5d9979(0x370)]['includes'](_0x24eb34))return'FAILED';if([_0x5d9979(0x2cb),_0x5d9979(0x37e),_0x5d9979(0x1e7),_0x5d9979(0x394)][_0x5d9979(0x1cf)](_0x24eb34))return _0x5d9979(0x33b);return _0x5d9979(0x1dc);}},CourierEngine=class{constructor(){const _0x3bb751=a0_0x57f14e;this[_0x3bb751(0x1c8)]=new Map(),this[_0x3bb751(0x2ce)](new AramexAdapter()),this[_0x3bb751(0x2ce)](new NoonAdapter());}['registerAdapter'](_0x3652d6){const _0x45c2b6=a0_0x57f14e;this[_0x45c2b6(0x1c8)][_0x45c2b6(0x2c1)](_0x3652d6['id'],_0x3652d6);}[a0_0x57f14e(0x25a)](_0x2a419c){const _0x57866f=a0_0x57f14e,_0xc79fd2=this[_0x57866f(0x1c8)][_0x57866f(0x20e)](_0x2a419c);if(!_0xc79fd2)throw new Error(_0x57866f(0x201)+_0x2a419c+_0x57866f(0x30a));return _0xc79fd2;}},courierEngine=new CourierEngine(),import_url=require(a0_0x57f14e(0x234)),import_meta={},dirName='';try{dirName=__dirname;}catch(a0_0x86a124){dirName=import_path[a0_0x57f14e(0x21b)][a0_0x57f14e(0x3df)]((0x0,import_url[a0_0x57f14e(0x385)])(import_meta['url']));}function a0_0x24a9(){const _0x49b507=['Dg9gAxHLza','vxbKyxrLrgf0zvrPBwu','C2fUzgjVEa','BgvUz3rO','qxjHBwv4iefqssbJB25Uzwn0Aw9UigzHAwXLzdOG','rxn0Aw1HDgvKihjLDgfPBcb2ywX1zsaVign1C3rVBxmGlYb0CMfUC2L0igLUC3vYyw5JzsbKzwnSyxjHDgLVBIbPBIbbruqU','vvnLBMqGq2vUDhjHBcbezxbVDa','qwnJB3vUDe51BwjLCG','l3b1yMXPyY92ms9WAwnRDxaTCg9PBNrZl2XPC3q','CgvUzgLUzW','t05e','y29UzMLN','u0GYmZq','vvnLBMqGu2HPCg1LBNq','u2vUzgvY','C3rHDhvZx2nVzgu','Ec1UB29UlwfWAs1RzxK','Cgf0Aa','ktOG','u0GWndC','zhvIywK','mtvTyG','yMfZzvvYBa','u1vdq0vtuW','mtu0ndu0','ihjLDhvYBMvKig5VBI1ku09oicHZDgf0DxmG','zxHPC3rZ','CMvJzwL2zxjbzgrYzxnZ','uMf0zsbdywXJDwXHDgLVBG','u3rYAxbLihzLCMLMEsbJB25Uzwn0Aw9UigzHAwXLzdO','CMvXDwvZDhm','w1n0CMLWzsbdB25ZB2XLxsbfuLjpuJOGrMfPBgvKihrVigLUC3rHBNrPyxrLifn0CMLWztOG','D3jPDgu','C2v0','twLZC2LUzYbHBw91BNq','w0zPCMvZDg9YzsbtzwvKxsbgywLSzwqGDg8GC2v0igrLzMf1BhqGy291CMLLCIbJB25MAwDZoG','C2vUzgvYugHVBMu','zxjYB3i','y2fWywjPBgL0AwvZ','qxjHBwv4','AMT2r0e','u1rssu5h','ywnJB3vUDenVDw50CNLdB2rL','q1jfqvrfra','DgvZDa','zg9J','CMvNAxn0zxjbzgfWDgvY','zgLZCgf0y2HaDxnLBMqUywu','l2fWAs9JB3vYAwvYl3rYywnR','B3jPz2LUywXvCMW','A2v5','zg90zw52','l2fWAs9UB29Ul3rHC2TZlZPTCf90yxnRx25Yl2nHBMnLBa','BM9VBL9ZzwnYzxrFA2v5xZeYmW','t0jkrunu','AxrLBu5HBwu','Dg9mB3DLCKnHC2u','shvI','uuPPsgy','rvHq','mtzWEuvWseq','Ahr0Chm6lY93CY5HCMfTzxGUBMv0','Cg9ZDfjLCxvLC3q','C2HHCMPHAa','su5OA0G','y3jLyxrLu2HPCg1LBNq','C2vUzgvYq291BNrYEq','q2Hyy0O','Ahr0Chm6lY9TzxjJAgfUDhmUC3rHz2LUzY5UB29UlMnVBq','yxbW','D0f2q3e','zgnYy0O','u0GWndG','q0foq0vm','B3jKzxjbBw91BNq','qwXSie5VB24Gzw5KCg9PBNqGy2fUzgLKyxrLCYbYzxr1CM5LzcbLCNjVCNm','ywrK','nu9lBwHhsW','vMvYC2LVBG','w0zPCMvZDg9YzsbtzwvKxsbgywLSzwqGDg8GAw5PDgLHBgL6zsbJAgvJAZO','r0vu','DJeUma','DxnL','B2zsr0S','AKP0AfK','vMfSDwu','y2f0zwDVCNK','u3rYAxbLieLUDgvUDcbfCNjVCJO','vKrbz3q','zMLYzxn0B3jLrgf0ywjHC2vjza','l3b1yMXPyY92ms90yxnR','ChjVAMvJDeLK','vw5Oyw5KBgvKigv2zw50ihr5CguG','mti3lJaUmc4XoJGWoda','rMfPBgvKihrVihvWzgf0zsbVCMrLCIbWyxLTzw50ihn0yxr1CZO','A2vLCc1HBgL2zq','l2fWAs9HCMfTzxGVoNnLCNzPy2vuExbL','BxbFDgfZA19UCG','CgfYyw1Z','ywnJB3vUDevUDgL0Eq','vhjHy2TPBMDszxn1BhrZ','l0rHDguO','u291CMnL','q29UDgvUDc1uExbL','rMfPBgvKihrVigfWCgvUzcboB29UihrYywnRAw5NigHPC3rVCNK6','w1n0CMLWzsbdB25ZB2XLxsbfuLjpuJOGu3rYAxbLihnLy3jLDcbRzxKGDMvYAwzPy2f0Aw9UigzHAwXLzdOG','jYbUB3qGzM91BMq','CKDAteC','ugDIvuK','CMvJzwL2zxjdAxr5','BvHjDuS','tM8GC2HPCg1LBNqGzgf0ysbYzxr1CM5Lza','Afrotu4','l2fWAs92ms90yxnR','C2TFDgvZDf8','C3rYAxbLlxnPz25HDhvYzq','w05VB24GuhjVEhLDiezLDgnOAw5NihrHC2SGzgv0ywLSCYbMB3iG','l1nOAxbWAw5NqvbjlLyYl1nOAxbWAw5Nl1nLCNzPy2vFmv8WlNn2yY9QC29Ul0nYzwf0zvnOAxbTzw50CW','teLwrsaOChjVzhvJDgLVBIK','B3jPz2LUq291BNrYEq','BwLKzgXLD2fYzxm','mty5mtK3n1bNreHHua','vuresLO','v1H6B24','vg90ywXbBw91BNq','q29UBMvJDgLVBIbMywLSzwq6ia','CMvWBgfJzq','Ahr0Chm6lY9MB29KlwfWAs10zwfTlM5VB25ZDgCUDgvHBq','l3b1yMXPyY92ms90yxnRCY8','u0GWmtq','l2fWAs9JB3vYAwvYl2nHBMnLBa','Bw9KzwXZ','u0GWmdC','ANnVBG','rMfPBgvKihrVihvWzgf0zsboB29UihrYywnRAw5Nihn0yxr1CZO','tKvtuuy','CgfZC3DVCMq','kZK3mtuWmdaWmdaWma','vfjbq0TjtKC','zgLTzw5ZAw9UCW','seDhwKS','vxnLCIb3CML0DgvUigL0zw0GBMfTzs9KzxrHAwXZoIaI','w05VB24GuhjVEhLDiezLDgnOAw5NihbPy2T1CcbWB2LUDhmGzNjVBsa','nNHxqvLACW','B3jKzxjFCMvMzxjLBMnL','ywWGywLU','ig5VDcbMB3vUzcaOnda0ktOG','v0vcse9ps19vuerbveu','Ewn6weC','yxjHBwv4','l2fWAs9UB29Ul2nYzwf0zs10yxnR','u2HHCMPHAa','u2HPCg1LBNrZ','w05VB24GuhjVEhLDie5VB24GqvbjihjLDhvYBMvKia','q3f6D1K','su5FvfjbtLnjva','vMvYAwzPy2f0Aw9U','C2vHCMnO','DxbKyxrL','ww91igfYzsbHBIbbssbJyxjNBYbSB2DPC3rPy3mGyw5KigrLBgL2zxj5igrPC3bHDgnOigrPC3bHDgnOzxiUifLVDxiGz29HBcbPCYb0BYbHBMfSExPLihrOzsb1C2vYj3mGAxrLBsbKzxrHAwXZigfUzcbYzxr1CM4GAgLNAgX5ihbYzwnPC2uGC2HPChbPBMCGzgf0ys4k','vhjHy2TPBMCGrxjYB3iUifjHDYbYzxnWB25ZztOG','l3b1yMXPyY92ms9JCMvHDguTDgfZAW','q09nueXfveve','ugf5BwvUDcbJB25MAxjTzwqGzM9Yie9YzgvYoIa','B2jQzwn0','BKD1wK8','DxrMoa','ChvZAa','s1jAvKy','y2fSy3vSyxrLuMf0zq','CxvLCNK','y3DK','qxjHBwv4ifbYAw9YAxr5iev4ChjLC3m','C2vUzezPBgu','vw1TiefSiff1D2fPBG','yw1VDw50','l1nOAxbWAw5NqvbjlLyYl1jHDgvdywXJDwXHDg9Yl1nLCNzPy2vFmv8WlNn2yY9QC29Ul0nHBgn1Bgf0zvjHDgu','y29Kqw1VDw50quve','tgfIzwXgAwXLq29UDgvUDhm','C3rHDhvZx2rLC2nYAxb0Aw9U','u0GWmti','q09e','C2vUzgvYtMfTzq','C2vUzgvYqwrKCMvZCW','AM9PBG','DgLTzw91Da','icHZDgf0DxmG','yxzHAwXHyMXL','w05VB24GuhjVEhLDie5VB24GDgfZAYbJyw5JzwXSyxrPB24GzMfPBgvKoIa','yxbPs2v5','w05VB24GuhjVEhLDifnLBMrPBMCGy2fUy2vSBgf0Aw9UihjLCxvLC3qGzM9Yia','DK9pDve','BNblCfe','uKfurq','l2fWAs9WyxLTzw50CY9ZDgf0Dxm','ywjZ','rMLYzwjHC2uGqwrTAw46ie5VihnLCNzPy2uGywnJB3vUDcbRzxKGzM91BMqSihvZAw5NigrLzMf1BhqGy3jLzgvUDgLHBhmU','t3jPz2LUiefKzhjLC3m','uJeYmZq1nJC4osrY','DhLWzq','zMLYzwjHC2uTywrTAw4','BM93','q29UBMvJDgLVBIbwzxjPzMLJyxrPB24','Bg9N','rMfPBgvKihrVigfWCgvUzcb0CMfJA2LUzYbOAxn0B3j5oG','sMn1t3e','BeLhBLO','Aw5KzxGUAhrTBa','rKfjteve','v2f5yMLSBe51BwjLCG','C3vIC3rYAw5N','ywnRBM93BgvKz2vK','C3rHDgLJ','CMvZB2X2zq','ywnJB3vUDfbPBG','Aw5PDgLHBgL6zufWCa','zLL3A3a','u0GXnJq','qw5HBhL6zsb0AguGDxbSB2fKzwqGCgHVDg9NCMfWAcbVzIb0AguGAxrLBsb0BYbYzwnVz25PEMuGCgH5C2LJywWGyxr0CMLIDxrLCYWGCgfJA2fNAw5Nihr5CguSigfUzcbKzxrHAwXZlGO','w05VB24GuhjVEhLDie5VB24GzMv0y2GGDgfZAYbKzxrHAwXZigzHAwXLzdOG','C3rYAxbL','AwLyvLq','qvntsuDoruq','rfHc','qxjHBwv4iefqssbJCMvKzw50AwfSCYb2ywXPzgf0Aw9UigzHAwXLzc4GuMf3ihjLC3bVBNnLoIa','CMnqr3O','C291CMnL','vxbKyxrLrgvZy3jPChrPB24','w0zPCMvZDg9YzsbtzwvKxsbgywLSzwqGDg8GCMvHzcbZzxr0Aw5NCY9JB3vYAwvYx2nVBMzPz3m6','zMLSzvvstfrVugf0Aa','C2vUzgvYq2L0Eq','BM90zxm','z29VzhnezxnJCMLWDgLVBG','rhvIywKGv2fYzwHVDxnL','odKWnM1ZCNPstq','l2fWAs93zwjOB29RCY9UB29U','CMvJzwL2zxjdB3vUDhj5','AxnfEhbYzxnZ','DhjHy2TPBMDFAgLZDg9YEq','Dg9tDhjPBMC','vvjm','qw13uLC','q3vYCMvUy3LdB2rL','B3jPz2LUq2L0Eq','su5Fufjpr1jfu1m','vxbKyxrLtg9JyxrPB24','tuzquxC','l2fWAs93zwjOB29RCY9ZDhjPCgu','l2fWAs93zwjOB29RCY9HCMfTzxG','CMvMzxjLBMnL','zxzLBNrFDgLTzq','D2fYBG','DMvYC2LVBG','zxHWCMvZCW','qw4GzxjYB3iGB2nJDxjYzwqGD2HPBguGCMvJB2DUAxPPBMCGDgHLigL0zw0GCgH5C2LJywWGChjVzMLSzs4','uhjLzMvYCMvKtgfUz3vHz2vdB2rL','z2v0rMLYzxn0B3jL','uMf0zsbJAgvJAW','mJiWmZyXmKLLz0fdAG','vKzvv2y','Ehr4Bee','CNncwfa','l2fWAs9Nzw1PBMKVyw5HBhL6zs1PDgvT','q0foq0vmteve','Dgv4Da','rMLYzwjHC2uGqwrTAw46ieLUAxrPywXPEMLUzYb3AxrOihbYB3zPzgvKihnLCNzPy2uGywnJB3vUDcbRzxKU','u0Hjue1ftLq','y29UC3rYDwn0rxzLBNq','EeLHDey','BgLZDgvU','s3ztthu','sw52ywXPzcbbCMfTzxGGC2vYDMLJzsb0ExbL','yxbWCW','ywPTyw4','l1nOAxbWAw5NqvbjlLyYl1rYywnRAw5Nl1nLCNzPy2vFmv8WlNn2yY9QC29Ul1rYywnRu2HPCg1LBNrZ','CM91BMq','D2zxvum','Bwf0y2G','zgv0ywLS','zw51BwvYywjSzq','ue9tva','w05VB24GuhjVEhLDiezHAwXLzcb0BYbJB25Uzwn0ihrVie5VB246ia','l2fWAs9LDMvUDhm','tM9VBIb0yxnRignYzwf0zwqGyNv0ig5VihrYywnRAw5Nig51BwjLCIbYzxr1CM5Lzc4GuMvZCg9UC2u6ia','sgfZrxjYB3jZ','kZK3mtuYmdaWmdaWma','w05VB24GuhjVEhLDie5VB24Gu3rHz2LUzYbbueKGCMv0DxjUzwqGC3rHDhvZia','qw1VDw50ig1PC21HDgnOigzVCIbVCMrLCIa','C3vJy2vZCW','D2LKDgG','l2fWAs9WyxLTzw50CY9JB25MAwC','vw5RBM93BIbfCNjVCI4GuMf3ihjLC3bVBNnLoIa','ks4GvMfSAwrHDgLUzYbJB25Uzwn0Aw9UihDPDgGGC3rYAxbLlMnVBsbbueKUlI4','tM9VBIbZzxj2zxiGCMv0DxjUzwqGBM9UluPtt04GCMvZCg9UC2uGkhn0yxr1CYa','ALzqEgO','rgvZDgLUyxrPB24GqwrKCMvZCW','z2vUzxjHDgvdB250zw50','B2fXELy','twLZC2LUzYbPDgvTtMfTzsbVCIbWAg90B0jHC2u2ncbWyxjHBwv0zxiU','EenMtK8','zgvZDenVDw50CNK','tvjjv0u','CLDhDLq','Bwv0ywrHDge','rMfPBgvKihrVigDLBMvYyxrLihjLC3bVBNnLihrLEhqGzNjVBsbhzw1PBMKU','qxjHBwv4iev4ChjLC3m','ugfZC3DVCMq','z2vTAw5PltmUns1MBgfZAa','CgfYC2u','uMvJAxbPzw50','zgvZDenPDhK','CgLJA3vW','qwnJB3vUDevUDgL0Eq','tg9JywWGzgv2zwXVCg1LBNqGzw52AxjVBM1LBNqGzgv0zwn0zwq6iej5CgfZC2LUzYbgAxjLyMfZzsbnzxrHzgf0ysbtzxj2zxiGjIbZzxr0Aw5NiezPCMvZDg9YzsbfBxvSyxrVCIbiB3n0ihrVihbYzxzLBNqGAgfUz3mU','w05VB24GuhjVEhLDie5VB24Gy3jLyxrLlxrHC2SGy29UBMvJDgLVBIbMywLSzwq6ia','yMLUza','C3rHDhvZ','Ec1UB29UlwjHC2uTDxjS','sg9gshy','zgLYBMfTzq','ufby','zxn0Aw1HDgvKvMfSDwvbruq','CxD0rKG','rMfPBgvKihrVihvWzgf0zsb0CMfJA2LUzYbZDgf0Dxm6','D2vPz2H0s2C','DhjHy2TtAgLWBwvUDa','tLvnqKvs','qwnJzxnZigjSB2nRzwqGyNKGrM9YDgLhDwfYzcbdB3jWB3jHDguGrMLYzxDHBgWVv2vIiezPBhrLCI4GvgHLie5VB24Gu3rHz2LUzYbKB21HAw4GAxmGCMvZDhjPy3rLzcbVBIb0AgLZig5LDhDVCMSU','mJaYmY0Xmc0XnG','zgf0yq','rNvQywLYywG','l2fWAs9UB29Ul3rHC2TZlZPTCf90yxnRx25Y','tI9b','tM8GDhjHy2TPBMCGzgf0ysbMB3vUza','oIbLEhbLy3rLzca','AgvHzgvYCW','z2v0uhjVDg90ExbLt2y','yxbWBgLJyxrPB24VANnVBG','C2vYDMvYvgLTzxn0yw1W','rhvIywK','ywrHChrLCNm','Dg9WDxa','w0zPCMvZDg9YzsbtzwvKxsbtDwnJzxnZzNvSBhKGAw5PDgLHBgL6zwqGzgvMyxvSDcbJB3vYAwvYignVBMzPz3vYyxrPB25ZlG','tMv0D29YAYbLCNjVCIb3AgLSzsbJB25Uzwn0Aw5NihrViefYyw1LEa','C3rHCNrZv2L0Aa','C2HPChbPBMC','B3jKzxjjza','Aw5JBhvKzxm','otm5mJCWmgflwfLPtq','Ahr0Chm6lY93CY5KzxyUyxjHBwv4lM5LDa','tM9VBIbbueKGCMv0DxjUzwqG','EurdshO','su5uruDfuG','r0vnsu5jx0fqsv9lrvKGzw52AxjVBM1LBNqGDMfYAwfIBguGAxmGBM90ignVBMzPz3vYzwqUifbSzwfZzsbZzxqGAxqGAw4Gu2v0DgLUz3mGpIbtzwnYzxrZlG','twvZC2fNzq','ig1VzguU','wwv4CNi','Dg9vChbLCKnHC2u','DvPst0C','nZK1ntmXnKj4s0Hjva','uevoreLorW','C3rYAw5NAwz5','mti3lJaUmc4X','Bg9JyxrPB24','tgfIzwXvuKW','BgL2zq','Aw5KzxHpzG','zgLZDa','kcGOlISPkYKRksSK','mc4WlJaUma','lMvUDG','reLtuefuq0Hfra','mte1mJe2','zMLYzwjHC2uTywrTAw4VzMLYzxn0B3jL','mtjJqvv5zgW','vevtvcaOC2fUzgjVEcK','DgfZA19UCG','y291CMLLCL9JB25MAwDZ','BwfW','uefjra','revmsvzfuKve','qxjHBwv4ifzHBhvLifbHCMnLBa','igzYB20G','qwWGqwLU','Ec1HCMfTzxGTzw52','x19LC01VzhvSzq','u0GWnJK','DgHLBG','vvnftKqT','qMvHCMvYia','yM9KEq','tM9VBIbiExbLCMXVy2fS','y2f0y2G','q2XPzw50sw5MBW','vgHLigzVCM1HDhrLzcWGy2XLyw5LzcWGy2XLyw4Ty3v0ig5HBwuGB2yGDgHLigL0zw0UieuUzY4Gj1nVBNKGugXHEvn0yxrPB24GnsCGB3iGj1jLywWGrxn0yxrLifrPDgXLierLzwrZjY4','rLPZA3u','Dgv4Dc9LDMvUDc1ZDhjLyw0','q291CMLLCIbHzgfWDgvYigzVCIaN','qwn0AxzL','DxnLCM5HBwu','quKGCMvJB2DUAxPLCYbPDgvTigvYCM9YoG','v2vIiezPBhrLCG','BwfWu3rHDhvZ','CMvHzezPBgvtEw5J','l2fWAs9WyxLTzw50CY9JCMvHDguTAw50zw50','vxbKyxrLza','tM9VBIbxzwjOB29RifjLy2vPDMvKoG','zM9YrwfJAa','qxjHBwv4ihjLDhvYBMvKig5VBI1ku09oihjLC3bVBNnLlG','tM9VBG','z2v0','B1L3D1q','tfnXt3y','vgr2uKC','w05VB24GuhjVEhLDifn1y2nLC3nMDwXSEsbMzxrJAgvKihbPy2T1CcbWB2LUDhmGzNjVBsboB29Uiefqss4','ywnJB3vUDe51BwjLCG','qKTKtK0','tefcruW','l2fWAs9JB3vYAwvYl3nOAxbTzw50','vhjHy2TPBMCGrxjYB3i','C3bSAwnL','z2v0vgLTzq','uvjpruO','zgvMyxvSDa','AgfZt3DUuhjVCgvYDhK','lI4U','u0GWmdu','qwj1ierOywjP','qwnJB3vUDfbPBG','ELHIDLi','zvjYu2W','rvjsx1jpvvrjtKC','rMLLBgrwywX1zq','y2fSBa','r29Vzhm','DgvZDgLUz2fWAubHCMfTzxGUy29T','BMfTzq','vLPZsei','Dg9ju09tDhjPBMC','qsbZDw1Tyxj5ig9MigL0zw0NCYbUyxr1CMuSihn0yxrLig9YihnOyxbLlcbWywnRywDLigrLBNnPDhKGD2fYBMLUzYWGB3iGy3vZDg9TigHHBMrSAw5NigLUC3rYDwn0Aw9UCY4','BM9VBG','DhjHy2TPBMC','yMfSyw5Jzq','u0GWndK','Cg9ZDa','z2v0qMfZzvvYBa','zxHWB3j0CW','zfrcD3K','DxjS','u2HPCg1LBNrmywjLBa','sgfUzgXLihDPDgGGy2fYzq','w1n0CMLWzsbdB25ZB2XLxsbxqvjosu5hoIbtvfjjuevFu0vduKvux0TfwsbLBNzPCM9UBwvUDcb2yxjPywjSzsbPCYbUB3qGzgvMAw5Lzc4','DMfSAwrHDgvdCMvKzw50AwfSCW','D2LKDgHdBq','CMvJzwL2zxjoyw1L','CMfZigfSigTOywLTywG','tMv0D29YAYbLCNjVCIbYzwfJAgLUzYa','zhHIAxrayxjHBwv4lMnVBq','D3mUyxjHBwv4lM5LDa','C2DWtMW','w1n0CMLWzsbdB25ZB2XLxsbgB3vUzcbtvfjjuevFu0vduKvux0TfwsaO','zgf0ytOG','v2vIAg9VAYbfCNjVCJOGu3rYAxbLifDLyMHVB2SGu2vJCMv0ig5VDcbJB25MAwD1CMvK','s2DZD3O','q1r4BKy','ChjVzhvJDgLVBG','zxHPC3rZu3LUyW','w05VB24GuhjVEhLDifnLBMrPBMCGy3jLyxrLlxrHC2SGCgf5Bg9Hzcb0BYa','rMLYzwjHC2uGqwrTAw46ieLUAxrPywXPEMf0Aw9UigzHAwXLzdO','revgqvvmvf9pvvrmrvq','tM90AwzPy2f0Aw9UCW','vvnLBMqGqwDNCMvNyxrPB24GrgLZCgf0y2G','w1n0CMLWzsbdB25ZB2XLxsbbDMfPBgfIBguGqMfSyw5JztOG','u0GWmdy','y29SBgvJDgLVBG','zM5ltNu','vhLWzq','tNrpsge','sePUzw8','rKHZs3q','ugXLyxnLigvZDgLTyxrLigrPBwvUC2LVBNmGkgXLBMD0AcWGD2LKDgGSigHLAwDODcbPBIbJBsKGyw5KihDLAwDODcbIyxnLzcbVBIb0AguGDhLWzsbVzIbJyxjNBYbPDgvTigrLDgvJDgvKlIbezxrLCM1PBMuGj3f1yw50Axr5jYaOAg93ig1HBNKGAxrLBxmGEw91ignSzwfYBhKGC2vLig9YigfYzsbKzxnJCMLIzwqPlcbJyxrLz29YAxPLihrOzsbPDgvTlcbHC3nPz24GysbYzwfZB25HyMXLigLUC3vYyw5Jzsb2ywX1yxrPB24GAw4GquvelcbHBMqGD3jPDguGyw4GAgvSCgz1BcbKAxnWyxrJAcbUB3rLlG','qwPTyw4','BNbSs0e','wMLizvy','BKnysLq','r29Vz2XLr2vUquK','z2v0qwrHChrLCG','qxjHBwv4iefqssbYzxr1CM5LzcbZDgf0DxmG','BgvUz3rOq20','y3jLyxrL','wfPODg0','tM9VBIbiDwi','t1LnzxC','AfvfqxK','AwzqBKO','zgvMAw5LuhjVCgvYDhK','A0zeufC','DgfZA19Pza','mte2mJe2','zxn0Aw1HDgvKv2vPz2H0s2C','tM8GvxbKyxrLCW','vxnLCK5HBwu','twLZC2LUzYbYzxf1AxjLzcbWyxjHBwv0zxjZ','rxjYB3i','l2fWAs9UB29Ul3bPy2T1Cc1HzgrYzxnZzxm','q29UBMvJDgLVBG','mtm1mtu3nZDjA2zlvva','DNrZzui','CMf3','vxbKyxrLq29Kzq','C2fUAxrPEMvdAxr5','vgHLigfWChjVEgLTyxrLihDLAwDODcbVzIb0AguGC2HPCg1LBNqGAw4GA2LSB2DYyw1ZicHRzYKUifbYzwzLCIaWlJiGzM9YigrVy3vTzw50CY9SAwDODcbZAgvLDhmU','zNvUy3rPB24','CMvJzwL2zxjqAg9Uzq','yvzZBgK','ndi1mZe1ngvXqM5YrW','rMfPBgvKihrVihjLywqGzMLYzwjHC2uTyxbWBgv0lwnVBMzPzY5QC29UoG','C2v0sgvHzgvY','zMnpwwi','CgfPza','y2XPzw50x3nLy3jLDa','Dw1TigfSihf1D2fPBG','DhjPBq','quve','z2v0t3DUuhjVCgvYDhLezxnJCMLWDg9Y','qxjaBtn4jgGXChaXBMC','lcbNB3qG','q09euW','r2vUzxjHDgvK','qLD3v2W','vu5urvnuruq','y3jLzgvUDgLHBa','y29UC3rYDwn0B3i','l2nHBMnLBa','tM9VBIbLBMrWB2LUDca','DeLXwxK','rM1by0q','Ahr0Chm6lY93CY51yxqUyxjHBwv4lM5LDa','C2v0DgLUz3m','DhjPBvn0yxj0','Aw1Hz2uVANbLzW','D2vIAg9VA3m','zMfSC2u','Dhj1zq','mtaZCM5YrMXU','C2vUza','rgvSAxzLCNKGqwrKCMvZCW','rxn0Aw1HDgvKihr5CgLJywWGCgfJA2fNzsb3Awr0AcbPBIbJBs4','re9n','y29Kqw1VDw50','BwvZC2fNzq','tM9VBIb0yxnRignYzwf0Aw9UigzHAwXLzcbHDca','AgvPz2H0q20','Ahr0Chm6lY9MB29KlwfWAs5UB29UlMnVBq','y3jLyxrLu2vYDMvY','ndu3oty'];a0_0x24a9=function(){return _0x49b507;};return a0_0x24a9();}var envPath=import_path[a0_0x57f14e(0x21b)][a0_0x57f14e(0x375)](dirName,a0_0x57f14e(0x1e6));!import_fs[a0_0x57f14e(0x21b)][a0_0x57f14e(0x246)](envPath)&&(envPath=import_path[a0_0x57f14e(0x21b)]['resolve'](process[a0_0x57f14e(0x34b)](),a0_0x57f14e(0x1e6)));import_dotenv[a0_0x57f14e(0x21b)][a0_0x57f14e(0x2ab)]({'path':envPath}),process.env.NODE_TLS_REJECT_UNAUTHORIZED='0';process.env.NODE_ENV!=='production'&&!process.env.FIREBASE_SERVICE_ACCOUNT_KEY&&(process.env.GCE_METADATA_HOST=a0_0x57f14e(0x1de),process.env.GCE_METADATA_CHECK_DISABLE=a0_0x57f14e(0x293),process.env.NO_GCE_CHECK=a0_0x57f14e(0x293),process.env.FIRESTORE_EMULATOR_HOST=a0_0x57f14e(0x2fd),console[a0_0x57f14e(0x36b)](a0_0x57f14e(0x3d9)));var firebaseConfig={};try{let configPath=import_path[a0_0x57f14e(0x21b)][a0_0x57f14e(0x375)](dirName,'firebase-applet-config.json');!import_fs[a0_0x57f14e(0x21b)]['existsSync'](configPath)&&(configPath=import_path[a0_0x57f14e(0x21b)][a0_0x57f14e(0x375)](process[a0_0x57f14e(0x34b)](),'firebase-applet-config.json')),import_fs[a0_0x57f14e(0x21b)][a0_0x57f14e(0x246)](configPath)&&(firebaseConfig=JSON[a0_0x57f14e(0x3d4)](import_fs[a0_0x57f14e(0x21b)]['readFileSync'](configPath,a0_0x57f14e(0x346))));}catch(a0_0x211a61){console[a0_0x57f14e(0x2c5)](a0_0x57f14e(0x278),a0_0x211a61);}firebaseConfig[a0_0x57f14e(0x2fb)]&&(process.env.GOOGLE_CLOUD_PROJECT=firebaseConfig['projectId']);if(!import_firebase_admin[a0_0x57f14e(0x21b)][a0_0x57f14e(0x3b0)][a0_0x57f14e(0x2a3)])try{const options={'projectId':firebaseConfig[a0_0x57f14e(0x2fb)]};if(process.env.FIREBASE_SERVICE_ACCOUNT_KEY){const serviceAccount=JSON[a0_0x57f14e(0x3d4)](process.env.FIREBASE_SERVICE_ACCOUNT_KEY);options[a0_0x57f14e(0x287)]=import_firebase_admin[a0_0x57f14e(0x21b)][a0_0x57f14e(0x287)]['cert'](serviceAccount),console[a0_0x57f14e(0x36b)](a0_0x57f14e(0x3a9));}else console[a0_0x57f14e(0x39b)](a0_0x57f14e(0x364));import_firebase_admin[a0_0x57f14e(0x21b)][a0_0x57f14e(0x377)](options);}catch(a0_0x13afdd){console[a0_0x57f14e(0x2c5)](a0_0x57f14e(0x248),a0_0x13afdd);}var appInstance=import_firebase_admin['default'][a0_0x57f14e(0x2e5)](),dbAdmin=firebaseConfig[a0_0x57f14e(0x2f9)]?(0x0,import_firestore['getFirestore'])(appInstance,firebaseConfig[a0_0x57f14e(0x2f9)]):(0x0,import_firestore[a0_0x57f14e(0x3a0)])(appInstance),app=(0x0,import_express[a0_0x57f14e(0x21b)])(),PORT=0xbb8;app['get']('/api/health',(_0x3c5b36,_0x252917)=>{const _0x3cb4ef=a0_0x57f14e;_0x252917[_0x3cb4ef(0x325)]({'status':'ok','timestamp':new Date()[_0x3cb4ef(0x22a)](),'project':firebaseConfig[_0x3cb4ef(0x2fb)]||'unknown','database':firebaseConfig['firestoreDatabaseId']||'default'});});var stripeClient=null;function getStripe(){const _0x94d1ba=a0_0x57f14e;if(!stripeClient){if(_0x94d1ba(0x2e6)!==_0x94d1ba(0x36e)){const _0x46859c=process.env.STRIPE_SECRET_KEY;if(!_0x46859c)throw new Error('STRIPE_SECRET_KEY\x20is\x20required\x20for\x20payments');stripeClient=new import_stripe['default'](_0x46859c,{'apiVersion':_0x94d1ba(0x3e8)});}else return _0x33ae78['status'](0x190)[_0x94d1ba(0x325)]({'error':_0x94d1ba(0x2c2)});}return stripeClient;}app[a0_0x57f14e(0x2f2)]((_0x5f19cd,_0x58ee69,_0x13ddf3)=>{const _0x4aa558=a0_0x57f14e;if(_0x5f19cd[_0x4aa558(0x2d1)]===_0x4aa558(0x397)){if(_0x4aa558(0x327)===_0x4aa558(0x25e))return _0x3bf37d[_0x4aa558(0x3dc)](0x190)[_0x4aa558(0x325)]({'error':_0x4aa558(0x3ca)});else _0x13ddf3();}else import_express[_0x4aa558(0x21b)][_0x4aa558(0x325)]({'limit':_0x4aa558(0x2b5)})(_0x5f19cd,_0x58ee69,_0x13ddf3);}),app['get'](a0_0x57f14e(0x3c2),(_0x418fd7,_0x4d1e3c)=>{const _0x3f49a8=a0_0x57f14e;_0x4d1e3c[_0x3f49a8(0x325)]({'publishableKey':process.env.STRIPE_PUBLISHABLE_KEY||process.env.VITE_STRIPE_PUBLISHABLE_KEY});}),app[a0_0x57f14e(0x20e)](a0_0x57f14e(0x362),async(_0x2df3a2,_0xab6ec1)=>{const _0x2b596a=a0_0x57f14e,_0x5308e2=process.env.STRIPE_SECRET_KEY;if(!_0x5308e2)return _0xab6ec1['json']({'connected':![],'error':'STRIPE_SECRET_KEY\x20is\x20missing\x20from\x20environment\x20secrets.'});try{if(_0x2b596a(0x2e3)===_0x2b596a(0x2e3)){const _0x516372=getStripe(),_0x25462d=await _0x516372[_0x2b596a(0x22e)]['retrieve']();_0xab6ec1[_0x2b596a(0x325)]({'connected':!![],'mode':_0x5308e2['startsWith'](_0x2b596a(0x312))?_0x2b596a(0x2cc):_0x2b596a(0x1e1),'available':_0x25462d[_0x2b596a(0x35b)],'pending':_0x25462d[_0x2b596a(0x2a9)]});}else return _0x5c769d[_0x2b596a(0x325)]({'success':![],'error':_0x5b0eb0[_0x2b596a(0x2c5)]});}catch(_0x5ca132){if(_0x2b596a(0x2f3)!=='MzIfu')console[_0x2b596a(0x2c5)](_0x2b596a(0x2bd),_0x5ca132),_0xab6ec1[_0x2b596a(0x325)]({'connected':![],'error':_0x5ca132?.['message']||'Verification\x20failed\x20with\x20Stripe\x20API.'});else return _0x5b327e[_0x2b596a(0x3dc)](_0x8ec694['status'])[_0x2b596a(0x325)](_0x340dee);}}),app['post'](a0_0x57f14e(0x208),async(_0x946ade,_0x4d3473)=>{const _0x184ab8=a0_0x57f14e;try{const {amountAED:_0xd21874,orderId:_0xf6da27,topup:_0x5e9cf3,customerId:_0x19d4c6,metadata:_0x17c9b4}=_0x946ade['body'];if(!_0xd21874)return _0x4d3473[_0x184ab8(0x3dc)](0x190)[_0x184ab8(0x325)]({'error':_0x184ab8(0x2c2)});let _0x3c0564=_0xd21874;if(_0xf6da27&&!_0x5e9cf3){if(_0x184ab8(0x30e)===_0x184ab8(0x262)){for(let _0x1b6db1 of _0x19740e(_0x583dc7))if(!_0x2b2978[_0x184ab8(0x225)](_0x1df841,_0x1b6db1)&&_0x1b6db1!==_0x169a62)_0xfd4ab2(_0x3b831b,_0x1b6db1,{'get':()=>_0x5e4b39[_0x1b6db1],'enumerable':!(_0x3e1681=_0x53fb7d(_0x4aa6b9,_0x1b6db1))||_0x4ec8f5[_0x184ab8(0x3b7)]});}else try{if(_0x184ab8(0x23f)===_0x184ab8(0x20f))_0x36c2ed=_0x23e423[_0x184ab8(0x21b)][_0x184ab8(0x375)](_0x13dd2e[_0x184ab8(0x34b)](),_0x184ab8(0x1e6));else{const _0x2f6dff=await dbAdmin['collection'](_0x184ab8(0x2be))['doc'](_0xf6da27)[_0x184ab8(0x20e)]();if(_0x2f6dff['exists']){if(_0x184ab8(0x3a4)!==_0x184ab8(0x32c)){const _0x5c1657=_0x2f6dff[_0x184ab8(0x3e9)](),_0x1a26ce=_0x5c1657?.[_0x184ab8(0x2ea)]||'',_0x426932=parseFloat(_0x1a26ce['replace'](/[^0-9.]/g,''));!isNaN(_0x426932)&&Math[_0x184ab8(0x363)](_0x426932-_0xd21874)>0.01&&(console[_0x184ab8(0x39b)](_0x184ab8(0x3bf)+_0xf6da27+_0x184ab8(0x1c2)+_0x426932+_0x184ab8(0x282)+_0xd21874),_0x3c0564=_0x426932);}else _0x4cd834.env.GOOGLE_CLOUD_PROJECT=_0x5bdf6c['projectId'];}}}catch(_0x5b27d2){console['error']('DB\x20check\x20failed\x20(non-blocking\x20for\x20intent\x20creation):',_0x5b27d2);}}const _0x18e313=Math[_0x184ab8(0x3b3)](_0x3c0564*0x64),_0x4b81bb=getStripe(),_0xbc44f=await _0x4b81bb['paymentIntents'][_0x184ab8(0x25d)]({'amount':_0x18e313,'currency':'aed','metadata':{..._0x17c9b4,'orderId':_0xf6da27||_0x184ab8(0x1c9),'isTopup':_0x5e9cf3?_0x184ab8(0x293):_0x184ab8(0x292),'customerId':_0x19d4c6},'automatic_payment_methods':{'enabled':!![]}});_0x4d3473['json']({'clientSecret':_0xbc44f[_0x184ab8(0x27c)]});}catch(_0x38f417){if(_0x184ab8(0x210)!==_0x184ab8(0x210))return{'success':![],'error':_0x184ab8(0x30f)};else console[_0x184ab8(0x2c5)](_0x184ab8(0x2f7),_0x38f417),_0x4d3473['status'](0x1f4)[_0x184ab8(0x325)]({'error':_0x38f417[_0x184ab8(0x29a)]});}}),app[a0_0x57f14e(0x230)](a0_0x57f14e(0x397),import_express[a0_0x57f14e(0x21b)][a0_0x57f14e(0x270)]({'type':a0_0x57f14e(0x1c5)}),(_0x195182,_0x2ce8b7)=>{const _0x3f46bd=a0_0x57f14e,_0x1ceee7=_0x195182[_0x3f46bd(0x1c3)][_0x3f46bd(0x313)],_0x54b5a3=process.env.STRIPE_WEBHOOK_SECRET;if(!_0x54b5a3)return _0x2ce8b7[_0x3f46bd(0x3dc)](0x190)['send'](_0x3f46bd(0x242));let _0x424024;try{const _0xbf91db=getStripe();_0x424024=_0xbf91db[_0x3f46bd(0x291)][_0x3f46bd(0x3ab)](_0x195182[_0x3f46bd(0x1fa)],_0x1ceee7,_0x54b5a3);}catch(_0x46c13b){if(_0x3f46bd(0x264)!=='kFDPW'){const _0x5b0d31={'aramex':{'id':'aramex','name':'Aramex\x20Express','status':_0x3f46bd(0x202),'currentMode':_0x3f46bd(0x2a2),'baseUrlUat':_0x3f46bd(0x23e),'baseUrlProd':_0x3f46bd(0x23e),'connectionStatus':_0x3f46bd(0x286),'sandboxCreds':{'username':_0x3f46bd(0x227),'password':_0x3f46bd(0x366),'accountNumber':_0x3f46bd(0x29f),'accountPin':_0x3f46bd(0x266),'accountEntity':_0x3f46bd(0x37f),'accountCountryCode':'AE','source':'24','version':'v1'},'productionCreds':{'username':'','password':'','accountNumber':'','accountPin':'','accountEntity':'','accountCountryCode':'','source':'','version':''}},'noon':{'id':_0x3f46bd(0x22c),'name':_0x3f46bd(0x1fb),'status':_0x3f46bd(0x202),'currentMode':'sandbox','baseUrlUat':_0x3f46bd(0x31f),'baseUrlProd':_0x3f46bd(0x29d),'connectionStatus':_0x3f46bd(0x286),'sandboxCreds':{'apiKey':_0x3f46bd(0x2d5),'storeId':''},'productionCreds':{'apiKey':'','storeId':''}}};_0x525293[_0x3f46bd(0x24e)](_0x3f46bd(0x28e))[_0x3f46bd(0x2cd)](_0x3f46bd(0x1ed))[_0x3f46bd(0x2c1)](_0x5b0d31)['then'](()=>_0x137263[_0x3f46bd(0x36b)](_0x3f46bd(0x1ca)))[_0x3f46bd(0x1fc)](_0x45d51f=>_0x2b2caa[_0x3f46bd(0x2c5)](_0x3f46bd(0x2c3),_0x45d51f['message']));}else return _0x2ce8b7[_0x3f46bd(0x3dc)](0x190)['send']('Webhook\x20Error:\x20'+_0x46c13b[_0x3f46bd(0x29a)]);}switch(_0x424024[_0x3f46bd(0x367)]){case'payment_intent.succeeded':const _0x201a96=_0x424024[_0x3f46bd(0x3e9)][_0x3f46bd(0x344)];console[_0x3f46bd(0x36b)](_0x3f46bd(0x343)+_0x201a96[_0x3f46bd(0x3cf)][_0x3f46bd(0x1ce)]);_0x201a96['metadata'][_0x3f46bd(0x1ce)]&&dbAdmin[_0x3f46bd(0x24e)](_0x3f46bd(0x2be))[_0x3f46bd(0x2cd)](_0x201a96[_0x3f46bd(0x3cf)][_0x3f46bd(0x1ce)])['update']({'paymentStatus':_0x3f46bd(0x27b),'updatedAt':import_firestore[_0x3f46bd(0x224)][_0x3f46bd(0x1c6)]()})['catch'](_0x15f0f5=>console['error'](_0x3f46bd(0x2fe),_0x15f0f5));break;default:console[_0x3f46bd(0x36b)](_0x3f46bd(0x2fc)+_0x424024[_0x3f46bd(0x367)]);}_0x2ce8b7['send']();});var clients=[];app['get'](a0_0x57f14e(0x3ba),(_0x595243,_0x1744f6)=>{const _0x2d3c95=a0_0x57f14e;_0x1744f6[_0x2d3c95(0x279)](_0x2d3c95(0x307),_0x2d3c95(0x200)),_0x1744f6[_0x2d3c95(0x279)]('Cache-Control','no-cache'),_0x1744f6['setHeader'](_0x2d3c95(0x26d),_0x2d3c95(0x2ff)),_0x1744f6['flushHeaders'](),clients[_0x2d3c95(0x347)](_0x1744f6),_0x595243['on']('close',()=>{const _0x10b822=_0x2d3c95,_0x260bec=clients[_0x10b822(0x1e2)](_0x1744f6);if(_0x260bec!==-0x1)clients[_0x10b822(0x218)](_0x260bec,0x1);});});function broadcastEvent(_0x2bb53a){const _0x15bde0=a0_0x57f14e;clients[_0x15bde0(0x20b)](_0xe3dda5=>{const _0x271fbc=_0x15bde0;_0xe3dda5[_0x271fbc(0x2c0)](_0x271fbc(0x241)+JSON[_0x271fbc(0x1dd)](_0x2bb53a)+'\x0a\x0a');});}app['post'](a0_0x57f14e(0x398),import_express[a0_0x57f14e(0x21b)][a0_0x57f14e(0x325)](),async(_0x3823cf,_0x3acdc4)=>{const _0x2a4f3b=a0_0x57f14e;console['log']('Webhook\x20Received:',_0x3823cf['body']);const _0x232679=_0x3823cf[_0x2a4f3b(0x1fa)];_0x232679?.[_0x2a4f3b(0x271)]&&_0x232679?.[_0x2a4f3b(0x371)]&&('kVwRf'!==_0x2a4f3b(0x253)?(broadcastEvent({'type':_0x2a4f3b(0x333),'trackingNumber':_0x232679[_0x2a4f3b(0x371)],'updateCode':_0x232679[_0x2a4f3b(0x271)],'updateDescription':_0x232679[_0x2a4f3b(0x383)],'timestamp':new Date()[_0x2a4f3b(0x22a)](),'location':_0x232679['UpdateLocation']||_0x2a4f3b(0x2d9)}),dbAdmin[_0x2a4f3b(0x24e)](_0x2a4f3b(0x2be))['doc'](_0x232679[_0x2a4f3b(0x371)])['collection'](_0x2a4f3b(0x38e))[_0x2a4f3b(0x2ec)]({'updateCode':_0x232679[_0x2a4f3b(0x271)],'updateDescription':_0x232679[_0x2a4f3b(0x383)],'location':_0x232679['UpdateLocation']||'Hub','timestamp':import_firestore[_0x2a4f3b(0x224)][_0x2a4f3b(0x1c6)](),'rawPayload':_0x232679})[_0x2a4f3b(0x1fc)](_0x21de23=>console[_0x2a4f3b(0x2c5)]('Failed\x20to\x20append\x20tracking\x20history:',_0x21de23)),dbAdmin['collection'](_0x2a4f3b(0x2be))[_0x2a4f3b(0x2cd)](_0x232679[_0x2a4f3b(0x371)])[_0x2a4f3b(0x33e)]({'status':_0x232679[_0x2a4f3b(0x383)],'updatedAt':import_firestore[_0x2a4f3b(0x224)][_0x2a4f3b(0x1c6)]()})['catch'](_0xf9f7aa=>console['error'](_0x2a4f3b(0x3e3),_0xf9f7aa))):_0x5c382b['default'][_0x2a4f3b(0x325)]({'limit':_0x2a4f3b(0x2b5)})(_0x129edb,_0x1dea42,_0x5d4888)),_0x3acdc4['status'](0xc8)[_0x2a4f3b(0x325)]({'status':_0x2a4f3b(0x373)});}),app[a0_0x57f14e(0x230)](a0_0x57f14e(0x38b),import_express[a0_0x57f14e(0x21b)][a0_0x57f14e(0x325)](),async(_0x24bdef,_0xd9a04e)=>{const _0x61e953=a0_0x57f14e;console['log'](_0x61e953(0x20a),_0x24bdef['body']);const _0x59f950=_0x24bdef[_0x61e953(0x1fa)];if(_0x59f950?.[_0x61e953(0x330)]||_0x59f950?.['task_nr']){const _0x14673d=_0x59f950[_0x61e953(0x330)]||_0x59f950[_0x61e953(0x1ec)],_0x227832=_0x59f950['status_description']||_0x59f950['status_code']||_0x61e953(0x209);broadcastEvent({'type':'WEBHOOK_UPDATE','trackingNumber':_0x14673d,'updateCode':_0x59f950[_0x61e953(0x2af)],'updateDescription':_0x227832,'timestamp':_0x59f950['event_time']||new Date()[_0x61e953(0x22a)](),'location':_0x59f950[_0x61e953(0x1df)]||_0x61e953(0x25f)}),dbAdmin[_0x61e953(0x24e)](_0x61e953(0x2be))[_0x61e953(0x2cd)](_0x14673d)[_0x61e953(0x24e)](_0x61e953(0x38e))[_0x61e953(0x2ec)]({'updateCode':_0x59f950[_0x61e953(0x2af)]||'UPDATE','updateDescription':_0x227832,'location':_0x59f950['location']||_0x61e953(0x25f),'timestamp':import_firestore[_0x61e953(0x224)][_0x61e953(0x1c6)](),'rawPayload':_0x59f950})[_0x61e953(0x1fc)](_0x5a18b7=>console['error'](_0x61e953(0x308),_0x5a18b7)),dbAdmin[_0x61e953(0x24e)]('requests')[_0x61e953(0x2cd)](_0x14673d)[_0x61e953(0x33e)]({'status':_0x227832,'updatedAt':import_firestore[_0x61e953(0x224)][_0x61e953(0x1c6)]()})[_0x61e953(0x1fc)](_0x32301e=>console[_0x61e953(0x2c5)]('Failed\x20to\x20update\x20Noon\x20tracking\x20status:',_0x32301e));}_0xd9a04e['status'](0xc8)[_0x61e953(0x325)]({'status':_0x61e953(0x373)});}),app[a0_0x57f14e(0x230)](a0_0x57f14e(0x300),async(_0x24b025,_0x5d3639)=>{const _0x514e1f=a0_0x57f14e;try{if(_0x514e1f(0x2c8)!==_0x514e1f(0x2c8))_0x1a9b74=_0x30a319[0x1],_0x4257ce=_0x5cdc19[0x2];else{const {serviceType:_0x55ac77}=_0x24b025['params'];let _0x5ec3b8=_0x24b025[_0x514e1f(0x1fa)];const _0x325339=_0x5ec3b8[_0x514e1f(0x1fd)]||{},_0x57122b=process.env.ARAMEX_ENV===_0x514e1f(0x245)||_0x24b025[_0x514e1f(0x1c3)][_0x514e1f(0x1f4)]===_0x514e1f(0x245),_0x4c50e1=process.env.ARAMEX_BASE_URL||(_0x57122b?'https://ws.aramex.net':_0x514e1f(0x28d)),_0x41460c=_0x514e1f(0x23d),_0x51aff4=_0x514e1f(0x281),_0x49ad2d=_0x514e1f(0x2b8),_0xafe551=_0x514e1f(0x1e8),_0x1f0f77=_0x514e1f(0x37f),_0x438b17='AE',_0x2da07b=0x0,_0x465e38=_0x514e1f(0x2f1),_0x26017e=_0x325339[_0x514e1f(0x269)]&&_0x325339[_0x514e1f(0x269)]!==_0x514e1f(0x227)?_0x325339[_0x514e1f(0x269)]:process.env.ARAMEX_USERNAME||_0x41460c,_0x29eac9=_0x325339['Password']&&_0x325339[_0x514e1f(0x3d2)]!==_0x514e1f(0x366)?_0x325339['Password']:process.env.ARAMEX_PASSWORD||_0x51aff4,_0x18b2a5=_0x325339['Version']&&_0x325339[_0x514e1f(0x2ee)]!=='v1'?_0x325339[_0x514e1f(0x2ee)]:process.env.ARAMEX_VERSION||_0x465e38,_0x4b77a8=_0x325339['AccountNumber']&&_0x325339['AccountNumber']!==_0x514e1f(0x29f)?_0x325339[_0x514e1f(0x2a7)]:process.env.ARAMEX_ACCOUNT_NUMBER||_0x49ad2d,_0x1485d3=_0x325339['AccountPin']&&_0x325339[_0x514e1f(0x220)]!==_0x514e1f(0x266)?_0x325339[_0x514e1f(0x220)]:process.env.ARAMEX_ACCOUNT_PIN||_0xafe551,_0x5378b5=_0x325339[_0x514e1f(0x3d8)]||process.env.ARAMEX_ACCOUNT_ENTITY||_0x1f0f77,_0x3a9c58=_0x325339['AccountCountryCode']||process.env.ARAMEX_ACCOUNT_COUNTRY_CODE||_0x438b17,_0x1dc759=_0x325339[_0x514e1f(0x306)]!==void 0x0?Number(_0x325339[_0x514e1f(0x306)]):process.env.ARAMEX_SOURCE!==void 0x0?Number(process.env.ARAMEX_SOURCE):_0x2da07b;_0x5ec3b8={..._0x5ec3b8,'ClientInfo':{'UserName':_0x26017e,'Password':_0x29eac9,'Version':_0x18b2a5,'AccountNumber':_0x4b77a8,'AccountPin':_0x1485d3,'AccountEntity':_0x5378b5,'AccountCountryCode':_0x3a9c58,'Source':_0x1dc759,'PreferredLanguageCode':_0x325339[_0x514e1f(0x39f)]||process.env.ARAMEX_PREFERRED_LANGUAGE||null}};let _0x3f35c0='';if(_0x55ac77==='rate')_0x3f35c0=_0x514e1f(0x350);else{if(_0x55ac77===_0x514e1f(0x1cd))_0x514e1f(0x391)===_0x514e1f(0x391)?_0x3f35c0=_0x514e1f(0x315):_0x20a3af[_0x514e1f(0x20b)](_0x4ce626=>{const _0x381c63=_0x514e1f;_0x4ce626[_0x381c63(0x2c0)](_0x381c63(0x241)+_0x2fc29f['stringify'](_0x520d16)+'\x0a\x0a');});else{if(_0x55ac77===_0x514e1f(0x22d))_0x3f35c0=_0x514e1f(0x3b2);else{if(_0x55ac77===_0x514e1f(0x3d7))_0x3f35c0='/ShippingAPI.V2/Shipping/Service_1_0.svc/json/CreatePickup';else return _0x514e1f(0x260)===_0x514e1f(0x378)?(_0x2d03b4[_0x514e1f(0x2c5)]('Aramex\x20Error:',_0xc13db5),_0x52f147[_0x514e1f(0x3dc)](0x1f4)[_0x514e1f(0x325)]({'error':_0x1932c8[_0x514e1f(0x29a)]})):_0x5d3639['status'](0xc8)[_0x514e1f(0x325)]({'HasErrors':!![],'Notifications':[{'Code':_0x514e1f(0x223),'Message':'Invalid\x20Aramex\x20service\x20type'}]});}}}try{aramexRes=await fetch(''+_0x4c50e1+_0x3f35c0,{'method':_0x514e1f(0x3b8),'headers':{'Content-Type':_0x514e1f(0x1c5),'Accept':'application/json'},'body':JSON['stringify'](_0x5ec3b8),'signal':AbortSignal['timeout'](0x3a98)});if(!aramexRes['ok'])return _0x5d3639[_0x514e1f(0x3dc)](aramexRes[_0x514e1f(0x3dc)])['json']({'error':'Aramex\x20API\x20returned\x20status\x20'+aramexRes[_0x514e1f(0x3dc)]});const _0x239870=await aramexRes['text']();try{return data=JSON['parse'](_0x239870),_0x5d3639[_0x514e1f(0x325)](data);}catch(_0x5094d3){return _0x5d3639[_0x514e1f(0x3dc)](0x1f4)[_0x514e1f(0x325)]({'error':'Aramex\x20returned\x20non-JSON\x20response.'});}}catch(_0x41939d){if(_0x514e1f(0x3ae)!==_0x514e1f(0x33a))return _0x5d3639[_0x514e1f(0x3dc)](0x1f4)[_0x514e1f(0x325)]({'error':_0x514e1f(0x2a4)+_0x41939d[_0x514e1f(0x29a)]});else _0x53e96c=_0x57d8f5[_0x514e1f(0x3d4)](_0x542328[_0x514e1f(0x21b)][_0x514e1f(0x207)](_0x4e36cc,_0x514e1f(0x346)));}}}catch(_0x588e62){if(_0x514e1f(0x1d8)!==_0x514e1f(0x27a))return console['error']('Aramex\x20Error:',_0x588e62),_0x5d3639[_0x514e1f(0x3dc)](0x1f4)['json']({'error':_0x588e62[_0x514e1f(0x29a)]});else{if(!_0x54f267){const _0x4419f4=_0x8f3c76.env.STRIPE_SECRET_KEY;if(!_0x4419f4)throw new _0x4ce22d('STRIPE_SECRET_KEY\x20is\x20required\x20for\x20payments');_0x2a0607=new _0x38a156['default'](_0x4419f4,{'apiVersion':_0x514e1f(0x3e8)});}return _0x11b16a;}}});var getNoonBaseUrl=_0x5cbaa5=>{const _0x1c8a63=a0_0x57f14e;return _0x5cbaa5[_0x1c8a63(0x1c3)][_0x1c8a63(0x3dd)]||_0x5cbaa5[_0x1c8a63(0x34a)][_0x1c8a63(0x2b6)]||_0x5cbaa5['body']&&_0x5cbaa5['body'][_0x1c8a63(0x2b6)]||_0x1c8a63(0x2e4);},getNoonHeaders=_0x4a7edc=>{const _0x3750cb=a0_0x57f14e,_0x582167=_0x4a7edc[_0x3750cb(0x1c3)][_0x3750cb(0x2b0)]||_0x4a7edc[_0x3750cb(0x34a)][_0x3750cb(0x35d)]||_0x4a7edc[_0x3750cb(0x1fa)]&&_0x4a7edc[_0x3750cb(0x1fa)][_0x3750cb(0x35d)],_0xea8758=_0x582167&&_0x582167!==_0x3750cb(0x2d5)?_0x582167:'';return{'Content-Type':'application/json','X-API-KEY':_0xea8758,'Api-Key':_0xea8758,'Authorization':_0x3750cb(0x1f9)+_0xea8758};};app['post']('/api/courier/test-connection',import_express['default'][a0_0x57f14e(0x325)](),async(_0x320e6a,_0x34090e)=>{const _0x56e924=a0_0x57f14e;try{const {courierId:_0x17b249,credentials:_0x450f2c,environment:_0x56fd9d}=_0x320e6a[_0x56e924(0x1fa)];if(!_0x17b249||!_0x450f2c||!_0x56fd9d)return _0x34090e[_0x56e924(0x3dc)](0x190)[_0x56e924(0x325)]({'success':![],'error':_0x56e924(0x26a)});const _0x46d216=courierEngine[_0x56e924(0x25a)](_0x17b249),_0x4ed5f3=await _0x46d216[_0x56e924(0x238)](_0x450f2c,_0x56fd9d);if(!_0x4ed5f3[_0x56e924(0x3c0)])return _0x56e924(0x211)!==_0x56e924(0x211)?_0x25a8e0[_0x56e924(0x3dc)](0xc8)[_0x56e924(0x325)]({'HasErrors':!![],'Notifications':[{'Code':_0x56e924(0x223),'Message':_0x56e924(0x3af)}]}):_0x34090e[_0x56e924(0x325)]({'success':![],'error':_0x4ed5f3[_0x56e924(0x2c5)]});return _0x34090e[_0x56e924(0x325)]({'success':!![]});}catch(_0x46989a){return _0x56e924(0x30b)==='rGZLG'?_0x34090e[_0x56e924(0x3dc)](0xc8)[_0x56e924(0x325)]({'success':![],'error':_0x46989a['message']}):_0x319f58[_0x56e924(0x3dc)](0x1f4)[_0x56e924(0x325)]({'error':_0x56e924(0x20c)});}}),app[a0_0x57f14e(0x230)]('/api/courier/rate',import_express[a0_0x57f14e(0x21b)][a0_0x57f14e(0x325)](),async(_0x1b8890,_0x2f99c9)=>{const _0x17e218=a0_0x57f14e;try{const {courierId:_0x139263,payload:_0x2c1b68,credentials:_0x1849e8,environment:_0x9d3947}=_0x1b8890[_0x17e218(0x1fa)],_0x6bc822=courierEngine[_0x17e218(0x25a)](_0x139263),_0x5fdd13=await _0x6bc822[_0x17e218(0x349)](_0x2c1b68,_0x1849e8,_0x9d3947);return _0x2f99c9[_0x17e218(0x325)](_0x5fdd13);}catch(_0xe092dc){if('fYHCZ'===_0x17e218(0x243))_0x5e5256['error'](_0x17e218(0x2f7),_0x2a24a2),_0xf7a88d['status'](0x1f4)[_0x17e218(0x325)]({'error':_0x25f100[_0x17e218(0x29a)]});else return _0x2f99c9[_0x17e218(0x325)]({'success':![],'error':_0xe092dc[_0x17e218(0x29a)]});}}),app[a0_0x57f14e(0x230)](a0_0x57f14e(0x216),import_express[a0_0x57f14e(0x21b)][a0_0x57f14e(0x325)](),async(_0x227e4a,_0x2f2830)=>{const _0x101520=a0_0x57f14e;try{const {courierId:_0x155983,payload:_0x3d345a,credentials:_0x3611ad,environment:_0x13a7dc}=_0x227e4a['body'],_0x3cb85b=courierEngine[_0x101520(0x25a)](_0x155983),_0x18512c=await _0x3cb85b[_0x101520(0x2e1)](_0x3d345a,_0x3611ad,_0x13a7dc);return _0x2f2830[_0x101520(0x325)](_0x18512c);}catch(_0x4b2d1a){return _0x101520(0x1da)===_0x101520(0x1da)?_0x2f2830['json']({'success':![],'error':_0x4b2d1a[_0x101520(0x29a)]}):_0x4f8d04['name'];}}),app[a0_0x57f14e(0x230)](a0_0x57f14e(0x2d0),import_express[a0_0x57f14e(0x21b)][a0_0x57f14e(0x325)](),async(_0x5782c6,_0x4b21a5)=>{const _0x30495b=a0_0x57f14e;try{if(_0x30495b(0x3ce)!=='elTCx'){const {courierId:_0x2db865,trackingId:_0x26bb76,credentials:_0x4c4186,environment:_0x2f83ab}=_0x5782c6[_0x30495b(0x1fa)],_0x429da6=courierEngine['getAdapter'](_0x2db865),_0x3736a7=await _0x429da6[_0x30495b(0x3e5)](_0x26bb76,_0x4c4186,_0x2f83ab);return _0x4b21a5[_0x30495b(0x325)](_0x3736a7);}else return _0x40b1a0=_0x219694[_0x30495b(0x3d4)](_0xe33b7e),_0x118497[_0x30495b(0x325)](_0x1bd702);}catch(_0x502f0a){return _0x4b21a5['json']({'success':![],'error':_0x502f0a[_0x30495b(0x29a)]});}}),app[a0_0x57f14e(0x230)](a0_0x57f14e(0x322),import_express[a0_0x57f14e(0x21b)][a0_0x57f14e(0x325)](),async(_0x45a0b3,_0x4a2737)=>{const _0x5d263d=a0_0x57f14e;try{const {courierId:_0x221384,trackingId:_0x2c8670,credentials:_0x3afc30,environment:_0xb8aedb}=_0x45a0b3['body'],_0xe13f8d=courierEngine[_0x5d263d(0x25a)](_0x221384),_0x5da40b=await _0xe13f8d['cancelShipment'](_0x2c8670,_0x3afc30,_0xb8aedb);return _0x4a2737[_0x5d263d(0x325)]({'success':_0x5da40b});}catch(_0x3c0f3f){if('vOOuQ'!==_0x5d263d(0x35f)){const _0x5d738d=_0x14e0c8['toLowerCase']();for(const _0x3eaffe of _0x490894){if(_0x5d738d[_0x5d263d(0x1cf)](_0x3eaffe[_0x5d263d(0x2d2)]))return _0x3eaffe[_0x5d263d(0x228)];}}else return _0x4a2737['json']({'success':![],'error':_0x3c0f3f[_0x5d263d(0x29a)]});}}),app[a0_0x57f14e(0x20e)](a0_0x57f14e(0x26c),async(_0x2963f8,_0x22e3f7)=>{const _0x28a0ee=a0_0x57f14e;try{if(_0x28a0ee(0x348)!=='RnQMA'){const _0x22936e=getNoonBaseUrl(_0x2963f8);console[_0x28a0ee(0x36b)](_0x28a0ee(0x32e)+_0x22936e+_0x28a0ee(0x21d));const _0x454683=await fetch(_0x22936e+_0x28a0ee(0x2a8),{'method':'GET','headers':getNoonHeaders(_0x2963f8),'signal':AbortSignal[_0x28a0ee(0x359)](0x2710)});if(_0x454683['ok']){if(_0x28a0ee(0x222)==='eRrSl'){const _0x4734ba=await _0x454683['json']();return console[_0x28a0ee(0x36b)](_0x28a0ee(0x212)),_0x22e3f7[_0x28a0ee(0x325)](_0x4734ba);}else return _0x40e521===_0x28a0ee(0x245)?'https://ws.aramex.net':_0x28a0ee(0x1d1);}else return console[_0x28a0ee(0x2c5)](_0x28a0ee(0x339)+_0x454683[_0x28a0ee(0x3dc)]+'.'),_0x22e3f7[_0x28a0ee(0x3dc)](_0x454683[_0x28a0ee(0x3dc)])[_0x28a0ee(0x325)]({'error':_0x28a0ee(0x1d2)+_0x454683['status']});}else return _0x2f8627[_0x28a0ee(0x2c5)](_0x28a0ee(0x3da)+_0x2f86ab[_0x28a0ee(0x29a)]+'.'),_0x39b59a[_0x28a0ee(0x3dc)](0x1f4)[_0x28a0ee(0x325)]({'error':'Connection\x20failed:\x20'+_0x2c5204[_0x28a0ee(0x29a)]});}catch(_0x4668d7){return _0x28a0ee(0x31b)!=='XsZdL'?(console['error'](_0x28a0ee(0x3b9)+_0x4668d7['message']+'.'),_0x22e3f7['status'](0x1f4)[_0x28a0ee(0x325)]({'error':'Connection\x20failed:\x20'+_0x4668d7[_0x28a0ee(0x29a)]})):(_0x2f6bd6[_0x28a0ee(0x2c5)](_0x28a0ee(0x3b9)+_0x3feac2[_0x28a0ee(0x29a)]+'.'),_0x35d488[_0x28a0ee(0x3dc)](0x1f4)[_0x28a0ee(0x325)]({'error':_0x28a0ee(0x31d)+_0x4b36c7[_0x28a0ee(0x29a)]}));}}),app[a0_0x57f14e(0x230)](a0_0x57f14e(0x336),async(_0x4446c3,_0x1c53cf)=>{const _0x52f4af=a0_0x57f14e,_0x77c847=_0x4446c3[_0x52f4af(0x1fa)];try{const _0x73106f=getNoonBaseUrl(_0x4446c3);console[_0x52f4af(0x36b)](_0x52f4af(0x247)+_0x73106f+_0x52f4af(0x21d),JSON[_0x52f4af(0x1dd)](_0x77c847));const _0x370c2a=await fetch(_0x73106f+_0x52f4af(0x341),{'method':_0x52f4af(0x3b8),'headers':getNoonHeaders(_0x4446c3),'body':JSON[_0x52f4af(0x1dd)](_0x77c847),'signal':AbortSignal['timeout'](0x2710)}),_0x14f9db=await _0x370c2a[_0x52f4af(0x325)]();return console['log'](_0x52f4af(0x3be)+_0x370c2a[_0x52f4af(0x3dc)]+':',_0x14f9db),_0x370c2a['ok']||_0x14f9db[_0x52f4af(0x3dc)]===_0x52f4af(0x2b7)?_0x1c53cf[_0x52f4af(0x3dc)](_0x370c2a[_0x52f4af(0x3dc)])[_0x52f4af(0x325)](_0x14f9db):(console[_0x52f4af(0x2c5)]('[Noon\x20Proxy]\x20Noon\x20API\x20returned\x20error\x20structure.'),_0x1c53cf['status'](_0x370c2a['status'])[_0x52f4af(0x325)](_0x14f9db));}catch(_0xe4fa53){return console[_0x52f4af(0x2c5)]('[Noon\x20Proxy]\x20Noon\x20create-task\x20connection\x20failed:\x20'+_0xe4fa53['message']+'.'),_0x1c53cf[_0x52f4af(0x3dc)](0x1f4)[_0x52f4af(0x325)]({'error':_0x52f4af(0x31d)+_0xe4fa53[_0x52f4af(0x29a)]});}}),app[a0_0x57f14e(0x20e)](a0_0x57f14e(0x3eb),async(_0x18bf8d,_0x3a585e)=>{const _0x3a9ba8=a0_0x57f14e,{mp_task_nr:_0x93d3b4}=_0x18bf8d[_0x3a9ba8(0x302)];try{if(_0x3a9ba8(0x1ff)==='IcDdC')return![];else{const _0x5e91a5=getNoonBaseUrl(_0x18bf8d);console['log'](_0x3a9ba8(0x314)+_0x93d3b4+_0x3a9ba8(0x1f2)+_0x5e91a5+_0x3a9ba8(0x21d));const _0x58a061=await fetch(_0x5e91a5+_0x3a9ba8(0x320)+_0x93d3b4,{'method':'GET','headers':getNoonHeaders(_0x18bf8d),'signal':AbortSignal[_0x3a9ba8(0x359)](0x2710)});if(_0x58a061['ok']){const _0x183abb=await _0x58a061[_0x3a9ba8(0x325)]();return _0x3a585e[_0x3a9ba8(0x325)](_0x183abb);}return _0x3a585e[_0x3a9ba8(0x3dc)](_0x58a061['status'])['json']({'error':'Noon\x20API\x20returned\x20'+_0x58a061[_0x3a9ba8(0x3dc)]});}}catch(_0x388c23){return console[_0x3a9ba8(0x2c5)](_0x3a9ba8(0x37b)+_0x388c23[_0x3a9ba8(0x29a)]+'.'),_0x3a585e[_0x3a9ba8(0x3dc)](0x1f4)[_0x3a9ba8(0x325)]({'error':_0x3a9ba8(0x31d)+_0x388c23[_0x3a9ba8(0x29a)]});}}),app[a0_0x57f14e(0x230)](a0_0x57f14e(0x2d4),async(_0x12b44f,_0x3dcc7f)=>{const _0x59821a=a0_0x57f14e,{mp_task_nr:_0x4b48f2}=_0x12b44f[_0x59821a(0x302)],{reason:_0x1174c4}=_0x12b44f['body'];try{if(_0x59821a(0x30c)!==_0x59821a(0x30c)){_0x3844d5[_0x59821a(0x36b)]('Noon\x20Webhook\x20Received:',_0x8788ee[_0x59821a(0x1fa)]);const _0x5c5e53=_0x4cc2d9[_0x59821a(0x1fa)];if(_0x5c5e53?.[_0x59821a(0x330)]||_0x5c5e53?.[_0x59821a(0x1ec)]){const _0x2af5b4=_0x5c5e53['order_reference']||_0x5c5e53[_0x59821a(0x1ec)],_0x54f1c8=_0x5c5e53[_0x59821a(0x353)]||_0x5c5e53[_0x59821a(0x2af)]||_0x59821a(0x209);_0x47dbc4({'type':_0x59821a(0x333),'trackingNumber':_0x2af5b4,'updateCode':_0x5c5e53[_0x59821a(0x2af)],'updateDescription':_0x54f1c8,'timestamp':_0x5c5e53[_0x59821a(0x39a)]||new _0x2331c4()['toISOString'](),'location':_0x5c5e53[_0x59821a(0x1df)]||_0x59821a(0x25f)}),_0x4335be[_0x59821a(0x24e)](_0x59821a(0x2be))[_0x59821a(0x2cd)](_0x2af5b4)['collection']('tracking_history')['add']({'updateCode':_0x5c5e53['status_code']||'UPDATE','updateDescription':_0x54f1c8,'location':_0x5c5e53[_0x59821a(0x1df)]||'Noon\x20Hub','timestamp':_0x659611['FieldValue'][_0x59821a(0x1c6)](),'rawPayload':_0x5c5e53})['catch'](_0x48004d=>_0x145d0f['error']('Failed\x20to\x20append\x20Noon\x20tracking\x20history:',_0x48004d)),_0x2374fa[_0x59821a(0x24e)](_0x59821a(0x2be))[_0x59821a(0x2cd)](_0x2af5b4)[_0x59821a(0x33e)]({'status':_0x54f1c8,'updatedAt':_0xc7673b['FieldValue'][_0x59821a(0x1c6)]()})[_0x59821a(0x1fc)](_0x56a00a=>_0x1b71b8['error'](_0x59821a(0x326),_0x56a00a));}_0x4163a0[_0x59821a(0x3dc)](0xc8)['json']({'status':'acknowledged'});}else{const _0xfa41d9=getNoonBaseUrl(_0x12b44f);console[_0x59821a(0x36b)](_0x59821a(0x35e)+_0x4b48f2+_0x59821a(0x21d));const _0x11c53f=await fetch(_0xfa41d9+_0x59821a(0x320)+_0x4b48f2+_0x59821a(0x289),{'method':_0x59821a(0x3b8),'headers':getNoonHeaders(_0x12b44f),'body':JSON[_0x59821a(0x1dd)]({'reason':_0x1174c4}),'signal':AbortSignal[_0x59821a(0x359)](0x2710)});if(_0x11c53f['ok']){const _0x1b9403=await _0x11c53f[_0x59821a(0x325)]();return _0x3dcc7f['json'](_0x1b9403);}return _0x3dcc7f[_0x59821a(0x3dc)](_0x11c53f[_0x59821a(0x3dc)])[_0x59821a(0x325)]({'error':_0x59821a(0x1d2)+_0x11c53f[_0x59821a(0x3dc)]});}}catch(_0xe893f6){if(_0x59821a(0x251)!=='GoLuh')return console[_0x59821a(0x2c5)](_0x59821a(0x35c)+_0xe893f6[_0x59821a(0x29a)]+'.'),_0x3dcc7f[_0x59821a(0x3dc)](0x1f4)[_0x59821a(0x325)]({'error':_0x59821a(0x31d)+_0xe893f6[_0x59821a(0x29a)]});else{const _0x158e7e=_0x49c1dd[_0x59821a(0x3d4)](_0x3356df);if(_0x158e7e[_0x59821a(0x29a)])_0x814033=_0x158e7e[_0x59821a(0x29a)];}}});var apiKey=process.env.GEMINI_API_KEY,ai=new import_genai[(a0_0x57f14e(0x259))]({'apiKey':apiKey,'httpOptions':{'headers':{'User-Agent':'aistudio-build'}}});app['post'](a0_0x57f14e(0x3a6),async(_0x57093b,_0x27212f)=>{const _0x1d3435=a0_0x57f14e;try{if(_0x1d3435(0x3a3)==='VFUWf'){const {itemName:_0x309a19,photoBase64:_0xa588dc}=_0x57093b[_0x1d3435(0x1fa)];if(!_0x309a19&&!_0xa588dc)return _0x27212f['status'](0x190)[_0x1d3435(0x325)]({'error':_0x1d3435(0x3ca)});if(!apiKey)return _0x27212f[_0x1d3435(0x3dc)](0x1f4)[_0x1d3435(0x325)]({'error':_0x1d3435(0x1d5)});const _0x1efd52=[];if(_0xa588dc){const _0x336dc8=_0xa588dc['match'](/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,(.+)$/);let _0x495842=_0xa588dc,_0x22a584=_0x1d3435(0x290);if(_0x336dc8&&_0x336dc8[_0x1d3435(0x2a3)]===0x3){if(_0x1d3435(0x258)==='KPqqX'){if(_0x124fd0[_0x1d3435(0x1cf)](_0x57aae2['key']))return _0x51322b['name'];}else _0x22a584=_0x336dc8[0x1],_0x495842=_0x336dc8[0x2];}_0x1efd52[_0x1d3435(0x347)]({'inlineData':{'mimeType':_0x22a584,'data':_0x495842}});}let _0x1cc3dc=_0x1d3435(0x33f);_0x309a19&&(_0x1cc3dc+=_0x1d3435(0x32d)+_0x309a19+'\x22\x0a');_0xa588dc&&(_0x1cc3dc+=_0x1d3435(0x37a));_0x1cc3dc+=_0x1d3435(0x254),_0x1efd52['push']({'text':_0x1cc3dc});const _0x3961b9=await ai[_0x1d3435(0x323)][_0x1d3435(0x3c8)]({'model':_0x1d3435(0x3d3),'contents':{'parts':_0x1efd52},'config':{'responseMimeType':_0x1d3435(0x1c5),'responseSchema':{'type':import_genai['Type'][_0x1d3435(0x2d6)],'properties':{'itemName':{'type':import_genai[_0x1d3435(0x250)][_0x1d3435(0x2c9)],'description':_0x1d3435(0x1fe)},'category':{'type':import_genai[_0x1d3435(0x250)][_0x1d3435(0x2c9)],'description':'Must\x20be\x20exactly\x20one\x20of:\x20\x27documents\x27,\x20\x27electronics\x27,\x20\x27food\x27,\x20\x27clothing\x27,\x20\x27other\x27.'},'estimatedWeightKg':{'type':import_genai[_0x1d3435(0x250)]['NUMBER'],'description':_0x1d3435(0x273)},'quantity':{'type':import_genai[_0x1d3435(0x250)][_0x1d3435(0x1d4)],'description':'Quantity\x20of\x20items\x20detected\x20or\x20mentioned\x20(how\x20many\x20items).\x20E.g.\x201,\x202,\x205.\x20Default\x20to\x201\x20if\x20not\x20explicitly\x20visible.'},'lengthCm':{'type':import_genai['Type'][_0x1d3435(0x3e6)],'description':'Estimated\x20typical\x20cardboard\x20box\x20or\x20product\x20package\x20length\x20in\x20cm.'},'widthCm':{'type':import_genai[_0x1d3435(0x250)][_0x1d3435(0x3e6)],'description':_0x1d3435(0x297)},'heightCm':{'type':import_genai[_0x1d3435(0x250)][_0x1d3435(0x3e6)],'description':'Estimated\x20typical\x20package\x20height\x20in\x20cm.'},'estimatedValueAED':{'type':import_genai[_0x1d3435(0x250)]['NUMBER'],'description':_0x1d3435(0x2a5)},'notes':{'type':import_genai[_0x1d3435(0x250)][_0x1d3435(0x2c9)],'description':_0x1d3435(0x22b)}},'required':[_0x1d3435(0x2d7),_0x1d3435(0x2f6),_0x1d3435(0x267),'quantity',_0x1d3435(0x25c),_0x1d3435(0x239),_0x1d3435(0x29c),_0x1d3435(0x3e1),_0x1d3435(0x387)]}}}),_0x28da89=_0x3961b9[_0x1d3435(0x3a8)];if(!_0x28da89)return _0x27212f[_0x1d3435(0x3dc)](0x1f4)[_0x1d3435(0x325)]({'error':_0x1d3435(0x3d0)});const _0x2b2b4b=JSON[_0x1d3435(0x3d4)](_0x28da89[_0x1d3435(0x27e)]());return _0x27212f[_0x1d3435(0x325)](_0x2b2b4b);}else _0x80e679=_0x9b600c[_0x1d3435(0x3d4)](_0x337c05);}catch(_0x240972){return console[_0x1d3435(0x2c5)](_0x1d3435(0x204),_0x240972),_0x27212f[_0x1d3435(0x3dc)](0x1f4)[_0x1d3435(0x325)]({'error':_0x240972[_0x1d3435(0x29a)]||_0x1d3435(0x39e)});}});var isProd=process.env.NODE_ENV==='production';async function startServer(){const _0x45b07d=a0_0x57f14e;try{dbAdmin[_0x45b07d(0x24e)](_0x45b07d(0x28e))[_0x45b07d(0x2cd)](_0x45b07d(0x1ed))[_0x45b07d(0x20e)]()['then'](_0x506195=>{const _0x364024=_0x45b07d;if(_0x364024(0x285)===_0x364024(0x285)){if(!_0x506195[_0x364024(0x2ba)]){const _0x229ef8={'aramex':{'id':_0x364024(0x335),'name':_0x364024(0x3d1),'status':_0x364024(0x202),'currentMode':_0x364024(0x2a2),'baseUrlUat':'ws.aramex.net','baseUrlProd':_0x364024(0x23e),'connectionStatus':_0x364024(0x286),'sandboxCreds':{'username':_0x364024(0x227),'password':_0x364024(0x366),'accountNumber':'45796','accountPin':_0x364024(0x266),'accountEntity':_0x364024(0x37f),'accountCountryCode':'AE','source':'24','version':'v1'},'productionCreds':{'username':'','password':'','accountNumber':'','accountPin':'','accountEntity':'','accountCountryCode':'','source':'','version':''}},'noon':{'id':_0x364024(0x22c),'name':_0x364024(0x1fb),'status':_0x364024(0x202),'currentMode':_0x364024(0x2a2),'baseUrlUat':_0x364024(0x31f),'baseUrlProd':_0x364024(0x29d),'connectionStatus':_0x364024(0x286),'sandboxCreds':{'apiKey':_0x364024(0x2d5),'storeId':''},'productionCreds':{'apiKey':'','storeId':''}}};dbAdmin[_0x364024(0x24e)](_0x364024(0x28e))[_0x364024(0x2cd)](_0x364024(0x1ed))['set'](_0x229ef8)[_0x364024(0x1f7)](()=>console[_0x364024(0x36b)](_0x364024(0x1ca)))[_0x364024(0x1fc)](_0xd3a2a8=>console[_0x364024(0x2c5)](_0x364024(0x2c3),_0xd3a2a8['message']));}}else{const _0x159e70=_0x843b43[_0x364024(0x1e2)](_0x45d757);if(_0x159e70!==-0x1)_0x2251e4[_0x364024(0x218)](_0x159e70,0x1);}})[_0x45b07d(0x1fc)](_0x2eb0d0=>{const _0x5ba2e9=_0x45b07d;console[_0x5ba2e9(0x39b)]('[Firestore\x20Seed]\x20Failed\x20to\x20read\x20settings/courier_configs:',_0x2eb0d0[_0x5ba2e9(0x29a)]);});}catch(_0x3559c4){if(_0x45b07d(0x229)===_0x45b07d(0x360))return _0x23beb6[_0x45b07d(0x3dc)](_0x1cf1b2['status'])[_0x45b07d(0x325)]({'error':_0x45b07d(0x25b)+_0x297449[_0x45b07d(0x3dc)]});else console['error'](_0x45b07d(0x2ef),_0x3559c4[_0x45b07d(0x29a)]);}if(!isProd){if('sFLWg'===_0x45b07d(0x257)){if(_0x1065e5&&typeof _0x5c47ec==='object'||typeof _0x33c5be===_0x45b07d(0x274)){for(let _0x5d5a91 of _0x55107b(_0x5bea00))if(!_0x464479['call'](_0x15d826,_0x5d5a91)&&_0x5d5a91!==_0x24315a)_0x31e3ba(_0x4ad84f,_0x5d5a91,{'get':()=>_0x4957de[_0x5d5a91],'enumerable':!(_0x24650c=_0x390254(_0x3014df,_0x5d5a91))||_0x123d9a['enumerable']});}return _0x30e109;}else{const _0x66a4f7=await(0x0,import_vite[_0x45b07d(0x29e)])({'server':{'middlewareMode':!![]},'appType':'spa'});app[_0x45b07d(0x2f2)](_0x66a4f7[_0x45b07d(0x318)]);}}else{const _0x472330=import_path[_0x45b07d(0x21b)][_0x45b07d(0x358)](process[_0x45b07d(0x34b)](),_0x45b07d(0x1e3));app[_0x45b07d(0x2f2)](import_express[_0x45b07d(0x21b)][_0x45b07d(0x374)](_0x472330)),app['get']('*',(_0x366955,_0x12e822)=>{const _0x24dde7=_0x45b07d;_0x24dde7(0x28c)==='FmAcD'?_0x12e822[_0x24dde7(0x34d)](import_path[_0x24dde7(0x21b)][_0x24dde7(0x358)](_0x472330,_0x24dde7(0x36f))):_0x51c52c[_0x24dde7(0x2d1)]==='/api/webhooks/stripe'?_0x2f871e():_0x652e0a[_0x24dde7(0x21b)]['json']({'limit':_0x24dde7(0x2b5)})(_0x7bbc27,_0xca6f41,_0x3f2ccd);});}app[_0x45b07d(0x3ad)](PORT,_0x45b07d(0x1e5),()=>{const _0x4278aa=_0x45b07d;if(_0x4278aa(0x3de)===_0x4278aa(0x3de)){console[_0x4278aa(0x36b)]('Server\x20running\x20on\x20port\x20'+PORT);const _0x487073=process.env.STRIPE_SECRET_KEY;if(_0x487073){const _0x414fa6=_0x487073[_0x4278aa(0x372)](0x0,0x7)+_0x4278aa(0x21d)+_0x487073[_0x4278aa(0x372)](_0x487073[_0x4278aa(0x2a3)]-0x4);console['log'](_0x4278aa(0x240)+_0x414fa6+_0x4278aa(0x3c4));try{const _0x945975=getStripe();_0x945975[_0x4278aa(0x22e)]['retrieve']()[_0x4278aa(0x1f7)](_0x2a239a=>{const _0xaf0d7d=_0x4278aa,_0xdaaa76=_0x487073[_0xaf0d7d(0x1cc)](_0xaf0d7d(0x312))?_0xaf0d7d(0x1eb):_0xaf0d7d(0x316);console[_0xaf0d7d(0x36b)]('[Stripe\x20Console]\x20SUCCESS!\x20Successfully\x20authenticated\x20&\x20connected\x20with\x20Stripe\x20API\x20in\x20'+_0xdaaa76+_0xaf0d7d(0x1d7)),console[_0xaf0d7d(0x36b)](_0xaf0d7d(0x24c)+(_0x2a239a['available'][_0xaf0d7d(0x1ee)](_0x5cf3b8=>(_0x5cf3b8[_0xaf0d7d(0x34f)]/0x64)[_0xaf0d7d(0x2a0)](0x2)+'\x20'+_0x5cf3b8['currency'][_0xaf0d7d(0x1d9)]())[_0xaf0d7d(0x358)](',\x20')||'N/A'));})['catch'](_0x3d8b7a=>{const _0x58b0f2=_0x4278aa;if(_0x58b0f2(0x233)===_0x58b0f2(0x276))return _0x2cca74[_0x58b0f2(0x3dc)](0x190)[_0x58b0f2(0x295)]('Webhook\x20Error:\x20'+_0x3c04e2[_0x58b0f2(0x29a)]);else console[_0x58b0f2(0x2c5)](_0x58b0f2(0x309)+_0x3d8b7a[_0x58b0f2(0x29a)]);});}catch(_0x2b5143){if(_0x4278aa(0x24f)!==_0x4278aa(0x24f)){const _0x3038a8=_0xa27027[_0x4278aa(0x3e9)](),_0x1e8d80=_0x3038a8?.[_0x4278aa(0x2ea)]||'',_0x5c461c=_0x55c304(_0x1e8d80[_0x4278aa(0x31e)](/[^0-9.]/g,''));!_0x2355d3(_0x5c461c)&&_0x3e60ec['abs'](_0x5c461c-_0x19c879)>0.01&&(_0x3069c5[_0x4278aa(0x39b)](_0x4278aa(0x3bf)+_0x552a01+_0x4278aa(0x1c2)+_0x5c461c+_0x4278aa(0x282)+_0x20a8e8),_0x52b904=_0x5c461c);}else console[_0x4278aa(0x2c5)](_0x4278aa(0x2bf)+_0x2b5143[_0x4278aa(0x29a)]);}}else{if('WaTaq'===_0x4278aa(0x1d3)){for(var _0x326611 in _0x3c4917)_0x29b5ef(_0x1e1c66,_0x326611,{'get':_0x2cfc2d[_0x326611],'enumerable':!![]});}else console[_0x4278aa(0x39b)](_0x4278aa(0x237));}}else return _0x3abe31[_0x4278aa(0x325)]({'success':![],'error':_0x1fc71e[_0x4278aa(0x29a)]});});}!process.env.FIREBASE_CONFIG&&!process.env.FUNCTIONS_EMULATOR&&startServer();0x0&&(module[a0_0x57f14e(0x232)]={'app':app});
+var __create = Object.create;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __esm = (fn, res) => function __init() {
+  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+};
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+// src/backend/adapters/AramexAdapter.ts
+var AramexAdapter;
+var init_AramexAdapter = __esm({
+  "src/backend/adapters/AramexAdapter.ts"() {
+    AramexAdapter = class {
+      constructor() {
+        this.id = "aramex";
+        this.name = "Aramex";
+        this.capabilities = ["RATE", "SHIPMENT", "TRACKING", "LABEL"];
+      }
+      getBaseUrl(env) {
+        return env === "production" ? "https://ws.aramex.net" : "https://ws.dev.aramex.net";
+      }
+      sanitizeCity(city, address = "", countryCode = "AE") {
+        if (!city) return countryCode === "AE" ? "Dubai" : "";
+        if (countryCode !== "AE") return city;
+        const clean = city.trim().toLowerCase();
+        const validCities = [
+          { key: "dubai", name: "Dubai" },
+          { key: "abu dhabi", name: "Abu Dhabi" },
+          { key: "al ain", name: "Al Ain" },
+          { key: "sharjah", name: "Sharjah" },
+          { key: "ajman", name: "Ajman" },
+          { key: "fujairah", name: "Fujairah" },
+          { key: "ras al khaimah", name: "Ras Al Khaimah" },
+          { key: "umm al quwain", name: "Umm Al Quwain" }
+        ];
+        for (const vc of validCities) {
+          if (clean.includes(vc.key)) {
+            return vc.name;
+          }
+        }
+        if (address) {
+          const addressLower = address.toLowerCase();
+          for (const vc of validCities) {
+            if (addressLower.includes(vc.key)) {
+              return vc.name;
+            }
+          }
+        }
+        return "Dubai";
+      }
+      async postRequest(url, payload) {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+        const contentType = response.headers.get("content-type") || "";
+        if (!response.ok || !contentType.includes("application/json")) {
+          const errorText = await response.text();
+          const match = errorText.match(/<p xmlns="">([\s\S]*?)<\/p>/) || errorText.match(/<p>([\s\S]*?)<\/p>/);
+          const errMsg = match ? match[1].replace(/<[^>]*>/g, "").trim() : `Aramex server error (status ${response.status})`;
+          throw new Error(errMsg);
+        }
+        return await response.json();
+      }
+      async validateCredentials(credentials, environment) {
+        const baseUrl = this.getBaseUrl(environment);
+        const path3 = "/ShippingAPI.V2/RateCalculator/Service_1_0.svc/json/CalculateRate";
+        const payload = {
+          ClientInfo: {
+            UserName: credentials.username,
+            Password: credentials.password || "",
+            Version: credentials.version || "v1.0",
+            AccountNumber: credentials.accountNumber,
+            AccountPin: credentials.accountPin,
+            AccountEntity: credentials.accountEntity,
+            AccountCountryCode: credentials.accountCountryCode,
+            Source: parseInt(credentials.source || "0", 10) || 0
+          },
+          Transaction: {
+            Reference1: "Connection Verification",
+            Reference2: "",
+            Reference3: "",
+            Reference4: "",
+            Reference5: ""
+          },
+          OriginAddress: {
+            Line1: "Origin Address",
+            Line2: "",
+            Line3: "",
+            PostCode: "",
+            StateOrProvince: "",
+            City: "Dubai",
+            CountryCode: "AE"
+          },
+          DestinationAddress: {
+            Line1: "Destination Address",
+            Line2: "",
+            Line3: "",
+            PostCode: "",
+            StateOrProvince: "",
+            City: "Abu Dhabi",
+            CountryCode: "AE"
+          },
+          ShipmentDetails: {
+            PaymentType: "P",
+            ProductGroup: "DOM",
+            ProductType: "OND",
+            ActualWeight: { Value: 1, Unit: "KG" },
+            ChargeableWeight: { Value: 1, Unit: "KG" },
+            NumberOfPieces: 1,
+            Dimensions: { Length: 10, Width: 10, Height: 10, Unit: "CM" },
+            DescriptionOfGoods: "Verification",
+            GoodsOriginCountry: "AE",
+            PaymentOptions: ""
+          }
+        };
+        try {
+          const data = await this.postRequest(`${baseUrl}${path3}`, payload);
+          if (data.HasErrors) {
+            return { success: false, error: data.Notifications?.[0]?.Message || `Aramex API credentials validation failed. Raw response: ${JSON.stringify(data)}` };
+          }
+          return { success: true };
+        } catch (error) {
+          return { success: false, error: error.message || "Network error while connecting to Aramex" };
+        }
+      }
+      async calculateRate(payload, credentials, environment) {
+        const baseUrl = this.getBaseUrl(environment);
+        const path3 = "/ShippingAPI.V2/RateCalculator/Service_1_0.svc/json/CalculateRate";
+        const sanitizedOriginCity = this.sanitizeCity(payload.originCity, "", payload.originCountry);
+        const sanitizedDestCity = this.sanitizeCity(payload.destCity, "", payload.destCountry);
+        const aramexPayload = {
+          ClientInfo: {
+            UserName: credentials.username,
+            Password: credentials.password,
+            Version: credentials.version || "v1.0",
+            AccountNumber: credentials.accountNumber,
+            AccountPin: credentials.accountPin,
+            AccountEntity: credentials.accountEntity,
+            AccountCountryCode: credentials.accountCountryCode,
+            Source: parseInt(credentials.source || "0", 10) || 0
+          },
+          Transaction: {
+            Reference1: "Rate Calculation",
+            Reference2: "",
+            Reference3: "",
+            Reference4: "",
+            Reference5: ""
+          },
+          OriginAddress: {
+            Line1: "Origin Address",
+            Line2: "",
+            Line3: "",
+            PostCode: "",
+            StateOrProvince: "",
+            City: sanitizedOriginCity,
+            CountryCode: payload.originCountry
+          },
+          DestinationAddress: {
+            Line1: "Destination Address",
+            Line2: "",
+            Line3: "",
+            PostCode: "",
+            StateOrProvince: "",
+            City: sanitizedDestCity,
+            CountryCode: payload.destCountry
+          },
+          ShipmentDetails: {
+            PaymentType: payload.codAmount ? "C" : "P",
+            // C = COD, P = Prepaid
+            ProductGroup: payload.originCountry === payload.destCountry ? "DOM" : "EXP",
+            ProductType: payload.isExpress ? "PPX" : "OND",
+            ActualWeight: { Value: payload.weightKg, Unit: "KG" },
+            ChargeableWeight: { Value: payload.weightKg, Unit: "KG" },
+            NumberOfPieces: 1,
+            Services: payload.codAmount ? "CODS" : "",
+            Dimensions: { Length: 10, Width: 10, Height: 10, Unit: "CM" },
+            DescriptionOfGoods: "Rate check",
+            GoodsOriginCountry: payload.originCountry,
+            PaymentOptions: ""
+          }
+        };
+        try {
+          const data = await this.postRequest(`${baseUrl}${path3}`, aramexPayload);
+          if (data.HasErrors) {
+            return { success: false, error: data.Notifications?.[0]?.Message || `Unknown Error. Raw response: ${JSON.stringify(data)}` };
+          }
+          return {
+            success: true,
+            totalAmount: data.TotalAmount?.Value,
+            currency: data.TotalAmount?.CurrencyCode,
+            serviceName: payload.isExpress ? "Aramex Priority Express" : "Aramex Value Parcel"
+          };
+        } catch (e) {
+          return { success: false, error: e.message };
+        }
+      }
+      async createShipment(payload, credentials, environment) {
+        const baseUrl = this.getBaseUrl(environment);
+        const path3 = "/ShippingAPI.V2/Shipping/Service_1_0.svc/json/CreateShipments";
+        const isDomestic = payload.senderCountry === payload.receiverCountry;
+        const sanitizedSenderCity = this.sanitizeCity(payload.senderCity, payload.senderAddress, payload.senderCountry);
+        const sanitizedReceiverCity = this.sanitizeCity(payload.receiverCity, payload.receiverAddress, payload.receiverCountry);
+        const aramexPayload = {
+          ClientInfo: {
+            UserName: credentials.username,
+            Password: credentials.password,
+            Version: credentials.version || "v1.0",
+            AccountNumber: credentials.accountNumber,
+            AccountPin: credentials.accountPin,
+            AccountEntity: credentials.accountEntity,
+            AccountCountryCode: credentials.accountCountryCode,
+            Source: parseInt(credentials.source || "0", 10) || 0
+          },
+          Transaction: {
+            Reference1: payload.reference || "USend Shipment",
+            Reference2: "",
+            Reference3: "",
+            Reference4: "",
+            Reference5: ""
+          },
+          Shipments: [
+            {
+              Reference1: payload.reference || "",
+              Reference2: "",
+              Reference3: "",
+              Shipper: {
+                Reference1: "USend Central Depot",
+                Reference2: "",
+                AccountNumber: credentials.accountNumber,
+                PartyAddress: {
+                  Line1: payload.senderAddress || "Dubai Warehouse",
+                  Line2: "",
+                  Line3: "",
+                  City: sanitizedSenderCity,
+                  StateOrProvince: "",
+                  PostCode: "",
+                  CountryCode: payload.senderCountry
+                },
+                Contact: {
+                  Department: "",
+                  PersonName: payload.senderName || "Sender",
+                  CompanyName: "USend Hub",
+                  PhoneNumber1: payload.senderPhone || "+971500000000",
+                  PhoneNumber1Ext: "",
+                  PhoneNumber2: "",
+                  PhoneNumber2Ext: "",
+                  FaxNumber: "",
+                  CellPhone: payload.senderPhone || "+971500000000",
+                  EmailAddress: "dispatch@usend.ae",
+                  Type: 0
+                }
+              },
+              Consignee: {
+                Reference1: "",
+                Reference2: "",
+                AccountNumber: "",
+                PartyAddress: {
+                  Line1: payload.receiverAddress || "Delivery Address",
+                  Line2: "",
+                  Line3: "",
+                  City: sanitizedReceiverCity,
+                  StateOrProvince: "",
+                  PostCode: "",
+                  CountryCode: payload.receiverCountry
+                },
+                Contact: {
+                  Department: "",
+                  PersonName: payload.receiverName || "Recipient",
+                  CompanyName: payload.receiverName || "Recipient",
+                  PhoneNumber1: payload.receiverPhone || "+971520000000",
+                  PhoneNumber1Ext: "",
+                  PhoneNumber2: "",
+                  PhoneNumber2Ext: "",
+                  FaxNumber: "",
+                  CellPhone: payload.receiverPhone || "+971520000000",
+                  EmailAddress: "",
+                  Type: 0
+                }
+              },
+              ThirdParty: null,
+              Reference4: "",
+              Reference5: "",
+              ShippingDateTime: `/Date(${(/* @__PURE__ */ new Date()).getTime()})/`,
+              DueDate: `/Date(${new Date((/* @__PURE__ */ new Date()).getTime() + 864e5).getTime()})/`,
+              Comments: "USend Aggregation Dispatch",
+              PickupLocation: "Reception",
+              OperationsInstructions: "Handle with care",
+              AccountingInstrcutions: "",
+              Details: {
+                Dimensions: payload.dimensions ? {
+                  Length: payload.dimensions.length,
+                  Width: payload.dimensions.width,
+                  Height: payload.dimensions.height,
+                  Unit: "CM"
+                } : { Length: 10, Width: 10, Height: 10, Unit: "CM" },
+                ActualWeight: { Value: payload.weightKg, Unit: "KG" },
+                ChargeableWeight: { Value: payload.weightKg, Unit: "KG" },
+                DescriptionOfGoods: payload.goodsDescription || "Goods",
+                GoodsOriginCountry: payload.senderCountry,
+                NumberOfPieces: 1,
+                ProductGroup: isDomestic ? "DOM" : "EXP",
+                ProductType: "OND",
+                PaymentType: payload.codAmountAED > 0 ? "C" : "P",
+                PaymentOptions: "",
+                Services: payload.codAmountAED > 0 ? "CODS" : "",
+                CashOnDeliveryAmount: payload.codAmountAED > 0 ? {
+                  Value: payload.codAmountAED,
+                  CurrencyCode: "AED"
+                } : null,
+                CustomsValueAmount: null
+              }
+            }
+          ],
+          LabelInfo: {
+            ReportID: 9729,
+            ReportType: "URL"
+          }
+        };
+        try {
+          const data = await this.postRequest(`${baseUrl}${path3}`, aramexPayload);
+          if (data.HasErrors) {
+            return { success: false, error: data.Notifications?.[0]?.Message || `Unknown Error. Raw response: ${JSON.stringify(data)}` };
+          }
+          const shipment = data.Shipments?.[0];
+          if (!shipment) {
+            return { success: false, error: "No shipment data returned" };
+          }
+          return {
+            success: true,
+            trackingNumber: shipment.ID,
+            labelUrl: shipment.ShipmentLabel?.LabelURL,
+            base64Label: shipment.ShipmentLabel?.LabelFileContents,
+            providerStatus: "Generated"
+          };
+        } catch (e) {
+          return { success: false, error: e.message };
+        }
+      }
+      async trackShipment(trackingId, credentials, environment) {
+        const baseUrl = this.getBaseUrl(environment);
+        const path3 = "/ShippingAPI.V2/Tracking/Service_1_0.svc/json/TrackShipments";
+        const payload = {
+          ClientInfo: {
+            UserName: credentials.username,
+            Password: credentials.password,
+            Version: credentials.version || "v1.0",
+            AccountNumber: credentials.accountNumber,
+            AccountPin: credentials.accountPin,
+            AccountEntity: credentials.accountEntity,
+            AccountCountryCode: credentials.accountCountryCode,
+            Source: parseInt(credentials.source || "0", 10) || 0
+          },
+          Transaction: { Reference1: "", Reference2: "", Reference3: "", Reference4: "", Reference5: "" },
+          Shipments: [trackingId]
+        };
+        try {
+          const data = await this.postRequest(`${baseUrl}${path3}`, payload);
+          if (data.HasErrors) {
+            return { success: false, providerStatus: "Error", usendStatus: "FAILED", timestamp: (/* @__PURE__ */ new Date()).toISOString(), error: data.Notifications?.[0]?.Message || `Tracking Error. Raw response: ${JSON.stringify(data)}` };
+          }
+          const results = data.TrackingResults;
+          if (!results || results.length === 0) {
+            return { success: false, providerStatus: "No Data", usendStatus: "PENDING", timestamp: (/* @__PURE__ */ new Date()).toISOString(), error: "No tracking data found" };
+          }
+          const updates = results[0].Value;
+          if (!updates || updates.length === 0) {
+            return { success: true, providerStatus: "No Updates", usendStatus: "PENDING", timestamp: (/* @__PURE__ */ new Date()).toISOString() };
+          }
+          const newest = updates[0];
+          return {
+            success: true,
+            providerStatus: newest.UpdateDescription,
+            usendStatus: this.mapStatus(newest.UpdateCode),
+            location: newest.UpdateLocation,
+            timestamp: newest.UpdateDateTime
+          };
+        } catch (e) {
+          return { success: false, providerStatus: "Error", usendStatus: "FAILED", timestamp: (/* @__PURE__ */ new Date()).toISOString(), error: e.message };
+        }
+      }
+      async cancelShipment(trackingId, credentials, environment) {
+        return false;
+      }
+      mapStatus(aramexCode) {
+        const code = aramexCode.toUpperCase();
+        if (["SH005", "SH006", "SH007", "SH014", "SH164"].includes(code)) return "DELIVERED";
+        if (["SH012", "SH069", "SH234"].includes(code)) return "IN_TRANSIT";
+        if (["SH047", "SH048", "SH049"].includes(code)) return "FAILED";
+        return "PENDING";
+      }
+    };
+  }
+});
+
+// src/backend/adapters/CourierAdapter.ts
+function toNoonCoord(decimal) {
+  return Math.round(decimal * 1e7);
+}
+function fromNoonCoord(micro) {
+  return Number(micro) / 1e7;
+}
+function aedToFils(aed) {
+  return Math.round(aed * 100);
+}
+var NOON_STATUS_MAP, NOON_STATUS_STEPS;
+var init_CourierAdapter = __esm({
+  "src/backend/adapters/CourierAdapter.ts"() {
+    NOON_STATUS_MAP = {
+      pending_assignment: { usendStatus: "PENDING", label: "Finding Driver", cancellable: true },
+      assigned: { usendStatus: "IN_TRANSIT", label: "Driver Assigned", cancellable: true },
+      arrived_at_pickup_location: { usendStatus: "IN_TRANSIT", label: "Driver at Pickup", cancellable: true },
+      picked_up: { usendStatus: "IN_TRANSIT", label: "Picked Up", cancellable: false },
+      arrived_at_delivery: { usendStatus: "IN_TRANSIT", label: "Driver Arriving", cancellable: false },
+      delivered: { usendStatus: "DELIVERED", label: "Delivered", cancellable: false },
+      cancelled: { usendStatus: "FAILED", label: "Cancelled", cancellable: false },
+      undelivered: { usendStatus: "FAILED", label: "Undelivered", cancellable: false }
+    };
+    NOON_STATUS_STEPS = [
+      { status: "pending_assignment", label: "Finding Driver" },
+      { status: "assigned", label: "Driver Assigned" },
+      { status: "arrived_at_pickup_location", label: "Driver at Pickup" },
+      { status: "picked_up", label: "Picked Up" },
+      { status: "arrived_at_delivery", label: "Driver Arriving" },
+      { status: "delivered", label: "Delivered" }
+    ];
+  }
+});
+
+// src/backend/adapters/NoonAdapter.ts
+var DEFAULT_PICKUP_LAT, DEFAULT_PICKUP_LNG, NoonAdapter;
+var init_NoonAdapter = __esm({
+  "src/backend/adapters/NoonAdapter.ts"() {
+    init_CourierAdapter();
+    DEFAULT_PICKUP_LAT = 25.1964783;
+    DEFAULT_PICKUP_LNG = 55.2808833;
+    NoonAdapter = class {
+      constructor() {
+        this.id = "noon";
+        this.name = "Noon Rider on Demand";
+        this.capabilities = ["SHIPMENT", "TRACKING", "CANCEL"];
+      }
+      getBaseUrl(env) {
+        if (process.env.NOON_API_BASE_URL) return process.env.NOON_API_BASE_URL;
+        return env === "production" ? "https://food-api-team.noon.team" : "https://food-api-team.noonstg.team";
+      }
+      getApiKey(credentials) {
+        return process.env.NOON_API_KEY || credentials.apiKey || credentials.password || "";
+      }
+      buildHeaders(credentials, idempotencyKey) {
+        const apiKey2 = this.getApiKey(credentials);
+        const headers = {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "X-API-KEY": apiKey2
+        };
+        if (idempotencyKey) {
+          headers["X-Idempotency-Key"] = idempotencyKey;
+        }
+        return headers;
+      }
+      // ─── Validate Credentials ─────────────────────────────────────────────────
+      async validateCredentials(credentials, environment) {
+        const baseUrl = this.getBaseUrl(environment);
+        const apiKey2 = this.getApiKey(credentials);
+        if (!apiKey2) return { success: false, error: "Missing Noon API key" };
+        try {
+          const response = await fetch(`${baseUrl}/public/v1/pickup-points/list`, {
+            method: "GET",
+            headers: this.buildHeaders(credentials),
+            signal: AbortSignal.timeout(1e4)
+          });
+          const text = await response.text();
+          if (text.includes("FortiGuard") || text.includes("Web Filter")) {
+            return { success: false, error: "Access blocked by corporate firewall. Try from another network." };
+          }
+          if (!response.ok) {
+            return { success: false, error: `Noon returned HTTP ${response.status}` };
+          }
+          return { success: true };
+        } catch (e) {
+          return { success: false, error: e.message || "Network error" };
+        }
+      }
+      // ─── Calculate Rate ───────────────────────────────────────────────────────
+      async calculateRate(payload, credentials, environment) {
+        return {
+          success: true,
+          totalAmount: payload.isExpress ? 25 : 18,
+          currency: "AED",
+          serviceName: "Noon Rider on Demand"
+        };
+      }
+      // ─── Create Shipment (Delivery Task) ─────────────────────────────────────
+      async createShipment(payload, credentials, environment) {
+        const baseUrl = this.getBaseUrl(environment);
+        const outletCode = payload.outletCode || credentials.outletCode || credentials.accountNumber || "";
+        if (!outletCode) {
+          return { success: false, error: "Noon: No outlet_code provided. Select a pickup point first." };
+        }
+        const idempotencyKey = payload.idempotencyKey || `usend-${payload.orderId || payload.reference || Date.now()}-${outletCode}`;
+        const pickupLatInt = toNoonCoord(payload.pickupLat ?? DEFAULT_PICKUP_LAT);
+        const pickupLngInt = toNoonCoord(payload.pickupLng ?? DEFAULT_PICKUP_LNG);
+        const dropLatInt = toNoonCoord(payload.dropLat ?? DEFAULT_PICKUP_LAT);
+        const dropLngInt = toNoonCoord(payload.dropLng ?? DEFAULT_PICKUP_LNG + 0.01);
+        const codFils = aedToFils(payload.codAmountAED || 0);
+        const prepaidFils = aedToFils(payload.prepaidAmountAED || 0);
+        const finalCodFils = codFils;
+        const finalPrepaidFils = codFils === 0 && prepaidFils === 0 ? 100 : prepaidFils;
+        const noonPayload = {
+          outlet_code: outletCode,
+          order_reference: payload.reference || payload.orderId || `USEND-${Date.now()}`,
+          customer_name: payload.receiverName,
+          customer_phone: payload.receiverPhone,
+          drop_off_address: {
+            address: payload.receiverAddress,
+            lat: dropLatInt,
+            lng: dropLngInt,
+            contact_name: payload.receiverName,
+            contact_phone_number: payload.receiverPhone,
+            country_code: "ae"
+            // Noon staging only accepts lowercase 'ae'
+          },
+          lat: pickupLatInt,
+          lng: pickupLngInt,
+          cod_value: finalCodFils,
+          prepaid_value: finalPrepaidFils,
+          payment_method: codFils > 0 ? "COD" : "PAID"
+        };
+        try {
+          const response = await fetch(`${baseUrl}/public/v1/create-task`, {
+            method: "POST",
+            headers: this.buildHeaders(credentials, idempotencyKey),
+            body: JSON.stringify(noonPayload),
+            signal: AbortSignal.timeout(15e3)
+          });
+          const responseText = await response.text();
+          if (responseText.trimStart().startsWith("<")) {
+            return {
+              success: false,
+              error: "Noon returned an HTML page \u2014 check API key and network access"
+            };
+          }
+          let data = {};
+          try {
+            data = JSON.parse(responseText);
+          } catch {
+            return {
+              success: false,
+              error: `Noon returned non-JSON (HTTP ${response.status}): ${responseText.substring(0, 200)}`
+            };
+          }
+          if (response.status === 404 && data.detail) {
+            return { success: false, error: `Noon endpoint not found: ${data.detail}` };
+          }
+          if (!response.ok || data.error) {
+            const errMsg = data.error || data.detail || data.message || `Noon task creation failed (HTTP ${response.status})`;
+            console.error("[NoonAdapter] NOON_TASK_CREATE_FAILED", { outletCode, idempotencyKey, error: errMsg });
+            return { success: false, error: errMsg };
+          }
+          const taskId = data.mp_task_nr;
+          if (!taskId) {
+            return { success: false, error: `Noon task created but no mp_task_nr in response: ${JSON.stringify(data)}` };
+          }
+          console.log("[NoonAdapter] NOON_TASK_CREATE_SUCCESS", { taskId, outletCode, idempotencyKey });
+          return {
+            success: true,
+            trackingNumber: taskId,
+            noonTaskId: taskId,
+            outletCode,
+            providerStatus: "pending_assignment"
+          };
+        } catch (e) {
+          console.error("[NoonAdapter] NOON_TASK_CREATE_FAILED (network)", e.message);
+          return { success: false, error: `Network error: ${e.message}` };
+        }
+      }
+      // ─── Track Shipment ───────────────────────────────────────────────────────
+      async trackShipment(trackingId, credentials, environment) {
+        const baseUrl = this.getBaseUrl(environment);
+        const FAILED_RESPONSE = (error) => ({
+          success: false,
+          usendStatus: "FAILED",
+          providerStatus: "error",
+          timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+          error
+        });
+        try {
+          const response = await fetch(`${baseUrl}/public/v1/tasks/${trackingId}`, {
+            method: "GET",
+            headers: this.buildHeaders(credentials),
+            signal: AbortSignal.timeout(1e4)
+          });
+          const text = await response.text();
+          if (text.trimStart().startsWith("<")) return FAILED_RESPONSE("Noon returned HTML page");
+          let data = {};
+          try {
+            data = JSON.parse(text);
+          } catch {
+            return FAILED_RESPONSE(`Non-JSON response (HTTP ${response.status})`);
+          }
+          if (!response.ok) return FAILED_RESPONSE(data.error || data.detail || `HTTP ${response.status}`);
+          const statusCode = data.status_code || "pending_assignment";
+          const mapped = NOON_STATUS_MAP[statusCode] || { usendStatus: "PENDING", label: "In Progress", cancellable: false };
+          const daUpdates = data.da_updates || [];
+          const currentStatusIndex = NOON_STATUS_STEPS.findIndex((s) => s.status === statusCode);
+          const statusHistory = NOON_STATUS_STEPS.map((step, idx) => {
+            const update = daUpdates.find((u) => u.status === step.status);
+            return {
+              status: step.status,
+              label: step.label,
+              timestamp: update?.time || null,
+              completed: idx <= currentStatusIndex
+            };
+          });
+          const da = data.da_details;
+          let driverName;
+          let driverPhone;
+          let driverLat;
+          let driverLng;
+          if (da) {
+            driverName = da.name || void 0;
+            driverPhone = da.phone_number || da.phone || void 0;
+            if (da.latitude) driverLat = fromNoonCoord(da.latitude);
+            if (da.longitude) driverLng = fromNoonCoord(da.longitude);
+          }
+          console.log("[NoonAdapter] NOON_TASK_STATUS_UPDATE", { trackingId, statusCode });
+          return {
+            success: true,
+            usendStatus: mapped.usendStatus,
+            usendStatusLabel: mapped.label,
+            providerStatus: statusCode,
+            timestamp: data.created_at || (/* @__PURE__ */ new Date()).toISOString(),
+            noonTaskId: trackingId,
+            cancellable: mapped.cancellable,
+            driverName,
+            driverPhone,
+            driverLat,
+            driverLng,
+            pickupAddress: data.restaurant_details?.address,
+            dropAddress: data.customer_details?.address,
+            statusHistory
+          };
+        } catch (e) {
+          console.error("[NoonAdapter] Track failed", e.message);
+          return FAILED_RESPONSE(e.message);
+        }
+      }
+      // ─── Cancel Shipment ──────────────────────────────────────────────────────
+      async cancelShipment(trackingId, credentials, environment) {
+        const baseUrl = this.getBaseUrl(environment);
+        const tracking = await this.trackShipment(trackingId, credentials, environment);
+        if (tracking.success && tracking.cancellable === false) {
+          console.warn("[NoonAdapter] NOON_TASK_CANCEL_FAILED \u2014 task past cancellable state", { trackingId, status: tracking.providerStatus });
+          throw new Error(`Cannot cancel: delivery is already in status "${tracking.usendStatusLabel || tracking.providerStatus}"`);
+        }
+        try {
+          const response = await fetch(`${baseUrl}/public/v1/tasks/${trackingId}/cancel`, {
+            method: "POST",
+            headers: this.buildHeaders(credentials),
+            body: JSON.stringify({ reason: "Partner cancellation via USend" }),
+            signal: AbortSignal.timeout(1e4)
+          });
+          const text = await response.text();
+          let data = {};
+          try {
+            data = JSON.parse(text);
+          } catch {
+          }
+          if (response.ok) {
+            console.log("[NoonAdapter] NOON_TASK_CANCEL", { trackingId });
+            return true;
+          }
+          const errMsg = data.error || data.detail || `HTTP ${response.status}`;
+          console.error("[NoonAdapter] NOON_TASK_CANCEL_FAILED", { trackingId, error: errMsg });
+          throw new Error(errMsg);
+        } catch (e) {
+          if (e.message.includes("Cannot cancel")) throw e;
+          throw new Error(`Cancellation failed: ${e.message}`);
+        }
+      }
+    };
+  }
+});
+
+// src/backend/adapters/CourierEngine.ts
+var CourierEngine_exports = {};
+__export(CourierEngine_exports, {
+  CourierEngine: () => CourierEngine,
+  courierEngine: () => courierEngine
+});
+var CourierEngine, courierEngine;
+var init_CourierEngine = __esm({
+  "src/backend/adapters/CourierEngine.ts"() {
+    init_AramexAdapter();
+    init_NoonAdapter();
+    CourierEngine = class {
+      constructor() {
+        this.adapters = /* @__PURE__ */ new Map();
+        this.registerAdapter(new AramexAdapter());
+        this.registerAdapter(new NoonAdapter());
+      }
+      registerAdapter(adapter) {
+        this.adapters.set(adapter.id, adapter);
+      }
+      getAdapter(id) {
+        const adapter = this.adapters.get(id);
+        if (!adapter) {
+          throw new Error(`Courier adapter for '${id}' not found`);
+        }
+        return adapter;
+      }
+    };
+    courierEngine = new CourierEngine();
+  }
+});
+
+// server.ts
+var server_exports = {};
+__export(server_exports, {
+  app: () => app
+});
+module.exports = __toCommonJS(server_exports);
+
+// src/init-env.ts
+var import_dotenv = __toESM(require("dotenv"), 1);
+var import_path = __toESM(require("path"), 1);
+var import_fs = __toESM(require("fs"), 1);
+var import_url = require("url");
+var import_meta = {};
+var dirName = "";
+try {
+  dirName = __dirname;
+} catch (e) {
+  dirName = import_path.default.dirname((0, import_url.fileURLToPath)(import_meta.url));
+}
+var envPath = import_path.default.resolve(dirName, "../.env");
+if (!import_fs.default.existsSync(envPath)) {
+  envPath = import_path.default.resolve(process.cwd(), ".env");
+}
+import_dotenv.default.config({ path: envPath });
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+  process.env.METADATA_SERVER_DETECTION = "none";
+  process.env.GCE_METADATA_HOST = "127.0.0.1";
+  process.env.GCP_METADATA_CHECK_DISABLE = "true";
+  process.env.NO_GCE_CHECK = "true";
+}
+
+// server.ts
+var import_fs2 = __toESM(require("fs"), 1);
+var import_express = __toESM(require("express"), 1);
+var import_path2 = __toESM(require("path"), 1);
+var import_vite = require("vite");
+var import_genai = require("@google/genai");
+var import_stripe = __toESM(require("stripe"), 1);
+var import_dotenv2 = __toESM(require("dotenv"), 1);
+var import_firebase_admin = __toESM(require("firebase-admin"), 1);
+var import_firestore = require("firebase-admin/firestore");
+var import_url2 = require("url");
+var import_meta2 = {};
+process.on("uncaughtException", (err) => {
+  import_fs2.default.writeSync(2, `[UNCAUGHT EXCEPTION] ${err.stack || err}
+`);
+});
+process.on("unhandledRejection", (reason) => {
+  import_fs2.default.writeSync(2, `[UNHANDLED REJECTION] ${reason?.stack || reason}
+`);
+});
+var dirName2 = "";
+try {
+  dirName2 = __dirname;
+} catch (e) {
+  dirName2 = import_path2.default.dirname((0, import_url2.fileURLToPath)(import_meta2.url));
+}
+var envPath2 = import_path2.default.resolve(dirName2, ".env");
+if (!import_fs2.default.existsSync(envPath2)) {
+  envPath2 = import_path2.default.resolve(process.cwd(), ".env");
+}
+import_dotenv2.default.config({ path: envPath2 });
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+  process.env.GCE_METADATA_HOST = "127.0.0.1";
+  process.env.GCE_METADATA_CHECK_DISABLE = "true";
+  process.env.NO_GCE_CHECK = "true";
+  console.log("Local development environment detected: Bypassing Firebase Metadata Server to prevent hangs.");
+}
+var firebaseConfig = {};
+try {
+  let configPath = import_path2.default.resolve(dirName2, "firebase-applet-config.json");
+  if (!import_fs2.default.existsSync(configPath)) {
+    configPath = import_path2.default.resolve(process.cwd(), "firebase-applet-config.json");
+  }
+  if (import_fs2.default.existsSync(configPath)) {
+    firebaseConfig = JSON.parse(import_fs2.default.readFileSync(configPath, "utf8"));
+  }
+} catch (e) {
+  console.error("Failed to read firebase-applet-config.json:", e);
+}
+if (firebaseConfig.projectId) {
+  process.env.GOOGLE_CLOUD_PROJECT = firebaseConfig.projectId;
+}
+if (!import_firebase_admin.default.apps.length) {
+  try {
+    const options = {
+      projectId: firebaseConfig.projectId
+    };
+    if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+      options.credential = import_firebase_admin.default.credential.cert(serviceAccount);
+      console.log("Firebase Admin: Initializing with provided service account key.");
+    } else {
+      console.log("Firebase Admin: No service account key found, initializing with default project options.");
+    }
+    import_firebase_admin.default.initializeApp(options);
+  } catch (error) {
+    console.error("Firebase Admin: Initialization failed:", error);
+  }
+}
+var _dbAdmin = null;
+function getDbAdmin() {
+  if (!_dbAdmin) {
+    const appInstance = import_firebase_admin.default.app();
+    _dbAdmin = firebaseConfig.firestoreDatabaseId ? (0, import_firestore.getFirestore)(appInstance, firebaseConfig.firestoreDatabaseId) : (0, import_firestore.getFirestore)(appInstance);
+  }
+  return _dbAdmin;
+}
+var dbAdmin = new Proxy({}, {
+  get(target, prop) {
+    if (typeof prop === "symbol" || prop === "then" || prop === "toJSON" || prop === "inspect" || prop === "constructor") {
+      return void 0;
+    }
+    const instance = getDbAdmin();
+    const value = instance[prop];
+    if (typeof value === "function") {
+      return value.bind(instance);
+    }
+    return value;
+  }
+});
+var _courierEngine = null;
+async function getCourierEngine() {
+  if (!_courierEngine) {
+    const mod = await Promise.resolve().then(() => (init_CourierEngine(), CourierEngine_exports));
+    _courierEngine = mod.courierEngine;
+  }
+  return _courierEngine;
+}
+var app = (0, import_express.default)();
+var PORT = Number(process.env.PORT) || 3e3;
+app.get("/api/health", (req, res) => {
+  res.json({
+    status: "ok",
+    timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+    project: firebaseConfig.projectId || "unknown",
+    database: firebaseConfig.firestoreDatabaseId || "default"
+  });
+});
+var stripeClient = null;
+function getStripe() {
+  if (!stripeClient) {
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key) {
+      throw new Error("STRIPE_SECRET_KEY is required for payments");
+    }
+    stripeClient = new import_stripe.default(key, { apiVersion: "2023-10-16" });
+  }
+  return stripeClient;
+}
+app.use((req, res, next) => {
+  if (req.originalUrl === "/api/webhooks/stripe") {
+    next();
+  } else {
+    import_express.default.json({ limit: "15mb" })(req, res, next);
+  }
+});
+app.get("/api/payments/config", (req, res) => {
+  res.json({ publishableKey: process.env.STRIPE_PUBLISHABLE_KEY || process.env.VITE_STRIPE_PUBLISHABLE_KEY });
+});
+app.get("/api/admin/system-diagnostics", async (req, res) => {
+  const secretKey = process.env.STRIPE_SECRET_KEY;
+  if (!secretKey) {
+    return res.json({ connected: false, error: "STRIPE_SECRET_KEY is missing from environment secrets." });
+  }
+  try {
+    const stripe = getStripe();
+    const balance = await stripe.balance.retrieve();
+    res.json({
+      connected: true,
+      mode: secretKey.startsWith("sk_test_") ? "test" : "live",
+      available: balance.available,
+      pending: balance.pending
+    });
+  } catch (error) {
+    console.error("Stripe verify connection failed:", error);
+    res.json({
+      connected: false,
+      error: error?.message || "Verification failed with Stripe API."
+    });
+  }
+});
+app.get("/api/payments/status", async (req, res) => {
+  const secretKey = process.env.STRIPE_SECRET_KEY;
+  if (!secretKey) {
+    return res.json({ connected: false, error: "STRIPE_SECRET_KEY is missing from environment secrets." });
+  }
+  try {
+    const stripe = getStripe();
+    const balance = await stripe.balance.retrieve();
+    res.json({
+      connected: true,
+      mode: secretKey.startsWith("sk_test_") ? "test" : "live",
+      available: balance.available,
+      pending: balance.pending
+    });
+  } catch (error) {
+    console.error("Stripe verify connection failed:", error);
+    res.json({
+      connected: false,
+      error: error?.message || "Verification failed with Stripe API."
+    });
+  }
+});
+app.post("/api/payments/create-intent", async (req, res) => {
+  try {
+    const { amountAED, orderId, topup, customerId, metadata } = req.body;
+    if (!amountAED) {
+      return res.status(400).json({ error: "Missing amount" });
+    }
+    let validAmountAED = amountAED;
+    if (orderId && !topup) {
+      try {
+        const orderSnap = await dbAdmin.collection("requests").doc(orderId).get();
+        if (orderSnap.exists) {
+          const data = orderSnap.data();
+          const dbAmountStr = data?.orderAmount || "";
+          const dbAmount = parseFloat(dbAmountStr.replace(/[^0-9.]/g, ""));
+          if (!isNaN(dbAmount) && Math.abs(dbAmount - amountAED) > 0.01) {
+            console.warn(`Amount mismatch for order ${orderId}: expected ${dbAmount}, got ${amountAED}`);
+            validAmountAED = dbAmount;
+          }
+        }
+      } catch (err) {
+        console.error("DB check failed (non-blocking for intent creation):", err);
+      }
+    }
+    const amount = Math.round(validAmountAED * 100);
+    const stripe = getStripe();
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount,
+      currency: "aed",
+      metadata: { ...metadata, orderId: orderId || "topup", isTopup: topup ? "true" : "false", customerId },
+      automatic_payment_methods: {
+        enabled: true
+      }
+    });
+    res.json({ clientSecret: paymentIntent.client_secret });
+  } catch (error) {
+    console.error("Stripe Intent Error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+app.post("/api/webhooks/stripe", import_express.default.raw({ type: "application/json" }), (request, response) => {
+  const sig = request.headers["stripe-signature"];
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!endpointSecret) {
+    return response.status(400).send(`Webhook Error: Stripe Webhook Secret not configured`);
+  }
+  let event;
+  try {
+    const stripe = getStripe();
+    event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
+  } catch (err) {
+    return response.status(400).send(`Webhook Error: ${err.message}`);
+  }
+  switch (event.type) {
+    case "payment_intent.succeeded":
+      const paymentIntentSucceeded = event.data.object;
+      console.log(`Payment confirmed for Order: ${paymentIntentSucceeded.metadata.orderId}`);
+      if (paymentIntentSucceeded.metadata.orderId) {
+        dbAdmin.collection("requests").doc(paymentIntentSucceeded.metadata.orderId).update({
+          paymentStatus: "paid",
+          updatedAt: import_firestore.FieldValue.serverTimestamp()
+        }).catch((err) => console.error("Failed to update order payment status:", err));
+      }
+      break;
+    default:
+      console.log(`Unhandled event type ${event.type}`);
+  }
+  response.send();
+});
+var clients = [];
+app.get("/api/services", (req, res) => {
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.flushHeaders();
+  clients.push(res);
+  req.on("close", () => {
+    const idx = clients.indexOf(res);
+    if (idx !== -1) clients.splice(idx, 1);
+  });
+});
+app.get("/api/events", (req, res) => {
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.flushHeaders();
+  clients.push(res);
+  req.on("close", () => {
+    const idx = clients.indexOf(res);
+    if (idx !== -1) clients.splice(idx, 1);
+  });
+});
+function broadcastEvent(event) {
+  clients.forEach((client) => {
+    client.write(`data: ${JSON.stringify(event)}
+
+`);
+  });
+}
+app.post("/api/webhooks/aramex", import_express.default.json(), async (req, res) => {
+  console.log("Webhook Received:", req.body);
+  const data = req.body;
+  if (data?.UpdateCode && data?.WaybillNumber) {
+    broadcastEvent({
+      type: "WEBHOOK_UPDATE",
+      trackingNumber: data.WaybillNumber,
+      updateCode: data.UpdateCode,
+      updateDescription: data.UpdateDescription,
+      timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+      location: data.UpdateLocation || "Hub"
+    });
+    dbAdmin.collection("requests").doc(data.WaybillNumber).collection("tracking_history").add({
+      updateCode: data.UpdateCode,
+      updateDescription: data.UpdateDescription,
+      location: data.UpdateLocation || "Hub",
+      timestamp: import_firestore.FieldValue.serverTimestamp(),
+      rawPayload: data
+    }).catch((err) => console.error("Failed to append tracking history:", err));
+    dbAdmin.collection("requests").doc(data.WaybillNumber).update({
+      status: data.UpdateDescription,
+      updatedAt: import_firestore.FieldValue.serverTimestamp()
+    }).catch((err) => console.error("Failed to update tracking status:", err));
+  }
+  res.status(200).json({ status: "acknowledged" });
+});
+async function processNoonStatusWebhook(data) {
+  const taskNr = data.mp_task_nr || data.task_nr || data.order_reference;
+  const statusCode = data.status_code || data.status || "unknown";
+  const eventId = data.event_id || `${taskNr}-${statusCode}-${data.event_time || Date.now()}`;
+  if (!taskNr) return;
+  const eventRef = dbAdmin.collection("noon_webhook_events").doc(eventId);
+  try {
+    const existing = await eventRef.get();
+    if (existing.exists) {
+      console.log("[NoonWebhook] NOON_WEBHOOK_DUPLICATE skipped", { eventId });
+      return;
+    }
+    await eventRef.set({ taskNr, statusCode, processedAt: import_firestore.FieldValue.serverTimestamp(), raw: data });
+  } catch (e) {
+    console.error("[NoonWebhook] Dedup check failed (non-blocking):", e);
+  }
+  const STATUS_MAP = {
+    pending_assignment: { usendStatus: "PENDING", label: "Finding Driver" },
+    assigned: { usendStatus: "IN_TRANSIT", label: "Driver Assigned" },
+    arrived_at_pickup_location: { usendStatus: "IN_TRANSIT", label: "Driver at Pickup" },
+    picked_up: { usendStatus: "IN_TRANSIT", label: "Picked Up" },
+    arrived_at_delivery: { usendStatus: "IN_TRANSIT", label: "Driver Arriving" },
+    delivered: { usendStatus: "DELIVERED", label: "Delivered" },
+    cancelled: { usendStatus: "FAILED", label: "Cancelled" },
+    undelivered: { usendStatus: "FAILED", label: "Undelivered" }
+  };
+  const mapped = STATUS_MAP[statusCode] || { usendStatus: "PENDING", label: statusCode };
+  const ts = data.event_time || (/* @__PURE__ */ new Date()).toISOString();
+  console.log("[NoonWebhook] NOON_WEBHOOK_RECEIVED", { taskNr, statusCode, label: mapped.label });
+  broadcastEvent({
+    type: "WEBHOOK_UPDATE",
+    provider: "noon",
+    trackingNumber: taskNr,
+    updateCode: statusCode,
+    updateDescription: mapped.label,
+    usendStatus: mapped.usendStatus,
+    timestamp: ts
+  });
+  try {
+    const snap = await dbAdmin.collection("requests").where("externalTrackingNumber", "==", taskNr).limit(1).get();
+    if (!snap.empty) {
+      const docId = snap.docs[0].id;
+      await dbAdmin.collection("requests").doc(docId).update({
+        status: mapped.usendStatus,
+        noonProviderStatus: statusCode,
+        noonStatusLabel: mapped.label,
+        updatedAt: import_firestore.FieldValue.serverTimestamp()
+      });
+      await dbAdmin.collection("requests").doc(docId).collection("tracking_history").add({
+        updateCode: statusCode,
+        updateDescription: mapped.label,
+        provider: "noon",
+        timestamp: import_firestore.FieldValue.serverTimestamp(),
+        rawPayload: data
+      });
+      console.log("[NoonWebhook] NOON_WEBHOOK_PROCESSED", { docId, statusCode });
+    }
+  } catch (e) {
+    console.error("[NoonWebhook] Firestore update failed:", e);
+  }
+}
+app.post("/api/webhooks/noon", import_express.default.json(), async (req, res) => {
+  res.status(200).json({ status: "acknowledged" });
+  processNoonStatusWebhook(req.body).catch((e) => console.error("[NoonWebhook] Processing error:", e));
+});
+app.post("/api/webhooks/noon/status", import_express.default.json(), async (req, res) => {
+  res.status(200).json({ status: "acknowledged" });
+  processNoonStatusWebhook(req.body).catch((e) => console.error("[NoonWebhook/status] Processing error:", e));
+});
+app.post("/api/webhooks/noon/location", import_express.default.json(), async (req, res) => {
+  res.status(200).json({ status: "acknowledged" });
+  const data = req.body;
+  const taskNr = data.mp_task_nr || data.task_nr;
+  if (!taskNr || data.latitude == null || data.longitude == null) return;
+  const driverLat = Number(data.latitude) > 1e6 ? Number(data.latitude) / 1e7 : Number(data.latitude);
+  const driverLng = Number(data.longitude) > 1e6 ? Number(data.longitude) / 1e7 : Number(data.longitude);
+  broadcastEvent({ type: "DRIVER_LOCATION", provider: "noon", trackingNumber: taskNr, driverLat, driverLng, timestamp: (/* @__PURE__ */ new Date()).toISOString() });
+  try {
+    const snap = await dbAdmin.collection("requests").where("externalTrackingNumber", "==", taskNr).limit(1).get();
+    if (!snap.empty) {
+      const prev = snap.docs[0].data();
+      if (Math.abs((prev.noonDriverLat || 0) - driverLat) > 1e-4 || Math.abs((prev.noonDriverLng || 0) - driverLng) > 1e-4) {
+        await dbAdmin.collection("requests").doc(snap.docs[0].id).update({ noonDriverLat: driverLat, noonDriverLng: driverLng, updatedAt: import_firestore.FieldValue.serverTimestamp() });
+        console.log("[NoonWebhook] NOON_DRIVER_LOCATION_UPDATE", { taskNr, driverLat, driverLng });
+      }
+    }
+  } catch (e) {
+    console.error("[NoonWebhook] Location update failed:", e);
+  }
+});
+app.post("/api/rates/calculate", async (req, res) => {
+  try {
+    const { serviceType } = req.params;
+    let payload = req.body;
+    const userClientInfo = payload.ClientInfo || {};
+    const isProduction = process.env.ARAMEX_ENV !== "sandbox" && req.headers["x-aramex-env"] !== "sandbox";
+    const baseUrl = process.env.ARAMEX_BASE_URL || (isProduction ? "https://ws.aramex.net" : "https://ws.uat.aramex.net");
+    const defaultUserName = "octman.sam@gmail.com";
+    const defaultPassword = "cug.Nv95-npNxaQ";
+    const defaultAccountNumber = "75788705";
+    const defaultAccountPin = "217147";
+    const defaultAccountEntity = "DXB";
+    const defaultAccountCountryCode = "AE";
+    const defaultSource = 0;
+    const defaultVersion = "v1.0";
+    const finalUserName = userClientInfo.UserName && userClientInfo.UserName !== "testingapi@aramex.com" ? userClientInfo.UserName : process.env.ARAMEX_USERNAME || defaultUserName;
+    const finalPassword = userClientInfo.Password && userClientInfo.Password !== "R123456789$r" ? userClientInfo.Password : process.env.ARAMEX_PASSWORD || defaultPassword;
+    const finalVersion = userClientInfo.Version && userClientInfo.Version !== "v1" ? userClientInfo.Version : process.env.ARAMEX_VERSION || defaultVersion;
+    const finalAccountNumber = userClientInfo.AccountNumber && userClientInfo.AccountNumber !== "45796" ? userClientInfo.AccountNumber : process.env.ARAMEX_ACCOUNT_NUMBER || defaultAccountNumber;
+    const finalAccountPin = userClientInfo.AccountPin && userClientInfo.AccountPin !== "116216" ? userClientInfo.AccountPin : process.env.ARAMEX_ACCOUNT_PIN || defaultAccountPin;
+    const finalAccountEntity = userClientInfo.AccountEntity || process.env.ARAMEX_ACCOUNT_ENTITY || defaultAccountEntity;
+    const finalAccountCountryCode = userClientInfo.AccountCountryCode || process.env.ARAMEX_ACCOUNT_COUNTRY_CODE || defaultAccountCountryCode;
+    const finalSource = userClientInfo.Source !== void 0 ? Number(userClientInfo.Source) : process.env.ARAMEX_SOURCE !== void 0 ? Number(process.env.ARAMEX_SOURCE) : defaultSource;
+    payload = {
+      ...payload,
+      ClientInfo: {
+        UserName: finalUserName,
+        Password: finalPassword,
+        Version: finalVersion,
+        AccountNumber: finalAccountNumber,
+        AccountPin: finalAccountPin,
+        AccountEntity: finalAccountEntity,
+        AccountCountryCode: finalAccountCountryCode,
+        Source: finalSource,
+        PreferredLanguageCode: userClientInfo.PreferredLanguageCode || process.env.ARAMEX_PREFERRED_LANGUAGE || null
+      }
+    };
+    let path3 = "";
+    if (serviceType === "rate") {
+      path3 = "/ShippingAPI.V2/RateCalculator/Service_1_0.svc/json/CalculateRate";
+    } else if (serviceType === "shipping") {
+      path3 = "/ShippingAPI.V2/Shipping/Service_1_0.svc/json/CreateShipments";
+    } else if (serviceType === "tracking") {
+      path3 = "/ShippingAPI.V2/Tracking/Service_1_0.svc/json/TrackShipments";
+    } else if (serviceType === "pickup") {
+      path3 = "/ShippingAPI.V2/Shipping/Service_1_0.svc/json/CreatePickup";
+    } else {
+      return res.status(200).json({
+        HasErrors: true,
+        Notifications: [{ Code: "ERR_ROUTING", Message: "Invalid Aramex service type" }]
+      });
+    }
+    try {
+      const aramexRes = await fetch(`${baseUrl}${path3}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json"
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(15e3)
+        // 15 second timeout
+      });
+      if (!aramexRes.ok) {
+        return res.status(aramexRes.status).json({ error: `Aramex API returned status ${aramexRes.status}` });
+      }
+      const textData = await aramexRes.text();
+      try {
+        const data = JSON.parse(textData);
+        return res.json(data);
+      } catch (parseError) {
+        return res.status(500).json({ error: "Aramex returned non-JSON response." });
+      }
+    } catch (fetchError) {
+      return res.status(500).json({ error: `Aramex API connection failed: ${fetchError.message}` });
+    }
+  } catch (error) {
+    console.error("Aramex Error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+var getNoonBaseUrl = (req) => {
+  return req.headers["x-noon-base-url"] || req.query.baseUrl || req.body && req.body.baseUrl || process.env.NOON_API_BASE_URL || "https://food-api-team.noonstg.team";
+};
+var getNoonApiKey = (req) => {
+  const envKey = process.env.NOON_API_KEY;
+  if (envKey) return envKey;
+  const clientApiKey = req.headers["x-noon-api-key"] || req.query.apiKey || req.body && req.body.apiKey;
+  if (clientApiKey && clientApiKey !== "noon_secret_key_123") return clientApiKey;
+  return "";
+};
+var getNoonHeaders = (req, idempotencyKey) => {
+  const apiKey2 = getNoonApiKey(req);
+  const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "X-API-KEY": apiKey2
+  };
+  if (idempotencyKey) headers["X-Idempotency-Key"] = idempotencyKey;
+  return headers;
+};
+app.post("/api/courier/test-connection", import_express.default.json(), async (req, res) => {
+  try {
+    const { courierId, credentials, environment } = req.body;
+    if (!courierId || !credentials || !environment) {
+      return res.status(400).json({ success: false, error: "Missing required parameters" });
+    }
+    const engine = await getCourierEngine();
+    const adapter = engine.getAdapter(courierId);
+    const result = await adapter.validateCredentials(credentials, environment);
+    if (!result.success) {
+      return res.json({ success: false, error: result.error });
+    }
+    return res.json({ success: true });
+  } catch (error) {
+    return res.status(200).json({ success: false, error: error.message });
+  }
+});
+app.post("/api/courier/rate", import_express.default.json(), async (req, res) => {
+  try {
+    const { courierId, payload, credentials, environment } = req.body;
+    const engine = await getCourierEngine();
+    const adapter = engine.getAdapter(courierId);
+    const result = await adapter.calculateRate(payload, credentials, environment);
+    return res.json(result);
+  } catch (error) {
+    return res.json({ success: false, error: error.message });
+  }
+});
+app.post("/api/courier/shipment", import_express.default.json(), async (req, res) => {
+  try {
+    const { courierId, payload, credentials, environment } = req.body;
+    const engine = await getCourierEngine();
+    const adapter = engine.getAdapter(courierId);
+    const result = await adapter.createShipment(payload, credentials, environment);
+    return res.json(result);
+  } catch (error) {
+    return res.json({ success: false, error: error.message });
+  }
+});
+app.post("/api/courier/track", import_express.default.json(), async (req, res) => {
+  try {
+    const { courierId, trackingId, credentials, environment } = req.body;
+    const engine = await getCourierEngine();
+    const adapter = engine.getAdapter(courierId);
+    const result = await adapter.trackShipment(trackingId, credentials, environment);
+    return res.json(result);
+  } catch (error) {
+    return res.json({ success: false, error: error.message });
+  }
+});
+app.post("/api/courier/cancel", import_express.default.json(), async (req, res) => {
+  try {
+    const { courierId, trackingId, credentials, environment } = req.body;
+    const engine = await getCourierEngine();
+    const adapter = engine.getAdapter(courierId);
+    const result = await adapter.cancelShipment(trackingId, credentials, environment);
+    return res.json({ success: result });
+  } catch (error) {
+    return res.json({ success: false, error: error.message });
+  }
+});
+app.get("/api/noon/pickup-points", async (req, res) => {
+  try {
+    const baseUrl = getNoonBaseUrl(req);
+    const response = await fetch(`${baseUrl}/public/v1/pickup-points/list`, {
+      method: "GET",
+      headers: getNoonHeaders(req),
+      signal: AbortSignal.timeout(1e4)
+    });
+    if (response.ok) return res.json(await response.json());
+    return res.status(response.status).json({ error: `Noon API returned ${response.status}` });
+  } catch (error) {
+    return res.status(500).json({ error: `Connection failed: ${error.message}` });
+  }
+});
+app.get("/api/noon/pickup-addresses", async (req, res) => {
+  try {
+    const baseUrl = getNoonBaseUrl(req);
+    const response = await fetch(`${baseUrl}/public/v1/pickup-points/list`, {
+      method: "GET",
+      headers: getNoonHeaders(req),
+      signal: AbortSignal.timeout(1e4)
+    });
+    if (response.ok) return res.json(await response.json());
+    return res.status(response.status).json({ error: `Noon API returned ${response.status}` });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+app.post("/api/noon/pickup-points", async (req, res) => {
+  try {
+    const baseUrl = getNoonBaseUrl(req);
+    const response = await fetch(`${baseUrl}/public/v1/pickup-points/create`, {
+      method: "POST",
+      headers: getNoonHeaders(req),
+      body: JSON.stringify(req.body),
+      signal: AbortSignal.timeout(1e4)
+    });
+    const data = await response.json();
+    return res.status(response.status).json(data);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+app.get("/api/noon/pickup-points/:code", async (req, res) => {
+  try {
+    const baseUrl = getNoonBaseUrl(req);
+    const response = await fetch(`${baseUrl}/public/v1/pickup-points/${req.params.code}`, {
+      method: "GET",
+      headers: getNoonHeaders(req),
+      signal: AbortSignal.timeout(1e4)
+    });
+    const data = await response.json();
+    return res.status(response.status).json(data);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+app.post("/api/noon/pickup-points/:code/update", async (req, res) => {
+  try {
+    const baseUrl = getNoonBaseUrl(req);
+    const response = await fetch(`${baseUrl}/public/v1/pickup-points/${req.params.code}/update`, {
+      method: "POST",
+      headers: getNoonHeaders(req),
+      body: JSON.stringify(req.body),
+      signal: AbortSignal.timeout(1e4)
+    });
+    const data = await response.json();
+    return res.status(response.status).json(data);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+app.post("/api/noon/create-task", async (req, res) => {
+  const params = req.body;
+  try {
+    const baseUrl = getNoonBaseUrl(req);
+    const idempotencyKey = req.headers["x-idempotency-key"] || params.idempotencyKey || `usend-${params.order_reference || Date.now()}`;
+    console.log(`[NoonProxy] NOON_TASK_CREATE_REQUEST to ${baseUrl}, idempotency: ${idempotencyKey}`);
+    const response = await fetch(`${baseUrl}/public/v1/create-task`, {
+      method: "POST",
+      headers: getNoonHeaders(req, idempotencyKey),
+      body: JSON.stringify(params),
+      signal: AbortSignal.timeout(15e3)
+    });
+    const text = await response.text();
+    let data = {};
+    try {
+      data = JSON.parse(text);
+    } catch {
+      return res.status(500).json({ error: "Noon returned non-JSON response", raw: text.substring(0, 200) });
+    }
+    if (response.ok) {
+      console.log(`[NoonProxy] NOON_TASK_CREATE_SUCCESS`, data);
+      return res.json(data);
+    }
+    console.error(`[NoonProxy] NOON_TASK_CREATE_FAILED HTTP ${response.status}`, data);
+    return res.status(response.status).json(data);
+  } catch (error) {
+    console.error(`[NoonProxy] NOON_TASK_CREATE_FAILED network: ${error.message}`);
+    return res.status(500).json({ error: `Connection failed: ${error.message}` });
+  }
+});
+app.get("/api/noon/tasks/:mp_task_nr", async (req, res) => {
+  const { mp_task_nr } = req.params;
+  try {
+    const baseUrl = getNoonBaseUrl(req);
+    console.log(`[Noon Proxy] Fetching task details for ${mp_task_nr} from ${baseUrl}...`);
+    const response = await fetch(`${baseUrl}/public/v1/tasks/${mp_task_nr}`, {
+      method: "GET",
+      headers: getNoonHeaders(req),
+      signal: AbortSignal.timeout(1e4)
+    });
+    if (response.ok) {
+      const data = await response.json();
+      return res.json(data);
+    }
+    return res.status(response.status).json({ error: `Noon API returned ${response.status}` });
+  } catch (error) {
+    console.error(`[Noon Proxy] Noon fetch task details failed: ${error.message}.`);
+    return res.status(500).json({ error: `Connection failed: ${error.message}` });
+  }
+});
+app.post("/api/noon/tasks/:mp_task_nr/cancel", async (req, res) => {
+  const { mp_task_nr } = req.params;
+  const { reason } = req.body;
+  try {
+    const baseUrl = getNoonBaseUrl(req);
+    console.log(`[Noon Proxy] Sending cancellation request for ${mp_task_nr}...`);
+    const response = await fetch(`${baseUrl}/public/v1/tasks/${mp_task_nr}/cancel`, {
+      method: "POST",
+      headers: getNoonHeaders(req),
+      body: JSON.stringify({ reason }),
+      signal: AbortSignal.timeout(1e4)
+    });
+    if (response.ok) {
+      const data = await response.json();
+      return res.json(data);
+    }
+    return res.status(response.status).json({ error: `Noon API returned ${response.status}` });
+  } catch (error) {
+    console.error(`[Noon Proxy] Noon task cancellation failed: ${error.message}.`);
+    return res.status(500).json({ error: `Connection failed: ${error.message}` });
+  }
+});
+var apiKey = process.env.GEMINI_API_KEY;
+var ai = new import_genai.GoogleGenAI({
+  apiKey,
+  httpOptions: {
+    headers: {
+      "User-Agent": "aistudio-build"
+    }
+  }
+});
+app.post("/api/gemini/analyze-item", async (req, res) => {
+  try {
+    const { itemName, photoBase64 } = req.body;
+    if (!itemName && !photoBase64) {
+      return res.status(400).json({ error: "Missing itemName or photoBase64 parameter." });
+    }
+    if (!apiKey) {
+      return res.status(500).json({
+        error: "GEMINI_API_KEY environment variable is not configured. Please set it in Settings > Secrets."
+      });
+    }
+    const parts = [];
+    if (photoBase64) {
+      const matches = photoBase64.match(
+        /^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,(.+)$/
+      );
+      let data = photoBase64;
+      let mimeType = "image/jpeg";
+      if (matches && matches.length === 3) {
+        mimeType = matches[1];
+        data = matches[2];
+      }
+      parts.push({
+        inlineData: {
+          mimeType,
+          data
+        }
+      });
+    }
+    let promptText = "You are an AI cargo logistics and delivery dispatch dispatcher. Your goal is to analyze the user's item details and return highly precise shipping data.\n";
+    if (itemName) {
+      promptText += `User written item name/details: "${itemName}"
+`;
+    }
+    if (photoBase64) {
+      promptText += "Analyze the uploaded photograph of the item to recognize physical attributes, packaging type, and details.\n";
+    }
+    promptText += "Please estimate dimensions (length, width, height in cm) and weight based on the type of cargo item detected. Determine 'quantity' (how many items you clearly see or are described), categorize the item, assign a reasonable insurance valuation in AED, and write an helpful dispatch note.";
+    parts.push({ text: promptText });
+    const response = await ai.models.generateContent({
+      model: "gemini-3.5-flash",
+      contents: { parts },
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: import_genai.Type.OBJECT,
+          properties: {
+            itemName: {
+              type: import_genai.Type.STRING,
+              description: "The formatted, cleaned, clean-cut name of the item. E.g. 'Sony PlayStation 5' or 'Real Estate Title Deeds'."
+            },
+            category: {
+              type: import_genai.Type.STRING,
+              description: "Must be exactly one of: 'documents', 'electronics', 'food', 'clothing', 'other'."
+            },
+            estimatedWeightKg: {
+              type: import_genai.Type.NUMBER,
+              description: "The approximate weight of the shipment in kilograms (kg). Prefer 0.2 for documents/light sheets."
+            },
+            quantity: {
+              type: import_genai.Type.INTEGER,
+              description: "Quantity of items detected or mentioned (how many items). E.g. 1, 2, 5. Default to 1 if not explicitly visible."
+            },
+            lengthCm: {
+              type: import_genai.Type.NUMBER,
+              description: "Estimated typical cardboard box or product package length in cm."
+            },
+            widthCm: {
+              type: import_genai.Type.NUMBER,
+              description: "Estimated typical package width in cm."
+            },
+            heightCm: {
+              type: import_genai.Type.NUMBER,
+              description: "Estimated typical package height in cm."
+            },
+            estimatedValueAED: {
+              type: import_genai.Type.NUMBER,
+              description: "Estimated retail value / customs / transit insurance declaration in AED."
+            },
+            notes: {
+              type: import_genai.Type.STRING,
+              description: "A summary of item's nature, state or shape, package density warning, or custom handling instructions."
+            }
+          },
+          required: [
+            "itemName",
+            "category",
+            "estimatedWeightKg",
+            "quantity",
+            "lengthCm",
+            "widthCm",
+            "heightCm",
+            "estimatedValueAED",
+            "notes"
+          ]
+        }
+      }
+    });
+    const resultText = response.text;
+    if (!resultText) {
+      return res.status(500).json({ error: "Failed to generate response text from Gemini." });
+    }
+    const parsedData = JSON.parse(resultText.trim());
+    return res.json(parsedData);
+  } catch (error) {
+    console.error("AI recognizes item error:", error);
+    return res.status(500).json({
+      error: error.message || "An error occurred while recognizing the item physical profile."
+    });
+  }
+});
+var isProd = process.env.NODE_ENV === "production";
+async function startServer() {
+  if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY || process.env.FIRESTORE_EMULATOR_HOST) {
+    try {
+      dbAdmin.collection("settings").doc("courier_configs").get().then((docSnap) => {
+        if (!docSnap.exists) {
+          const initialConfigs = {
+            aramex: {
+              id: "aramex",
+              name: "Aramex Express",
+              status: "Active",
+              currentMode: "production",
+              baseUrlUat: "ws.aramex.net",
+              baseUrlProd: "ws.aramex.net",
+              connectionStatus: "UNTESTED",
+              sandboxCreds: {
+                username: "testingapi@aramex.com",
+                password: "R123456789$r",
+                accountNumber: "45796",
+                accountPin: "116216",
+                accountEntity: "DXB",
+                accountCountryCode: "AE",
+                source: "24",
+                version: "v1"
+              },
+              productionCreds: {
+                username: "octman.sam@gmail.com",
+                password: "cug.Nv95-npNxaQ",
+                accountNumber: "75788705",
+                accountPin: "217147",
+                accountEntity: "DXB",
+                accountCountryCode: "AE",
+                source: "0",
+                version: "v1.0"
+              }
+            },
+            noon: {
+              id: "noon",
+              name: "Noon Hyperlocal",
+              status: "Active",
+              currentMode: "sandbox",
+              baseUrlUat: "https://food-api-team.noonstg.team",
+              baseUrlProd: "https://food-api.noon.com",
+              connectionStatus: "UNTESTED",
+              sandboxCreds: {
+                apiKey: "noon_secret_key_123",
+                storeId: ""
+              },
+              productionCreds: {
+                apiKey: "",
+                storeId: ""
+              }
+            }
+          };
+          dbAdmin.collection("settings").doc("courier_configs").set(initialConfigs).then(() => console.log("[Firestore Seed] Successfully initialized default courier configurations.")).catch((err) => console.error("[Firestore Seed] Failed to set default courier configs:", err.message));
+        }
+      }).catch((err) => {
+        console.warn("[Firestore Seed] Failed to read settings/courier_configs:", err.message);
+      });
+    } catch (err) {
+      console.error("[Firestore Seed] Failed to initialize check:", err.message);
+    }
+  }
+  if (!isProd) {
+    const vite = await (0, import_vite.createServer)({
+      configFile: import_path2.default.resolve(process.cwd(), "vite.config.ts"),
+      mode: "development",
+      server: {
+        middlewareMode: true,
+        watch: {
+          ignored: ["**/node_modules/**", "**/.git/**", "**/.firebase/**"]
+        }
+      },
+      appType: "spa"
+    });
+    app.use(vite.middlewares);
+  } else {
+    const distPath = import_path2.default.join(process.cwd(), "dist");
+    app.use(import_express.default.static(distPath));
+    app.get("*", (req, res) => {
+      res.sendFile(import_path2.default.join(distPath, "index.html"));
+    });
+  }
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Server running on port ${PORT}`);
+    const secretKey = process.env.STRIPE_SECRET_KEY;
+    if (secretKey) {
+      const masked = secretKey.substring(0, 7) + "..." + secretKey.substring(secretKey.length - 4);
+      console.log(`[Stripe Console] Found STRIPE_SECRET_KEY (${masked}). Validating connection with stripe.com API...`);
+      try {
+        const stripe = getStripe();
+        stripe.balance.retrieve().then((bal) => {
+          const mode = secretKey.startsWith("sk_test_") ? "TEST (sandbox)" : "LIVE (production)";
+          console.log(`[Stripe Console] SUCCESS! Successfully authenticated & connected with Stripe API in ${mode} mode.`);
+          console.log(`[Stripe Console] Available Balance: ${bal.available.map((a) => `${(a.amount / 100).toFixed(2)} ${a.currency.toUpperCase()}`).join(", ") || "N/A"}`);
+        }).catch((err) => {
+          console.error(`[Stripe Console] ERROR: Stripe secret key verification failed: ${err.message}`);
+        });
+      } catch (err) {
+        console.error(`[Stripe Console] ERROR: Failed to instantiate Stripe: ${err.message}`);
+      }
+    } else {
+      console.warn(`[Stripe Console] WARNING: STRIPE_SECRET_KEY environment variable is not defined.`);
+    }
+  });
+}
+if (!process.env.FIREBASE_CONFIG && !process.env.FUNCTIONS_EMULATOR) {
+  startServer().catch((err) => console.error("[Server Boot Error]:", err));
+}
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  app
+});

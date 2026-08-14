@@ -1346,7 +1346,7 @@ const [botOpen, setBotOpen] = useState(false);
               </div>
             </div>
 
-            {/* Card 4: GCC Land Cargo */}
+            {/* Card 4: Noon Rider-on-Demand (RoD) */}
             <div 
               onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}
               className="group relative bg-white border border-slate-200/60 rounded-[2rem] p-8 flex flex-col justify-between h-[300px] shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-500 overflow-hidden text-start cursor-pointer"
@@ -1354,32 +1354,32 @@ const [botOpen, setBotOpen] = useState(false);
               {/* Fade-in & Scale Background Image */}
               <div 
                 className="absolute inset-0 bg-cover bg-center opacity-[0.03] group-hover:opacity-[0.09] transition-all duration-700 pointer-events-none transform scale-100 group-hover:scale-105"
-                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=800&q=80')` }}
+                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1526367790999-0150786686a2?auto=format&fit=crop&w=800&q=80')` }}
               />
               
               <div className="relative z-10 flex items-center justify-between">
                 <div className="w-12 h-12 rounded-full bg-[#113f36]/10 text-[#113f36] group-hover:bg-[#113f36] group-hover:text-white border border-[#113f36]/25 flex items-center justify-center shrink-0 transition-all duration-500">
                   <Globe2 className="w-5 h-5" />
                 </div>
-                <span className="px-4 py-1 rounded-full bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-wider group-hover:bg-[#cca073]/15 group-hover:text-[#cca073] transition-all duration-500">
-                  {isRTL ? 'الشحن البري الخليجي' : 'GCC Cross-Border'}
+                <span className="px-4 py-1 rounded-full bg-amber-100 text-amber-800 text-[10px] font-black uppercase tracking-wider group-hover:bg-amber-500 group-hover:text-white transition-all duration-500">
+                  {isRTL ? 'تكامل نون' : 'Noon RoD Integrated'}
                 </span>
               </div>
               
               <div className="relative z-10 space-y-2 mt-4">
                 <h3 className="text-xl font-black text-slate-900 group-hover:text-[#113f36] transition-colors duration-300">
-                  {isRTL ? 'الشحن البري لدول الخليج' : 'GCC Cross-Border Land Cargo'}
+                  {isRTL ? 'توصيل نون السريع' : 'Noon Hyperlocal Delivery'}
                 </h3>
                 <p className="text-xs text-slate-500 font-medium leading-relaxed">
                   {isRTL 
-                    ? 'شحن بري بحمولات كاملة (FCL) أو جزئية (LCL) يربط أعمالك من المركز الرئيسي في الإمارات إلى السعودية وعُمان وجميع دول الخليج.' 
-                    : 'Heavy cargo road transport networks linking your domestic UAE warehouses directly to Saudi Arabia, Oman, and regional GCC trade hubs.'}
+                    ? 'ربط مباشر مع شبكة نون للتوصيل الفوري (Noon Rider on Demand) لإسناد وتوصيل طلباتك بسرعة فائقة داخل المدن الرئيسية.' 
+                    : 'Direct integration with Noon Rider on Demand (RoD) logistics network for rapid intra-city hyper-local parcel dispatch.'}
                 </p>
               </div>
               
               <div className="relative z-10 pt-4">
                 <button className="px-4 py-2 border border-slate-200 hover:border-slate-400 text-slate-700 hover:text-black rounded-full font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all bg-white cursor-pointer shadow-xs">
-                  {isRTL ? 'شحن إقليمي' : 'Cross-Border'} <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                  {isRTL ? 'إسناد نون' : 'Book Noon Rider'} <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
             </div>
@@ -1391,19 +1391,24 @@ const [botOpen, setBotOpen] = useState(false);
       {/* CTA SECTION */}
       <section className="w-full bg-white pb-24 px-4 md:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="rounded-[2rem] overflow-hidden relative min-h-[400px] shadow-sm flex items-end" onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}>
-            <img src={ctaCargoShip} alt="Cargo Ship" referrerPolicy="no-referrer" className="absolute inset-0 w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-700" />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent pointer-events-none"></div>
-            <div className="relative z-10 p-10 md:p-14 w-full">
+          <div className="rounded-[2rem] overflow-hidden relative min-h-[360px] bg-slate-900 shadow-sm flex items-end" onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}>
+            <div 
+              className="absolute inset-0 bg-cover bg-center opacity-30 hover:opacity-40 transition-opacity duration-700 cursor-pointer"
+              style={{ backgroundImage: `url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1600&q=80')` }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-900/60 to-transparent pointer-events-none"></div>
+            <div className="relative z-10 p-10 md:p-14 w-full text-start">
               <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-white font-sans leading-none drop-shadow-lg mb-4">
-                READY TO MOVE<br/>YOUR CARGO?
+                {isRTL ? 'جاهز لشحن طردك الآن؟' : 'READY TO DISPATCH YOUR SHIPMENT?'}
               </h2>
-              <p className="text-white/90 text-sm font-semibold tracking-wide mb-8">Get a custom freight quote in minutes.</p>
+              <p className="text-white/90 text-sm font-semibold tracking-wide mb-8">
+                {isRTL ? 'احسب الأسعار فوراً واحصل على بوليسة الشحن عبر أسطولنا أو شركائنا المعينين.' : 'Calculate live courier rates and generate instant waybills with Aramex, Noon, or USend local drivers.'}
+              </p>
               
               <button 
-                className="px-8 py-3.5 bg-[#113f36] hover:bg-[#0d3029] text-white rounded-full font-black text-[12px] uppercase tracking-wider flex items-center gap-2 transition-all shadow-xl cursor-pointer"
+                className="px-8 py-3.5 bg-[#cca073] hover:bg-[#b88c5e] text-slate-950 rounded-full font-black text-[12px] uppercase tracking-wider flex items-center gap-2 transition-all shadow-xl cursor-pointer"
               >
-                <span>Request a Quote</span>
+                <span>{isRTL ? 'احسب سعر الشحنة' : 'Calculate Courier Rate'}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
