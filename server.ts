@@ -1,3 +1,11 @@
+import './src/init-env.ts';
+import fs from "fs";
+process.on('uncaughtException', (err) => {
+  fs.writeSync(2, `[UNCAUGHT EXCEPTION] ${err.stack || err}\n`);
+});
+process.on('unhandledRejection', (reason: any) => {
+  fs.writeSync(2, `[UNHANDLED REJECTION] ${reason?.stack || reason}\n`);
+});
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
@@ -7,10 +15,7 @@ import dotenv from "dotenv";
 import admin from 'firebase-admin';
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import fs from "fs";
-import { courierEngine } from "./src/backend/adapters/CourierEngine";
-
 import { fileURLToPath } from "url";
-
 let dirName = "";
 try {
   // @ts-ignore
@@ -69,23 +74,50 @@ if (!admin.apps.length) {
       options.credential = admin.credential.cert(serviceAccount);
       console.log("Firebase Admin: Initializing with provided service account key.");
     } else {
-      console.warn("Firebase Admin: No service account key found, using default credentials.");
+      console.log("Firebase Admin: No service account key found, initializing with default project options.");
     }
-    
     admin.initializeApp(options);
   } catch (error) {
     console.error("Firebase Admin: Initialization failed:", error);
   }
 }
 
-const appInstance = admin.app();
-// Use the specific firestore database ID if provided, otherwise default
-const dbAdmin = firebaseConfig.firestoreDatabaseId 
-  ? getFirestore(appInstance, firebaseConfig.firestoreDatabaseId)
-  : getFirestore(appInstance);
+let _dbAdmin: any = null;
+function getDbAdmin() {
+  if (!_dbAdmin) {
+    const appInstance = admin.app();
+    _dbAdmin = firebaseConfig.firestoreDatabaseId 
+      ? getFirestore(appInstance, firebaseConfig.firestoreDatabaseId)
+      : getFirestore(appInstance);
+  }
+  return _dbAdmin;
+}
+
+const dbAdmin: ReturnType<typeof getFirestore> = new Proxy({} as any, {
+  get(target, prop) {
+    if (typeof prop === 'symbol' || prop === 'then' || prop === 'toJSON' || prop === 'inspect' || prop === 'constructor') {
+      return undefined;
+    }
+    const instance = getDbAdmin();
+    const value = (instance as any)[prop];
+    if (typeof value === 'function') {
+      return value.bind(instance);
+    }
+    return value;
+  }
+});
+
+let _courierEngine: any = null;
+async function getCourierEngine() {
+  if (!_courierEngine) {
+    const mod = await import("./src/backend/adapters/CourierEngine.ts");
+    _courierEngine = mod.courierEngine;
+  }
+  return _courierEngine;
+}
 
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 app.get("/api/health", (req, res) => {
   res.json({ 
@@ -122,6 +154,29 @@ app.use((req, res, next) => {
 // --- PAYMENT API ENDPOINTS (Stripe) ---
 app.get("/api/payments/config", (req, res) => {
   res.json({ publishableKey: process.env.STRIPE_PUBLISHABLE_KEY || process.env.VITE_STRIPE_PUBLISHABLE_KEY });
+});
+
+app.get("/api/admin/system-diagnostics", async (req, res) => {
+  const secretKey = process.env.STRIPE_SECRET_KEY;
+  if (!secretKey) {
+    return res.json({ connected: false, error: "STRIPE_SECRET_KEY is missing from environment secrets." });
+  }
+  try {
+    const stripe = getStripe();
+    const balance = await stripe.balance.retrieve();
+    res.json({
+      connected: true,
+      mode: secretKey.startsWith("sk_test_") ? "test" : "live",
+      available: balance.available,
+      pending: balance.pending
+    });
+  } catch (error: any) {
+    console.error("Stripe verify connection failed:", error);
+    res.json({
+      connected: false,
+      error: error?.message || "Verification failed with Stripe API."
+    });
+  }
 });
 
 app.get("/api/payments/status", async (req, res) => {
@@ -236,6 +291,18 @@ app.post('/api/webhooks/stripe', express.raw({type: 'application/json'}), (reque
 
 // SSE endpoint for live tracking updates
 const clients: express.Response[] = [];
+app.get("/api/services", (req, res) => {
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.flushHeaders();
+  clients.push(res);
+  req.on("close", () => {
+    const idx = clients.indexOf(res);
+    if (idx !== -1) clients.splice(idx, 1);
+  });
+});
+
 app.get("/api/events", (req, res) => {
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
@@ -398,7 +465,7 @@ app.post("/api/webhooks/noon/location", express.json(), async (req, res) => {
   } catch (e) { console.error('[NoonWebhook] Location update failed:', e); }
 });
 // ARAMEX API PROXY
-app.post("/api/aramex/:serviceType", async (req, res) => {
+app.post("/api/rates/calculate", async (req, res) => {
   try {
     const { serviceType } = req.params;
     let payload = req.body;
@@ -545,7 +612,8 @@ app.post("/api/courier/test-connection", express.json(), async (req, res) => {
     if (!courierId || !credentials || !environment) {
       return res.status(400).json({ success: false, error: "Missing required parameters" });
     }
-    const adapter = courierEngine.getAdapter(courierId);
+    const engine = await getCourierEngine();
+    const adapter = engine.getAdapter(courierId);
     const result = await adapter.validateCredentials(credentials, environment);
     if (!result.success) {
       return res.json({ success: false, error: result.error });
@@ -559,7 +627,8 @@ app.post("/api/courier/test-connection", express.json(), async (req, res) => {
 app.post("/api/courier/rate", express.json(), async (req, res) => {
   try {
     const { courierId, payload, credentials, environment } = req.body;
-    const adapter = courierEngine.getAdapter(courierId);
+    const engine = await getCourierEngine();
+    const adapter = engine.getAdapter(courierId);
     const result = await adapter.calculateRate(payload, credentials, environment);
     return res.json(result);
   } catch (error: any) {
@@ -570,7 +639,8 @@ app.post("/api/courier/rate", express.json(), async (req, res) => {
 app.post("/api/courier/shipment", express.json(), async (req, res) => {
   try {
     const { courierId, payload, credentials, environment } = req.body;
-    const adapter = courierEngine.getAdapter(courierId);
+    const engine = await getCourierEngine();
+    const adapter = engine.getAdapter(courierId);
     const result = await adapter.createShipment(payload, credentials, environment);
     return res.json(result);
   } catch (error: any) {
@@ -581,7 +651,8 @@ app.post("/api/courier/shipment", express.json(), async (req, res) => {
 app.post("/api/courier/track", express.json(), async (req, res) => {
   try {
     const { courierId, trackingId, credentials, environment } = req.body;
-    const adapter = courierEngine.getAdapter(courierId);
+    const engine = await getCourierEngine();
+    const adapter = engine.getAdapter(courierId);
     const result = await adapter.trackShipment(trackingId, credentials, environment);
     return res.json(result);
   } catch (error: any) {
@@ -592,7 +663,8 @@ app.post("/api/courier/track", express.json(), async (req, res) => {
 app.post("/api/courier/cancel", express.json(), async (req, res) => {
   try {
     const { courierId, trackingId, credentials, environment } = req.body;
-    const adapter = courierEngine.getAdapter(courierId);
+    const engine = await getCourierEngine();
+    const adapter = engine.getAdapter(courierId);
     const result = await adapter.cancelShipment(trackingId, credentials, environment);
     return res.json({ success: result });
   } catch (error: any) {
@@ -971,7 +1043,14 @@ async function startServer() {
 
   if (!isProd) {
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      configFile: path.resolve(process.cwd(), "vite.config.ts"),
+      mode: "development",
+      server: {
+        middlewareMode: true,
+        watch: {
+          ignored: ['**/node_modules/**', '**/.git/**', '**/.firebase/**']
+        }
+      },
       appType: "spa",
     });
     app.use(vite.middlewares);
@@ -1011,9 +1090,8 @@ async function startServer() {
   });
 }
 
-fs.writeSync(1, "[Server Boot] Initializing startServer()...\n");
 if (!process.env.FIREBASE_CONFIG && !process.env.FUNCTIONS_EMULATOR) {
-  startServer().catch(err => fs.writeSync(2, `[Server Boot Error]: ${err.stack || err}\n`));
+  startServer().catch(err => console.error("[Server Boot Error]:", err));
 }
 
 export { app };

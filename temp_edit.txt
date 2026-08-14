@@ -1,6 +1,0 @@
-      id: newOrderId,
-      name: shipperData.name || (isGuest ? (isRTL ? 'ÙØ³ØªØ®Ø¯Ù Ø¶ÙÙ' : 'Guest User') : user?.name || 'User'),
-      receiverName: receiverData.name || 'Recipient',
-      receiverPhone: receiverData.phone || '+971',
-      userId: isGuest ? undefined : user?.uid,
-      phone: shipperData.phone || '+971',
