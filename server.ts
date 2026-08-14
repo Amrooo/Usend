@@ -31,15 +31,12 @@ dotenv.config({ path: envPath });
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 // Prevent firebase-admin from checking metadata server and hanging in local environments
-if (process.env.NODE_ENV !== 'production' && !process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
   process.env.GCE_METADATA_HOST = '127.0.0.1';
   process.env.GCE_METADATA_CHECK_DISABLE = 'true';
   process.env.NO_GCE_CHECK = 'true';
   
-  // Set Firestore emulator host to prevent the admin SDK from attempting to query
-  // production servers without credentials and hanging on metadata checks.
-  process.env.FIRESTORE_EMULATOR_HOST = '127.0.0.1:8080';
-  console.log("Local development environment detected: Bypassing Firebase Metadata Server & setting Firestore Emulator Host to prevent hangs.");
+  console.log("Local development environment detected: Bypassing Firebase Metadata Server to prevent hangs.");
 }
 
 // Read firebase-applet-config.json for target project and database info
@@ -908,8 +905,9 @@ const isProd = process.env.NODE_ENV === "production";
 
 async function startServer() {
   // Non-blocking firestore seed for courier integrations configuration
-  try {
-    dbAdmin.collection('settings').doc('courier_configs').get().then((docSnap) => {
+  if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY || process.env.FIRESTORE_EMULATOR_HOST) {
+    try {
+      dbAdmin.collection('settings').doc('courier_configs').get().then((docSnap) => {
       if (!docSnap.exists) {
         const initialConfigs = {
           aramex: {
@@ -969,6 +967,7 @@ async function startServer() {
   } catch (err: any) {
     console.error("[Firestore Seed] Failed to initialize check:", err.message);
   }
+}
 
   if (!isProd) {
     const vite = await createViteServer({
@@ -1012,8 +1011,9 @@ async function startServer() {
   });
 }
 
+fs.writeSync(1, "[Server Boot] Initializing startServer()...\n");
 if (!process.env.FIREBASE_CONFIG && !process.env.FUNCTIONS_EMULATOR) {
-  startServer();
+  startServer().catch(err => fs.writeSync(2, `[Server Boot Error]: ${err.stack || err}\n`));
 }
 
 export { app };
