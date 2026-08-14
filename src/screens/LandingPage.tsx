@@ -633,10 +633,10 @@ const [botOpen, setBotOpen] = useState(false);
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     transition={{ duration: 0.15 }}
-                    className={`fixed md:absolute top-18 md:top-auto left-3 md:left-auto right-3 md:right-auto md:mt-2.5 md:w-[380px] bg-white border border-slate-200/80 rounded-2xl shadow-2xl p-4 z-50 overflow-hidden ${
+                    className={`absolute top-full mt-3.5 w-[330px] sm:w-[370px] max-w-[calc(100vw-32px)] bg-white border border-slate-200/90 rounded-2xl shadow-2xl p-4.5 z-50 overflow-hidden ${
                       isRTL 
-                        ? 'md:left-0 md:right-auto md:origin-top-left' 
-                        : 'md:right-0 md:left-auto md:origin-top-right'
+                        ? 'left-0 sm:-left-4 origin-top-left' 
+                        : 'right-[-60px] sm:right-0 origin-top-right'
                     }`}
                   >
                     {/* Header */}
@@ -664,21 +664,24 @@ const [botOpen, setBotOpen] = useState(false);
                     {/* List */}
                     <div className="max-h-[300px] overflow-y-auto space-y-2 pr-1 scrollbar-thin">
                       {!user ? (
-                        <div className="py-6 px-4 text-center space-y-3">
-                          <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+                        <div className="py-6 px-4 text-center space-y-3.5 bg-slate-50/60 rounded-xl border border-slate-100 my-1">
+                          <div className="w-10 h-10 rounded-2xl bg-[#113f36]/10 text-[#113f36] flex items-center justify-center mx-auto shadow-xs">
                             <Bell className="w-5 h-5" />
                           </div>
-                          <h4 className="font-sans font-bold text-xs text-slate-800 uppercase tracking-wide">
-                            {isRTL ? 'إشعاراتك الحقيقية' : 'Your Real-Time Notifications'}
-                          </h4>
-                          <p className="text-[11px] font-medium text-slate-500 max-w-[240px] mx-auto leading-relaxed">
-                            {isRTL ? 'يرجى تسجيل الدخول لعرض إشعارات الشحنات وتحديثات التوصيل الخاصة بك.' : 'Please sign in to view your real shipment updates, tracking alerts, and account activity.'}
-                          </p>
+                          <div className="space-y-1">
+                            <h4 className="font-sans font-black text-xs text-slate-900 uppercase tracking-wide">
+                              {isRTL ? 'مركز الإشعارات المباشرة' : 'Real-Time Notifications'}
+                            </h4>
+                            <p className="text-[11px] font-medium text-slate-500 max-w-[240px] mx-auto leading-relaxed">
+                              {isRTL ? 'يرجى تسجيل الدخول لعرض تتبع شحناتك وتحديثات التوصيل الخاصة بك.' : 'Please sign in to view your real shipment updates, tracking alerts, and account activity.'}
+                            </p>
+                          </div>
                           <button 
                             onClick={() => { setNotifDropdownOpen(false); setLoginRole('user'); setLoginModalOpen(true); }}
-                            className="mt-2 px-5 py-2.5 bg-[#113f36] hover:bg-[#0d3029] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
+                            className="mt-1 w-full py-2.5 bg-[#113f36] hover:bg-[#0d3029] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-xs cursor-pointer active:scale-95 flex items-center justify-center gap-2"
                           >
-                            {isRTL ? 'تسجيل الدخول' : 'Sign In Now'}
+                            <ArrowUpRight className="w-3.5 h-3.5" />
+                            {isRTL ? 'تسجيل الدخول الآن' : 'Sign In Now'}
                           </button>
                         </div>
                       ) : notifications.length === 0 ? (
