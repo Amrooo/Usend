@@ -48,7 +48,7 @@ export default function MerchantSidebar({ currentScreen, onNavigate }: SidebarPr
       ]
     },
     {
-      title: t('orders_freight') || 'Orders & Freight',
+      title: t('orders_dispatches') || 'Orders & Parcel Dispatches',
       items: [
         { id: 'merchant_individual', icon: PlusCircle, label: t('individual_order') || 'Manual Orders' },
         { id: 'merchant_batch', icon: Package, label: t('create_batch_orders') || 'Bulk Orders & Quotes' }

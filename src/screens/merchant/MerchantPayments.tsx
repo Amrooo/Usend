@@ -270,7 +270,6 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
                 { key: 'statements', label: t('statements') || 'Statements' },
                 { key: 'cod', label: 'COD Payments' },
                 { key: 'tax', label: 'Tax Reports' },
-                { key: 'freight_invoices', label: 'Freight Bills' }
               ].map(tab => (
                 <button
                   key={tab.key}

@@ -109,24 +109,26 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
           </div>
 
           {/* Stats - floating on top of the wavy architecture gradient banner! */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mt-4">
             {stats.map((stat, i) => (
-              <div key={i} className="bg-white/95 backdrop-blur-md rounded-[2rem] p-5 flex flex-col justify-between shadow-xs border border-white/40 h-[125px] group hover:scale-[1.02] hover:bg-white transition-all">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-xl bg-[#344633]/15 text-[#344633] flex items-center justify-center pointer-events-none">
+              <div key={i} className="bg-white/95 backdrop-blur-md rounded-[2rem] p-4.5 flex flex-col justify-between shadow-xs border border-white/40 min-h-[125px] group hover:scale-[1.02] hover:bg-white transition-all overflow-hidden">
+                <div className="flex justify-between items-center gap-2 w-full min-w-0">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <div className="w-8 h-8 rounded-xl bg-[#344633]/15 text-[#344633] flex items-center justify-center shrink-0 pointer-events-none">
                       {stat.icon}
                     </div>
-                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#5D6B5A]">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#5D6B5A] truncate min-w-0" title={stat.label}>
                       {stat.label}
                     </span>
                   </div>
-                  <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest ${stat.trend.startsWith('+') ? 'text-[#113f36] bg-[#113f36]/5' : 'text-red-600 bg-red-50'}`}>{stat.trend}</span>
+                  <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest shrink-0 whitespace-nowrap border ${stat.trend.startsWith('+') ? 'text-[#113f36] bg-[#113f36]/10 border-[#113f36]/20' : 'text-red-600 bg-red-50 border-red-200'}`}>
+                    {stat.trend}
+                  </span>
                 </div>
                 
-                <div className="flex justify-between items-end mt-2">
-                  <h3 className="text-lg lg:text-xl font-black text-[#1C2C1E] tracking-tight">{stat.value}</h3>
-                  <div className="w-7 h-7 rounded-full bg-white shadow-xs border border-zinc-100 flex items-center justify-center text-[#344633]">
+                <div className="flex justify-between items-end mt-3 gap-2 w-full min-w-0">
+                  <h3 className="text-lg lg:text-xl font-black text-[#1C2C1E] tracking-tight truncate min-w-0">{stat.value}</h3>
+                  <div className="w-7 h-7 rounded-full bg-white shadow-xs border border-zinc-100 flex items-center justify-center text-[#344633] shrink-0">
                     <ArrowUpRight className="w-4 h-4" />
                   </div>
                 </div>
@@ -165,26 +167,26 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-white border border-[#EBEFE9] rounded-[2.5rem] p-10 overflow-hidden relative shadow-[0_8px_30px_rgb(220,225,235,0.45)]">
-          <div className="flex items-center justify-between mb-12">
+      <div className="w-full">
+        <div className="bg-white border border-[#EBEFE9] rounded-[2.5rem] p-10 overflow-hidden relative shadow-[0_8px_30px_rgb(220,225,235,0.45)]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <div>
-              <h3 className="text-xl font-display font-semibold uppercase tracking-tight text-slate-900 mb-2">{t('financial_overview') || 'Financial Overview'}</h3>
+              <h3 className="text-xl font-display font-semibold uppercase tracking-tight text-slate-900 mb-1">{t('financial_overview') || 'Financial Overview'}</h3>
               <p className="text-xs text-zinc-400 font-medium">{t('revenue_settlements') || 'Revenue vs Settlements (Weekly)'}</p>
             </div>
             <div className="flex items-center gap-4">
                <div className="flex items-center gap-2">
-                 <div className="w-2 h-2 rounded-full bg-[#546a40]"></div>
+                 <div className="w-2.5 h-2.5 rounded-full bg-[#546a40]"></div>
                  <span className="text-[12px] font-bold uppercase tracking-widest text-[#546a40]">{t('revenue') || 'Revenue'}</span>
                </div>
                <div className="flex items-center gap-2">
-                 <div className="w-2 h-2 rounded-full bg-slate-350"></div>
+                 <div className="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
                  <span className="text-[12px] font-bold uppercase tracking-widest text-zinc-400">{t('settlements') || 'Settlements'}</span>
                </div>
             </div>
           </div>
           
-          <div className="h-[300px] w-full mt-4">
+          <div className="h-[320px] w-full mt-4">
             <ResponsiveContainer width="100%" height="100%" minHeight={100} minWidth={100}>
               <AreaChart data={revenueData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                 <defs>
@@ -204,47 +206,6 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
                 <Area type="monotone" dataKey="settlements" stroke="#E2E8F0" strokeWidth={2} fill="transparent" strokeDasharray="5 5" />
               </AreaChart>
             </ResponsiveContainer>
-          </div>
-        </div>
-
-        <div 
-          onClick={() => onTabChange('requests')}
-          className="bg-white border border-[#EBEFE9] rounded-[2.5rem] p-10 relative overflow-hidden shadow-[0_8px_30px_rgb(220,225,235,0.45)] flex flex-col cursor-pointer group/card hover:shadow-xl transition-all"
-        >
-          <div className="mb-8">
-             <h3 className="text-xl font-display font-semibold uppercase tracking-tight text-slate-900 mb-2 group-hover/card:text-[#546a40] transition-colors">{t('uae_ops_map')}</h3>
-             <p className="text-xs text-zinc-400 font-medium">{t('live_origin')}</p>
-          </div>
-          <div className="flex-1 min-h-[250px] bg-slate-100 rounded-[2rem] relative overflow-hidden group z-0">
-             <MapContainer center={[24.2, 54.5]} zoom={6} scrollWheelZoom={false} style={{ height: '100%', width: '100%', backgroundColor: '#EFF3EE' }} zoomControl={false} dragging={true}>
-               <TileLayer
-                 url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-               />
-               <Marker position={[25.2048, 55.2708]} icon={createCustomMarker('bg-[#546a40]', '#546a40', '0s')} />
-               <Marker position={[24.4539, 54.3773]} icon={createCustomMarker('bg-[#6d8c55]', '#34d399', '0.5s')} />
-               <Marker position={[25.3463, 55.4209]} icon={createCustomMarker('bg-[#546a40]', '#546a40', '1s')} />
-               <Marker position={[25.7895, 55.9432]} icon={createCustomMarker('bg-orange-400', '#fb923c', '1.5s')} />
-             </MapContainer>
-             <div className="absolute inset-0 bg-gradient-to-t from-slate-100 via-transparent to-transparent pointer-events-none z-10"></div>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4 mt-8 pointer-events-none">
-             <div className="flex items-center gap-3">
-               <div className="w-2 h-2 bg-[#546a40] rounded-full"></div>
-               <span className="text-xs font-bold text-zinc-600">{t('merchant_api')}</span>
-             </div>
-             <div className="flex items-center gap-3">
-               <div className="w-2 h-2 bg-[#6d8c55] rounded-full"></div>
-               <span className="text-xs font-bold text-zinc-600">{t('mobile_apps')}</span>
-             </div>
-             <div className="flex items-center gap-3">
-               <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
-               <span className="text-xs font-bold text-zinc-600">{t('b2b_integrations')}</span>
-             </div>
-             <div className="flex items-center gap-3">
-               <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-               <span className="text-xs font-bold text-zinc-600">{t('manual_entry')}</span>
-             </div>
           </div>
         </div>
       </div>
@@ -534,145 +495,24 @@ function RequestsHub() {
           {toastMessage}
         </div>
       )}
-
-      {/* Business Line Channel Tab Swapper */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex gap-4 p-1.5 bg-zinc-200/50 border border-zinc-200 rounded-[2rem] max-w-lg shadow-sm">
-          <button 
-            onClick={() => setBusinessLine('express')}
-            className={`flex-1 text-center py-3 px-6 rounded-full text-[12px] font-black uppercase tracking-wider transition-all leading-none ${
-              businessLine === 'express' ? 'bg-zinc-900 text-white shadow-md' : 'text-zinc-500 hover:text-zinc-800'
-            }`}
-          >
-            Express & Courier Shipments
-          </button>
-          <button 
-            onClick={() => setBusinessLine('freight')}
-            className={`flex-1 text-center py-3 px-6 rounded-full text-[12px] font-black uppercase tracking-wider transition-all leading-none ${
-              businessLine === 'freight' ? 'bg-zinc-900 text-white shadow-md' : 'text-zinc-500 hover:text-zinc-800'
-            }`}
-          >
-            Commercial Freight Cargo
-          </button>
+      
+      {/* Action Header */}
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-display font-black text-zinc-900 uppercase tracking-tight">Courier Requests & Dispatches</h2>
+          <p className="text-xs text-zinc-500 font-medium mt-1">Manage parcel shipping orders, assign courier carriers, and track delivery statuses.</p>
         </div>
-
-        {businessLine === 'express' && (
-          <button 
-            onClick={() => setIsBookingOpen(true)}
-            className="px-6 py-3 bg-brand text-white text-[12px] font-black uppercase tracking-widest rounded-full hover:scale-105 transition-all shadow-xl shadow-brand/20 flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" /> Book Delivery
-          </button>
-        )}
+        <button 
+          onClick={() => setIsBookingOpen(true)}
+          className="px-6 py-3 bg-brand text-white text-[12px] font-black uppercase tracking-widest rounded-full hover:scale-105 transition-all shadow-xl shadow-brand/20 flex items-center gap-2 cursor-pointer"
+        >
+          <Plus className="w-4 h-4" /> Book Delivery
+        </button>
       </div>
-
-      {businessLine === 'freight' ? (
-        <div className="space-y-8 animate-in fade-in duration-500">
-           {/* Freight KPI Summary widgets */}
-           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="bg-white border border-zinc-200 p-6 rounded-[2rem] shadow-sm">
-                 <span className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block mb-1">{t('active_containers') || 'Active Containers'}</span>
-                 <p className="text-2xl font-bold text-zinc-900">4 Runs</p>
-                 <span className="text-[12px] text-zinc-400 mt-2 block">{t('heavy_pipelines') || 'Heavy logistics pipelines active'}</span>
-              </div>
-              <div className="bg-white border border-zinc-200 p-6 rounded-[2rem] shadow-sm">
-                 <span className="text-[13px] font-black uppercase tracking-widest text-[#4f95cc] block mb-1">{t('total_payload_weight') || 'Total Payload Weight'}</span>
-                 <p className="text-2xl font-bold text-[#4f95cc]">49,000 kg</p>
-                 <span className="text-[12px] text-zinc-400 mt-2 block">Across marine & road fleets</span>
-              </div>
-              <div className="bg-white border border-zinc-200 p-6 rounded-[2rem] shadow-sm">
-                 <span className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block mb-1">{t('active_pallet_count') || 'Active Pallet Count'}</span>
-                 <p className="text-2xl font-bold text-zinc-900">62 Pallets</p>
-                 <span className="text-[12px] text-zinc-400 mt-2 block">{t('standard_block_size') || 'Standard block packing size'}</span>
-              </div>
-              <div className="bg-white border border-zinc-200 p-6 rounded-[2rem] shadow-sm">
-                 <span className="text-[13px] font-black uppercase tracking-widest text-[#113f36] block mb-1">{t('freight_turnovers') || 'Freight Turnovers'}</span>
-                 <p className="text-2xl font-bold text-[#113f36]">17,600 AED</p>
-                 <span className="text-[12px] text-[#113f36] mt-2 block">{t('gross_billings') || 'Gross commercial billings'}</span>
-              </div>
-           </div>
-
-           {/* Freight Orders Table */}
-           <div className="bg-white border border-zinc-200 rounded-[3rem] p-10 overflow-hidden relative shadow-sm animate-in fade-in">
-              <div className="mb-8">
-                 <h3 className="text-xl font-display font-medium uppercase tracking-tight text-zinc-900">{t('heavy_freight_center') || 'Heavy Freight Operations Center'}</h3>
-                 <p className="text-xs text-zinc-500 font-medium">Coordinate, inspect, and approve heavy freight movements and port clearances across the UAE.</p>
-              </div>
-
-              <div className="overflow-x-auto">
-                 <table className="w-full text-left border-collapse min-w-[900px]">
-                    <thead>
-                       <tr className="bg-zinc-50 text-zinc-400 text-[12px] font-black uppercase tracking-widest border-b border-zinc-100">
-                          <th className={`p-6 ${isRTL ? 'text-right' : 'text-left'}`}>{t('shipment_id') || 'Shipment ID'}</th>
-                          <th className={`p-6 ${isRTL ? 'text-right' : 'text-left'}`}>{t('booked_by') || 'Booked By'}</th>
-                          <th className={`p-6 font-mono ${isRTL ? 'text-right' : 'text-left'}`}>{t('cargo_spec_category') || 'Freight Class / Specs'}</th>
-                          <th className={`p-6 ${isRTL ? 'text-right' : 'text-left'}`}>{t('delivery_path') || 'Delivery Path'}</th>
-                          <th className={`p-6 ${isRTL ? 'text-right' : 'text-left'}`}>{t('gross_quote') || 'Gross Quote'}</th>
-                          <th className={`p-6 ${isRTL ? 'text-right' : 'text-left'}`}>{t('transit_status') || 'Transit Status'}</th>
-                          <th className="p-6 text-center">{t('clearance_action') || 'Clearance Action'}</th>
-                       </tr>
-                    </thead>
-                    <tbody className="text-sm font-medium">
-                       {freightList.map((item, idx) => (
-                          <tr key={idx} className="border-b border-zinc-50 hover:bg-zinc-50/50 transition-colors">
-                             <td className="p-6 font-mono text-zinc-900 font-bold text-xs">{item.id}</td>
-                             <td className="p-6 font-bold text-zinc-800">{item.merchant}</td>
-                             <td className="p-6">
-                                <span className="text-zinc-800 block text-xs font-bold font-mono">{item.containerType}</span>
-                                <span className="text-[12px] text-zinc-400 mt-0.5 block">{item.pallets} Pallets ({item.weight})</span>
-                             </td>
-                             <td className="p-6 text-zinc-650 text-xs">{item.route}</td>
-                             <td className="p-6 text-brand font-bold">{item.charge}</td>
-                             <td className="p-6">
-                                <span className={`px-2.5 py-1 rounded-full text-[13px] font-black uppercase tracking-widest ${
-                                   item.status.includes('Awaiting') ? 'bg-orange-50 text-orange-600' :
-                                   item.status.includes('Inspected') ? 'bg-indigo-50 text-indigo-600' :
-                                   item.status.includes('Delivered') ? 'bg-[#113f36]/5 text-[#113f36]' :
-                                   'bg-purple-50 text-purple-600'
-                                }`}>
-                                   {item.status}
-                                </span>
-                             </td>
-                             <td className="p-6 text-center">
-                                {item.status === 'Awaiting Port Clearance' ? (
-                                   <button 
-                                      onClick={() => updateFreightStatus(item.id, 'Customs Inspected')}
-                                      className="text-[13px] bg-zinc-900 hover:bg-zinc-800 text-white font-black uppercase tracking-widest px-3.5 py-2 rounded-xl transition-all"
-                                   >
-                                      Authorize Port Release
-                                   </button>
-                                ) : item.status === 'Customs Inspected' ? (
-                                   <button 
-                                      onClick={() => updateFreightStatus(item.id, 'En-Route Ground Carrier')}
-                                      className="text-[13px] bg-brand hover:bg-brand/90 text-white font-black uppercase tracking-widest px-3.5 py-2 rounded-xl transition-all shadow-md shadow-brand/10"
-                                   >
-                                      Dispatch Heavy Hauler
-                                   </button>
-                                ) : item.status === 'En-Route Ground Carrier' ? (
-                                   <button 
-                                      onClick={() => updateFreightStatus(item.id, 'Delivered & Remitted')}
-                                      className="text-[13px] bg-[#1a5c4e] hover:bg-[#113f36] text-white font-black uppercase tracking-widest px-3.5 py-2 rounded-xl transition-all"
-                                   >
-                                      Confirm Deliver Signoff
-                                   </button>
-                                ) : (
-                                   <span className="text-zinc-400 font-bold text-xs">✓ Cleared</span>
-                                )}
-                             </td>
-                          </tr>
-                       ))}
-                    </tbody>
-                 </table>
-              </div>
-           </div>
-        </div>
-      ) : (
-        <>
-        {/* Universal Filter UX */}
-        <div className="bg-white border border-zinc-200 rounded-[2.5rem] p-5 flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 shadow-sm">
-          <div className="flex gap-1.5 overflow-x-auto w-full xl:w-auto pb-2 xl:pb-0 scrollbar-none">
-              <button onClick={() => setStatusFilter('All Requests')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider shadow-sm flex items-center gap-2 transition-colors ${statusFilter === 'All Requests' ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-zinc-400"></div>All</button>
-              <button onClick={() => setStatusFilter('Pending')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Pending' ? 'bg-orange-50 text-orange-655 ring-1 ring-orange-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-orange-400"></div>Pending</button>
+      <div className="bg-white border border-zinc-200 rounded-[2.5rem] p-5 flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 shadow-sm">
+        <div className="flex gap-1.5 overflow-x-auto w-full xl:w-auto pb-2 xl:pb-0 scrollbar-none">
+          <button onClick={() => setStatusFilter('All Requests')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider shadow-sm flex items-center gap-2 transition-colors ${statusFilter === 'All Requests' ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-zinc-400"></div>All</button>
+          <button onClick={() => setStatusFilter('Pending')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Pending' ? 'bg-orange-50 text-orange-655 ring-1 ring-orange-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-orange-400"></div>Pending</button>
               <button onClick={() => setStatusFilter('Cancelled')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Cancelled' ? 'bg-red-50 text-red-650 ring-1 ring-red-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>{t('cancelled') || 'Cancelled'}</button>
               <button onClick={() => setStatusFilter('Reviewing')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Reviewing' ? 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>Reviewing</button>
               <button onClick={() => setStatusFilter('Approved')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Approved' ? 'bg-[#113f36]/5 text-[#113f36] ring-1 ring-blue-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-[#6d8c55]"></div>Approved</button>
@@ -902,8 +742,6 @@ function RequestsHub() {
           </div>
         )}
       </div>
-      </>
-      )}
 
       {/* ORDER BOOKING MODAL */}
       {isBookingOpen && (
@@ -3521,7 +3359,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
           <nav className="flex-1 space-y-1.5 overflow-y-auto hide-scrollbar">
             {[
               { id: 'overview', icon: <LayoutDashboard className="w-[17px] h-[17px]" />, label: t('dashboard') || 'Dashboard' },
-              { id: 'requests', icon: <Inbox className="w-[17px] h-[17px]" />, label: t('requests_freight') || 'Requests & Freight' },
+              { id: 'requests', icon: <Inbox className="w-[17px] h-[17px]" />, label: t('requests_orders') || 'Courier Requests & Orders' },
               { id: 'batches', icon: <ClipboardList className="w-[17px] h-[17px]" />, label: t('csv_batch_dispatches') || 'CSV Batch Dispatches' },
               { id: 'finance', icon: <Coins className="w-[17px] h-[17px]" />, label: t('ledger_cod_settling') || 'Platform Wallets & Ledger' },
               { id: 'merchants', icon: <Building2 className="w-[17px] h-[17px]" />, label: t('merchant_directory') || 'Merchant Directory' },

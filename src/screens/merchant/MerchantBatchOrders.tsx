@@ -332,26 +332,6 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
               >
                 CSV Upload
               </button>
-              <button 
-                onClick={() => setMerchantActiveTab('freight_orders')}
-                className={`px-4 py-2 rounded-xl font-bold text-xs uppercase tracking-wider transition-all ${
-                  isFreightMode 
-                    ? 'bg-white text-zinc-950 shadow-sm' 
-                    : 'text-zinc-500 hover:text-zinc-900'
-                }`}
-              >
-                Freight Bookings
-              </button>
-              <button 
-                onClick={() => setMerchantActiveTab('request_quote')}
-                className={`px-4 py-2 rounded-xl font-bold text-xs uppercase tracking-wider transition-all ${
-                  isFreightQuoteMode 
-                    ? 'bg-white text-zinc-950 shadow-sm' 
-                    : 'text-zinc-500 hover:text-zinc-900'
-                }`}
-              >
-                Freight Quote
-              </button>
             </div>
           </div>
 
