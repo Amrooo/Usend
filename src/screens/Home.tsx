@@ -52,12 +52,41 @@ export default function Home({ onNavigate }: HomeProps) {
     }
   };
 
-  const notifications = [
-    { id: 1, title: 'Shipment Delivered', message: 'Your furniture shipment has been delivered successfully.', time: '2h ago', icon: CheckCircle, color: 'text-[#113f36]' },
-    { id: 2, title: 'Driver Arriving', message: 'Your driver is 5 minutes away from the pickup location.', time: '45m ago', icon: Clock, color: 'text-[#113f36]' },
-    { id: 3, title: 'Payment Confirmed', message: 'Payment for order #MRSL-9921-X has been processed.', time: '1h ago', icon: CheckCircle, color: 'text-[#113f36]' },
-    { id: 4, title: 'New Message', message: 'Driver Alex Rivera sent you a message.', time: '10m ago', icon: AlertCircle, color: 'text-orange-500' },
-  ];
+  const notifications = React.useMemo(() => {
+    if (!user) return [];
+
+    const userOrders = activeRequests.filter(req => 
+      req.userId === user.uid || 
+      (user.role === 'admin')
+    );
+
+    const generated: Array<{ id: string | number; title: string; message: string; time: string; icon: any; color: string }> = [];
+
+    userOrders.slice(0, 5).forEach((req) => {
+      const isDelivered = (req.status || '').toLowerCase().includes('deliver');
+      if (isDelivered) {
+        generated.push({
+          id: `notif-${req.id}-deliv`,
+          title: `Shipment ${req.id} Delivered`,
+          message: `Package successfully delivered to destination.`,
+          time: 'Delivered',
+          icon: CheckCircle,
+          color: 'text-[#113f36]'
+        });
+      } else {
+        generated.push({
+          id: `notif-${req.id}-transit`,
+          title: `Shipment ${req.id} Active`,
+          message: `Package dispatched via ${req.carrier || 'Courier Express'} and tracking is active.`,
+          time: 'In Transit',
+          icon: Clock,
+          color: 'text-[#113f36]'
+        });
+      }
+    });
+
+    return generated;
+  }, [user, activeRequests]);
 
   const quickActions = [
     { id: 'furniture', icon: Sofa, label: t('furniture'), sub: t('sofas_beds'), color: 'bg-red-500/10 text-red-500' },

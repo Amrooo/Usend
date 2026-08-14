@@ -1,5 +1,5 @@
 import { motion, useScroll, useTransform, AnimatePresence } from 'motion/react';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import React from 'react';
 import { Screen } from '../types';
 import { 
@@ -232,68 +232,10 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
   // Guest Order Modal State
   const [guestModalOpen, setGuestModalOpen] = useState(false);
 
-  // Notifications State & Logic
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      titleEn: 'Order Dispatched',
-      titleAr: 'تم إرسال الطلب',
-      descEn: 'Order #US-4829 has been dispatched via Noon Express.',
-      descAr: 'تم إرسال الطلب #US-4829 عبر نون إكسبريس.',
-      timeEn: '2 mins ago',
-      timeAr: 'منذ دقيقتين',
-      read: false,
-      type: 'order'
-    },
-    {
-      id: 2,
-      titleEn: 'Wallet Credited',
-      titleAr: 'تم شحن المحفظة',
-      descEn: 'Wallet recharged: +1,250.00 AED added successfully.',
-      descAr: 'تم شحن المحفظة: +1,250.00 درهم إماراتي بنجاح.',
-      timeEn: '1 hour ago',
-      timeAr: 'منذ ساعة',
-      read: false,
-      type: 'wallet'
-    },
-    {
-      id: 3,
-      titleEn: 'API Integration Active',
-      titleAr: 'تنشيط الربط البرمجي',
-      descEn: 'Webhook status: Noon API integration active.',
-      descAr: 'حالة الربط البرمجي: ربط Noon API نشط الآن.',
-      timeEn: '3 hours ago',
-      timeAr: 'منذ 3 ساعات',
-      read: false,
-      type: 'api'
-    },
-    {
-      id: 4,
-      titleEn: 'Courier Assigned',
-      titleAr: 'تعيين مندوب التوصيل',
-      descEn: 'Aramex courier assigned to route DXB-04.',
-      descAr: 'تم تعيين مندوب أرامكس للمسار المحلي DXB-04.',
-      timeEn: '5 hours ago',
-      timeAr: 'منذ 5 ساعات',
-      read: true,
-      type: 'courier'
-    }
-  ]);
+  // Real Notifications State & Logic
+  const [readNotifIds, setReadNotifIds] = useState<string[]>([]);
+  const [clearedNotifIds, setClearedNotifIds] = useState<string[]>([]);
   const [notifDropdownOpen, setNotifDropdownOpen] = useState(false);
-
-  const markAllNotifsAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-  };
-
-  const toggleNotifRead = (id: number) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: !n.read } : n));
-  };
-
-  const clearAllNotifications = () => {
-    setNotifications([]);
-  };
-
-  const unreadNotifsCount = notifications.filter(n => !n.read).length;
 
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -408,7 +350,106 @@ const [botOpen, setBotOpen] = useState(false);
   ]);
   const [botInput, setBotInput] = useState('');
 
-  const { activeRequests, signIn, setUser, user, signOut } = useApp();
+  const { activeRequests, allOrders, signIn, setUser, user, signOut } = useApp();
+
+  // Dynamic Real Notifications derived from authenticated user & active orders
+  const notifications = useMemo(() => {
+    if (!user) return [];
+
+    const list = (allOrders && allOrders.length) ? allOrders : activeRequests;
+    const userOrders = list.filter(r => 
+      r.userId === user.uid || 
+      r.id?.includes(user.uid || '') || 
+      user.role === 'admin' || 
+      user.role === 'merchant'
+    );
+
+    const generated: Array<{
+      id: string;
+      titleEn: string;
+      titleAr: string;
+      descEn: string;
+      descAr: string;
+      timeEn: string;
+      timeAr: string;
+      read: boolean;
+      type: 'order' | 'wallet' | 'courier' | 'system' | 'api';
+    }> = [];
+
+    generated.push({
+      id: `welcome-${user.uid || user.id || 'usr'}`,
+      titleEn: `System Active for ${user.name || 'Account'}`,
+      titleAr: `النظام نشط لحساب ${user.name || 'المستخدم'}`,
+      descEn: `Connected to Aramex, Noon & USend Fleet dispatch network.`,
+      descAr: `متصل بشبكة شحن أرامكس، نون، وأسطول يو سيند.`,
+      timeEn: 'Active',
+      timeAr: 'نشط',
+      read: readNotifIds.includes(`welcome-${user.uid || user.id || 'usr'}`),
+      type: 'system'
+    });
+
+    userOrders.slice(0, 10).forEach((order) => {
+      const isDelivered = (order.status || '').toLowerCase().includes('deliver');
+      const isInTransit = (order.status || '').toLowerCase().includes('transit') || (order.status || '').toLowerCase().includes('dispatch');
+      
+      const notifId = `order-created-${order.id}`;
+      generated.push({
+        id: notifId,
+        titleEn: `Order ${order.id} Created`,
+        titleAr: `تم إنشاء الطلب ${order.id}`,
+        descEn: `Shipment from ${order.originCity || 'Dubai'} to ${order.destinationCity || order.receiverCity || 'UAE'} via ${order.carrier || 'Aramex'}.`,
+        descAr: `تم تسجيل شحنة من ${order.originCity || 'دبي'} إلى ${order.destinationCity || order.receiverCity || 'الإمارات'} عبر ${order.carrier || 'أرامكس'}.`,
+        timeEn: order.date || 'Today',
+        timeAr: order.date || 'اليوم',
+        read: readNotifIds.includes(notifId),
+        type: 'order'
+      });
+
+      if (isDelivered) {
+        const delivId = `order-deliv-${order.id}`;
+        generated.push({
+          id: delivId,
+          titleEn: `Shipment ${order.id} Delivered`,
+          titleAr: `تم تسليم الشحنة ${order.id}`,
+          descEn: `Package successfully delivered to destination recipient.`,
+          descAr: `تم تسليم الطرد بنجاح للمستلم في الوجهة.`,
+          timeEn: 'Delivered',
+          timeAr: 'تم التسليم',
+          read: readNotifIds.includes(delivId),
+          type: 'courier'
+        });
+      } else if (isInTransit) {
+        const transId = `order-trans-${order.id}`;
+        generated.push({
+          id: transId,
+          titleEn: `Shipment ${order.id} Out for Delivery`,
+          titleAr: `الشحنة ${order.id} قيد التوصيل`,
+          descEn: `Driver/Courier is on route to recipient. Tracking active.`,
+          descAr: `السائق/الناقل في طريقه للمستلم. التتبع نشط.`,
+          timeEn: 'In Transit',
+          timeAr: 'جاري التوصيل',
+          read: readNotifIds.includes(transId),
+          type: 'courier'
+        });
+      }
+    });
+
+    return generated.filter(n => !clearedNotifIds.includes(n.id));
+  }, [user, activeRequests, allOrders, readNotifIds, clearedNotifIds]);
+
+  const markAllNotifsAsRead = () => {
+    setReadNotifIds(notifications.map(n => n.id));
+  };
+
+  const toggleNotifRead = (id: string) => {
+    setReadNotifIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+  };
+
+  const clearAllNotifications = () => {
+    setClearedNotifIds(notifications.map(n => n.id));
+  };
+
+  const unreadNotifsCount = notifications.filter(n => !n.read).length;
 
   const handleBotSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -622,9 +663,27 @@ const [botOpen, setBotOpen] = useState(false);
 
                     {/* List */}
                     <div className="max-h-[300px] overflow-y-auto space-y-2 pr-1 scrollbar-thin">
-                      {notifications.length === 0 ? (
+                      {!user ? (
+                        <div className="py-6 px-4 text-center space-y-3">
+                          <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+                            <Bell className="w-5 h-5" />
+                          </div>
+                          <h4 className="font-sans font-bold text-xs text-slate-800 uppercase tracking-wide">
+                            {isRTL ? 'إشعاراتك الحقيقية' : 'Your Real-Time Notifications'}
+                          </h4>
+                          <p className="text-[11px] font-medium text-slate-500 max-w-[240px] mx-auto leading-relaxed">
+                            {isRTL ? 'يرجى تسجيل الدخول لعرض إشعارات الشحنات وتحديثات التوصيل الخاصة بك.' : 'Please sign in to view your real shipment updates, tracking alerts, and account activity.'}
+                          </p>
+                          <button 
+                            onClick={() => { setNotifDropdownOpen(false); setLoginRole('user'); setLoginModalOpen(true); }}
+                            className="mt-2 px-5 py-2.5 bg-[#113f36] hover:bg-[#0d3029] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
+                          >
+                            {isRTL ? 'تسجيل الدخول' : 'Sign In Now'}
+                          </button>
+                        </div>
+                      ) : notifications.length === 0 ? (
                         <div className="py-8 text-center text-slate-400 text-xs font-semibold">
-                          {isRTL ? 'لا توجد إشعارات حالياً' : 'No new notifications'}
+                          {isRTL ? 'لا توجد إشعارات جديدة لشحناتك' : 'No active notifications for your orders'}
                         </div>
                       ) : (
                         notifications.map((notif) => {
