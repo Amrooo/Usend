@@ -411,7 +411,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
         const config = courierConfigs?.[shipmentData.courier];
         const activeCreds = config?.productionCreds || {
           username: "octman.sam@gmail.com",
-          password: "cug.Nv95-npNxaQ",
+          password: "#JohnSnow2027",
           accountNumber: "75788705",
           accountPin: "217147",
           accountEntity: "DXB",

@@ -212,7 +212,7 @@ const INITIAL_COURIER_CONFIGS: Record<string, CourierIntegrationConfig> = {
     },
     productionCreds: {
       username: "octman.sam@gmail.com",
-      password: "cug.Nv95-npNxaQ",
+      password: "#JohnSnow2027",
       accountNumber: "75788705",
       accountPin: "217147",
       accountEntity: "DXB",

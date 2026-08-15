@@ -63,7 +63,7 @@ export const defaultAramexCreds: CourierCredentials = {
   accountCountryCode: "AE",
   source: "0",
   username: "octman.sam@gmail.com",
-  password: "cug.Nv95-npNxaQ",
+  password: "#JohnSnow2027",
   apiEnv: 'production'
 };
 

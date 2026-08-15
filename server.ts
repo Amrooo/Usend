@@ -476,7 +476,7 @@ app.post("/api/rates/calculate", async (req, res) => {
 
     // Default production credentials
     const defaultUserName = "octman.sam@gmail.com";
-    const defaultPassword = "cug.Nv95-npNxaQ";
+    const defaultPassword = "#JohnSnow2027";
     const defaultAccountNumber = "75788705";
     const defaultAccountPin = "217147";
     const defaultAccountEntity = "DXB";
@@ -1001,7 +1001,7 @@ async function startServer() {
             },
             productionCreds: {
               username: "octman.sam@gmail.com",
-              password: "cug.Nv95-npNxaQ",
+              password: "#JohnSnow2027",
               accountNumber: "75788705",
               accountPin: "217147",
               accountEntity: "DXB",
