@@ -37,9 +37,14 @@ import { AppProvider, useApp } from './context/AppContext';
 
 import PortalRegister from './screens/PortalRegister';
 
-function AuthGuard({ children, requiredRole }: { children: React.ReactNode, requiredRole?: 'merchant' | 'user' | 'admin' }) {
+function AuthGuard({ children, requiredRole, onNavigate }: { children: React.ReactNode, requiredRole?: 'merchant' | 'user' | 'admin', onNavigate?: (screen: Screen) => void }) {
   const { user, handleLogout } = useApp();
   
+  const handleExit = async () => {
+    await handleLogout();
+    if (onNavigate) onNavigate('landing_page');
+  };
+
   if (requiredRole === 'admin' && user?.role !== 'admin') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-zinc-50 p-6">
@@ -56,7 +61,7 @@ function AuthGuard({ children, requiredRole }: { children: React.ReactNode, requ
             This module is restricted to <strong className="text-zinc-700">Administrator</strong> accounts. You do not have permission to view the Admin Management Portal.
           </p>
           <button 
-            onClick={handleLogout}
+            onClick={handleExit}
             className="w-full bg-zinc-900 text-white font-bold py-3.5 rounded-xl hover:bg-zinc-800 transition-colors cursor-pointer"
           >
             Sign Out
@@ -82,7 +87,7 @@ function AuthGuard({ children, requiredRole }: { children: React.ReactNode, requ
             This module requires <strong className="text-zinc-700">Merchant</strong> account privileges. Please sign in with an authorized account to continue.
           </p>
           <button 
-            onClick={handleLogout}
+            onClick={handleExit}
             className="w-full bg-zinc-900 text-white font-bold py-3.5 rounded-xl hover:bg-zinc-800 transition-colors"
           >
             Switch Account
@@ -108,10 +113,10 @@ function AuthGuard({ children, requiredRole }: { children: React.ReactNode, requ
             Please sign in to your USend account to access your user portal and manage orders.
           </p>
           <button 
-            onClick={handleLogout}
+            onClick={handleExit}
             className="w-full bg-zinc-900 text-white font-bold py-3.5 rounded-xl hover:bg-zinc-800 transition-colors cursor-pointer"
           >
-            Back to Sign In
+            Back to Home
           </button>
         </motion.div>
       </div>
@@ -205,7 +210,7 @@ export default function App() {
            </AnimatePresence>
         </div>
       ) : isMerchantScreen ? (
-        <AuthGuard requiredRole="merchant">
+        <AuthGuard requiredRole="merchant" onNavigate={navigate}>
           <div className="min-h-screen bg-zinc-50 text-zinc-900 font-sans transition-colors duration-300 w-full">
             <AnimatePresence mode="wait" initial={false}>
               {currentScreen === 'merchant_dashboard' && <MerchantDashboard key="merchant_dashboard" onNavigate={navigate} />}
@@ -222,7 +227,7 @@ export default function App() {
           </div>
         </AuthGuard>
       ) : isUserScreen ? (
-        <AuthGuard requiredRole="user">
+        <AuthGuard requiredRole="user" onNavigate={navigate}>
           <div className="min-h-screen bg-zinc-50 text-zinc-900 font-sans transition-colors duration-300 w-full">
             <AnimatePresence mode="wait" initial={false}>
               {currentScreen === 'user_dashboard' && <UserDashboard key="user_dashboard" onNavigate={navigate} />}
@@ -234,7 +239,7 @@ export default function App() {
           </div>
         </AuthGuard>
       ) : isAdminScreen ? (
-        <AuthGuard requiredRole="admin">
+        <AuthGuard requiredRole="admin" onNavigate={navigate}>
           <AdminDashboard onNavigate={navigate} />
         </AuthGuard>
       ) : (

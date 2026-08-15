@@ -3429,6 +3429,7 @@ function WalletManagementDesk() {
 
 export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
   const { t, isRTL, language, setLanguage } = useLanguage();
+  const { signOut } = useApp();
   const [activeTab, setActiveTab] = useState<'overview' | 'requests' | 'batches' | 'finance' | 'merchants' | 'users' | 'integrations' | 'settings'>('overview');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -3517,8 +3518,11 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
               <span>{language === 'en' ? 'العربية' : 'English'}</span>
             </button>
             <button
-              onClick={() => onNavigate('landing_page')}
-              className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-rose-600 hover:text-rose-700 hover:bg-rose-50/50 text-[11px] font-bold uppercase tracking-widest transition-all"
+              onClick={async () => {
+                await signOut();
+                onNavigate('landing_page');
+              }}
+              className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-rose-600 hover:text-rose-700 hover:bg-rose-50/50 text-[11px] font-bold uppercase tracking-widest transition-all cursor-pointer"
             >
               <LogOut className="w-4 h-4" />
               <span>{t('sign_out') || 'Sign Out'}</span>
