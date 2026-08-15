@@ -49,18 +49,13 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
         let targetRole = loginType === 'business' ? 'merchant' : 'user';
         try {
           const userDocRef = doc(db, 'users', googleUser.uid);
-          const userDocSnap = await getDoc(userDocRef);
-          if (userDocSnap.exists() && userDocSnap.data()?.role) {
-            targetRole = userDocSnap.data().role;
-          } else {
-            await setDoc(userDocRef, {
-              uid: googleUser.uid,
-              email: googleUser.email,
-              displayName: googleUser.displayName || 'Google User',
-              role: targetRole,
-              createdAt: new Date().toISOString()
-            }, { merge: true });
-          }
+          await setDoc(userDocRef, {
+            uid: googleUser.uid,
+            email: googleUser.email,
+            displayName: googleUser.displayName || 'Google User',
+            role: targetRole,
+            createdAt: new Date().toISOString()
+          }, { merge: true });
         } catch (dbErr) {
           console.warn("Firestore user sync warning:", dbErr);
         }
@@ -72,9 +67,10 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
           name: googleUser.displayName || googleUser.email || 'Google User',
         });
 
-        let redirectScreen: Screen = 'merchant_dashboard';
+        let redirectScreen: Screen = 'user_dashboard';
         if (targetRole === 'admin') redirectScreen = 'admin_dashboard';
-        else if (targetRole === 'user' || (targetRole as string) === 'Individual' || (targetRole as string) === 'driver') redirectScreen = 'user_dashboard';
+        else if (targetRole === 'merchant') redirectScreen = 'merchant_dashboard';
+        else redirectScreen = 'user_dashboard';
 
         onNavigate(redirectScreen);
       }
