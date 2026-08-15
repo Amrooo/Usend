@@ -17,13 +17,14 @@ import {
 } from 'firebase/auth';
 import { db, auth } from '../firebase';
 
-const googleProvider = new GoogleAuthProvider();
-
 export const signInWithGoogle = async () => {
   try {
     const result = await signInWithPopup(auth, googleProvider);
     return result.user;
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.code === 'auth/configuration-not-found' || error?.message?.includes('configuration-not-found')) {
+      throw new Error('Google Sign-In is disabled in Firebase Console. Enable "Google" under Firebase Console -> Authentication -> Sign-in Method.');
+    }
     console.error('Google Sign-In Error:', error);
     throw error;
   }
