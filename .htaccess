@@ -4,8 +4,8 @@ DirectoryIndex index.html
   RewriteEngine On
   RewriteBase /
   
-  # Proxy /api/ requests to the local Node.js backend
-  RewriteRule ^api/(.*)$ http://127.0.0.1:3000/api/$1 [P,L]
+  # Proxy /api/ requests to api.php bridge instead of mod_proxy
+  RewriteRule ^api/(.*)$ api.php [L,QSA]
 
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d

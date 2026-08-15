@@ -112,13 +112,7 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
         if (data.role) {
           targetRole = data.role;
         }
-      } else {
-        // Fallback checks
-        if (email.toLowerCase().includes('admin')) targetRole = 'admin';
-        else if (email.toLowerCase().includes('merchant')) targetRole = 'merchant';
-        else if (email.toLowerCase().includes('driver') || email.toLowerCase().includes('user')) targetRole = 'user';
       }
-
       let redirectScreen: Screen = 'merchant_dashboard';
       if (targetRole === 'admin') redirectScreen = 'admin_dashboard';
       else if (targetRole === 'user' || (targetRole as string) === 'Individual' || (targetRole as string) === 'driver') redirectScreen = 'user_dashboard';
@@ -130,10 +124,6 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
       // Demo fallback if connection completely fails (not password errors)
       if (password === 'password') {
         let targetRole = selectedRole;
-        if (email.toLowerCase().includes('admin')) targetRole = 'admin';
-        else if (email.toLowerCase().includes('merchant')) targetRole = 'merchant';
-        else if (email.toLowerCase().includes('driver') || email.toLowerCase().includes('user')) targetRole = 'user';
-
         let redirectScreen: Screen = 'merchant_dashboard';
         if (targetRole === 'admin') redirectScreen = 'admin_dashboard';
         else if (targetRole === 'user' || (targetRole as string) === 'driver') redirectScreen = 'user_dashboard';

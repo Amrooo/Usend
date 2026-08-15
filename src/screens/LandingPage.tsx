@@ -858,8 +858,8 @@ const [botOpen, setBotOpen] = useState(false);
              <button
                 onClick={() => {
                   let dest: Screen = 'user_dashboard';
-                  if (user.email?.toLowerCase().includes('merchant') || user.role === 'merchant') dest = 'merchant_dashboard';
-                  else if (user.email?.toLowerCase().includes('admin') || user.role === 'admin') dest = 'admin_dashboard';
+                  if (user.role === 'merchant') dest = 'merchant_dashboard';
+                  else if (user.role === 'admin') dest = 'admin_dashboard';
                   onNavigate(dest);
                   document.getElementById('mobile-nav-overlay')!.style.display = 'none';
                 }}

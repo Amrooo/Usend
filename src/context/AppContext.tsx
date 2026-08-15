@@ -618,6 +618,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const signOutUser = async () => {
     await logout();
     setUser(null);
+    window.dispatchEvent(new CustomEvent('app_toast', { 
+      detail: { 
+        title: 'Signed Out', 
+        message: 'You have been successfully logged out.', 
+        type: 'info' 
+      } 
+    }));
   };
 
   const addRequest = async (req: USendRequest) => {

@@ -106,9 +106,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
           else if (data.role === 'user' || (data.role as string) === 'Individual' || data.role === 'driver') redirectScreen = 'user_dashboard';
         }
       } catch (docErr) {
-        // Fallback mapping if doc fetch fails
-        if (email.includes('admin')) redirectScreen = 'admin_dashboard';
-        else if (email.includes('user') || email.includes('driver')) redirectScreen = 'user_dashboard';
+        // Ignored
       }
 
       onNavigate(redirectScreen);
@@ -116,9 +114,6 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
       if (password === 'password') {
         let redirectScreen: Screen = 'merchant_dashboard';
         let targetRole = 'merchant';
-        if (email.includes('admin')) { redirectScreen = 'admin_dashboard'; targetRole = 'admin'; }
-        else if (email.includes('user') || email.includes('driver')) { redirectScreen = 'user_dashboard'; targetRole = 'user'; }
-        
         setUser({
           uid: 'demo-fallback-uid',
           email: email,
