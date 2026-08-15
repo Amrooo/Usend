@@ -1101,7 +1101,7 @@ const [botOpen, setBotOpen] = useState(false);
                   )
                 }
               ]).map((logoItem, idx) => (
-                <div key={idx} className="flex items-center gap-2 select-none shrink-0 bg-white px-8 py-3.5 rounded-2xl border border-slate-100 shadow-xs transition-transform duration-300 hover:scale-105">
+                <div key={idx} className="flex items-center gap-2 select-none shrink-0 bg-white px-8 py-3.5 rounded-2xl border border-slate-100 shadow-xs transition-all duration-300 hover:scale-110 hover:shadow-md hover:border-slate-200 hover:-translate-y-0.5 cursor-pointer">
                   {logoItem.logo}
                 </div>
               ))}
