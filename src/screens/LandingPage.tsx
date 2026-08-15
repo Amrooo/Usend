@@ -948,8 +948,8 @@ const [botOpen, setBotOpen] = useState(false);
             {isRTL ? 'شركاء الشركات العالمية الرائدة' : 'Partners of world leading shipping companies'}
           </p>
 
-          <div className="w-full overflow-hidden flex whitespace-nowrap" dir="ltr">
-            <div className={`flex items-center gap-8 ${isRTL ? 'animate-marquee-rtl' : 'animate-marquee'} whitespace-nowrap py-2 pr-8`}>
+          <div className="w-full overflow-hidden flex whitespace-nowrap group" dir="ltr">
+            <div className={`flex items-center gap-8 ${isRTL ? 'animate-marquee-rtl' : 'animate-marquee'} whitespace-nowrap py-2 pr-8 group-hover:[animation-play-state:paused]`}>
               {[
                 {
                   logo: (

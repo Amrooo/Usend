@@ -722,18 +722,26 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
       <h3 className="text-lg font-bold mb-4 uppercase tracking-tight">{isRTL ? "ملخص الطلب" : "Order Summary"}</h3>
       
       {/* Visual Route Banner */}
-      <div className="bg-white rounded-2xl p-4 flex items-center justify-between border border-slate-100 mb-4">
-        <div>
-          <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'نقطة الاستلام' : 'Pickup'}</span>
-          <p className="font-bold text-xs text-zinc-800 truncate max-w-[80px]">{shipperData.city || '-'}</p>
-        </div>
-        <div className="flex flex-col items-center justify-center px-2">
-          <ArrowRight className="text-brand w-4 h-4" />
-          {distanceKm > 0 && <span className="text-[9px] font-bold uppercase text-brand mt-1 tracking-widest">{distanceKm} km</span>}
-        </div>
-        <div className="text-right">
-          <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'نقطة التسليم' : 'Dropoff'}</span>
-          <p className="font-bold text-xs text-zinc-800 truncate max-w-[80px]">{receiverData.city || '-'}</p>
+      <div className="bg-white rounded-2xl p-4 border border-slate-100 mb-4 flex flex-col gap-3">
+        <div className="flex justify-between items-start">
+          <div className="flex-1">
+            <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'نقطة الاستلام' : 'Pickup'}</span>
+            <p className="font-bold text-xs text-zinc-800 break-words">{shipperData.name || (isRTL ? 'المرسل' : 'Sender')}</p>
+            {shipperData.phone && <p className="text-[10px] text-zinc-500">{shipperData.phone}</p>}
+            {shipperData.street && <p className="text-[10px] text-zinc-500 mt-1 truncate">{shipperData.street}, {shipperData.city}</p>}
+            {!shipperData.street && shipperData.city && <p className="text-[10px] text-zinc-500 mt-1">{shipperData.city}</p>}
+          </div>
+          <div className="flex flex-col items-center justify-center px-4 mt-2">
+            <ArrowRight className="text-brand w-5 h-5" />
+            {distanceKm > 0 && <span className="text-[9px] font-bold uppercase text-brand mt-1 tracking-widest">{distanceKm} km</span>}
+          </div>
+          <div className="flex-1 text-right">
+            <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'نقطة التسليم' : 'Dropoff'}</span>
+            <p className="font-bold text-xs text-zinc-800 break-words">{receiverData.name || (isRTL ? 'المستلم' : 'Receiver')}</p>
+            {receiverData.phone && <p className="text-[10px] text-zinc-500">{receiverData.phone}</p>}
+            {receiverData.street && <p className="text-[10px] text-zinc-500 mt-1 truncate">{receiverData.street}, {receiverData.city}</p>}
+            {!receiverData.street && receiverData.city && <p className="text-[10px] text-zinc-500 mt-1">{receiverData.city}</p>}
+          </div>
         </div>
       </div>
 

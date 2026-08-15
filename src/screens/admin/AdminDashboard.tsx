@@ -3519,8 +3519,8 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
             </button>
             <button
               onClick={async () => {
-                await signOut();
                 onNavigate('landing_page');
+                await signOut();
               }}
               className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-rose-600 hover:text-rose-700 hover:bg-rose-50/50 text-[11px] font-bold uppercase tracking-widest transition-all cursor-pointer"
             >
