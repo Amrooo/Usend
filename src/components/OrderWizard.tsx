@@ -11,6 +11,7 @@ import Modal from './Modal';
 import { countriesAndCities } from '../data';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { getStripePublishableKey, createStripePaymentIntent } from '../lib/paymentUtils';
 
 // Separate component for the actual payment form to use Stripe hooks
 function StripePaymentForm({ clientSecret, totalAmount, onPaymentSuccess, onCancel }: { 
@@ -308,25 +309,19 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
       setLoading(true);
       const startPayment = async () => {
         try {
-          const pubRes = await fetch('/api/payments/config');
-          const { publishableKey } = await pubRes.json();
-          setStripePubKey(publishableKey);
+          const pubKey = await getStripePublishableKey();
+          setStripePubKey(pubKey);
 
-          const response = await fetch('/api/payments/create-intent', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              amountAED: calculateTotal(),
-              customerId: user?.uid || 'guest-' + Date.now(),
-              metadata: { email: shipperData.email, type: 'wizard_order' }
-            }),
+          const { clientSecret } = await createStripePaymentIntent({
+            amountAED: calculateTotal(),
+            customerId: user?.uid || 'guest-' + Date.now(),
+            metadata: { email: shipperData.email, type: 'wizard_order' }
           });
-          const { clientSecret } = await response.json();
           setStripeClientSecret(clientSecret);
           setLoading(false);
         } catch (err: any) {
           console.error("Payment setup failed:", err);
-          alert("Failed to initialize secure payment. Please try again or use Cash on Delivery.");
+          alert(err.message || "Failed to initialize secure payment. Please try again or use Cash on Delivery.");
           setLoading(false);
         }
       };

@@ -121,16 +121,19 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
     const fetchStatus = async () => {
       setStripeIsChecking(true);
       try {
-        const [configRes, statusRes] = await Promise.all([
-          fetch('/api/payments/config').then(r => r.json()).catch(() => ({})),
-          fetch('/api/payments/status').then(r => r.json()).catch(() => ({}))
+        const [configData, statusRes] = await Promise.all([
+          fetch('/api/payments/config')
+            .then(r => (r.ok && r.headers.get('content-type')?.includes('application/json')) ? r.json() : {})
+            .catch(() => ({})),
+          fetch('/api/payments/status')
+            .then(r => (r.ok && r.headers.get('content-type')?.includes('application/json')) ? r.json() : {})
+            .catch(() => ({}))
         ]);
         
         if (!active) return;
 
-        if (configRes.publishableKey) {
-          setStripePublishableKey(configRes.publishableKey);
-        }
+        const pubKey = configData.publishableKey || import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "pk_test_51NqFLiIQ92rRmyagdMMXdSf52pMFvnz7tdk6BhbxQcP4lsH1q80hvOW9FvvACo6d1pHpLYX9tCoSZlDYEqmfh8Ba00wW4npESG";
+        setStripePublishableKey(pubKey);
 
         if (statusRes.connected) {
           setStripeIsConnected(true);

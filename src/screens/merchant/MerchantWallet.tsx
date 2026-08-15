@@ -10,6 +10,7 @@ import {
 import { useLanguage } from '../../context/LanguageContext';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
+import { getStripePublishableKey, createStripePaymentIntent } from '../../lib/paymentUtils';
 import StripeCheckoutForm from '../../components/merchant/StripeCheckoutForm';
 import { useApp } from '../../context/AppContext';
 import { updateDocument } from '../../lib/firebaseUtils';
@@ -99,30 +100,19 @@ export default function MerchantWallet({ onNavigate }: MerchantWalletProps) {
     if (stripeMethod !== 'standard') {
       setStripeIsProcessing(true);
       try {
-        const configRes = await fetch('/api/payments/config');
-        const { publishableKey } = await configRes.json();
-        setStripePubKey(publishableKey);
+        const pubKey = await getStripePublishableKey();
+        setStripePubKey(pubKey);
 
-        const response = await fetch('/api/payments/create-intent', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            amountAED: parsed,
-            topup: true,
-            customerId: user?.uid || 'merchant-partner',
-            metadata: {
-              type: 'wallet_topup',
-              merchantId: user?.uid || 'merchant-partner'
-            }
-          }),
+        const { clientSecret } = await createStripePaymentIntent({
+          amountAED: parsed,
+          topup: true,
+          customerId: user?.uid || 'merchant-partner',
+          metadata: {
+            type: 'wallet_topup',
+            merchantId: user?.uid || 'merchant-partner'
+          }
         });
 
-        if (!response.ok) {
-          const errData = await response.json();
-          throw new Error(errData.error || 'Failed to create payment intent');
-        }
-
-        const { clientSecret } = await response.json();
         setStripeClientSecret(clientSecret);
       } catch (err: any) {
         console.error("Stripe Setup Error:", err);

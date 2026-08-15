@@ -30,6 +30,7 @@ import { useLanguage } from '../../context/LanguageContext';
 // Removed legacy frontend mocked wrappers in favor of CourierEngine backend
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { getStripePublishableKey, createStripePaymentIntent } from '../../lib/paymentUtils';
 import StripeCheckoutForm from '../../components/merchant/StripeCheckoutForm';
 
 export const UAE_ADDRESS_SUGGESTIONS = [
@@ -181,27 +182,20 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
       setStripeError(null);
       setIsSubmitting(true);
 
-      const configRes = await fetch('/api/payments/config');
-      const { publishableKey } = await configRes.json();
-      setStripePubKey(publishableKey);
+      const pubKey = await getStripePublishableKey();
+      setStripePubKey(pubKey);
 
-      const res = await fetch("/api/payments/create-intent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amountAED: dynamicPricing.total,
-          currency: "aed",
-          metadata: {
-            customerName: formData.customerName,
-            phone: formData.phone,
-            merchantEmail: "merchant@usend.ae"
-          }
-        })
+      const { clientSecret } = await createStripePaymentIntent({
+        amountAED: dynamicPricing.total,
+        currency: "aed",
+        metadata: {
+          customerName: formData.customerName,
+          phone: formData.phone,
+          merchantEmail: "merchant@usend.ae"
+        }
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to initialize Stripe session.");
       
-      setStripeClientSecret(data.clientSecret);
+      setStripeClientSecret(clientSecret);
     } catch (err: any) {
       console.error(err);
       setStripeError(err.message);

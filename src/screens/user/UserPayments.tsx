@@ -18,6 +18,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useApp } from '../../context/AppContext';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, useStripe, useElements, PaymentElement } from '@stripe/react-stripe-js';
+import { getStripePublishableKey, createStripePaymentIntent } from '../../lib/paymentUtils';
 import { updateDocument } from '../../lib/firebaseUtils';
 import { db, auth } from '../../firebase';
 import { doc, getDoc, onSnapshot } from 'firebase/firestore';
@@ -250,29 +251,18 @@ export default function UserPayments({ onNavigate }: UserPaymentsProps) {
     setSetupError(null);
 
     try {
-      const configRes = await fetch('/api/payments/config');
-      const { publishableKey } = await configRes.json();
-      setStripePubKey(publishableKey);
+      const pubKey = await getStripePublishableKey();
+      setStripePubKey(pubKey);
 
-      // We create a temporary 5 AED verification charge intent (fully compliant with Stripe rules)
-      const response = await fetch('/api/payments/create-intent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amountAED: 5.00,
-          customerId: user?.uid || 'guest-user',
-          metadata: {
-            type: 'card_verification_save',
-            userId: user?.uid || 'anonymous'
-          }
-        }),
+      const { clientSecret } = await createStripePaymentIntent({
+        amountAED: 5.00,
+        customerId: user?.uid || 'guest-user',
+        metadata: {
+          type: 'card_verification_save',
+          userId: user?.uid || 'anonymous'
+        }
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to create secure card validation session');
-      }
-
-      const { clientSecret } = await response.json();
       setStripeClientSecret(clientSecret);
     } catch (err: any) {
       console.error("Stripe setup error:", err);
