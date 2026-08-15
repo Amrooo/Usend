@@ -92,7 +92,7 @@ function AuthGuard({ children, requiredRole }: { children: React.ReactNode, requ
     );
   }
 
-  if (requiredRole === 'user' && user?.role !== 'user' && user?.role !== 'admin') {
+  if (requiredRole === 'user' && !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-zinc-50 p-6">
         <motion.div 
@@ -103,13 +103,13 @@ function AuthGuard({ children, requiredRole }: { children: React.ReactNode, requ
           <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
             <ShieldAlert className="w-8 h-8" />
           </div>
-          <h2 className="text-2xl font-black text-zinc-900 mb-3 tracking-tight">Access Restricted</h2>
+          <h2 className="text-2xl font-black text-zinc-900 mb-3 tracking-tight">Sign In Required</h2>
           <p className="text-zinc-500 mb-8 leading-relaxed">
-            This module is reserved for <strong className="text-zinc-700">User</strong> accounts.
+            Please sign in to your USend account to access your user portal and manage orders.
           </p>
           <button 
             onClick={handleLogout}
-            className="w-full bg-zinc-900 text-white font-bold py-3.5 rounded-xl hover:bg-zinc-800 transition-colors"
+            className="w-full bg-zinc-900 text-white font-bold py-3.5 rounded-xl hover:bg-zinc-800 transition-colors cursor-pointer"
           >
             Back to Sign In
           </button>
