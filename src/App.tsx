@@ -37,9 +37,35 @@ import { AppProvider, useApp } from './context/AppContext';
 
 import PortalRegister from './screens/PortalRegister';
 
-function AuthGuard({ children, requiredRole }: { children: React.ReactNode, requiredRole?: 'merchant' | 'user' }) {
+function AuthGuard({ children, requiredRole }: { children: React.ReactNode, requiredRole?: 'merchant' | 'user' | 'admin' }) {
   const { user, handleLogout } = useApp();
   
+  if (requiredRole === 'admin' && user?.role !== 'admin') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-50 p-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white shadow-xl border border-red-100 rounded-3xl max-w-md w-full p-8 text-center"
+        >
+          <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <ShieldAlert className="w-8 h-8" />
+          </div>
+          <h2 className="text-2xl font-black text-zinc-900 mb-3 tracking-tight">Admin Access Denied</h2>
+          <p className="text-zinc-500 mb-8 leading-relaxed">
+            This module is restricted to <strong className="text-zinc-700">Administrator</strong> accounts. You do not have permission to view the Admin Management Portal.
+          </p>
+          <button 
+            onClick={handleLogout}
+            className="w-full bg-zinc-900 text-white font-bold py-3.5 rounded-xl hover:bg-zinc-800 transition-colors cursor-pointer"
+          >
+            Sign Out
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
   if (requiredRole === 'merchant' && user?.role !== 'merchant' && user?.role !== 'admin') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-zinc-50 p-6">
@@ -208,7 +234,9 @@ export default function App() {
           </div>
         </AuthGuard>
       ) : isAdminScreen ? (
-        <AdminDashboard onNavigate={navigate} />
+        <AuthGuard requiredRole="admin">
+          <AdminDashboard onNavigate={navigate} />
+        </AuthGuard>
       ) : (
         <div className="min-h-screen bg-zinc-100 flex items-center justify-center p-4 sm:p-8 font-sans transition-colors duration-300">
           {/* Mobile Frame Container */}
