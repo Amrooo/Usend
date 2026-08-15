@@ -3,8 +3,9 @@
 // This is a workaround for Cloudways Nginx blocking direct /api/ routing for static apps.
 
 $requestUri = $_SERVER['REQUEST_URI'];
-// Remove /api from the URI if we are proxying to a different path, or keep it if node expects /api
-$nodeUrl = 'http://127.0.0.1:3000' . $requestUri;
+// Strip /api.php from the URI so Node.js receives /api/...
+$forwardUri = str_replace('/api.php', '/api', $requestUri);
+$nodeUrl = 'http://127.0.0.1:3000' . $forwardUri;
 
 $method = $_SERVER['REQUEST_METHOD'];
 $headers = function_exists('getallheaders') ? getallheaders() : [];
