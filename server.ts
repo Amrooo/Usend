@@ -1042,12 +1042,6 @@ async function startServer() {
 
   const distPath = path.join(process.cwd(), "dist");
 
-  // Static asset fallbacks to ensure logos, photos, and media are served with correct MIME types
-  app.use("/src/assets", express.static(path.join(process.cwd(), "src/assets")));
-  app.use("/public", express.static(path.join(process.cwd(), "public")));
-  app.use("/assets", express.static(path.join(process.cwd(), "public/assets")));
-  app.use("/assets", express.static(path.join(process.cwd(), "assets")));
-
   if (!isProd) {
     const vite = await createViteServer({
       configFile: path.resolve(process.cwd(), "vite.config.ts"),
@@ -1061,7 +1055,15 @@ async function startServer() {
       appType: "spa",
     });
     app.use(vite.middlewares);
-  } else {
+  }
+
+  // Static asset fallbacks to ensure logos, photos, and media are served with correct MIME types
+  app.use("/src/assets", express.static(path.join(process.cwd(), "src/assets")));
+  app.use("/public", express.static(path.join(process.cwd(), "public")));
+  app.use("/assets", express.static(path.join(process.cwd(), "public/assets")));
+  app.use("/assets", express.static(path.join(process.cwd(), "assets")));
+
+  if (isProd) {
     app.use(express.static(distPath));
     app.get("*", (req, res, next) => {
       if (req.path.startsWith("/api")) {
