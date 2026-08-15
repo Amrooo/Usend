@@ -262,6 +262,10 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
     const chargeableKm = shipmentType === 'domestic' ? Math.max(0, distanceKm - 5) : 0;
     const distanceFee = parseFloat((chargeableKm * 2).toFixed(2));
 
+    // Declared Value Insurance Fee (1% of declared value, minimum 5 AED if declared > 0)
+    const declaredVal = parseFloat(shipmentData.declaredValue || '0');
+    const insuranceFee = declaredVal > 0 ? Math.max(5, parseFloat((declaredVal * 0.01).toFixed(2))) : 0;
+
     // Platform service fee (5%)
     const serviceFee = parseFloat(((baseFee + weightFee + distanceFee) * 0.05).toFixed(2));
 
@@ -272,8 +276,11 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
       ? parseFloat((parseFloat(shipmentData.collectAmount) * (codPercent / 100)).toFixed(2))
       : 0;
 
-    const total = parseFloat((baseFee + weightFee + distanceFee + serviceFee + codCollectFee).toFixed(2));
-    return { baseFee, weightFee, distanceFee, chargeableKm, serviceFee, codCollectFee, total };
+    const subtotal = parseFloat((baseFee + weightFee + distanceFee + insuranceFee + serviceFee + codCollectFee).toFixed(2));
+    const vatAmount = parseFloat((subtotal * 0.05).toFixed(2));
+    const total = parseFloat((subtotal + vatAmount).toFixed(2));
+
+    return { baseFee, weightFee, distanceFee, chargeableKm, insuranceFee, serviceFee, codCollectFee, subtotal, vatAmount, total };
   };
 
   const calculateTotal = () => calculateBreakdown().total;
@@ -1070,10 +1077,10 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
               
               <div className="bg-white border border-slate-200 rounded-[2rem] p-4 md:p-8 space-y-6 shadow-xs mb-6 text-left rtl:text-right">
                 
-                {/* Visual Route */}
+                {/* Visual Route Banner */}
                 <div className="bg-slate-50 rounded-2xl p-5 flex items-center justify-between border border-slate-100">
                   <div>
-                    <span className="text-xs font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'نقطة الاستلام' : 'Pickup'}</span>
+                    <span className="text-xs font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'نقطة الاستلام' : 'Pickup Location'}</span>
                     <p className="font-bold text-sm text-zinc-800">{shipperData.city || 'Dubai'}</p>
                     <p className="text-[11px] text-zinc-500 font-semibold">{shipperData.name} ({shipperData.phone})</p>
                   </div>
@@ -1085,81 +1092,119 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
                     <span className="text-[8px] uppercase font-bold text-zinc-400 mt-0.5 tracking-widest">{shipmentType === 'international' ? 'Air Cargo' : 'Land Transport'}</span>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'نقطة التسليم' : 'Dropoff'}</span>
+                    <span className="text-xs font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'نقطة التسليم' : 'Dropoff Location'}</span>
                     <p className="font-bold text-sm text-zinc-800">{receiverData.city || 'Abu Dhabi'}</p>
                     <p className="text-[11px] text-zinc-500 font-semibold">{receiverData.name} ({receiverData.phone})</p>
                   </div>
                 </div>
 
-                {/* Package Details */}
-                <div className="grid grid-cols-2 gap-4 text-xs font-semibold text-zinc-600 border-b border-zinc-100 pb-4">
+                {/* Comprehensive Address Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50/70 p-4 rounded-2xl border border-slate-100 text-xs">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-black uppercase text-brand tracking-wider block">{isRTL ? 'تفاصيل عنوان الاستلام' : 'FULL PICKUP ADDRESS'}</span>
+                    <p className="font-bold text-slate-900">{shipperData.name}</p>
+                    <p className="text-slate-600 font-medium">{shipperData.phone} | {shipperData.email}</p>
+                    <p className="text-slate-600">{shipperData.street || 'Main Street'}{shipperData.building ? `, Bldg ${shipperData.building}` : ''}{shipperData.landmark ? ` (${shipperData.landmark})` : ''}, {shipperData.city}</p>
+                  </div>
+                  <div className="space-y-1 border-t md:border-t-0 md:border-l border-slate-200 pt-3 md:pt-0 md:pl-4">
+                    <span className="text-[10px] font-black uppercase text-brand tracking-wider block">{isRTL ? 'تفاصيل عنوان التسليم' : 'FULL DELIVERY ADDRESS'}</span>
+                    <p className="font-bold text-slate-900">{receiverData.name}</p>
+                    <p className="text-slate-600 font-medium">{receiverData.phone}</p>
+                    <p className="text-slate-600">{receiverData.street || 'Delivery Address'}, {receiverData.city}, {receiverData.country}</p>
+                  </div>
+                </div>
+
+                {/* Package Specifications Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-semibold text-zinc-600 border-y border-zinc-100 py-4">
                   <div>
-                    <span className="text-xs font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'نوع الطرد' : 'Package Type'}</span>
-                    <span className="text-zinc-800 font-bold">{shipmentData.description || 'Package Shipment'}</span>
+                    <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'محتوى الطرد' : 'Item Description'}</span>
+                    <span className="text-zinc-900 font-bold">{shipmentData.description || 'General Cargo'}</span>
                   </div>
                   <div>
-                    <span className="text-xs font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'الوزن والكمية' : 'Weight & Qty'}</span>
-                    <span className="text-zinc-800 font-bold">{shipmentData.weight} kg / {shipmentData.quantity} {isRTL ? 'وحدة' : 'Units'}</span>
+                    <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'الوزن والكمية' : 'Actual Weight & Qty'}</span>
+                    <span className="text-zinc-900 font-bold">{shipmentData.weight} kg ({shipmentData.quantity} Units)</span>
                   </div>
-                  {distanceKm > 0 && (
+                  <div>
+                    <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'الأبعاد والوزن الحجمي' : 'Dimensions (Volumetric)'}</span>
+                    <span className="text-zinc-900 font-bold">{shipmentData.length}×{shipmentData.width}×{shipmentData.height} cm ({(((parseFloat(shipmentData.length || '10') * parseFloat(shipmentData.width || '10') * parseFloat(shipmentData.height || '10')) / 5000)).toFixed(2)} kg)</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'الناقل المختار' : 'Carrier Partner'}</span>
+                    <span className="text-brand font-bold uppercase">{shipmentData.courier === 'aramex' ? 'Aramex Express' : shipmentData.courier === 'noon' ? 'Noon Hyperlocal' : 'USend Direct Fleet'}</span>
+                  </div>
+                  {parseFloat(shipmentData.declaredValue || '0') > 0 && (
                     <div>
-                      <span className="text-xs font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'المسافة' : 'Distance'}</span>
-                      <span className="text-brand font-bold">{distanceKm} km</span>
+                      <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'القيمة المصرح بها' : 'Declared Cargo Value'}</span>
+                      <span className="text-zinc-900 font-bold">{parseFloat(shipmentData.declaredValue).toFixed(2)} AED</span>
                     </div>
                   )}
                   {shipmentData.collectCashFromCustomer && parseFloat(shipmentData.collectAmount || '0') > 0 && (
                     <div>
-                      <span className="text-xs font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'تحصيل من العميل' : 'COD Collection'}</span>
-                      <span className="text-zinc-800 font-bold">{parseFloat(shipmentData.collectAmount).toFixed(2)} AED</span>
+                      <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'تحصيل من العميل' : 'COD Collection Target'}</span>
+                      <span className="text-emerald-700 font-bold">{parseFloat(shipmentData.collectAmount).toFixed(2)} AED</span>
                     </div>
                   )}
+                  <div>
+                    <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'وقت التسليم المتوقع' : 'Estimated Transit'}</span>
+                    <span className="text-zinc-900 font-bold">{shipmentType === 'international' ? '24 - 48 Hours Express' : 'Same-Day Express (2-4 hrs)'}</span>
+                  </div>
                 </div>
 
-                {/* Pricing Breakdown */}
+                {/* Itemized Financial & Fee Breakdown */}
                 {(() => {
                   const bd = calculateBreakdown();
                   return (
-                    <div className="space-y-3 text-xs font-semibold">
-                      <div className="flex justify-between items-center text-zinc-500">
-                        <span>{isRTL ? 'رسوم الناقل' : 'Courier Base Fee'} ({shipmentData.courier === 'aramex' ? 'Aramex' : shipmentData.courier === 'noon' ? 'Noon' : 'USend Fleet'})</span>
-                        <span className="font-semibold text-zinc-800">{bd.baseFee.toFixed(2)} AED</span>
+                    <div className="space-y-2.5 text-xs font-semibold pt-2">
+                      <div className="flex justify-between items-center text-zinc-600">
+                        <span>{isRTL ? 'رسوم الناقل الأساسية' : 'Courier Base Transport Fee'} ({shipmentData.courier === 'aramex' ? 'Aramex Express' : shipmentData.courier === 'noon' ? 'Noon Direct' : 'USend Fleet'})</span>
+                        <span className="font-semibold text-zinc-900">{bd.baseFee.toFixed(2)} AED</span>
                       </div>
 
                       {bd.weightFee > 0 && (
-                        <div className="flex justify-between items-center text-zinc-500">
+                        <div className="flex justify-between items-center text-zinc-600">
                           <span>{isRTL ? 'رسوم الوزن الإضافي' : 'Weight Surcharge'} ({Math.max(0, parseFloat(shipmentData.weight || '0') - 5).toFixed(1)} kg extra)</span>
-                          <span className="font-semibold text-zinc-800">{bd.weightFee.toFixed(2)} AED</span>
+                          <span className="font-semibold text-zinc-900">{bd.weightFee.toFixed(2)} AED</span>
                         </div>
                       )}
 
                       {bd.distanceFee > 0 && (
-                        <div className="flex justify-between items-center text-zinc-500">
-                          <span>{isRTL ? 'رسوم المسافة' : 'Distance Fee'} ({bd.chargeableKm.toFixed(1)} km × 2 AED)</span>
-                          <span className="font-semibold text-zinc-800">{bd.distanceFee.toFixed(2)} AED</span>
+                        <div className="flex justify-between items-center text-zinc-600">
+                          <span>{isRTL ? 'رسوم المسافة الإضافية' : 'Distance Surcharge'} ({bd.chargeableKm.toFixed(1)} km × 2.00 AED)</span>
+                          <span className="font-semibold text-zinc-900">{bd.distanceFee.toFixed(2)} AED</span>
                         </div>
                       )}
 
-                      <div className="flex justify-between items-center text-zinc-500">
-                        <span>{isRTL ? 'رسوم المنصة (5%)' : 'Platform Service Fee (5%)'}</span>
-                        <span className="font-semibold text-zinc-800">{bd.serviceFee.toFixed(2)} AED</span>
+                      {bd.insuranceFee > 0 && (
+                        <div className="flex justify-between items-center text-zinc-600">
+                          <span>{isRTL ? 'تأمين حماية الشحنة (1%)' : 'Transit Insurance & Risk Protection (1%)'}</span>
+                          <span className="font-semibold text-zinc-900">{bd.insuranceFee.toFixed(2)} AED</span>
+                        </div>
+                      )}
+
+                      <div className="flex justify-between items-center text-zinc-600">
+                        <span>{isRTL ? 'رسوم المنصة والتقنية (5%)' : 'Platform & Technology Processing Fee (5%)'}</span>
+                        <span className="font-semibold text-zinc-900">{bd.serviceFee.toFixed(2)} AED</span>
                       </div>
 
                       {bd.codCollectFee > 0 && (
-                        <div className="flex justify-between items-center text-zinc-500">
-                          <span>{isRTL ? 'رسوم تحصيل النقدية (2%)' : 'COD Handling Fee (2%)'}</span>
-                          <span className="font-semibold text-zinc-800">{bd.codCollectFee.toFixed(2)} AED</span>
+                        <div className="flex justify-between items-center text-zinc-600">
+                          <span>{isRTL ? 'رسوم معالجة النقدية (2%)' : 'COD Cash Handling Charge (2%)'}</span>
+                          <span className="font-semibold text-zinc-900">{bd.codCollectFee.toFixed(2)} AED</span>
                         </div>
                       )}
 
-                      {shipmentType === 'international' && (
-                        <div className="flex justify-between items-center text-zinc-500">
-                          <span>{isRTL ? 'رسوم الشحن الدولي' : 'International Air Cargo Markup'}</span>
-                          <span className="font-semibold text-zinc-800">90.00 AED</span>
-                        </div>
-                      )}
+                      <div className="flex justify-between items-center text-zinc-500 pt-2 border-t border-slate-100">
+                        <span>{isRTL ? 'المجموع الفرعي' : 'Subtotal'}</span>
+                        <span className="font-bold text-slate-800">{bd.subtotal.toFixed(2)} AED</span>
+                      </div>
 
-                      <div className="flex justify-between items-center text-xl font-black text-brand pt-4 border-t border-slate-100 mt-4">
-                        <span>{isRTL ? 'الإجمالي' : 'Total Cost'}</span>
+                      <div className="flex justify-between items-center text-zinc-500">
+                        <span>{isRTL ? 'ضريبة القيمة المضافة (5%)' : 'UAE Value Added Tax (5% VAT)'}</span>
+                        <span className="font-bold text-slate-800">{bd.vatAmount.toFixed(2)} AED</span>
+                      </div>
+
+                      <div className="flex justify-between items-center text-2xl font-black text-brand pt-4 border-t-2 border-slate-200 mt-3">
+                        <span>{isRTL ? 'إجمالي المبلغ المستحق' : 'Total Amount Payable'}</span>
                         <span>{bd.total.toFixed(2)} AED</span>
                       </div>
                     </div>
