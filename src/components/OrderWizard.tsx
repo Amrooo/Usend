@@ -460,117 +460,24 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
           // Smart Fallback for Static Hosts (e.g. Cloudways without Node proxy)
           const contentType = res.headers.get("content-type") || "";
           if (contentType.includes("text/html")) {
-             console.warn("Local API proxy failed (returned HTML). Using CORS Proxy fallback for Courier...");
-             if (shipmentData.courier === 'aramex') {
-                const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent('https://ws.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc/json/CreateShipments');
-                const aramexPayload = {
-                  ClientInfo: {
-                    UserName: activeCreds.username,
-                    Password: activeCreds.password,
-                    Version: activeCreds.version || "v1.0",
-                    AccountNumber: activeCreds.accountNumber,
-                    AccountPin: activeCreds.accountPin,
-                    AccountEntity: activeCreds.accountEntity,
-                    AccountCountryCode: activeCreds.accountCountryCode,
-                    Source: parseInt(activeCreds.source || '0', 10) || 0
-                  },
-                  Transaction: {
-                    Reference1: canonicalPayload.reference || "USend Shipment",
-                    Reference2: "", Reference3: "", Reference4: "", Reference5: ""
-                  },
-                  Shipments: [
-                    {
-                      Reference1: canonicalPayload.reference || "",
-                      Reference2: "", Reference3: "",
-                      Shipper: {
-                        Reference1: "USend Central Depot",
-                        Reference2: "",
-                        AccountNumber: activeCreds.accountNumber,
-                        PartyAddress: {
-                          Line1: canonicalPayload.senderAddress || "Dubai Warehouse",
-                          Line2: "", Line3: "",
-                          City: "Dubai",
-                          StateOrProvince: "",
-                          PostCode: "",
-                          CountryCode: canonicalPayload.senderCountry
-                        },
-                        Contact: {
-                          Department: "",
-                          PersonName: "USend Dispatch",
-                          Title: "",
-                          CompanyName: "USend",
-                          PhoneNumber1: "+971500000000",
-                          PhoneNumber1Ext: "", PhoneNumber2: "", PhoneNumber2Ext: "", FaxNumber: "", CellPhone: "", EmailAddress: "dispatch@usend.com", Type: ""
-                        }
-                      },
-                      Consignee: {
-                        Reference1: "", Reference2: "", AccountNumber: "",
-                        PartyAddress: {
-                          Line1: canonicalPayload.receiverAddress || "Delivery Street",
-                          Line2: "", Line3: "",
-                          City: "Dubai",
-                          StateOrProvince: "",
-                          PostCode: "",
-                          CountryCode: canonicalPayload.receiverCountry
-                        },
-                        Contact: {
-                          Department: "",
-                          PersonName: canonicalPayload.receiverName || "Recipient",
-                          Title: "",
-                          CompanyName: canonicalPayload.receiverName || "Recipient",
-                          PhoneNumber1: canonicalPayload.receiverPhone || "+971500000000",
-                          PhoneNumber1Ext: "", PhoneNumber2: "", PhoneNumber2Ext: "", FaxNumber: "", CellPhone: canonicalPayload.receiverPhone || "+971500000000", EmailAddress: "", Type: ""
-                        }
-                      },
-                      ThirdParty: {
-                        Reference1: "", Reference2: "", AccountNumber: "", PartyAddress: null, Contact: null
-                      },
-                      Reference1: canonicalPayload.reference,
-                      Reference2: "", Reference3: "",
-                      ForeignHAWB: "",
-                      TransportType: 0,
-                      ShippingDateTime: `/Date(${Date.now()})/`,
-                      DueDate: `/Date(${Date.now() + 86400000 * 2})/`,
-                      PickupLocation: "",
-                      PickupGUID: "",
-                      Comments: "",
-                      AccountingInstrcutions: "",
-                      OperationsInstructions: "",
-                      Details: {
-                        Dimensions: {
-                          Length: canonicalPayload.dimensions?.length || 10,
-                          Width: canonicalPayload.dimensions?.width || 10,
-                          Height: canonicalPayload.dimensions?.height || 10,
-                          Unit: "CM"
-                        },
-                        ActualWeight: { Value: canonicalPayload.weightKg || 1, Unit: "KG" },
-                        ChargeableWeight: null,
-                        DescriptionOfGoods: canonicalPayload.goodsDescription || "Verification",
-                        GoodsOriginCountry: canonicalPayload.senderCountry,
-                        NumberOfPieces: 1,
-                        ProductGroup: canonicalPayload.senderCountry === canonicalPayload.receiverCountry ? "DOM" : "EXP",
-                        ProductType: "OND",
-                        PaymentType: "P",
-                        PaymentOptions: "",
-                        CustomsValueAmount: null,
-                        CashOnDeliveryAmount: canonicalPayload.codAmountAED ? { Value: canonicalPayload.codAmountAED, CurrencyCode: "AED" } : null,
-                        InsuranceAmount: null,
-                        CashAdditionalAmount: null,
-                        CashAdditionalAmountDescription: "",
-                        CollectAmount: null,
-                        Services: canonicalPayload.codAmountAED ? "CODS" : "",
-                        Items: []
-                      }
-                    }
-                  ]
-                };
-                res = await fetch(proxyUrl, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                  body: JSON.stringify(aramexPayload)
-                });
-             } else {
-                 throw new Error("Noon Dispatch requires Node.js Backend. Proxy failed.");
+             console.warn("Local API proxy failed (returned HTML). Using local PHP Proxy fallback...");
+             
+             // Public CORS proxies like corsproxy.io block POST requests to Aramex for security.
+             // We fallback to the local api.php bridge deployed on the Cloudways server.
+             res = await fetch('/api.php/courier/shipment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                   courierId: shipmentData.courier,
+                   payload: canonicalPayload,
+                   credentials: { ...activeCreds, apiEnv: 'production' },
+                   environment: 'production'
+                })
+             });
+             
+             const fallbackContentType = res.headers.get("content-type") || "";
+             if (fallbackContentType.includes("text/html")) {
+                 throw new Error("Local API proxy AND PHP fallback failed. Please ensure Cloudways pulls the latest GitHub changes.");
              }
           }
 
