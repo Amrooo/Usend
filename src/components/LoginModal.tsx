@@ -52,7 +52,11 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
     try {
       const googleUser = await signInWithGoogle();
       if (googleUser) {
-        let targetRole = selectedRole || 'user';
+        let targetRole = selectedRole === 'merchant' ? 'merchant' : 'user';
+        if (googleUser.email?.toLowerCase() === 'admin@usend.com') {
+          targetRole = 'admin';
+        }
+
         try {
           const userDocRef = doc(db, 'users', googleUser.uid);
           await setDoc(userDocRef, {

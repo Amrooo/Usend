@@ -369,10 +369,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       
       if (u) {
         let finalRole = 'user';
-        if (u.email?.toLowerCase().includes('merchant')) finalRole = 'merchant';
-        else if (u.email?.toLowerCase().includes('admin')) finalRole = 'admin';
-        else if (u.email?.toLowerCase().includes('driver')) finalRole = 'driver';
-        else if (u.email?.toLowerCase().includes('user')) finalRole = 'user';
+        if (u.email?.toLowerCase() === 'admin@usend.com') {
+          finalRole = 'admin';
+        } else if (u.email?.toLowerCase().includes('merchant')) {
+          finalRole = 'merchant';
+        } else {
+          finalRole = 'user';
+        }
 
         try {
           // Automatically ensure user document exists in 'users'
@@ -392,8 +395,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
             });
           } else {
             const data = userDoc.data();
-            if (data.role) {
+            if (data.role && (data.role !== 'admin' || u.email?.toLowerCase() === 'admin@usend.com')) {
               finalRole = data.role;
+            } else if (u.email?.toLowerCase() !== 'admin@usend.com') {
+              finalRole = 'user';
             }
           }
           
@@ -407,16 +412,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
               const data = snapshot.data();
               setUser((prev: any) => {
                 if (!prev) return null;
+                const effectiveRole = (u.email?.toLowerCase() === 'admin@usend.com') ? 'admin' : (data.role && data.role !== 'admin' ? data.role : 'user');
                 if (
                   prev.walletBalance === data.walletBalance &&
                   prev.codPending === data.codPending &&
                   JSON.stringify(prev.transactions) === JSON.stringify(data.transactions) &&
-                  prev.role === data.role &&
+                  prev.role === effectiveRole &&
                   prev.name === data.name
                 ) {
                   return prev;
                 }
-                return { ...prev, ...data, role: data.role || finalRole };
+                return { ...prev, ...data, role: effectiveRole };
               });
             }
           }, (error) => {

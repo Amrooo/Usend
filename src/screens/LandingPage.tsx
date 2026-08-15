@@ -757,9 +757,9 @@ const [botOpen, setBotOpen] = useState(false);
               <button
                 onClick={() => {
                   let dest: Screen = 'user_dashboard';
-                  if (user.role === 'merchant') {
+                  if (user?.role === 'merchant') {
                     dest = 'merchant_dashboard';
-                  } else if (user.role === 'admin') {
+                  } else if (user?.role === 'admin' && user?.email?.toLowerCase() === 'admin@usend.com') {
                     dest = 'admin_dashboard';
                   } else {
                     dest = 'user_dashboard';
