@@ -717,6 +717,77 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
     setIsMapOpen(false);
   };
 
+  const renderOrderSummary = () => (
+    <div className="bg-slate-50 border border-slate-200 rounded-[2rem] p-4 md:p-6 shadow-sm text-left rtl:text-right sticky top-4">
+      <h3 className="text-lg font-bold mb-4 uppercase tracking-tight">{isRTL ? "ملخص الطلب" : "Order Summary"}</h3>
+      
+      {/* Visual Route Banner */}
+      <div className="bg-white rounded-2xl p-4 flex items-center justify-between border border-slate-100 mb-4">
+        <div>
+          <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'نقطة الاستلام' : 'Pickup'}</span>
+          <p className="font-bold text-xs text-zinc-800 truncate max-w-[80px]">{shipperData.city || '-'}</p>
+        </div>
+        <div className="flex flex-col items-center justify-center px-2">
+          <ArrowRight className="text-brand w-4 h-4" />
+          {distanceKm > 0 && <span className="text-[9px] font-bold uppercase text-brand mt-1 tracking-widest">{distanceKm} km</span>}
+        </div>
+        <div className="text-right">
+          <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'نقطة التسليم' : 'Dropoff'}</span>
+          <p className="font-bold text-xs text-zinc-800 truncate max-w-[80px]">{receiverData.city || '-'}</p>
+        </div>
+      </div>
+
+      {/* Package & Specs */}
+      <div className="bg-white rounded-2xl p-4 border border-slate-100 mb-4 space-y-3">
+        <div className="flex justify-between items-center text-xs">
+          <span className="text-zinc-500">{isRTL ? 'محتوى الطرد' : 'Description'}</span>
+          <span className="font-bold text-zinc-800">{shipmentData.description || '-'}</span>
+        </div>
+        <div className="flex justify-between items-center text-xs">
+          <span className="text-zinc-500">{isRTL ? 'الوزن' : 'Weight'}</span>
+          <span className="font-bold text-zinc-800">{shipmentData.weight || '0'} kg</span>
+        </div>
+        <div className="flex justify-between items-center text-xs">
+          <span className="text-zinc-500">{isRTL ? 'الناقل المختار' : 'Carrier'}</span>
+          <span className="font-bold text-brand uppercase">{shipmentData.courier || '-'}</span>
+        </div>
+      </div>
+
+      {/* Financials */}
+      {(() => {
+        const bd = calculateBreakdown();
+        return (
+          <div className="space-y-2 text-[11px] font-semibold pt-2">
+            <div className="flex justify-between items-center text-zinc-600">
+              <span>{isRTL ? 'رسوم النقل' : 'Base Fee'}</span>
+              <span className="text-zinc-900">{bd.baseFee.toFixed(2)} AED</span>
+            </div>
+            {bd.weightFee > 0 && (
+              <div className="flex justify-between items-center text-zinc-600">
+                <span>{isRTL ? 'رسوم الوزن' : 'Weight Surcharge'}</span>
+                <span className="text-zinc-900">{bd.weightFee.toFixed(2)} AED</span>
+              </div>
+            )}
+            {bd.distanceFee > 0 && (
+              <div className="flex justify-between items-center text-zinc-600">
+                <span>{isRTL ? 'رسوم المسافة' : 'Distance Surcharge'}</span>
+                <span className="text-zinc-900">{bd.distanceFee.toFixed(2)} AED</span>
+              </div>
+            )}
+            <div className="flex justify-between items-center text-zinc-500 pt-2 border-t border-slate-100">
+              <span>{isRTL ? 'ضريبة القيمة المضافة' : 'VAT (5%)'}</span>
+              <span>{bd.vatAmount.toFixed(2)} AED</span>
+            </div>
+            <div className="flex justify-between items-center text-lg font-black text-brand pt-3 border-t-2 border-slate-200 mt-2">
+              <span>{isRTL ? 'الإجمالي' : 'Total'}</span>
+              <span>{bd.total.toFixed(2)} AED</span>
+            </div>
+          </div>
+        );
+      })()}
+    </div>
+  );
+
   const renderProgressBar = () => {
     const steps = [
       { id: 1, label: isRTL ? 'المرسل' : 'Shipper' },
@@ -749,7 +820,8 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
   };
 
   return (
-    <div className={`w-full bg-white rounded-[2.5rem] ${isGuest ? 'shadow-xs' : 'shadow-none'} p-4 md:p-10 text-slate-800`} dir={isRTL ? "rtl" : "ltr"}>
+    <div className={`w-full bg-white rounded-[2.5rem] ${isGuest ? 'shadow-xs' : 'shadow-none'} p-4 md:p-10 text-slate-800 flex flex-col lg:flex-row gap-8`} dir={isRTL ? "rtl" : "ltr"}>
+      <div className="flex-1 w-full max-w-full lg:max-w-[calc(100%-350px)]">
       <Modal isOpen={isMapOpen} onClose={() => setIsMapOpen(false)} title="Select Location on Map">
          <MapPicker onSelect={handleMapSelect} onClose={() => setIsMapOpen(false)} />
       </Modal>
@@ -1096,145 +1168,9 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
             transition={{ duration: 0.3, ease: 'easeInOut' }}
           >
             <div className="space-y-8 mt-16 pb-4">
-              <h3 className="text-xl font-bold mb-2 uppercase tracking-tight">{isRTL ? "مراجعة الطلب" : "Summary & Payment"}</h3>
+              <h3 className="text-xl font-bold mb-2 uppercase tracking-tight">{isRTL ? "تفاصيل الدفع" : "Payment Details"}</h3>
               
-              <div className="bg-white border border-slate-200 rounded-[2rem] p-4 md:p-8 space-y-6 shadow-xs mb-6 text-left rtl:text-right">
-                
-                {/* Visual Route Banner */}
-                <div className="bg-slate-50 rounded-2xl p-5 flex items-center justify-between border border-slate-100">
-                  <div>
-                    <span className="text-xs font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'نقطة الاستلام' : 'Pickup Location'}</span>
-                    <p className="font-bold text-sm text-zinc-800">{shipperData.city || 'Dubai'}</p>
-                    <p className="text-[11px] text-zinc-500 font-semibold">{shipperData.name} ({shipperData.phone})</p>
-                  </div>
-                  <div className="flex flex-col items-center justify-center px-4">
-                    <ArrowRight className="text-brand w-5 h-5 animate-pulse" />
-                    {distanceKm > 0 && (
-                      <span className="text-xs font-bold uppercase text-brand mt-1 tracking-widest">{distanceKm} km</span>
-                    )}
-                    <span className="text-[8px] uppercase font-bold text-zinc-400 mt-0.5 tracking-widest">{shipmentType === 'international' ? 'Air Cargo' : 'Land Transport'}</span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-xs font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'نقطة التسليم' : 'Dropoff Location'}</span>
-                    <p className="font-bold text-sm text-zinc-800">{receiverData.city || 'Abu Dhabi'}</p>
-                    <p className="text-[11px] text-zinc-500 font-semibold">{receiverData.name} ({receiverData.phone})</p>
-                  </div>
-                </div>
-
-                {/* Comprehensive Address Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50/70 p-4 rounded-2xl border border-slate-100 text-xs">
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-black uppercase text-brand tracking-wider block">{isRTL ? 'تفاصيل عنوان الاستلام' : 'FULL PICKUP ADDRESS'}</span>
-                    <p className="font-bold text-slate-900">{shipperData.name}</p>
-                    <p className="text-slate-600 font-medium">{shipperData.phone} | {shipperData.email}</p>
-                    <p className="text-slate-600">{shipperData.street || 'Main Street'}{shipperData.building ? `, Bldg ${shipperData.building}` : ''}{shipperData.landmark ? ` (${shipperData.landmark})` : ''}, {shipperData.city}</p>
-                  </div>
-                  <div className="space-y-1 border-t md:border-t-0 md:border-l border-slate-200 pt-3 md:pt-0 md:pl-4">
-                    <span className="text-[10px] font-black uppercase text-brand tracking-wider block">{isRTL ? 'تفاصيل عنوان التسليم' : 'FULL DELIVERY ADDRESS'}</span>
-                    <p className="font-bold text-slate-900">{receiverData.name}</p>
-                    <p className="text-slate-600 font-medium">{receiverData.phone}</p>
-                    <p className="text-slate-600">{receiverData.street || 'Delivery Address'}, {receiverData.city}, {receiverData.country}</p>
-                  </div>
-                </div>
-
-                {/* Package Specifications Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-semibold text-zinc-600 border-y border-zinc-100 py-4">
-                  <div>
-                    <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'محتوى الطرد' : 'Item Description'}</span>
-                    <span className="text-zinc-900 font-bold">{shipmentData.description || 'General Cargo'}</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'الوزن والكمية' : 'Actual Weight & Qty'}</span>
-                    <span className="text-zinc-900 font-bold">{shipmentData.weight} kg ({shipmentData.quantity} Units)</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'الأبعاد والوزن الحجمي' : 'Dimensions (Volumetric)'}</span>
-                    <span className="text-zinc-900 font-bold">{shipmentData.length}×{shipmentData.width}×{shipmentData.height} cm ({(((parseFloat(shipmentData.length || '10') * parseFloat(shipmentData.width || '10') * parseFloat(shipmentData.height || '10')) / 5000)).toFixed(2)} kg)</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'الناقل المختار' : 'Carrier Partner'}</span>
-                    <span className="text-brand font-bold uppercase">{shipmentData.courier === 'aramex' ? 'Aramex Express' : shipmentData.courier === 'noon' ? 'Noon Hyperlocal' : 'USend Direct Fleet'}</span>
-                  </div>
-                  {parseFloat(shipmentData.declaredValue || '0') > 0 && (
-                    <div>
-                      <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'القيمة المصرح بها' : 'Declared Cargo Value'}</span>
-                      <span className="text-zinc-900 font-bold">{parseFloat(shipmentData.declaredValue).toFixed(2)} AED</span>
-                    </div>
-                  )}
-                  {shipmentData.collectCashFromCustomer && parseFloat(shipmentData.collectAmount || '0') > 0 && (
-                    <div>
-                      <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'تحصيل من العميل' : 'COD Collection Target'}</span>
-                      <span className="text-emerald-700 font-bold">{parseFloat(shipmentData.collectAmount).toFixed(2)} AED</span>
-                    </div>
-                  )}
-                  <div>
-                    <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'وقت التسليم المتوقع' : 'Estimated Transit'}</span>
-                    <span className="text-zinc-900 font-bold">{shipmentType === 'international' ? '24 - 48 Hours Express' : 'Same-Day Express (2-4 hrs)'}</span>
-                  </div>
-                </div>
-
-                {/* Itemized Financial & Fee Breakdown */}
-                {(() => {
-                  const bd = calculateBreakdown();
-                  return (
-                    <div className="space-y-2.5 text-xs font-semibold pt-2">
-                      <div className="flex justify-between items-center text-zinc-600">
-                        <span>{isRTL ? 'رسوم الناقل الأساسية' : 'Courier Base Transport Fee'} ({shipmentData.courier === 'aramex' ? 'Aramex Express' : shipmentData.courier === 'noon' ? 'Noon Direct' : 'USend Fleet'})</span>
-                        <span className="font-semibold text-zinc-900">{bd.baseFee.toFixed(2)} AED</span>
-                      </div>
-
-                      {bd.weightFee > 0 && (
-                        <div className="flex justify-between items-center text-zinc-600">
-                          <span>{isRTL ? 'رسوم الوزن الإضافي' : 'Weight Surcharge'} ({Math.max(0, parseFloat(shipmentData.weight || '0') - 5).toFixed(1)} kg extra)</span>
-                          <span className="font-semibold text-zinc-900">{bd.weightFee.toFixed(2)} AED</span>
-                        </div>
-                      )}
-
-                      {bd.distanceFee > 0 && (
-                        <div className="flex justify-between items-center text-zinc-600">
-                          <span>{isRTL ? 'رسوم المسافة الإضافية' : 'Distance Surcharge'} ({bd.chargeableKm.toFixed(1)} km × 2.00 AED)</span>
-                          <span className="font-semibold text-zinc-900">{bd.distanceFee.toFixed(2)} AED</span>
-                        </div>
-                      )}
-
-                      {bd.insuranceFee > 0 && (
-                        <div className="flex justify-between items-center text-zinc-600">
-                          <span>{isRTL ? 'تأمين حماية الشحنة (1%)' : 'Transit Insurance & Risk Protection (1%)'}</span>
-                          <span className="font-semibold text-zinc-900">{bd.insuranceFee.toFixed(2)} AED</span>
-                        </div>
-                      )}
-
-                      <div className="flex justify-between items-center text-zinc-600">
-                        <span>{isRTL ? 'رسوم المنصة والتقنية (5%)' : 'Platform & Technology Processing Fee (5%)'}</span>
-                        <span className="font-semibold text-zinc-900">{bd.serviceFee.toFixed(2)} AED</span>
-                      </div>
-
-                      {bd.codCollectFee > 0 && (
-                        <div className="flex justify-between items-center text-zinc-600">
-                          <span>{isRTL ? 'رسوم معالجة النقدية (2%)' : 'COD Cash Handling Charge (2%)'}</span>
-                          <span className="font-semibold text-zinc-900">{bd.codCollectFee.toFixed(2)} AED</span>
-                        </div>
-                      )}
-
-                      <div className="flex justify-between items-center text-zinc-500 pt-2 border-t border-slate-100">
-                        <span>{isRTL ? 'المجموع الفرعي' : 'Subtotal'}</span>
-                        <span className="font-bold text-slate-800">{bd.subtotal.toFixed(2)} AED</span>
-                      </div>
-
-                      <div className="flex justify-between items-center text-zinc-500">
-                        <span>{isRTL ? 'ضريبة القيمة المضافة (5%)' : 'UAE Value Added Tax (5% VAT)'}</span>
-                        <span className="font-bold text-slate-800">{bd.vatAmount.toFixed(2)} AED</span>
-                      </div>
-
-                      <div className="flex justify-between items-center text-2xl font-black text-brand pt-4 border-t-2 border-slate-200 mt-3">
-                        <span>{isRTL ? 'إجمالي المبلغ المستحق' : 'Total Amount Payable'}</span>
-                        <span>{bd.total.toFixed(2)} AED</span>
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-              
+              {/* Order summary is now rendered in the right-side sticky panel */}
               {isGuest && (
                 <div className="bg-brand/10 text-brand px-4 py-3 rounded-xl text-xs font-semibold mb-6 flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4"/>
@@ -1419,6 +1355,14 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
           </motion.div>
         )}
       </AnimatePresence>
+      </div> {/* Close left column */}
+
+      {/* Right Column: Live Summary Sidebar */}
+      {wizardStep >= 1 && wizardStep <= 4 && (
+        <div className="w-full lg:w-[350px] shrink-0 mt-8 lg:mt-0">
+          {renderOrderSummary()}
+        </div>
+      )}
     </div>
   );
 }
