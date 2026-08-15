@@ -1,9 +1,5 @@
 <?php
-// Simple PHP Proxy to route requests to the local Node.js server running on port 3000
-// This is a workaround for Cloudways Nginx blocking direct /api/ routing for static apps.
-
 $requestUri = $_SERVER['REQUEST_URI'];
-// Strip /api.php from the URI so Node.js receives /api/...
 $forwardUri = str_replace('/api.php', '/api', $requestUri);
 $nodeUrl = 'http://127.0.0.1:3000' . $forwardUri;
 
@@ -16,7 +12,7 @@ foreach ($headers as $key => $value) {
         $curlHeaders[] = "$key: $value";
     }
 }
-$curlHeaders[] = 'Host: 127.0.0.1'; // important so node doesn't get confused if not using vhosts
+$curlHeaders[] = 'Host: 127.0.0.1';
 
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_URL, $nodeUrl);
@@ -31,11 +27,20 @@ if ($method === 'POST' || $method === 'PUT' || $method === 'PATCH') {
 
 $response = curl_exec($ch);
 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+$curlError = curl_error($ch);
 curl_close($ch);
 
-http_response_code($httpCode);
+if ($response === false) {
+    http_response_code(503);
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'API Gateway Error', 'details' => $curlError, 'url' => $nodeUrl]);
+    exit;
+}
 
-// Pass back content type based on basic json check
+if ($httpCode >= 100) {
+    http_response_code($httpCode);
+}
+
 $isJson = json_decode($response) !== null;
 if ($isJson) {
     header('Content-Type: application/json');
