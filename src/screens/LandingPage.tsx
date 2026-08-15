@@ -252,30 +252,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
       setLoginModalOpen(false);
       onNavigate(redirectScreen);
     } catch (err: any) {
-      if (loginPassword === 'password') {
-        console.warn("Demo Fallback applied. Auth error details: ", err);
-        
-        let targetRole = 'merchant';
-        if (loginEmail.toLowerCase().includes('admin')) targetRole = 'admin';
-        else if (loginEmail.toLowerCase().includes('driver') || loginEmail.toLowerCase().includes('user')) targetRole = 'user';
-        
-        // Correctly match the redirectScreen with targetRole
-        let fallbackRedirectScreen: Screen = 'merchant_dashboard';
-        if (targetRole === 'admin') fallbackRedirectScreen = 'admin_dashboard';
-        else if (targetRole === 'user' || (targetRole as string) === 'driver') fallbackRedirectScreen = 'user_dashboard';
-
-        setUser({
-          uid: 'demo-fallback-uid',
-          email: loginEmail,
-          role: targetRole,
-          name: 'Demo User',
-        });
-        
-        setLoginModalOpen(false);
-        onNavigate(fallbackRedirectScreen);
-      } else {
-        setLoginError(err.message || 'Authentication failed. Please check your credentials.');
-      }
+      setLoginError(err.message || 'Authentication failed. Please check your credentials.');
     } finally {
       setLoginLoading(false);
     }
