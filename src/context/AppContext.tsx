@@ -370,7 +370,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (u) {
         let finalRole = 'user';
         if (u.email?.toLowerCase().includes('merchant')) finalRole = 'merchant';
-        else if (u.email?.toLowerCase().includes('admin') || u.email?.toLowerCase() === 'octman.sam@gmail.com') finalRole = 'admin';
+        else if (u.email?.toLowerCase().includes('admin')) finalRole = 'admin';
         else if (u.email?.toLowerCase().includes('driver')) finalRole = 'driver';
         else if (u.email?.toLowerCase().includes('user')) finalRole = 'user';
 
@@ -395,10 +395,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
             if (data.role) {
               finalRole = data.role;
             }
-          }
-          
-          if (u.email?.toLowerCase() === 'octman.sam@gmail.com') {
-            finalRole = 'admin';
           }
           
           const currentDoc = await getDoc(userDocRef);
@@ -429,10 +425,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
         } catch (error) {
           console.warn('Profile DB sync skipped (offline or missing permission):', error);
-          
-          if (u.email?.toLowerCase() === 'octman.sam@gmail.com') {
-            finalRole = 'admin';
-          }
           setUser({ ...u, role: finalRole });
         }
 
@@ -503,7 +495,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
 
     let unsubscribeMerchants = () => {};
-    if (auth.currentUser && (user?.role === 'admin' || user?.email?.toLowerCase() === 'octman.sam@gmail.com')) {
+    if (auth.currentUser && user?.role === 'admin') {
       unsubscribeMerchants = subscribeToCollection<Merchant>(
         'merchants', 
         (data) => {
@@ -518,7 +510,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
 
     let unsubscribeUsers = () => {};
-    if (auth.currentUser && (user?.role === 'admin' || user?.email?.toLowerCase() === 'octman.sam@gmail.com')) {
+    if (auth.currentUser && user?.role === 'admin') {
       unsubscribeUsers = subscribeToCollection<USendUser>(
         'users', 
         (data) => {

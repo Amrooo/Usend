@@ -112,7 +112,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
       if (password === 'password') {
         let redirectScreen: Screen = 'merchant_dashboard';
         let targetRole = 'merchant';
-        if (email.includes('admin') || email.toLowerCase() === 'octman.sam@gmail.com') { redirectScreen = 'admin_dashboard'; targetRole = 'admin'; }
+        if (email.includes('admin')) { redirectScreen = 'admin_dashboard'; targetRole = 'admin'; }
         else if (email.includes('user') || email.includes('driver')) { redirectScreen = 'user_dashboard'; targetRole = 'user'; }
         
         setUser({

@@ -126,7 +126,7 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
       // Demo fallback if connection completely fails (not password errors)
       if (password === 'password') {
         let targetRole = selectedRole;
-        if (email.toLowerCase().includes('admin') || email.toLowerCase() === 'octman.sam@gmail.com') targetRole = 'admin';
+        if (email.toLowerCase().includes('admin')) targetRole = 'admin';
         else if (email.toLowerCase().includes('merchant')) targetRole = 'merchant';
         else if (email.toLowerCase().includes('driver') || email.toLowerCase().includes('user')) targetRole = 'user';
 
