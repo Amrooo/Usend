@@ -162,6 +162,8 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
   const [createdOrderId, setCreatedOrderId] = useState('');
   const [dispatchedWaybill, setDispatchedWaybill] = useState('');
   const [dispatchedLabelUrl, setDispatchedLabelUrl] = useState('');
+  const [dispatchApiSuccess, setDispatchApiSuccess] = useState<boolean | null>(null);
+  const [dispatchApiError, setDispatchApiError] = useState<string | null>(null);
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [mapTarget, setMapTarget] = useState<'shipper' | 'receiver'>('shipper');
   const [isAramexBoxModalOpen, setIsAramexBoxModalOpen] = useState(false);
@@ -459,16 +461,22 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
              if (courierRes.labelUrl) setDispatchedLabelUrl(courierRes.labelUrl);
              reqPayload.externalTrackingNumber = wb;
              reqPayload.status = 'In Transit';
+             setDispatchApiSuccess(true);
+             setDispatchApiError(null);
           } else {
              const fallbackWb = shipmentData.courier === 'aramex' ? `75788705-${newOrderId}` : `NOON-${newOrderId}`;
              setDispatchedWaybill(fallbackWb);
              reqPayload.externalTrackingNumber = fallbackWb;
+             setDispatchApiSuccess(false);
+             setDispatchApiError(courierRes.error || "Aramex API credentials login failed.");
           }
-        } catch (e) {
+        } catch (e: any) {
            console.error(`${shipmentData.courier} Production Dispatch Error`, e);
            const fallbackWb = shipmentData.courier === 'aramex' ? `75788705-${newOrderId}` : `NOON-${newOrderId}`;
            setDispatchedWaybill(fallbackWb);
            reqPayload.externalTrackingNumber = fallbackWb;
+           setDispatchApiSuccess(false);
+           setDispatchApiError(e.message || "Network connection error calling Aramex API.");
         }
       }
       
@@ -1231,36 +1239,67 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
 
                             {/* Production Logistics Integration Card */}
               {shipmentData.courier === 'aramex' && (
-                <div className="bg-emerald-50/90 border border-emerald-200 rounded-3xl p-6 text-left space-y-4 shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg font-black tracking-tight text-emerald-950 font-sans">Aramex Express</span>
-                      <span className="text-[9px] bg-emerald-200/60 text-emerald-800 px-2.5 py-0.5 rounded-full font-black uppercase tracking-widest">LIVE PRODUCTION DISPATCH</span>
+                dispatchApiSuccess === false ? (
+                  <div className="bg-amber-50/90 border border-amber-200 rounded-3xl p-6 text-left space-y-4 shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg font-black tracking-tight text-amber-950 font-sans">Aramex Express</span>
+                        <span className="text-[9px] bg-amber-200/60 text-amber-900 px-2.5 py-0.5 rounded-full font-black uppercase tracking-widest">API ACTIVATION REQUIRED</span>
+                      </div>
+                      <AlertCircle className="w-5 h-5 text-amber-600" />
                     </div>
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                  </div>
 
-                  <p className="text-xs text-emerald-950/90 font-medium leading-relaxed">
-                    Your order has been automatically dispatched to Aramex Production Logistics API using registered account <strong>TRSH (FZC) (#75788705 - DXB)</strong>.
-                  </p>
+                    <p className="text-xs text-amber-950/90 font-medium leading-relaxed">
+                      Your order has been recorded locally under <strong>TRSH (FZC) (#75788705 - DXB)</strong>, but Aramex API returned: <span className="font-mono font-bold text-amber-900">{dispatchApiError || "ClientInfo - Failed to login using Portal Service"}</span>.
+                    </p>
+                    <p className="text-[11px] text-amber-800/90 font-semibold bg-amber-100/70 p-3 rounded-xl border border-amber-200/80">
+                      💡 <strong>Why isn't this order on your Aramex Dashboard yet?</strong> Aramex Web Services requires <strong>Web Services (API) Access</strong> to be explicitly enabled by Aramex Account Support for Account #75788705.
+                    </p>
 
-                  <div className="bg-white/90 border border-emerald-200 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                    <div>
-                      <span className="text-[10px] text-emerald-700 font-bold block uppercase tracking-wider">ARAMEX WAYBILL / TRACKING REF</span>
-                      <span className="text-sm font-mono font-black text-emerald-950 block select-all mt-0.5">
-                        {dispatchedWaybill || `75788705-${createdOrderId}`}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] bg-emerald-600 text-white font-bold px-3 py-1 rounded-full uppercase tracking-wider">DISPATCHED</span>
-                      {dispatchedLabelUrl && (
-                        <a href={dispatchedLabelUrl} target="_blank" rel="noreferrer" className="bg-emerald-100 hover:bg-emerald-200 text-emerald-900 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest transition-colors inline-flex items-center gap-1">
-                          View Label
-                        </a>
-                      )}
+                    <div className="bg-white/90 border border-amber-200 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                      <div>
+                        <span className="text-[10px] text-amber-800 font-bold block uppercase tracking-wider">LOCAL USEND TRACKING REF</span>
+                        <span className="text-sm font-mono font-black text-amber-950 block select-all mt-0.5">
+                          {dispatchedWaybill || `75788705-${createdOrderId}`}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] bg-amber-600 text-white font-bold px-3 py-1 rounded-full uppercase tracking-wider">LOCAL QUEUED</span>
+                      </div>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="bg-emerald-50/90 border border-emerald-200 rounded-3xl p-6 text-left space-y-4 shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg font-black tracking-tight text-emerald-950 font-sans">Aramex Express</span>
+                        <span className="text-[9px] bg-emerald-200/60 text-emerald-800 px-2.5 py-0.5 rounded-full font-black uppercase tracking-widest">LIVE PRODUCTION DISPATCH</span>
+                      </div>
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                    </div>
+
+                    <p className="text-xs text-emerald-950/90 font-medium leading-relaxed">
+                      Your order has been automatically dispatched to Aramex Production Logistics API using registered account <strong>TRSH (FZC) (#75788705 - DXB)</strong>.
+                    </p>
+
+                    <div className="bg-white/90 border border-emerald-200 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                      <div>
+                        <span className="text-[10px] text-emerald-700 font-bold block uppercase tracking-wider">ARAMEX WAYBILL / TRACKING REF</span>
+                        <span className="text-sm font-mono font-black text-emerald-950 block select-all mt-0.5">
+                          {dispatchedWaybill || `75788705-${createdOrderId}`}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] bg-emerald-600 text-white font-bold px-3 py-1 rounded-full uppercase tracking-wider">DISPATCHED</span>
+                        {dispatchedLabelUrl && (
+                          <a href={dispatchedLabelUrl} target="_blank" rel="noreferrer" className="bg-emerald-100 hover:bg-emerald-200 text-emerald-900 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest transition-colors inline-flex items-center gap-1">
+                            View Label
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )
               )}
 
               {shipmentData.courier === 'noon' && (
