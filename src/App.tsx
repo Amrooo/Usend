@@ -6,7 +6,7 @@ import Splash from './screens/Splash';
 import LandingPage from './screens/LandingPage';
 import Onboarding from './screens/Onboarding';
 import PhoneAuth from './screens/PhoneAuth';
-import Hub from './screens/Hub';
+import Login from './screens/Login';
 import AdminDashboard from './screens/admin/AdminDashboard';
 import Home from './screens/Home';
 import Details from './screens/Details';
@@ -162,7 +162,7 @@ export default function App() {
   const isUserScreen = currentScreen.startsWith('user_');
   const isAdminScreen = currentScreen === 'admin_dashboard';
   const isLandingPage = currentScreen === 'landing_page';
-  const isHub = currentScreen === 'hub';
+  const isLogin = currentScreen === 'login' || currentScreen === 'hub';
 
   const isPortalRegister = currentScreen === 'portal_register';
 
@@ -170,11 +170,11 @@ export default function App() {
     <AppProvider>
       <LanguageProvider>
         <GlobalToast />
-      {isLandingPage || isHub || isPortalRegister ? (
+      {isLandingPage || isLogin || isPortalRegister ? (
         <div className="min-h-screen bg-zinc-50 text-zinc-900 font-sans transition-colors duration-300 w-full">
            <AnimatePresence mode="wait" initial={false}>
              {currentScreen === 'landing_page' && <LandingPage onNavigate={navigate} />}
-             {currentScreen === 'hub' && <Hub onNavigate={navigate} />}
+             {(currentScreen === 'login' || currentScreen === 'hub') && <Login onNavigate={navigate} />}
              {currentScreen === 'portal_register' && <PortalRegister onNavigate={navigate} />}
            </AnimatePresence>
         </div>
