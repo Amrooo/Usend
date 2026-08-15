@@ -256,7 +256,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
         console.warn("Demo Fallback applied. Auth error details: ", err);
         
         let targetRole = 'merchant';
-        if (loginEmail.toLowerCase().includes('admin') || loginEmail.toLowerCase() === 'octman.sam@gmail.com') targetRole = 'admin';
+        if (loginEmail.toLowerCase().includes('admin')) targetRole = 'admin';
         else if (loginEmail.toLowerCase().includes('driver') || loginEmail.toLowerCase().includes('user')) targetRole = 'user';
         
         // Correctly match the redirectScreen with targetRole
@@ -759,7 +759,7 @@ const [botOpen, setBotOpen] = useState(false);
                   let dest: Screen = 'user_dashboard';
                   if (user.email?.toLowerCase().includes('merchant') || user.role === 'merchant') {
                     dest = 'merchant_dashboard';
-                  } else if (user.email?.toLowerCase().includes('admin') || user.role === 'admin' || user.email === 'octman.sam@gmail.com') {
+                  } else if (user.email?.toLowerCase().includes('admin') || user.role === 'admin') {
                     dest = 'admin_dashboard';
                   }
                   onNavigate(dest);
