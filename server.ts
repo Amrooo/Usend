@@ -475,8 +475,8 @@ app.post("/api/aramex/:serviceType", async (req, res) => {
     const baseUrl = process.env.ARAMEX_BASE_URL || (isProduction ? "https://ws.aramex.net" : "https://ws.uat.aramex.net");
 
     // Default production credentials
-    const defaultUserName = "octman.sam@gmail.com";
-    const defaultPassword = "#JohnSnow2027";
+    const defaultUserName = "care@trsh.ae";
+    const defaultPassword = "#Trsh2027";
     const defaultAccountNumber = "75788705";
     const defaultAccountPin = "217147";
     const defaultAccountEntity = "DXB";
