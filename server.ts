@@ -464,7 +464,7 @@ app.post("/api/webhooks/noon/location", express.json(), async (req, res) => {
   } catch (e) { console.error('[NoonWebhook] Location update failed:', e); }
 });
 // ARAMEX API PROXY
-app.post("/api/rates/calculate", async (req, res) => {
+app.post("/api/aramex/:serviceType", async (req, res) => {
   try {
     const { serviceType } = req.params as { serviceType?: string };
     let payload = req.body;
