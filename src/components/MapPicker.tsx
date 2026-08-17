@@ -55,7 +55,7 @@ export default function MapPicker({ onSelect, onClose, initialPosition, initialA
   };
 
   return (
-    <div className="flex flex-col h-[70vh] min-h-[500px]">
+    <div className="flex flex-col h-[65vh] min-h-[400px] max-h-[550px] w-full">
       <div className="p-4 border-b border-zinc-200 bg-white z-10 relative">
         <div className="flex items-center gap-3 bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3">
           <Search className="w-5 h-5 text-zinc-400" />
