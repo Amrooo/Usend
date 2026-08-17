@@ -116,7 +116,7 @@ async function getCourierEngine() {
 }
 
 const app = express();
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = Number(process.env.PORT) || 3005;
 
 app.get("/api/health", (req, res) => {
   res.json({ 

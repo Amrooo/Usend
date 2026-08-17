@@ -1145,7 +1145,7 @@ const [botOpen, setBotOpen] = useState(false);
       </div>
 
         {/* TIMELINE SECTION - Full Width */}
-      <section className="w-full bg-white py-16 px-4 md:px-8 border-b border-slate-100 relative z-20">
+      <section className="w-full bg-white py-16 px-4 md:px-8 border-b border-slate-100 relative">
         <div className="max-w-7xl mx-auto">
           <p className="text-[11px] font-black uppercase text-slate-400 tracking-[0.2em] text-center mb-12">
             {isRTL ? 'حلول مخصصة لمتطلبات عملك' : 'TAILORED SOLUTIONS FOR YOUR BUSINESS REQUIREMENTS'}
