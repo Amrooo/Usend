@@ -692,6 +692,9 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
       setReceiverData(p => ({ ...p, street: addr, position: pos, city: cityGuess || p.city }));
     }
     setIsMapOpen(false);
+    setTimeout(() => {
+      document.getElementById('guest-order-wizard')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 150);
   };
 
   const renderProgressBar = () => {
@@ -726,7 +729,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
   };
 
   return (
-    <div className={`w-full bg-white rounded-[2.5rem] ${isGuest ? 'shadow-xs' : 'shadow-none'} p-4 md:p-10 text-slate-800`} dir={isRTL ? "rtl" : "ltr"}>
+    <div id="guest-order-wizard" className={`w-full bg-white rounded-[2.5rem] ${isGuest ? 'shadow-xs' : 'shadow-none'} p-4 md:p-10 text-slate-800 scroll-mt-24`} dir={isRTL ? "rtl" : "ltr"}>
       <Modal isOpen={isMapOpen} onClose={() => setIsMapOpen(false)} title="Select Location on Map">
          <MapPicker onSelect={handleMapSelect} onClose={() => setIsMapOpen(false)} />
       </Modal>
