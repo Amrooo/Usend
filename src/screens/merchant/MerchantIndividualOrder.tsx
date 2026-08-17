@@ -1525,16 +1525,22 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
 
       {/* Aramex Box Size Picker Modal */}
       <Modal isOpen={isAramexBoxModalOpen} onClose={() => setIsAramexBoxModalOpen(false)} title={isRTL ? "اختر حجم الصندوق (أرامكس)" : "Choose Aramex Box Size"}>
-         <div className="space-y-6 p-1 select-none text-slate-800">
-            <p className="text-xs text-zinc-500 font-bold uppercase tracking-wider">
-               {isRTL ? "سيتم ملء الوزن والأبعاد تلقائياً بناءً على حجم الصندوق المحدد:" : "Weight and dimensions will be auto-filled based on your selection:"}
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+         <div className="space-y-5 p-1 select-none text-slate-800">
+            <div className="bg-gradient-to-r from-red-50 to-orange-50/50 p-3.5 rounded-2xl border border-red-100 flex items-center gap-3">
+               <div className="w-8 h-8 rounded-xl bg-[#d12421] text-white flex items-center justify-center shrink-0 shadow-sm font-black text-xs">
+                  📦
+               </div>
+               <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                  {isRTL ? "سيتم ملء الوزن والأبعاد تلقائياً بناءً على حجم الصندوق المحدد:" : "Weight and dimensions will be auto-filled based on your selection:"}
+               </p>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                {[
-                 { id: 'large', name: 'Large & In Charge', nameAr: 'صندوق كبير - شحن ثقيل', size: '65 × 50 × 46', weight: '30', length: '65', width: '50', height: '46', img: '📦', desc: 'Max 30 kg' },
-                 { id: 'medium', name: 'Medium easy', nameAr: 'صندوق متوسط - عادي', size: '50 × 40 × 37', weight: '15', length: '50', width: '40', height: '37', img: '📦', desc: 'Max 15 kg' },
-                 { id: 'small', name: 'Small Wonder', nameAr: 'صندوق صغير - خفيف', size: '30 × 22 × 15', weight: '2', length: '30', width: '22', height: '15', img: '📦', desc: 'Max 2 kg' },
-                 { id: 'envelope', name: 'A4 Envelope', nameAr: 'ظرف مستندات A4', size: '33 × 24 × 3', weight: '0.5', length: '33', width: '24', height: '3', img: '✉️', desc: 'Max 0.5 kg' }
+                 { id: 'large', name: 'Large & In Charge', nameAr: 'صندوق كبير - شحن ثقيل', size: '65 × 50 × 46', weight: '30', length: '65', width: '50', height: '46', img: '📦', desc: 'MAX 30 KG', tag: 'Heavy Duty' },
+                 { id: 'medium', name: 'Medium Easy', nameAr: 'صندوق متوسط - عادي', size: '50 × 40 × 37', weight: '15', length: '50', width: '40', height: '37', img: '📦', desc: 'MAX 15 KG', tag: 'Most Popular' },
+                 { id: 'small', name: 'Small Wonder', nameAr: 'صندوق صغير - خفيف', size: '30 × 22 × 15', weight: '2', length: '30', width: '22', height: '15', img: '📦', desc: 'MAX 2 KG', tag: 'Light Item' },
+                 { id: 'envelope', name: 'A4 Envelope', nameAr: 'ظرف مستندات A4', size: '33 × 24 × 3', weight: '0.5', length: '33', width: '24', height: '3', img: '✉️', desc: 'MAX 0.5 KG', tag: 'Documents' }
                ].map((box) => (
                   <div
                      key={box.id}
@@ -1548,19 +1554,27 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                        }));
                        setIsAramexBoxModalOpen(false);
                      }}
-                     className="flex items-center gap-4 p-4 rounded-xl border border-zinc-200 hover:border-[#d12421] hover:bg-red-500/5 cursor-pointer transition-all duration-200 group"
+                     className="relative flex items-center gap-4 p-4 rounded-2xl border-2 border-slate-100 bg-white hover:border-[#d12421] hover:bg-gradient-to-br hover:from-white hover:to-red-50/30 hover:shadow-lg hover:shadow-red-500/10 cursor-pointer transition-all duration-300 transform hover:-translate-y-0.5 group overflow-hidden"
                   >
-                     <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-2xl group-hover:bg-[#d12421]/10 transition-colors">
+                     <div className="w-13 h-13 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-2xl group-hover:bg-[#d12421]/10 group-hover:border-[#d12421]/20 group-hover:scale-105 transition-all duration-300 shrink-0 shadow-inner">
                         {box.img}
                      </div>
-                     <div className="space-y-1 text-start">
-                        <h4 className="text-xs font-black uppercase text-slate-800 tracking-wide group-hover:text-[#d12421] transition-colors">
-                           {isRTL ? box.nameAr : box.name}
-                        </h4>
-                        <p className="text-[11px] font-bold text-zinc-500">
-                           {box.size} cm • {box.weight} kg
+                     
+                     <div className="space-y-1 text-start flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-1">
+                           <h4 className="text-xs font-black uppercase text-slate-900 tracking-tight group-hover:text-[#d12421] transition-colors truncate">
+                              {isRTL ? box.nameAr : box.name}
+                           </h4>
+                           <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 bg-slate-100 group-hover:bg-[#d12421]/10 group-hover:text-[#d12421] px-2 py-0.5 rounded-full transition-colors shrink-0">
+                              {box.tag}
+                           </span>
+                        </div>
+                        <p className="text-[11px] font-bold text-slate-500 flex items-center gap-1">
+                           <span className="font-mono">{box.size} cm</span>
+                           <span className="text-slate-300">•</span>
+                           <span className="text-slate-700 font-extrabold">{box.weight} kg</span>
                         </p>
-                        <p className="text-[9px] uppercase tracking-wider font-extrabold text-[#d12421]">
+                        <p className="text-[9px] uppercase tracking-widest font-black text-[#d12421] pt-0.5">
                            {box.desc}
                         </p>
                      </div>
