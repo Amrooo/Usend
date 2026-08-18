@@ -47,9 +47,6 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
       const googleUser = await signInWithGoogle();
       if (googleUser) {
         let targetRole = loginType === 'business' ? 'merchant' : 'user';
-        if (googleUser.email?.toLowerCase() === 'admin@usend.com') {
-          targetRole = 'admin';
-        }
 
         try {
           const userDocRef = doc(db, 'users', googleUser.uid);

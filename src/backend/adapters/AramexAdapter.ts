@@ -398,7 +398,40 @@ export class AramexAdapter implements CourierAdapter {
   }
 
   async cancelShipment(trackingId: string, credentials: CourierCredentials, environment: CourierEnvironment): Promise<boolean> {
-    return false;
+    const baseUrl = this.getBaseUrl(environment); // this is our local proxy
+
+    // Using CancelPickup as Aramex proxy convention for cancelling
+    const aramexPayload = {
+      ClientInfo: {
+        UserName: credentials.username,
+        Password: credentials.password,
+        Version: credentials.version || "v1.0",
+        AccountNumber: credentials.accountNumber,
+        AccountPin: credentials.accountPin,
+        AccountEntity: credentials.accountEntity,
+        AccountCountryCode: credentials.accountCountryCode,
+        Source: parseInt(credentials.source || '0', 10) || 0
+      },
+      Transaction: {
+        Reference1: `Cancel ${trackingId}`,
+        Reference2: "", Reference3: "", Reference4: "", Reference5: ""
+      },
+      PickupGUID: trackingId, // Often the GUID or waybill number is used here
+      Comments: "Cancelled by User via USend"
+    };
+
+    try {
+      // POST to our local proxy /api/aramex/cancel_pickup
+      const data = await this.postRequest(`${baseUrl}/api/aramex/cancel_pickup`, aramexPayload);
+      if (data.HasErrors) {
+        console.error("[AramexAdapter] CancelShipment Failed:", data.Notifications?.[0]?.Message || JSON.stringify(data));
+        return false;
+      }
+      return true;
+    } catch (e: any) {
+      console.error("[AramexAdapter] CancelShipment Exception:", e.message);
+      return false;
+    }
   }
 
   private mapStatus(aramexCode: string): string {

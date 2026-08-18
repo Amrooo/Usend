@@ -245,7 +245,7 @@ const INITIAL_COURIER_CONFIGS: Record<string, CourierIntegrationConfig> = {
       accountEntity: "DXB",
       accountCountryCode: "AE",
       source: "noon_staging",
-      apiKey: "SstJi9Ho0EHG2t7kQVSz7nA2hOeL3iiwVxHxb0Njk60QJ0LfmvoXoOsimw1zQC7VugHXiIRRMnWyU6f0uHcEcLlco5Eujqbd5pTwDlfBXpacuRI4m4AAj61NwM0B7Ihk",
+      apiKey: "SstJi9Ho0EHG2t7kQVSz7nA2hOeL3iiwVxHxb0Njk60QJ0LfmvoXOsimw1zQC7VugHXiIRRMnWyU6f0uHcEcLlco5Eujqbd5pTwDlfBXpacuRI4m4AAj61NwM0B7Ihk",
       version: "v1.0"
     },
     productionCreds: {
@@ -372,13 +372,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       
       if (u) {
         let finalRole = 'user';
-        if (u.email?.toLowerCase() === 'admin@usend.com') {
-          finalRole = 'admin';
-        } else if (u.email?.toLowerCase().includes('merchant')) {
-          finalRole = 'merchant';
-        } else {
-          finalRole = 'user';
-        }
 
         try {
           // Automatically ensure user document exists in 'users'
@@ -398,10 +391,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
             });
           } else {
             const data = userDoc.data();
-            if (data.role && (data.role !== 'admin' || u.email?.toLowerCase() === 'admin@usend.com')) {
+            if (data.role) {
               finalRole = data.role;
-            } else if (u.email?.toLowerCase() !== 'admin@usend.com') {
-              finalRole = 'user';
             }
           }
           
@@ -415,7 +406,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
               const data = snapshot.data();
               setUser((prev: any) => {
                 if (!prev) return null;
-                const effectiveRole = (u.email?.toLowerCase() === 'admin@usend.com') ? 'admin' : (data.role && data.role !== 'admin' ? data.role : 'user');
+                const effectiveRole = data.role ? data.role : 'user';
                 if (
                   prev.walletBalance === data.walletBalance &&
                   prev.codPending === data.codPending &&
@@ -571,7 +562,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 accountEntity: "DXB",
                 accountCountryCode: "AE",
                 source: "noon_staging",
-                apiKey: "SstJi9Ho0EHG2t7kQVSz7nA2hOeL3iiwVxHxb0Njk60QJ0LfmvoXoOsimw1zQC7VugHXiIRRMnWyU6f0uHcEcLlco5Eujqbd5pTwDlfBXpacuRI4m4AAj61NwM0B7Ihk",
+                apiKey: "SstJi9Ho0EHG2t7kQVSz7nA2hOeL3iiwVxHxb0Njk60QJ0LfmvoXOsimw1zQC7VugHXiIRRMnWyU6f0uHcEcLlco5Eujqbd5pTwDlfBXpacuRI4m4AAj61NwM0B7Ihk",
                 version: "v1.0"
               },
               productionCreds: data.noon?.productionCreds || {

@@ -243,7 +243,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
   const calculateBreakdown = () => {
     let baseFee = 30;
     const courierId = shipmentData.courier || 'usend';
-    const userRole = isGuest ? 'guest' : (user?.role === 'merchant' || user?.email?.toLowerCase().includes('merchant') ? 'merchant' : 'user');
+    const userRole = isGuest ? 'guest' : (user?.role === 'merchant' ? 'merchant' : 'user');
     
     const config = courierConfigs?.[courierId];
     if (config && config.rates && config.rates[userRole]) {
@@ -287,6 +287,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
 
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     if (wizardStep === 1) {
       if (!validatePhone(shipperData.phone)) {
         alert(isRTL ? "يرجى إدخال رقم هاتف صحيح للمرسل" : "Please enter a valid phone number for the shipper.");

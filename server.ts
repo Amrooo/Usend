@@ -560,6 +560,8 @@ app.post("/api/aramex/:serviceType", async (req, res) => {
       path = "/ShippingAPI.V2/Tracking/Service_1_0.svc/json/TrackShipments";
     } else if (serviceType === "pickup") {
       path = "/ShippingAPI.V2/Shipping/Service_1_0.svc/json/CreatePickup";
+    } else if (serviceType === "cancel_pickup") {
+      path = "/ShippingAPI.V2/Shipping/Service_1_0.svc/json/CancelPickup";
     } else {
       return res.status(200).json({ 
         HasErrors: true, 

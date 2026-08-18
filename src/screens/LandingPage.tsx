@@ -736,7 +736,7 @@ const [botOpen, setBotOpen] = useState(false);
                   let dest: Screen = 'user_dashboard';
                   if (user?.role === 'merchant') {
                     dest = 'merchant_dashboard';
-                  } else if (user?.role === 'admin' && user?.email?.toLowerCase() === 'admin@usend.com') {
+                  } else if (user?.role === 'admin') {
                     dest = 'admin_dashboard';
                   } else {
                     dest = 'user_dashboard';
