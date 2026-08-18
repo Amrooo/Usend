@@ -30,11 +30,15 @@ export class NoonAdapter implements CourierAdapter {
       : 'https://food-api-team.noonstg.team';
   }
 
-  private getApiKey(credentials: CourierCredentials): string {
-    return process.env.NOON_API_KEY
-      || credentials.apiKey
-      || credentials.password
-      || '';
+  private getApiKey(credentials: CourierCredentials, env: CourierEnvironment = 'sandbox'): string {
+    if (process.env.NOON_API_KEY) return process.env.NOON_API_KEY;
+    if (credentials.apiKey && credentials.apiKey.length > 10) return credentials.apiKey;
+    if (credentials.password && credentials.password.length > 10) return credentials.password;
+    
+    // Official Staging API Key from Noon RoD Integration Documentation
+    return env === 'sandbox' 
+      ? 'SstJi9Ho0EHG2t7kQVSz7nA2hOeL3iiwVxHxb0Njk60QJ0LfmvoXOsimw1zQC7VugHXiIRRMnWyU6f0uHcEcLlco5Eujqbd5pTwDlfBXpacuRI4m4AAj61NwM0B7Ihk'
+      : (credentials.apiKey || '');
   }
 
   private buildHeaders(credentials: CourierCredentials, idempotencyKey?: string): Record<string, string> {
@@ -102,8 +106,12 @@ export class NoonAdapter implements CourierAdapter {
   ): Promise<CanonicalShipmentResponse> {
     const baseUrl = this.getBaseUrl(environment);
 
-    // Resolve outlet code: payload > credentials > error
-    const outletCode = payload.outletCode || credentials.outletCode || credentials.accountNumber || '';
+    // Resolve outlet code: payload > credentials > staging official default
+    const outletCode = payload.outletCode 
+      || credentials.outletCode 
+      || credentials.storeId
+      || credentials.accountNumber 
+      || (environment === 'sandbox' ? '77T4HCOD4G' : '');
     if (!outletCode) {
       return { success: false, error: 'Noon: No outlet_code provided. Select a pickup point first.' };
     }
