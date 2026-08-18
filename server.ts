@@ -11,6 +11,7 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import Stripe from "stripe";
+import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 import admin from 'firebase-admin';
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
@@ -119,8 +120,35 @@ async function getCourierEngine() {
   return _courierEngine;
 }
 
+// ─── Fetch with Timeout Helper ───────────────────────────────────────────────
+const fetchWithTimeout = async (url: string, options: any, timeoutMs: number = 30000) => {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    return response;
+  } finally {
+    clearTimeout(id);
+  }
+};
+
 const app = express();
 const PORT = Number(process.env.PORT) || 3005;
+
+// Trust proxy if behind a reverse proxy (like NGINX on Cloudways)
+app.set('trust proxy', 1);
+
+// Global rate limiter for API routes
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 300, // Limit each IP to 300 requests per windowMs
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many requests, please try again later." }
+});
+
+// Apply rate limiting to all API routes
+app.use('/api/', apiLimiter);
 
 app.get("/api/health", (req, res) => {
   res.json({ 
@@ -570,7 +598,7 @@ app.post("/api/aramex/:serviceType", async (req, res) => {
     }
 
     try {
-      const aramexRes = await fetch(`${baseUrl}${path}`, {
+      const aramexRes = await fetchWithTimeout(`${baseUrl}${path}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -703,7 +731,7 @@ app.post("/api/courier/cancel", express.json(), async (req, res) => {
 app.get("/api/noon/pickup-points", async (req, res) => {
   try {
     const baseUrl = getNoonBaseUrl(req);
-    const response = await fetch(`${baseUrl}/public/v1/pickup-points/list`, {
+    const response = await fetchWithTimeout(`${baseUrl}/public/v1/pickup-points/list`, {
       method: "GET",
       headers: getNoonHeaders(req),
       signal: AbortSignal.timeout(10000)
@@ -719,7 +747,7 @@ app.get("/api/noon/pickup-points", async (req, res) => {
 app.get("/api/noon/pickup-addresses", async (req, res) => {
   try {
     const baseUrl = getNoonBaseUrl(req);
-    const response = await fetch(`${baseUrl}/public/v1/pickup-points/list`, {
+    const response = await fetchWithTimeout(`${baseUrl}/public/v1/pickup-points/list`, {
       method: "GET", headers: getNoonHeaders(req), signal: AbortSignal.timeout(10000)
     });
     if (response.ok) return res.json(await response.json());
@@ -731,7 +759,7 @@ app.get("/api/noon/pickup-addresses", async (req, res) => {
 app.post("/api/noon/pickup-points", async (req, res) => {
   try {
     const baseUrl = getNoonBaseUrl(req);
-    const response = await fetch(`${baseUrl}/public/v1/pickup-points/create`, {
+    const response = await fetchWithTimeout(`${baseUrl}/public/v1/pickup-points/create`, {
       method: "POST", headers: getNoonHeaders(req), body: JSON.stringify(req.body), signal: AbortSignal.timeout(10000)
     });
     const data = await response.json();
@@ -743,7 +771,7 @@ app.post("/api/noon/pickup-points", async (req, res) => {
 app.get("/api/noon/pickup-points/:code", async (req, res) => {
   try {
     const baseUrl = getNoonBaseUrl(req);
-    const response = await fetch(`${baseUrl}/public/v1/pickup-points/${req.params.code}`, {
+    const response = await fetchWithTimeout(`${baseUrl}/public/v1/pickup-points/${req.params.code}`, {
       method: "GET", headers: getNoonHeaders(req), signal: AbortSignal.timeout(10000)
     });
     const data = await response.json();
@@ -755,7 +783,7 @@ app.get("/api/noon/pickup-points/:code", async (req, res) => {
 app.post("/api/noon/pickup-points/:code/update", async (req, res) => {
   try {
     const baseUrl = getNoonBaseUrl(req);
-    const response = await fetch(`${baseUrl}/public/v1/pickup-points/${req.params.code}/update`, {
+    const response = await fetchWithTimeout(`${baseUrl}/public/v1/pickup-points/${req.params.code}/update`, {
       method: "POST", headers: getNoonHeaders(req), body: JSON.stringify(req.body), signal: AbortSignal.timeout(10000)
     });
     const data = await response.json();
@@ -772,7 +800,7 @@ app.post("/api/noon/create-task", async (req, res) => {
       || params.idempotencyKey
       || `usend-${params.order_reference || Date.now()}`;
     console.log(`[NoonProxy] NOON_TASK_CREATE_REQUEST to ${baseUrl}, idempotency: ${idempotencyKey}`);
-    const response = await fetch(`${baseUrl}/public/v1/create-task`, {
+    const response = await fetchWithTimeout(`${baseUrl}/public/v1/create-task`, {
       method: "POST",
       headers: getNoonHeaders(req, idempotencyKey),
       body: JSON.stringify(params),
@@ -799,7 +827,7 @@ app.get("/api/noon/tasks/:mp_task_nr", async (req, res) => {
   try {
     const baseUrl = getNoonBaseUrl(req);
     console.log(`[Noon Proxy] Fetching task details for ${mp_task_nr} from ${baseUrl}...`);
-    const response = await fetch(`${baseUrl}/public/v1/tasks/${mp_task_nr}`, {
+    const response = await fetchWithTimeout(`${baseUrl}/public/v1/tasks/${mp_task_nr}`, {
       method: "GET",
       headers: getNoonHeaders(req),
       signal: AbortSignal.timeout(10000)
@@ -823,7 +851,7 @@ app.post("/api/noon/tasks/:mp_task_nr/cancel", async (req, res) => {
   try {
     const baseUrl = getNoonBaseUrl(req);
     console.log(`[Noon Proxy] Sending cancellation request for ${mp_task_nr}...`);
-    const response = await fetch(`${baseUrl}/public/v1/tasks/${mp_task_nr}/cancel`, {
+    const response = await fetchWithTimeout(`${baseUrl}/public/v1/tasks/${mp_task_nr}/cancel`, {
       method: "POST",
       headers: getNoonHeaders(req),
       body: JSON.stringify({ reason }),
