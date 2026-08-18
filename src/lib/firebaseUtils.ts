@@ -90,9 +90,10 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
 export function subscribeToCollection<T>(
   path: string, 
   callback: (data: T[]) => void,
-  onError?: (error: Error) => void
+  onError?: (error: Error) => void,
+  constraints: any[] = []
 ) {
-  const q = query(collection(db, path));
+  const q = query(collection(db, path), ...constraints);
   return onSnapshot(q, (snapshot: QuerySnapshot<DocumentData>) => {
     const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as T));
     callback(data);

@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 import { subscribeToCollection, updateDocument, createDocument, signInWithGoogle, logout } from '../lib/firebaseUtils';
 import { db, auth } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot, limit } from 'firebase/firestore';
 
 export type RequestStatus = 'PENDING' | 'IN_TRANSIT' | 'DELIVERED' | 'FAILED' | 'Pending' | 'Reviewing' | 'Approved' | 'assigning' | 'in_transit' | 'delivered' | 'Rejected' | 'En-route' | 'Assigned' | 'Completed';
 
@@ -488,7 +488,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         (error) => {
           console.warn('Requests Firestore sync skipped (will use fallback mock data):', error.message);
           setIsLoading(false);
-        }
+        },
+        [limit(100)]
       );
     } else {
       setIsLoading(false);
@@ -505,7 +506,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         },
         (error) => {
           console.warn('Merchants Firestore sync skipped (will use fallback mock data):', error.message);
-        }
+        },
+        [limit(100)]
       );
     }
 
@@ -520,7 +522,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         },
         (error) => {
           console.warn('Users Firestore sync skipped (will use fallback mock data):', error.message);
-        }
+        },
+        [limit(100)]
       );
     }
 
