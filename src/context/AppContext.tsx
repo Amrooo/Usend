@@ -211,10 +211,13 @@ const INITIAL_COURIER_CONFIGS: Record<string, CourierIntegrationConfig> = {
       version: "v1"
     },
     productionCreds: {
-      username: "octman.sam@gmail.com",
-      password: "#JohnSnow2027",
-      accountNumber: "75788705",
-      accountPin: "217147",
+      // SECURITY: Production credentials are NOT stored in source code.
+      // Set these via the Admin Portal → Courier Settings → Aramex → Production Credentials.
+      // They are persisted in Firestore settings/courier_configs and loaded on admin login.
+      username: "",
+      password: "",
+      accountNumber: "",
+      accountPin: "",
       accountEntity: "DXB",
       accountCountryCode: "AE",
       source: "0",

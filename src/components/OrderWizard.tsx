@@ -416,11 +416,13 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
       
       if (shipmentData.courier === 'aramex' || shipmentData.courier === 'noon') {
         const config = courierConfigs?.[shipmentData.courier];
+        // SECURITY: Never hardcode production credentials here.
+        // Credentials must come from Firestore settings/courier_configs (admin-controlled).
         const activeCreds = config?.productionCreds || {
-          username: "octman.sam@gmail.com",
-          password: "#JohnSnow2027",
-          accountNumber: "75788705",
-          accountPin: "217147",
+          username: "",
+          password: "",
+          accountNumber: "",
+          accountPin: "",
           accountEntity: "DXB",
           accountCountryCode: "AE",
           version: "v1.0",

@@ -31,8 +31,12 @@ if (!fs.existsSync(envPath)) {
 }
 dotenv.config({ path: envPath });
 
-// Disable TLS validation errors for UAT/Staging proxy handshakes
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+// TLS validation: disable ONLY in local development/staging for self-signed UAT certs.
+// NEVER disable in production — doing so allows MITM attacks on all outbound API calls.
+if (process.env.NODE_ENV !== 'production') {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+  console.warn("[SECURITY] TLS validation disabled (dev/staging mode). Never use in production.");
+}
 
 // Prevent firebase-admin from checking metadata server and hanging in local environments
 if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
@@ -150,10 +154,42 @@ app.use((req, res, next) => {
   }
 });
 
+// ─── Firebase JWT Authentication Middleware ───────────────────────────────────
+// Verifies Firebase ID tokens for protected API routes.
+// Public routes (health, payments/config, webhooks, SSE) are excluded.
+async function requireAuth(req: any, res: express.Response, next: express.NextFunction) {
+  const authHeader = req.headers['authorization'];
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized: Missing or invalid Authorization header' });
+  }
+  const idToken = authHeader.split('Bearer ')[1];
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    req.user = { uid: decodedToken.uid, email: decodedToken.email, role: decodedToken.role };
+    next();
+  } catch (err: any) {
+    console.warn('[Auth] Token verification failed:', err.message);
+    return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+  }
+}
+
+// Apply auth middleware to all sensitive courier and admin routes.
+// Webhooks, health, SSE, and payment config are intentionally public.
+const PROTECTED_ROUTE_PREFIXES = ['/api/courier/', '/api/admin/', '/api/aramex/'];
+app.use((req: any, res: express.Response, next: express.NextFunction) => {
+  const isProtected = PROTECTED_ROUTE_PREFIXES.some(prefix => req.path.startsWith(prefix));
+  // /api/courier/rate and /api/courier/test-connection are also protected
+  if (isProtected) {
+    return requireAuth(req, res, next);
+  }
+  next();
+});
+
 // --- PAYMENT API ENDPOINTS (Stripe) ---
 app.get("/api/payments/config", (req, res) => {
   res.json({ publishableKey: process.env.STRIPE_PUBLISHABLE_KEY || process.env.VITE_STRIPE_PUBLISHABLE_KEY });
 });
+
 
 app.get("/api/admin/system-diagnostics", async (req, res) => {
   const secretKey = process.env.STRIPE_SECRET_KEY;
@@ -474,41 +510,30 @@ app.post("/api/aramex/:serviceType", async (req, res) => {
     const isProduction = (process.env.ARAMEX_ENV !== "sandbox") && (req.headers["x-aramex-env"] !== "sandbox");
     const baseUrl = process.env.ARAMEX_BASE_URL || (isProduction ? "https://ws.aramex.net" : "https://ws.uat.aramex.net");
 
-    // Default production credentials
-    const defaultUserName = "care@trsh.ae";
-    const defaultPassword = "#Trsh2027";
-    const defaultAccountNumber = "75788705";
-    const defaultAccountPin = "217147";
-    const defaultAccountEntity = "DXB";
-    const defaultAccountCountryCode = "AE";
-    const defaultSource = 0;
-    const defaultVersion = "v1.0";
+    // Credentials come exclusively from environment variables — never hardcoded.
+    // Set ARAMEX_USERNAME, ARAMEX_PASSWORD, etc. in the server .env file.
+    const envUserName = process.env.ARAMEX_USERNAME || "";
+    const envPassword = process.env.ARAMEX_PASSWORD || "";
+    const envAccountNumber = process.env.ARAMEX_ACCOUNT_NUMBER || "";
+    const envAccountPin = process.env.ARAMEX_ACCOUNT_PIN || "";
+    const envAccountEntity = process.env.ARAMEX_ACCOUNT_ENTITY || "DXB";
+    const envAccountCountryCode = process.env.ARAMEX_ACCOUNT_COUNTRY_CODE || "AE";
+    const envSource = process.env.ARAMEX_SOURCE !== undefined ? Number(process.env.ARAMEX_SOURCE) : 0;
+    const envVersion = process.env.ARAMEX_VERSION || "v1.0";
 
-    const finalUserName = userClientInfo.UserName && userClientInfo.UserName !== "testingapi@aramex.com"
-      ? userClientInfo.UserName
-      : (process.env.ARAMEX_USERNAME || defaultUserName);
-
-    const finalPassword = userClientInfo.Password && userClientInfo.Password !== "R123456789$r"
-      ? userClientInfo.Password
-      : (process.env.ARAMEX_PASSWORD || defaultPassword);
-
-    const finalVersion = userClientInfo.Version && userClientInfo.Version !== "v1"
-      ? userClientInfo.Version
-      : (process.env.ARAMEX_VERSION || defaultVersion);
-
-    const finalAccountNumber = userClientInfo.AccountNumber && userClientInfo.AccountNumber !== "45796"
-      ? userClientInfo.AccountNumber
-      : (process.env.ARAMEX_ACCOUNT_NUMBER || defaultAccountNumber);
-
-    const finalAccountPin = userClientInfo.AccountPin && userClientInfo.AccountPin !== "116216"
-      ? userClientInfo.AccountPin
-      : (process.env.ARAMEX_ACCOUNT_PIN || defaultAccountPin);
-
-    const finalAccountEntity = userClientInfo.AccountEntity || process.env.ARAMEX_ACCOUNT_ENTITY || defaultAccountEntity;
-    const finalAccountCountryCode = userClientInfo.AccountCountryCode || process.env.ARAMEX_ACCOUNT_COUNTRY_CODE || defaultAccountCountryCode;
+    // If client sends non-sandbox credentials (i.e. admin override), prefer those.
+    // Otherwise always fall back to server-side env vars (never trust client creds for prod).
+    const isUsingTestCreds = (u: string) => !u || u === "testingapi@aramex.com";
+    const finalUserName = (!isUsingTestCreds(userClientInfo.UserName)) ? userClientInfo.UserName : envUserName;
+    const finalPassword = (userClientInfo.Password && userClientInfo.Password !== "R123456789$r") ? userClientInfo.Password : envPassword;
+    const finalVersion = (userClientInfo.Version && userClientInfo.Version !== "v1") ? userClientInfo.Version : envVersion;
+    const finalAccountNumber = (userClientInfo.AccountNumber && userClientInfo.AccountNumber !== "45796") ? userClientInfo.AccountNumber : envAccountNumber;
+    const finalAccountPin = (userClientInfo.AccountPin && userClientInfo.AccountPin !== "116216") ? userClientInfo.AccountPin : envAccountPin;
+    const finalAccountEntity = userClientInfo.AccountEntity || envAccountEntity;
+    const finalAccountCountryCode = userClientInfo.AccountCountryCode || envAccountCountryCode;
     const finalSource = userClientInfo.Source !== undefined
       ? Number(userClientInfo.Source)
-      : (process.env.ARAMEX_SOURCE !== undefined ? Number(process.env.ARAMEX_SOURCE) : defaultSource);
+      : envSource;
 
     payload = {
       ...payload,

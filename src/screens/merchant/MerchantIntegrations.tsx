@@ -132,16 +132,17 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
         
         if (!active) return;
 
-        const pubKey = configData.publishableKey || import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "pk_test_51NqFLiIQ92rRmyagdMMXdSf52pMFvnz7tdk6BhbxQcP4lsH1q80hvOW9FvvACo6d1pHpLYX9tCoSZlDYEqmfh8Ba00wW4npESG";
+        const pubKey = (configData as any).publishableKey || (import.meta as any).env?.VITE_STRIPE_PUBLISHABLE_KEY || "";
         setStripePublishableKey(pubKey);
 
-        if (statusRes.connected) {
+        const status = statusRes as any;
+        if (status.connected) {
           setStripeIsConnected(true);
-          setStripeSandboxMode(statusRes.mode === 'test');
+          setStripeSandboxMode(status.mode === 'test');
           setStripeConnectionError(null);
         } else {
           setStripeIsConnected(false);
-          setStripeConnectionError(statusRes.error || 'Gateway not initialized');
+          setStripeConnectionError(status.error || 'Gateway not initialized');
         }
       } catch (err: any) {
         if (active) {

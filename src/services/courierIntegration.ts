@@ -55,43 +55,71 @@ export interface ShipmentParams {
   };
 }
 
+// ─── Default Courier Credentials ─────────────────────────────────────────────
+// SECURITY: Production credentials are NEVER hardcoded here.
+// They are stored in Firestore `settings/courier_configs` (admin-controlled)
+// and injected server-side via environment variables (ARAMEX_USERNAME, etc.).
+// The frontend reads credentials exclusively from AppContext.courierConfigs
+// which is populated from Firestore after admin authentication.
+
 export const defaultAramexCreds: CourierCredentials = {
   version: "v1.0",
-  accountNumber: "75788705",
-  accountPin: "217147",
+  accountNumber: "",
+  accountPin: "",
   accountEntity: "DXB",
   accountCountryCode: "AE",
   source: "0",
-  username: "octman.sam@gmail.com",
-  password: "#JohnSnow2027",
+  username: "",
+  password: "",
   apiEnv: 'production'
 };
 
 export const defaultDhlCreds: CourierCredentials = {
-  version: "v33",
-  accountNumber: "849301931-DXB",
-  accountPin: "902123",
-  accountEntity: "MIDDLE_EAST",
+  version: "v1.0",
+  accountNumber: "",
+  accountPin: "",
+  accountEntity: "DXB",
   accountCountryCode: "AE",
-  source: "30",
-  username: "dhl_sandbox_user_ae",
-  password: "DHL_secret_2026",
+  source: "0",
+  username: "",
+  password: "",
   apiEnv: 'sandbox'
 };
 
 export const defaultFedexCreds: CourierCredentials = {
-  version: "v2026",
-  accountNumber: "990158221",
-  accountPin: "FDX-3029",
-  accountEntity: "GCC_FEDEX",
+  version: "v1.0",
+  accountNumber: "",
+  accountPin: "",
+  accountEntity: "DXB",
   accountCountryCode: "AE",
-  source: "45",
-  username: "fedex_api_express_sandbox",
-  password: "FedexSecuredPwd_9901",
+  source: "0",
+  username: "",
+  password: "",
   apiEnv: 'sandbox'
 };
 
 export const createdWaybills = new Set<string>();
+
+// ─── Auth Token Helper ────────────────────────────────────────────────────────
+// Attaches the Firebase ID token as a Bearer token to server API calls.
+// The server JWT middleware requires this for all /api/courier/* routes.
+async function getAuthHeaders(extra?: Record<string, string>): Promise<Record<string, string>> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json', ...extra };
+  try {
+    // Dynamically import to avoid circular dependency with firebase module
+    const { getAuth } = await import('firebase/auth');
+    const { auth } = await import('../firebase');
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      const token = await currentUser.getIdToken(false);
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+  } catch (e) {
+    // Non-fatal: requests will return 401 if auth is required
+    console.warn('[CourierService] Could not get auth token:', e);
+  }
+  return headers;
+}
 
 export const courierIntegrationService = {
   calculateRate: async (courierId: string, params: RateParams) => {
@@ -108,7 +136,7 @@ export const courierIntegrationService = {
 
       const res = await fetch('/api/courier/rate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({
           courierId: courierId,
           payload: canonicalPayload,
@@ -173,7 +201,7 @@ export const courierIntegrationService = {
 
       const res = await fetch('/api/courier/shipment', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({
           courierId: courierId,
           payload: canonicalPayload,
@@ -227,7 +255,7 @@ export const courierIntegrationService = {
     try {
       const res = await fetch('/api/courier/track', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({
           courierId: courierId,
           trackingId: trackingNumber,
@@ -278,16 +306,16 @@ export const courierIntegrationService = {
   },
 
   validateCredentials: async (courierId: string, creds: any) => {
-     const res = await fetch('/api/courier/test-connection', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          courierId: courierId,
-          credentials: creds,
-          environment: creds.apiEnv || 'sandbox'
-        })
-      });
-      return await res.json();
+    const res = await fetch('/api/courier/test-connection', {
+      method: 'POST',
+      headers: await getAuthHeaders(),
+      body: JSON.stringify({
+        courierId: courierId,
+        credentials: creds,
+        environment: creds.apiEnv || 'sandbox'
+      })
+    });
+    return await res.json();
   },
 
   // ─── Noon-specific methods ────────────────────────────────────────────────
@@ -329,7 +357,7 @@ export const courierIntegrationService = {
     try {
       const res = await fetch('/api/courier/cancel', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({
           courierId: 'noon',
           trackingId: taskNr,

@@ -187,7 +187,6 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
 
       const { clientSecret } = await createStripePaymentIntent({
         amountAED: dynamicPricing.total,
-        currency: "aed",
         metadata: {
           customerName: formData.customerName,
           phone: formData.phone,
