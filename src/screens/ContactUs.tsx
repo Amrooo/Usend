@@ -512,7 +512,7 @@ const [botOpen, setBotOpen] = useState(false);
       {/* ── HEADER (FLOATING & OVERLAY) ── */}
             <Header onNavigate={onNavigate} setLoginRole={setLoginRole} setLoginModalOpen={setLoginModalOpen} content={content} handleScrollTo={handleScrollTo} />
       
-      <div className="w-full relative z-10 bg-white px-6 md:px-16 py-4 pb-0 pt-24">
+      <div className="w-full relative z-10 bg-white px-6 md:px-16 py-4 pb-0">
         <div className="relative w-full h-[400px] md:h-[500px] rounded-[2rem] overflow-hidden shadow-sm flex flex-col items-center justify-center text-center">
           {/* Background Image */}
           <img 
@@ -525,7 +525,7 @@ const [botOpen, setBotOpen] = useState(false);
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-900/50 to-slate-900/30 pointer-events-none"></div>
 
           {/* Content */}
-          <div className="relative z-10 px-6 max-w-4xl mx-auto">
+          <div className="relative z-10 px-6 max-w-4xl mx-auto pt-16">
             <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tight text-white mb-6 drop-shadow-lg">
               {isRTL ? 'اتصل بنا' : 'Contact Us'}
             </h1>

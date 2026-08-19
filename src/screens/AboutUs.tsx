@@ -510,16 +510,32 @@ const [botOpen, setBotOpen] = useState(false);
       
       
       {/* ── HEADER (FLOATING & OVERLAY) ── */}
-            <Header onNavigate={onNavigate} setLoginRole={setLoginRole} setLoginModalOpen={setLoginModalOpen} content={content} handleScrollTo={handleScrollTo} forceSolid={true} />
-      <div className="w-full relative z-10 bg-white px-6 md:px-16 py-24 pb-24 min-h-[70vh] flex flex-col items-center justify-center text-center">
-        <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tight text-slate-900 mb-6">
-          {isRTL ? 'من نحن' : 'About Us'}
-        </h1>
-        <p className="text-lg text-slate-600 max-w-2xl mx-auto font-medium leading-relaxed">
-          {isRTL 
-            ? 'نحن منصة يو سند، بوابتك اللوجستية المتكاملة لربط المتاجر الإلكترونية مع أفضل خدمات التوصيل في الإمارات.' 
-            : 'We are USend, your unified logistics gateway connecting e-commerce stores with the best delivery networks across the UAE.'}
-        </p>
+            <Header onNavigate={onNavigate} setLoginRole={setLoginRole} setLoginModalOpen={setLoginModalOpen} content={content} handleScrollTo={handleScrollTo} />
+      
+      <div className="w-full relative z-10 bg-white px-6 md:px-16 py-4 pb-0">
+        <div className="relative w-full h-[400px] md:h-[500px] rounded-[2rem] overflow-hidden shadow-sm flex flex-col items-center justify-center text-center">
+          {/* Background Image */}
+          <img 
+            src="/src/assets/cta-cargo-ship.png" 
+            alt="About USend" 
+            className="absolute inset-0 w-full h-full object-cover select-none"
+          />
+          
+          {/* Overlay Gradient */}
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-900/50 to-slate-900/30 pointer-events-none"></div>
+
+          {/* Content */}
+          <div className="relative z-10 px-6 max-w-4xl mx-auto pt-16">
+            <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tight text-white mb-6 drop-shadow-lg">
+              {isRTL ? 'من نحن' : 'About Us'}
+            </h1>
+            <p className="text-lg text-slate-200 max-w-2xl mx-auto font-medium leading-relaxed drop-shadow-md">
+              {isRTL 
+                ? 'نحن منصة يو سند، بوابتك اللوجستية المتكاملة لربط المتاجر الإلكترونية مع أفضل خدمات التوصيل في الإمارات.' 
+                : 'We are USend, your unified logistics gateway connecting e-commerce stores with the best delivery networks across the UAE.'}
+            </p>
+          </div>
+        </div>
       </div>
 <footer className="w-full bg-white text-slate-900 pt-24 pb-16 px-4 md:px-8 border-t border-slate-200 relative overflow-hidden">
           {/* Large transparent watermark background logo */}

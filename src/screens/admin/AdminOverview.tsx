@@ -1,3 +1,19 @@
+import React from 'react';
+import { useLanguage } from '../../context/LanguageContext';
+import { useApp } from '../../context/AppContext';
+import { DollarSign, Clock, Wallet, Store, Building2, Coins } from 'lucide-react';
+import { ResponsiveContainer, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, Area, BarChart, Bar } from 'recharts';
+
+const revenueData = [
+  { name: 'Mon', revenue: 4000, settlements: 2400 },
+  { name: 'Tue', revenue: 3000, settlements: 1398 },
+  { name: 'Wed', revenue: 2000, settlements: 9800 },
+  { name: 'Thu', revenue: 2780, settlements: 3908 },
+  { name: 'Fri', revenue: 1890, settlements: 4800 },
+  { name: 'Sat', revenue: 2390, settlements: 3800 },
+  { name: 'Sun', revenue: 3490, settlements: 4300 },
+];
+
 function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
   const { t, isRTL } = useLanguage();
   const { activeRequests, merchants, allOrders } = useApp();
