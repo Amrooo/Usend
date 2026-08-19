@@ -1213,33 +1213,35 @@ const [botOpen, setBotOpen] = useState(false);
       <section id="sectors" className="w-full bg-white py-16 px-4 md:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="rounded-[2rem] overflow-hidden relative min-h-[500px] shadow-sm">
-            <img src={sectorContainer} alt="Sectors Background" referrerPolicy="no-referrer" className="absolute inset-0 w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent to-slate-900/80"></div>
-            <div className="absolute top-0 right-0 w-full md:w-[55%] h-full flex flex-col justify-center p-8 md:p-16 text-white z-10">
+            <img src="https://images.unsplash.com/photo-1614436163996-25cee5f54290?auto=format&fit=crop&w=1600&q=80" alt="Sectors Background" referrerPolicy="no-referrer" className="absolute inset-0 w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-r rtl:bg-gradient-to-l from-transparent to-slate-900/80 rtl:from-transparent rtl:to-slate-900/80"></div>
+            <div className="absolute top-0 right-0 rtl:right-auto rtl:left-0 w-full md:w-[55%] h-full flex flex-col justify-center p-8 md:p-16 text-white z-10 text-left rtl:text-right">
               <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight leading-none mb-6 font-sans drop-shadow-md">
-                SERVING BUSINESSES<br/>ACROSS SECTORS
+                {isRTL ? <>نخدم الأعمال<br/>في مختلف القطاعات</> : <>SERVING BUSINESSES<br/>ACROSS SECTORS</>}
               </h2>
               <p className="text-white/90 text-sm md:text-base font-medium mb-10 max-w-lg leading-relaxed">
-                From heavy manufacturing to high-velocity e-commerce, our logistics infrastructure adapts to the unique demands of every industry.
+                {isRTL 
+                  ? 'من الصناعات الثقيلة إلى التجارة الإلكترونية السريعة، بنيتنا التحتية اللوجستية تتكيف مع المتطلبات الفريدة لكل قطاع.' 
+                  : 'From heavy manufacturing to high-velocity e-commerce, our logistics infrastructure adapts to the unique demands of every industry.'}
               </p>
               
               <ul className="space-y-0">
                 {[
-                  'Manufacturing',
-                  'Healthcare & Pharmaceuticals',
-                  'Retail & E-Commerce',
-                  'Manufacturing Technology',
-                  'Agriculture & Environments',
-                  'Automotive & Industrial'
+                  { en: 'Manufacturing', ar: 'التصنيع' },
+                  { en: 'Healthcare & Pharmaceuticals', ar: 'الرعاية الصحية والأدوية' },
+                  { en: 'Retail & E-Commerce', ar: 'التجزئة والتجارة الإلكترونية' },
+                  { en: 'Manufacturing Technology', ar: 'تكنولوجيا التصنيع' },
+                  { en: 'Agriculture & Environments', ar: 'الزراعة والبيئة' },
+                  { en: 'Automotive & Industrial', ar: 'السيارات والصناعة' }
                 ].map((sector, i) => (
                   <li key={i} className="flex items-center justify-between py-3 border-b border-white/20 hover:border-white/50 transition-colors cursor-pointer group">
                     <div className="flex items-center gap-3">
                       <div className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center shrink-0">
                         <div className="w-1.5 h-1.5 rounded-full bg-white" />
                       </div>
-                      <span className="font-semibold text-sm tracking-wide">{sector}</span>
+                      <span className="font-semibold text-sm tracking-wide">{isRTL ? sector.ar : sector.en}</span>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-white/50 group-hover:text-white transition-colors" />
+                    <ChevronRight className="w-4 h-4 text-white/50 group-hover:text-white transition-colors rtl:rotate-180" />
                   </li>
                 ))}
               </ul>
