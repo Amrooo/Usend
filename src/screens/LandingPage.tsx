@@ -1281,7 +1281,7 @@ const [botOpen, setBotOpen] = useState(false);
               {/* Fade-in & Scale Background Image */}
               <div 
                 className="absolute inset-0 bg-cover bg-center opacity-[0.03] group-hover:opacity-[0.09] transition-all duration-700 pointer-events-none transform scale-100 group-hover:scale-105"
-                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=800&q=80')` }}
+                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&w=800&q=80')` }}
               />
               
               <div className="relative z-10 flex items-center justify-between">
@@ -1319,7 +1319,7 @@ const [botOpen, setBotOpen] = useState(false);
               {/* Fade-in & Scale Background Image */}
               <div 
                 className="absolute inset-0 bg-cover bg-center opacity-[0.03] group-hover:opacity-[0.09] transition-all duration-700 pointer-events-none transform scale-100 group-hover:scale-105"
-                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?auto=format&fit=crop&w=800&q=80')` }}
+                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1615460549969-36fa19521a4f?auto=format&fit=crop&w=800&q=80')` }}
               />
               
               <div className="relative z-10 flex items-center justify-between">
@@ -1395,7 +1395,7 @@ const [botOpen, setBotOpen] = useState(false);
               {/* Fade-in & Scale Background Image */}
               <div 
                 className="absolute inset-0 bg-cover bg-center opacity-[0.03] group-hover:opacity-[0.09] transition-all duration-700 pointer-events-none transform scale-100 group-hover:scale-105"
-                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1607082349566-187342175e2f?auto=format&fit=crop&w=800&q=80')` }}
+                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1558222218-b7b54eede3f3?auto=format&fit=crop&w=800&q=80')` }}
               />
               
               <div className="relative z-10 flex items-center justify-between">
@@ -1435,7 +1435,7 @@ const [botOpen, setBotOpen] = useState(false);
           <div className="rounded-[2rem] overflow-hidden relative min-h-[360px] bg-slate-900 shadow-sm flex items-end" onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}>
             <div 
               className="absolute inset-0 bg-cover bg-center opacity-30 hover:opacity-40 transition-opacity duration-700 cursor-pointer"
-              style={{ backgroundImage: `url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1600&q=80')` }}
+              style={{ backgroundImage: `url('https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1600&q=80')` }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-900/60 to-transparent pointer-events-none"></div>
             <div className="relative z-10 p-10 md:p-14 w-full text-start">
