@@ -4,6 +4,8 @@ import { Screen } from './types';
 import { LanguageProvider } from './context/LanguageContext';
 import Splash from './screens/Splash';
 import LandingPage from './screens/LandingPage';
+import AboutUs from './screens/AboutUs';
+import ContactUs from './screens/ContactUs';
 import Onboarding from './screens/Onboarding';
 import PhoneAuth from './screens/PhoneAuth';
 import Login from './screens/Login';
@@ -192,7 +194,7 @@ export default function App() {
   const isMerchantScreen = currentScreen.startsWith('merchant_');
   const isUserScreen = currentScreen.startsWith('user_');
   const isAdminScreen = currentScreen === 'admin_dashboard';
-  const isLandingPage = currentScreen === 'landing_page';
+  const isPublicScreen = currentScreen === 'landing_page' || currentScreen === 'about_us' || currentScreen === 'contact_us';
   const isLogin = currentScreen === 'login' || currentScreen === 'hub';
 
   const isPortalRegister = currentScreen === 'portal_register';
@@ -201,10 +203,12 @@ export default function App() {
     <AppProvider>
       <LanguageProvider>
         <GlobalToast />
-      {isLandingPage || isLogin || isPortalRegister ? (
+      {isPublicScreen || isLogin || isPortalRegister ? (
         <div className="min-h-screen bg-zinc-50 text-zinc-900 font-sans transition-colors duration-300 w-full">
            <AnimatePresence mode="wait" initial={false}>
              {currentScreen === 'landing_page' && <LandingPage onNavigate={navigate} />}
+             {currentScreen === 'about_us' && <AboutUs onNavigate={navigate} />}
+             {currentScreen === 'contact_us' && <ContactUs onNavigate={navigate} />}
              {(currentScreen === 'login' || currentScreen === 'hub') && <Login onNavigate={navigate} />}
              {currentScreen === 'portal_register' && <PortalRegister onNavigate={navigate} />}
            </AnimatePresence>
