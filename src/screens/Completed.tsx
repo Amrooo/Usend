@@ -75,7 +75,7 @@ export default function Completed({ onNavigate }: CompletedProps) {
         <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-6 shadow-sm border border-zinc-100 dark:border-zinc-800 transition-colors duration-300 flex flex-col items-center">
           <div className="w-16 h-16 rounded-full overflow-hidden bg-zinc-200 dark:bg-zinc-800 mb-3">
             <img 
-              src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=250&h=250&auto=format&fit=crop" 
+              src="https://images.unsplash.com/photo-1621905252507-b35492cc74b4?q=80&w=250&h=250&auto=format&fit=crop" 
               alt="Driver" 
               className="w-full h-full object-cover" 
               referrerPolicy="no-referrer"

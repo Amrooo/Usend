@@ -2532,9 +2532,9 @@ function CouriersIntegrationsHub() {
   const activeCreds = currentConfig.currentMode === 'sandbox' ? currentConfig.sandboxCreds : currentConfig.productionCreds;
 
   const courierLogos: Record<string, string> = {
-    aramex: 'https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?q=80&w=100&auto=format&fit=crop',
-    noon: 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=100&auto=format&fit=crop',
-    dhl: 'https://images.unsplash.com/photo-1616401784845-180882ba9ba8?q=80&w=100&auto=format&fit=crop',
+    aramex: 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?q=80&w=100&auto=format&fit=crop',
+    noon: 'https://images.unsplash.com/photo-1607082349566-187342175e2f?q=80&w=100&auto=format&fit=crop',
+    dhl: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=100&auto=format&fit=crop',
     fedex: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=100&auto=format&fit=crop'
   };
 
@@ -3571,7 +3571,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
               <div className={`flex items-center gap-4 ${isRTL ? 'pr-4 border-r' : 'pl-4 border-l'} border-zinc-200`}>
                 <div className="w-12 h-12 rounded-full border-2 border-[#546a40] p-0.5">
                   <div className="w-full h-full rounded-full bg-zinc-200 overflow-hidden">
-                    <img alt="User" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200" className="w-full h-full object-cover" />
+                    <img alt="User" src="https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&q=80&w=200" className="w-full h-full object-cover" />
                   </div>
                 </div>
               </div>

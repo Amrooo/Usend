@@ -1281,7 +1281,7 @@ const [botOpen, setBotOpen] = useState(false);
               {/* Fade-in & Scale Background Image */}
               <div 
                 className="absolute inset-0 bg-cover bg-center opacity-[0.03] group-hover:opacity-[0.09] transition-all duration-700 pointer-events-none transform scale-100 group-hover:scale-105"
-                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=800&q=80')` }}
+                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=800&q=80')` }}
               />
               
               <div className="relative z-10 flex items-center justify-between">
@@ -1319,7 +1319,7 @@ const [botOpen, setBotOpen] = useState(false);
               {/* Fade-in & Scale Background Image */}
               <div 
                 className="absolute inset-0 bg-cover bg-center opacity-[0.03] group-hover:opacity-[0.09] transition-all duration-700 pointer-events-none transform scale-100 group-hover:scale-105"
-                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80')` }}
+                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?auto=format&fit=crop&w=800&q=80')` }}
               />
               
               <div className="relative z-10 flex items-center justify-between">
@@ -1395,7 +1395,7 @@ const [botOpen, setBotOpen] = useState(false);
               {/* Fade-in & Scale Background Image */}
               <div 
                 className="absolute inset-0 bg-cover bg-center opacity-[0.03] group-hover:opacity-[0.09] transition-all duration-700 pointer-events-none transform scale-100 group-hover:scale-105"
-                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1526367790999-0150786686a2?auto=format&fit=crop&w=800&q=80')` }}
+                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1607082349566-187342175e2f?auto=format&fit=crop&w=800&q=80')` }}
               />
               
               <div className="relative z-10 flex items-center justify-between">

@@ -54,7 +54,7 @@ export default function Hub({ onNavigate }: HubProps) {
       colorClass: 'from-blue-500/10 to-blue-500/10 hover:border-[#113f36]/30',
       tagColor: 'bg-[#113f36]/5 text-[#113f36] dark:bg-zinc-900 dark:text-[#6e938c]',
       badgeText: 'INDIVIDUAL DISPATCH',
-      image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=600',
+      image: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=600',
       metricLabel: 'Dispatch Time',
       metricValue: 'Instant',
     },
@@ -68,7 +68,7 @@ export default function Hub({ onNavigate }: HubProps) {
       colorClass: 'from-blue-500/10 to-indigo-500/10 hover:border-indigo-500/30',
       tagColor: 'bg-indigo-50 text-indigo-800 dark:bg-zinc-900 dark:text-indigo-300',
       badgeText: 'E-COMMERCE MERCHANT',
-      image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600',
+      image: 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&q=80&w=600',
       metricLabel: 'SLA Match Rate',
       metricValue: '99.8%',
     }

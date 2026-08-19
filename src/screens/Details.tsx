@@ -6,9 +6,9 @@ import { useLanguage } from '../context/LanguageContext';
 import { GoogleGenAI } from "@google/genai";
 
 const PACKAGE_IMAGES: Record<string, string> = {
-  'Furniture': 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=400&auto=format&fit=crop',
-  'Electronics': 'https://images.unsplash.com/photo-1498049794561-7780e7231661?q=80&w=400&auto=format&fit=crop',
-  'Documents': 'https://images.unsplash.com/photo-1586769852044-692d6e671f0a?q=80&w=400&auto=format&fit=crop',
+  'Furniture': 'https://images.unsplash.com/photo-1607082349566-187342175e2f?q=80&w=400&auto=format&fit=crop',
+  'Electronics': 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=400&auto=format&fit=crop',
+  'Documents': 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?q=80&w=400&auto=format&fit=crop',
   'Custom Load': ''
 };
 

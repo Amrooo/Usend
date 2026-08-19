@@ -9,9 +9,9 @@ import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 
 const ACTION_IMAGES: Record<string, string> = {
-  'furniture': 'https://images.unsplash.com/photo-1592078615290-033ee584e267?q=80&w=400&auto=format&fit=crop',
-  'electronics': 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?q=80&w=400&auto=format&fit=crop',
-  'documents': 'https://images.unsplash.com/photo-1586769852044-692d6e671f0a?q=80&w=400&auto=format&fit=crop',
+  'furniture': 'https://images.unsplash.com/photo-1607082349566-187342175e2f?q=80&w=400&auto=format&fit=crop',
+  'electronics': 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=400&auto=format&fit=crop',
+  'documents': 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?q=80&w=400&auto=format&fit=crop',
   'custom': ''
 };
 
@@ -109,7 +109,7 @@ export default function Home({ onNavigate }: HomeProps) {
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-zinc-200 overflow-hidden">
               <img 
-                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=250&h=250&auto=format&fit=crop" 
+                src="https://images.unsplash.com/photo-1621905252507-b35492cc74b4?q=80&w=250&h=250&auto=format&fit=crop" 
                 alt="User" 
                 className="w-full h-full object-cover" 
                 referrerPolicy="no-referrer"

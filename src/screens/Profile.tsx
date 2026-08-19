@@ -59,7 +59,7 @@ export default function Profile({ onNavigate }: ProfileProps) {
               <div className="relative">
                 <div className="w-24 h-24 rounded-full border-4 border-white dark:border-zinc-900 shadow-lg bg-[#113f36] p-0.5">
                   <img 
-                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=250&h=250&auto=format&fit=crop" 
+                    src="https://images.unsplash.com/photo-1621905252507-b35492cc74b4?q=80&w=250&h=250&auto=format&fit=crop" 
                     alt="Profile" 
                     className="w-full h-full rounded-full object-cover"
                     referrerPolicy="no-referrer"

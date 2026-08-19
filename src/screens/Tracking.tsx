@@ -239,7 +239,7 @@ export default function Tracking({ onNavigate }: TrackingProps) {
               <div className="relative">
                 <div className="w-12 h-12 rounded-full overflow-hidden bg-zinc-200 dark:bg-zinc-800">
                   <img 
-                    src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=250&h=250&auto=format&fit=crop" 
+                    src="https://images.unsplash.com/photo-1621905252507-b35492cc74b4?q=80&w=250&h=250&auto=format&fit=crop" 
                     alt="Driver" 
                     className="w-full h-full object-cover" 
                     referrerPolicy="no-referrer"
