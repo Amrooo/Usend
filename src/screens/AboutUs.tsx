@@ -510,7 +510,7 @@ const [botOpen, setBotOpen] = useState(false);
       
       
       {/* ── HEADER (FLOATING & OVERLAY) ── */}
-            <Header onNavigate={onNavigate} setLoginRole={setLoginRole} setLoginModalOpen={setLoginModalOpen} content={content} handleScrollTo={handleScrollTo} />
+            <Header onNavigate={onNavigate} setLoginRole={setLoginRole} setLoginModalOpen={setLoginModalOpen} content={content} handleScrollTo={handleScrollTo} forceSolid={true} />
       <div className="w-full relative z-10 bg-white px-6 md:px-16 py-24 pb-24 min-h-[70vh] flex flex-col items-center justify-center text-center">
         <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tight text-slate-900 mb-6">
           {isRTL ? 'من نحن' : 'About Us'}
