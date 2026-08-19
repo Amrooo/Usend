@@ -510,28 +510,47 @@ const [botOpen, setBotOpen] = useState(false);
       
       
       {/* ── HEADER (FLOATING & OVERLAY) ── */}
-            <Header onNavigate={onNavigate} setLoginRole={setLoginRole} setLoginModalOpen={setLoginModalOpen} content={content} handleScrollTo={handleScrollTo} forceSolid={true} />
-      <div className="w-full relative z-10 bg-white px-6 md:px-16 py-24 pb-24 min-h-[70vh] flex flex-col items-center justify-center text-center">
-        <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tight text-slate-900 mb-6">
-          {isRTL ? 'اتصل بنا' : 'Contact Us'}
-        </h1>
-        <p className="text-lg text-slate-600 max-w-2xl mx-auto font-medium leading-relaxed mb-12">
-          {isRTL 
-            ? 'فريق الدعم متاح على مدار الساعة للإجابة على استفساراتكم.' 
-            : 'Our support team is available 24/7 to answer your inquiries.'}
-        </p>
+            <Header onNavigate={onNavigate} setLoginRole={setLoginRole} setLoginModalOpen={setLoginModalOpen} content={content} handleScrollTo={handleScrollTo} />
+      
+      <div className="w-full relative z-10 bg-white px-6 md:px-16 py-4 pb-0 pt-24">
+        <div className="relative w-full h-[400px] md:h-[500px] rounded-[2rem] overflow-hidden shadow-sm flex flex-col items-center justify-center text-center">
+          {/* Background Image */}
+          <img 
+            src="/src/assets/contact-us.png" 
+            alt="Contact Support" 
+            className="absolute inset-0 w-full h-full object-cover select-none"
+          />
+          
+          {/* Overlay Gradient */}
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-900/50 to-slate-900/30 pointer-events-none"></div>
+
+          {/* Content */}
+          <div className="relative z-10 px-6 max-w-4xl mx-auto">
+            <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tight text-white mb-6 drop-shadow-lg">
+              {isRTL ? 'اتصل بنا' : 'Contact Us'}
+            </h1>
+            <p className="text-lg text-slate-200 max-w-2xl mx-auto font-medium leading-relaxed drop-shadow-md">
+              {isRTL 
+                ? 'فريق الدعم متاح على مدار الساعة للإجابة على استفساراتكم.' 
+                : 'Our support team is available 24/7 to answer your inquiries.'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="w-full relative z-10 bg-white px-6 md:px-16 py-16 flex flex-col items-center justify-center">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl text-start">
-          <div className="bg-slate-50 p-8 rounded-3xl border border-slate-100">
-            <h3 className="text-xl font-bold mb-4">{isRTL ? 'المقر الرئيسي' : 'Headquarters'}</h3>
+          <div className="bg-slate-50 p-8 rounded-3xl border border-slate-100 shadow-sm">
+            <h3 className="text-xl font-bold mb-4 text-slate-900">{isRTL ? 'المقر الرئيسي' : 'Headquarters'}</h3>
             <p className="text-slate-500 mb-2">Dubai Silicon Oasis, UAE</p>
             <p className="text-slate-500 mb-2">+971 4 123 4567</p>
             <p className="text-slate-500">support@usend.com</p>
           </div>
-          <div className="bg-slate-50 p-8 rounded-3xl border border-slate-100">
-            <h3 className="text-xl font-bold mb-4">{isRTL ? 'أرسل رسالة' : 'Send a Message'}</h3>
-            <input type="text" placeholder={isRTL ? 'الاسم' : 'Name'} className="w-full mb-4 p-3 rounded-xl border border-slate-200" />
-            <input type="email" placeholder={isRTL ? 'البريد الإلكتروني' : 'Email'} className="w-full mb-4 p-3 rounded-xl border border-slate-200" />
-            <button className="w-full py-3 bg-[#113f36] text-white rounded-xl font-bold">{isRTL ? 'إرسال' : 'Submit'}</button>
+          <div className="bg-slate-50 p-8 rounded-3xl border border-slate-100 shadow-sm">
+            <h3 className="text-xl font-bold mb-4 text-slate-900">{isRTL ? 'أرسل رسالة' : 'Send a Message'}</h3>
+            <input type="text" placeholder={isRTL ? 'الاسم' : 'Name'} className="w-full mb-4 p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#113f36]" />
+            <input type="email" placeholder={isRTL ? 'البريد الإلكتروني' : 'Email'} className="w-full mb-4 p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#113f36]" />
+            <button className="w-full py-3 bg-[#113f36] hover:bg-[#0d3029] text-white rounded-xl font-bold transition-colors">{isRTL ? 'إرسال' : 'Submit'}</button>
           </div>
         </div>
       </div>
