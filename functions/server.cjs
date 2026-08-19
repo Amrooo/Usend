@@ -407,7 +407,40 @@ var init_AramexAdapter = __esm({
         }
       }
       async cancelShipment(trackingId, credentials, environment) {
-        return false;
+        const baseUrl = this.getBaseUrl(environment);
+        const aramexPayload = {
+          ClientInfo: {
+            UserName: credentials.username,
+            Password: credentials.password,
+            Version: credentials.version || "v1.0",
+            AccountNumber: credentials.accountNumber,
+            AccountPin: credentials.accountPin,
+            AccountEntity: credentials.accountEntity,
+            AccountCountryCode: credentials.accountCountryCode,
+            Source: parseInt(credentials.source || "0", 10) || 0
+          },
+          Transaction: {
+            Reference1: `Cancel ${trackingId}`,
+            Reference2: "",
+            Reference3: "",
+            Reference4: "",
+            Reference5: ""
+          },
+          PickupGUID: trackingId,
+          // Often the GUID or waybill number is used here
+          Comments: "Cancelled by User via USend"
+        };
+        try {
+          const data = await this.postRequest(`${baseUrl}/api/aramex/cancel_pickup`, aramexPayload);
+          if (data.HasErrors) {
+            console.error("[AramexAdapter] CancelShipment Failed:", data.Notifications?.[0]?.Message || JSON.stringify(data));
+            return false;
+          }
+          return true;
+        } catch (e) {
+          console.error("[AramexAdapter] CancelShipment Exception:", e.message);
+          return false;
+        }
       }
       mapStatus(aramexCode) {
         const code = aramexCode.toUpperCase();
@@ -471,8 +504,11 @@ var init_NoonAdapter = __esm({
         if (process.env.NOON_API_BASE_URL) return process.env.NOON_API_BASE_URL;
         return env === "production" ? "https://food-api-team.noon.team" : "https://food-api-team.noonstg.team";
       }
-      getApiKey(credentials) {
-        return process.env.NOON_API_KEY || credentials.apiKey || credentials.password || "";
+      getApiKey(credentials, env = "sandbox") {
+        if (process.env.NOON_API_KEY) return process.env.NOON_API_KEY;
+        if (credentials.apiKey && credentials.apiKey.length > 10) return credentials.apiKey;
+        if (credentials.password && credentials.password.length > 10) return credentials.password;
+        return env === "sandbox" ? "SstJi9Ho0EHG2t7kQVSz7nA2hOeL3iiwVxHxb0Njk60QJ0LfmvoXOsimw1zQC7VugHXiIRRMnWyU6f0uHcEcLlco5Eujqbd5pTwDlfBXpacuRI4m4AAj61NwM0B7Ihk" : credentials.apiKey || "";
       }
       buildHeaders(credentials, idempotencyKey) {
         const apiKey2 = this.getApiKey(credentials);
@@ -521,7 +557,7 @@ var init_NoonAdapter = __esm({
       // ─── Create Shipment (Delivery Task) ─────────────────────────────────────
       async createShipment(payload, credentials, environment) {
         const baseUrl = this.getBaseUrl(environment);
-        const outletCode = payload.outletCode || credentials.outletCode || credentials.accountNumber || "";
+        const outletCode = payload.outletCode || credentials.outletCode || credentials.storeId || credentials.accountNumber || (environment === "sandbox" ? "77T4HCOD4G" : "");
         if (!outletCode) {
           return { success: false, error: "Noon: No outlet_code provided. Select a pickup point first." };
         }
@@ -781,6 +817,7 @@ var import_path2 = __toESM(require("path"), 1);
 var import_vite = require("vite");
 var import_genai = require("@google/genai");
 var import_stripe = __toESM(require("stripe"), 1);
+var import_express_rate_limit = __toESM(require("express-rate-limit"), 1);
 var import_dotenv2 = __toESM(require("dotenv"), 1);
 var import_firebase_admin = __toESM(require("firebase-admin"), 1);
 var import_firestore = require("firebase-admin/firestore");
@@ -805,7 +842,10 @@ if (!import_fs2.default.existsSync(envPath2)) {
   envPath2 = import_path2.default.resolve(process.cwd(), ".env");
 }
 import_dotenv2.default.config({ path: envPath2 });
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+if (process.env.NODE_ENV !== "production") {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+  console.warn("[SECURITY] TLS validation disabled (dev/staging mode). Never use in production.");
+}
 if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
   process.env.GCE_METADATA_HOST = "127.0.0.1";
   process.env.GCE_METADATA_CHECK_DISABLE = "true";
@@ -873,8 +913,29 @@ async function getCourierEngine() {
   }
   return _courierEngine;
 }
+var fetchWithTimeout = async (url, options, timeoutMs = 3e4) => {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    return response;
+  } finally {
+    clearTimeout(id);
+  }
+};
 var app = (0, import_express.default)();
-var PORT = Number(process.env.PORT) || 3e3;
+var PORT = Number(process.env.PORT) || 3005;
+app.set("trust proxy", 1);
+var apiLimiter = (0, import_express_rate_limit.default)({
+  windowMs: 15 * 60 * 1e3,
+  // 15 minutes
+  max: 300,
+  // Limit each IP to 300 requests per windowMs
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many requests, please try again later." }
+});
+app.use("/api/", apiLimiter);
 app.get("/api/health", (req, res) => {
   res.json({
     status: "ok",
@@ -900,6 +961,29 @@ app.use((req, res, next) => {
   } else {
     import_express.default.json({ limit: "15mb" })(req, res, next);
   }
+});
+async function requireAuth(req, res, next) {
+  const authHeader = req.headers["authorization"];
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "Unauthorized: Missing or invalid Authorization header" });
+  }
+  const idToken = authHeader.split("Bearer ")[1];
+  try {
+    const decodedToken = await import_firebase_admin.default.auth().verifyIdToken(idToken);
+    req.user = { uid: decodedToken.uid, email: decodedToken.email, role: decodedToken.role };
+    next();
+  } catch (err) {
+    console.warn("[Auth] Token verification failed:", err.message);
+    return res.status(401).json({ error: "Unauthorized: Invalid token" });
+  }
+}
+var PROTECTED_ROUTE_PREFIXES = ["/api/courier/", "/api/admin/", "/api/aramex/"];
+app.use((req, res, next) => {
+  const isProtected = PROTECTED_ROUTE_PREFIXES.some((prefix) => req.path.startsWith(prefix));
+  if (isProtected) {
+    return requireAuth(req, res, next);
+  }
+  next();
 });
 app.get("/api/payments/config", (req, res) => {
   res.json({ publishableKey: process.env.STRIPE_PUBLISHABLE_KEY || process.env.VITE_STRIPE_PUBLISHABLE_KEY });
@@ -1162,29 +1246,30 @@ app.post("/api/webhooks/noon/location", import_express.default.json(), async (re
     console.error("[NoonWebhook] Location update failed:", e);
   }
 });
-app.post("/api/rates/calculate", async (req, res) => {
+app.post("/api/aramex/:serviceType", async (req, res) => {
   try {
     const { serviceType } = req.params;
     let payload = req.body;
     const userClientInfo = payload.ClientInfo || {};
     const isProduction = process.env.ARAMEX_ENV !== "sandbox" && req.headers["x-aramex-env"] !== "sandbox";
     const baseUrl = process.env.ARAMEX_BASE_URL || (isProduction ? "https://ws.aramex.net" : "https://ws.uat.aramex.net");
-    const defaultUserName = "octman.sam@gmail.com";
-    const defaultPassword = "#JohnSnow2027";
-    const defaultAccountNumber = "75788705";
-    const defaultAccountPin = "217147";
-    const defaultAccountEntity = "DXB";
-    const defaultAccountCountryCode = "AE";
-    const defaultSource = 0;
-    const defaultVersion = "v1.0";
-    const finalUserName = userClientInfo.UserName && userClientInfo.UserName !== "testingapi@aramex.com" ? userClientInfo.UserName : process.env.ARAMEX_USERNAME || defaultUserName;
-    const finalPassword = userClientInfo.Password && userClientInfo.Password !== "R123456789$r" ? userClientInfo.Password : process.env.ARAMEX_PASSWORD || defaultPassword;
-    const finalVersion = userClientInfo.Version && userClientInfo.Version !== "v1" ? userClientInfo.Version : process.env.ARAMEX_VERSION || defaultVersion;
-    const finalAccountNumber = userClientInfo.AccountNumber && userClientInfo.AccountNumber !== "45796" ? userClientInfo.AccountNumber : process.env.ARAMEX_ACCOUNT_NUMBER || defaultAccountNumber;
-    const finalAccountPin = userClientInfo.AccountPin && userClientInfo.AccountPin !== "116216" ? userClientInfo.AccountPin : process.env.ARAMEX_ACCOUNT_PIN || defaultAccountPin;
-    const finalAccountEntity = userClientInfo.AccountEntity || process.env.ARAMEX_ACCOUNT_ENTITY || defaultAccountEntity;
-    const finalAccountCountryCode = userClientInfo.AccountCountryCode || process.env.ARAMEX_ACCOUNT_COUNTRY_CODE || defaultAccountCountryCode;
-    const finalSource = userClientInfo.Source !== void 0 ? Number(userClientInfo.Source) : process.env.ARAMEX_SOURCE !== void 0 ? Number(process.env.ARAMEX_SOURCE) : defaultSource;
+    const envUserName = process.env.ARAMEX_USERNAME || "";
+    const envPassword = process.env.ARAMEX_PASSWORD || "";
+    const envAccountNumber = process.env.ARAMEX_ACCOUNT_NUMBER || "";
+    const envAccountPin = process.env.ARAMEX_ACCOUNT_PIN || "";
+    const envAccountEntity = process.env.ARAMEX_ACCOUNT_ENTITY || "DXB";
+    const envAccountCountryCode = process.env.ARAMEX_ACCOUNT_COUNTRY_CODE || "AE";
+    const envSource = process.env.ARAMEX_SOURCE !== void 0 ? Number(process.env.ARAMEX_SOURCE) : 0;
+    const envVersion = process.env.ARAMEX_VERSION || "v1.0";
+    const isUsingTestCreds = (u) => !u || u === "testingapi@aramex.com";
+    const finalUserName = !isUsingTestCreds(userClientInfo.UserName) ? userClientInfo.UserName : envUserName;
+    const finalPassword = userClientInfo.Password && userClientInfo.Password !== "R123456789$r" ? userClientInfo.Password : envPassword;
+    const finalVersion = userClientInfo.Version && userClientInfo.Version !== "v1" ? userClientInfo.Version : envVersion;
+    const finalAccountNumber = userClientInfo.AccountNumber && userClientInfo.AccountNumber !== "45796" ? userClientInfo.AccountNumber : envAccountNumber;
+    const finalAccountPin = userClientInfo.AccountPin && userClientInfo.AccountPin !== "116216" ? userClientInfo.AccountPin : envAccountPin;
+    const finalAccountEntity = userClientInfo.AccountEntity || envAccountEntity;
+    const finalAccountCountryCode = userClientInfo.AccountCountryCode || envAccountCountryCode;
+    const finalSource = userClientInfo.Source !== void 0 ? Number(userClientInfo.Source) : envSource;
     payload = {
       ...payload,
       ClientInfo: {
@@ -1208,6 +1293,8 @@ app.post("/api/rates/calculate", async (req, res) => {
       path3 = "/ShippingAPI.V2/Tracking/Service_1_0.svc/json/TrackShipments";
     } else if (serviceType === "pickup") {
       path3 = "/ShippingAPI.V2/Shipping/Service_1_0.svc/json/CreatePickup";
+    } else if (serviceType === "cancel_pickup") {
+      path3 = "/ShippingAPI.V2/Shipping/Service_1_0.svc/json/CancelPickup";
     } else {
       return res.status(200).json({
         HasErrors: true,
@@ -1215,7 +1302,7 @@ app.post("/api/rates/calculate", async (req, res) => {
       });
     }
     try {
-      const aramexRes = await fetch(`${baseUrl}${path3}`, {
+      const aramexRes = await fetchWithTimeout(`${baseUrl}${path3}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1327,7 +1414,7 @@ app.post("/api/courier/cancel", import_express.default.json(), async (req, res) 
 app.get("/api/noon/pickup-points", async (req, res) => {
   try {
     const baseUrl = getNoonBaseUrl(req);
-    const response = await fetch(`${baseUrl}/public/v1/pickup-points/list`, {
+    const response = await fetchWithTimeout(`${baseUrl}/public/v1/pickup-points/list`, {
       method: "GET",
       headers: getNoonHeaders(req),
       signal: AbortSignal.timeout(1e4)
@@ -1341,7 +1428,7 @@ app.get("/api/noon/pickup-points", async (req, res) => {
 app.get("/api/noon/pickup-addresses", async (req, res) => {
   try {
     const baseUrl = getNoonBaseUrl(req);
-    const response = await fetch(`${baseUrl}/public/v1/pickup-points/list`, {
+    const response = await fetchWithTimeout(`${baseUrl}/public/v1/pickup-points/list`, {
       method: "GET",
       headers: getNoonHeaders(req),
       signal: AbortSignal.timeout(1e4)
@@ -1355,7 +1442,7 @@ app.get("/api/noon/pickup-addresses", async (req, res) => {
 app.post("/api/noon/pickup-points", async (req, res) => {
   try {
     const baseUrl = getNoonBaseUrl(req);
-    const response = await fetch(`${baseUrl}/public/v1/pickup-points/create`, {
+    const response = await fetchWithTimeout(`${baseUrl}/public/v1/pickup-points/create`, {
       method: "POST",
       headers: getNoonHeaders(req),
       body: JSON.stringify(req.body),
@@ -1370,7 +1457,7 @@ app.post("/api/noon/pickup-points", async (req, res) => {
 app.get("/api/noon/pickup-points/:code", async (req, res) => {
   try {
     const baseUrl = getNoonBaseUrl(req);
-    const response = await fetch(`${baseUrl}/public/v1/pickup-points/${req.params.code}`, {
+    const response = await fetchWithTimeout(`${baseUrl}/public/v1/pickup-points/${req.params.code}`, {
       method: "GET",
       headers: getNoonHeaders(req),
       signal: AbortSignal.timeout(1e4)
@@ -1384,7 +1471,7 @@ app.get("/api/noon/pickup-points/:code", async (req, res) => {
 app.post("/api/noon/pickup-points/:code/update", async (req, res) => {
   try {
     const baseUrl = getNoonBaseUrl(req);
-    const response = await fetch(`${baseUrl}/public/v1/pickup-points/${req.params.code}/update`, {
+    const response = await fetchWithTimeout(`${baseUrl}/public/v1/pickup-points/${req.params.code}/update`, {
       method: "POST",
       headers: getNoonHeaders(req),
       body: JSON.stringify(req.body),
@@ -1402,7 +1489,7 @@ app.post("/api/noon/create-task", async (req, res) => {
     const baseUrl = getNoonBaseUrl(req);
     const idempotencyKey = req.headers["x-idempotency-key"] || params.idempotencyKey || `usend-${params.order_reference || Date.now()}`;
     console.log(`[NoonProxy] NOON_TASK_CREATE_REQUEST to ${baseUrl}, idempotency: ${idempotencyKey}`);
-    const response = await fetch(`${baseUrl}/public/v1/create-task`, {
+    const response = await fetchWithTimeout(`${baseUrl}/public/v1/create-task`, {
       method: "POST",
       headers: getNoonHeaders(req, idempotencyKey),
       body: JSON.stringify(params),
@@ -1431,7 +1518,7 @@ app.get("/api/noon/tasks/:mp_task_nr", async (req, res) => {
   try {
     const baseUrl = getNoonBaseUrl(req);
     console.log(`[Noon Proxy] Fetching task details for ${mp_task_nr} from ${baseUrl}...`);
-    const response = await fetch(`${baseUrl}/public/v1/tasks/${mp_task_nr}`, {
+    const response = await fetchWithTimeout(`${baseUrl}/public/v1/tasks/${mp_task_nr}`, {
       method: "GET",
       headers: getNoonHeaders(req),
       signal: AbortSignal.timeout(1e4)
@@ -1452,7 +1539,7 @@ app.post("/api/noon/tasks/:mp_task_nr/cancel", async (req, res) => {
   try {
     const baseUrl = getNoonBaseUrl(req);
     console.log(`[Noon Proxy] Sending cancellation request for ${mp_task_nr}...`);
-    const response = await fetch(`${baseUrl}/public/v1/tasks/${mp_task_nr}/cancel`, {
+    const response = await fetchWithTimeout(`${baseUrl}/public/v1/tasks/${mp_task_nr}/cancel`, {
       method: "POST",
       headers: getNoonHeaders(req),
       body: JSON.stringify({ reason }),
