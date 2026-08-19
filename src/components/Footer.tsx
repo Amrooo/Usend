@@ -15,7 +15,8 @@ export default function Footer({ onNavigate, setLoginRole, setLoginEmail, setLog
   const { isRTL } = useLanguage();
 
   return (
-    {/* WATERMARK FOOTER SECTION - Full Width */}
+    <>
+      {/* WATERMARK FOOTER SECTION - Full Width */}
         <footer className="w-full bg-white text-slate-900 pt-24 pb-16 px-4 md:px-8 border-t border-slate-200 relative overflow-hidden">
           {/* Large transparent watermark background logo */}
           <div className="absolute inset-x-0 bottom-4 text-center select-none pointer-events-none z-0">
@@ -94,5 +95,6 @@ export default function Footer({ onNavigate, setLoginRole, setLoginEmail, setLog
 
           </div>
         </footer>
+    </>
   );
 }
