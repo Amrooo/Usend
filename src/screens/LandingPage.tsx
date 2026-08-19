@@ -1500,21 +1500,9 @@ const [botOpen, setBotOpen] = useState(false);
                 <img src={sectorContainer} alt="Modern warehouse" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
               </div>
 
-              {/* Bottom row: left image card + right statistics card */}
-              <div className="col-span-12 sm:col-span-6 rounded-[2rem] overflow-hidden border border-slate-100 shadow-sm h-[190px]">
+              {/* Bottom row: full width image card */}
+              <div className="col-span-12 rounded-[2rem] overflow-hidden border border-slate-100 shadow-sm h-[190px]">
                 <img src={heroTruck} alt="Logistics delivery truck" referrerPolicy="no-referrer" className="w-full h-full object-cover" />
-              </div>
-
-              <div className="col-span-12 sm:col-span-6 bg-gradient-to-br from-[#9fb19b] to-[#859c81] rounded-[2rem] p-6 text-white flex flex-col justify-between h-[190px] shadow-lg shadow-emerald-900/15 text-start">
-                <span className="text-[11px] font-black uppercase tracking-widest text-[#a5b994]">System Accuracy</span>
-                <div className="space-y-2">
-                  <p className="text-5xl font-black tracking-tight">97.6%</p>
-                  <p className="text-[11px] uppercase tracking-wider text-slate-200 font-extrabold">On-Time Delivery</p>
-                  {/* Progress Bar */}
-                  <div className="w-full h-1 bg-white/20 rounded-full mt-2 overflow-hidden">
-                    <div className="h-full bg-white rounded-full" style={{ width: '97.6%' }} />
-                  </div>
-                </div>
               </div>
 
             </div>
