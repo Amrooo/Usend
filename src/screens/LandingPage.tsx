@@ -899,7 +899,7 @@ const [botOpen, setBotOpen] = useState(false);
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.8, ease: 'easeOut' }}
               >
-                <h1 className="text-4xl sm:text-5xl md:text-[5rem] font-light text-white leading-[1.05] tracking-tight font-sans drop-shadow-lg">
+                <h1 className="text-4xl sm:text-5xl md:text-[5rem] font-bold text-white leading-[1.05] tracking-tight font-sans drop-shadow-lg">
                   {isRTL ? heroSlides[heroSlideIdx].titleAr : heroSlides[heroSlideIdx].titleEn}
                 </h1>
                 <p className="mt-6 text-white font-bold text-base md:text-xl max-w-2xl drop-shadow-md">
