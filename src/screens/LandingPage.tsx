@@ -1209,46 +1209,7 @@ const [botOpen, setBotOpen] = useState(false);
       </section>
 
       
-      {/* SECTORS SECTION */}
-      <section id="sectors" className="w-full bg-white py-16 px-4 md:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="rounded-[2rem] overflow-hidden relative min-h-[500px] shadow-sm">
-            <img src="https://images.unsplash.com/photo-1614436163996-25cee5f54290?auto=format&fit=crop&w=1600&q=80" alt="Sectors Background" referrerPolicy="no-referrer" className="absolute inset-0 w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-r rtl:bg-gradient-to-l from-transparent to-slate-900/80 rtl:from-transparent rtl:to-slate-900/80"></div>
-            <div className="absolute top-0 right-0 rtl:right-auto rtl:left-0 w-full md:w-[55%] h-full flex flex-col justify-center p-8 md:p-16 text-white z-10 text-left rtl:text-right">
-              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight leading-none mb-6 font-sans drop-shadow-md">
-                {isRTL ? <>نخدم الأعمال<br/>في مختلف القطاعات</> : <>SERVING BUSINESSES<br/>ACROSS SECTORS</>}
-              </h2>
-              <p className="text-white/90 text-sm md:text-base font-medium mb-10 max-w-lg leading-relaxed">
-                {isRTL 
-                  ? 'من الصناعات الثقيلة إلى التجارة الإلكترونية السريعة، بنيتنا التحتية اللوجستية تتكيف مع المتطلبات الفريدة لكل قطاع.' 
-                  : 'From heavy manufacturing to high-velocity e-commerce, our logistics infrastructure adapts to the unique demands of every industry.'}
-              </p>
-              
-              <ul className="space-y-0">
-                {[
-                  { en: 'Manufacturing', ar: 'التصنيع' },
-                  { en: 'Healthcare & Pharmaceuticals', ar: 'الرعاية الصحية والأدوية' },
-                  { en: 'Retail & E-Commerce', ar: 'التجزئة والتجارة الإلكترونية' },
-                  { en: 'Manufacturing Technology', ar: 'تكنولوجيا التصنيع' },
-                  { en: 'Agriculture & Environments', ar: 'الزراعة والبيئة' },
-                  { en: 'Automotive & Industrial', ar: 'السيارات والصناعة' }
-                ].map((sector, i) => (
-                  <li key={i} className="flex items-center justify-between py-3 border-b border-white/20 hover:border-white/50 transition-colors cursor-pointer group">
-                    <div className="flex items-center gap-3">
-                      <div className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-                        <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                      </div>
-                      <span className="font-semibold text-sm tracking-wide">{isRTL ? sector.ar : sector.en}</span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-white/50 group-hover:text-white transition-colors rtl:rotate-180" />
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
+
 
       {/* END-TO-END LOGISTICS SOLUTIONS SECTION - 4 Card Grid - Full Width */}
       <section id="services" className="w-full bg-[#FAFBFD] py-24 px-4 md:px-8 border-b border-slate-100">
@@ -1757,10 +1718,10 @@ const [botOpen, setBotOpen] = useState(false);
         </section>
 
         {/* WATERMARK FOOTER SECTION - Full Width */}
-        <footer className="w-full bg-[#060B26] text-white pt-24 pb-16 px-4 md:px-8 border-t border-white/5 relative overflow-hidden">
+        <footer className="w-full bg-white text-slate-900 pt-24 pb-16 px-4 md:px-8 border-t border-slate-200 relative overflow-hidden">
           {/* Large transparent watermark background logo */}
           <div className="absolute inset-x-0 bottom-4 text-center select-none pointer-events-none z-0">
-            <span className="text-[15vw] font-black tracking-widest text-white/[0.015] uppercase leading-none block font-sans">
+            <span className="text-[15vw] font-black tracking-widest text-slate-900/[0.03] uppercase leading-none block font-sans">
               {isRTL ? 'يوسند' : 'USEND'}
             </span>
           </div>
@@ -1771,13 +1732,13 @@ const [botOpen, setBotOpen] = useState(false);
               
               <div className="space-y-6 md:col-span-2">
                 <div className="flex items-center gap-3">
-                  <LogoIcon className="h-12 w-auto" variant="dark" />
+                  <LogoIcon className="h-12 w-auto" />
                   <div className="flex flex-col text-start">
-                    <span className="text-sm font-black tracking-widest text-white uppercase leading-none">{isRTL ? 'يو سند' : 'USend'}</span>
-                    <span className="text-[12px] font-bold uppercase text-white tracking-wider leading-none mt-1">{isRTL ? 'الشحن الذكي' : 'Smart Shipping'}</span>
+                    <span className="text-sm font-black tracking-widest text-slate-900 uppercase leading-none">{isRTL ? 'يو سند' : 'USend'}</span>
+                    <span className="text-[12px] font-bold uppercase text-slate-700 tracking-wider leading-none mt-1">{isRTL ? 'الشحن الذكي' : 'Smart Shipping'}</span>
                   </div>
                 </div>
-                <p className="text-[12px] text-slate-400 leading-relaxed max-w-md font-semibold font-sans">
+                <p className="text-[12px] text-slate-500 leading-relaxed max-w-md font-semibold font-sans">
                   {isRTL 
                     ? 'خدمات لوجستية ونقل متكاملة مبنية للشركات التي تطلب السرعة والدقة ومتابعة فورية لسلاسل الإمداد.' 
                     : 'Global logistics and transportation built for businesses that demand speed, precision, and real-time supply chain visibility.'}
@@ -1785,8 +1746,8 @@ const [botOpen, setBotOpen] = useState(false);
               </div>
 
               <div className="space-y-4">
-                <h4 className="text-[13px] font-black uppercase text-slate-500 tracking-widest font-sans">{isRTL ? 'بوابات المنظومة' : 'Connect Hubs'}</h4>
-                <ul className="space-y-2 text-[13px] font-bold text-slate-350 font-sans">
+                <h4 className="text-[13px] font-black uppercase text-slate-800 tracking-widest font-sans">{isRTL ? 'بوابات المنظومة' : 'Connect Hubs'}</h4>
+                <ul className="space-y-2 text-[13px] font-bold text-slate-600 font-sans">
                   <li>
                     <span 
                       className="hover:text-[#113f36] transition-colors cursor-pointer" 
@@ -1815,8 +1776,8 @@ const [botOpen, setBotOpen] = useState(false);
               </div>
 
               <div className="space-y-4">
-                <h4 className="text-[13px] font-black uppercase text-slate-500 tracking-widest font-sans">{isRTL ? 'بوابات الإدارة' : 'Corporate Parameters'}</h4>
-                <ul className="space-y-2 text-[13px] font-bold text-slate-350 font-sans">
+                <h4 className="text-[13px] font-black uppercase text-slate-800 tracking-widest font-sans">{isRTL ? 'بوابات الإدارة' : 'Corporate Parameters'}</h4>
+                <ul className="space-y-2 text-[13px] font-bold text-slate-600 font-sans">
                   <li><span className="hover:text-[#113f36] transition-colors cursor-pointer" onClick={() => { setLoginRole('admin'); setLoginModalOpen(true); }}>{isRTL ? 'بوابة المسؤول الإقليمي' : 'Zonal Admin Portal'}</span></li>
                   <li><a href="#" className="hover:text-[#113f36] transition-colors">{isRTL ? 'سجلات الأمان' : 'Safety Logs'}</a></li>
                   <li><a href="#" className="hover:text-[#113f36] transition-colors">{isRTL ? 'مفاتيح الربط البرمجي (API)' : 'API Keys'}</a></li>
@@ -1825,7 +1786,7 @@ const [botOpen, setBotOpen] = useState(false);
 
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-12 border-t border-white/10 text-[13px] font-black text-slate-500 uppercase tracking-widest font-sans">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-12 border-t border-slate-200 text-[13px] font-black text-slate-500 uppercase tracking-widest font-sans">
               <p>{content.copyright}</p>
               <div className="flex items-center gap-8">
                 <a href="#" className="hover:text-[#113f36] transition-colors">{isRTL ? 'سياسة الخصوصية' : 'Privacy Policy'}</a>
