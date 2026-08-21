@@ -7,7 +7,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useApp, USendRequest } from '../../context/AppContext';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
+import * as L from 'leaflet';
 import Barcode from 'react-barcode';
 
 // Fix for default marker icons in react-leaflet
@@ -539,7 +539,8 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                   </div>
 
                   {/* Enhanced Waybill Stamp */}
-                  {selectedOrder.externalTrackingNumber && (
+                  {/* Enhanced Waybill Stamp */}
+                  {(selectedOrder.externalTrackingNumber || liveSelectedOrder?.status === 'Dispatch Failed') && (
                     <motion.div 
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -552,9 +553,9 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                            </h3>
                            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Tracking Waybill</span>
                         </div>
-                        <div className="bg-zinc-900 text-white px-3 py-1.5 rounded-xl flex flex-col items-end">
+                        <div className={`px-3 py-1.5 rounded-xl flex flex-col items-end ${liveSelectedOrder?.status === 'Dispatch Failed' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-zinc-900 text-white'}`}>
                            <span className="text-[9px] font-black uppercase tracking-widest opacity-70">Carrier ID</span>
-                           <span className="text-xs font-black font-mono">{selectedOrder.externalTrackingNumber}</span>
+                           <span className="text-xs font-black font-mono">{liveSelectedOrder?.status === 'Dispatch Failed' ? 'FAILED' : selectedOrder.externalTrackingNumber}</span>
                         </div>
                       </div>
 
@@ -570,89 +571,109 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                       </div>
 
                       <div className="flex flex-col items-center justify-center pt-6 border-t border-zinc-200 relative z-10">
-                        <div className="bg-white p-4 rounded-2xl shadow-sm border border-zinc-100">
-                          <Barcode 
-                            value={selectedOrder.externalTrackingNumber} 
-                            width={1.4} 
-                            height={45} 
-                            fontSize={12}
-                            background="transparent"
-                            lineColor="#18181b"
-                          />
-                        </div>
+                        {liveSelectedOrder?.status === 'Dispatch Failed' ? (
+                          <div className="w-full bg-red-50 border border-red-100 rounded-2xl p-4 flex gap-3 items-start">
+                             <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+                             <div>
+                                <h4 className="text-xs font-bold text-red-900 uppercase tracking-widest mb-1">Dispatch Failed</h4>
+                                <p className="text-xs text-red-700 leading-relaxed font-medium">
+                                   {liveSelectedOrder.dispatchError || "The order could not be sent to the courier. Please contact support."}
+                                </p>
+                             </div>
+                          </div>
+                        ) : (
+                          <div className="bg-white p-4 rounded-2xl shadow-sm border border-zinc-100">
+                            <Barcode 
+                              value={selectedOrder.externalTrackingNumber} 
+                              width={1.4} 
+                              height={45} 
+                              fontSize={12}
+                              background="transparent"
+                              lineColor="#18181b"
+                            />
+                          </div>
+                        )}
                       </div>
                     </motion.div>
                   )}
 
-                  {/* Package & Specifications */}
-                  <div className="space-y-4">
-                    <h3 className="text-xs font-black text-zinc-900 uppercase tracking-widest flex items-center gap-2">
-                       <Package className="w-4 h-4 text-blue-600" />
-                       Shipment Specs
-                    </h3>
+                  {/* SUMMARY & PAYMENT EXACT LAYOUT */}
+                  <div className="bg-white border border-[#EBEFE9] rounded-[2.5rem] p-6 shadow-[0_8px_30px_rgb(220,225,235,0.45)] flex flex-col gap-5 mt-2">
                     
-                    <div className="grid grid-cols-2 gap-3">
-                       <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
-                          <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest block">Mass</span>
-                          <span className="text-sm font-black text-zinc-900 mt-1 block">{selectedOrder.weight || '5.0'} kg</span>
-                       </div>
-                       <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
-                          <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest block">Category</span>
-                          <span className="text-sm font-black text-zinc-900 mt-1 block truncate">{selectedOrder.itemType || 'General'}</span>
-                       </div>
+                    {/* Header */}
+                    <div className="flex items-center gap-3 border-b border-[#EBEFE9] pb-4">
+                      <div className="w-10 h-10 rounded-xl bg-[#546a40]/10 flex items-center justify-center text-[#546a40]">
+                        <Check className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-black text-sm text-zinc-900 uppercase tracking-widest">Summary & Payment</h3>
+                        <p className="text-[11px] text-[#546a40] font-bold mt-0.5">Order Parameters Ready</p>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Routing Information */}
-                  <div className="space-y-4">
-                    <h3 className="text-xs font-black text-zinc-900 uppercase tracking-widest flex items-center gap-2">
-                       <MapPin className="w-4 h-4 text-blue-600" />
-                       Routing & Transit
-                    </h3>
-                    <div className="bg-white border border-zinc-200 rounded-3xl p-5 space-y-6">
-                       <div className="flex gap-4">
-                          <div className="flex flex-col items-center pt-1.5">
-                             <div className="w-3.5 h-3.5 rounded-full border-2 border-zinc-900 bg-white" />
-                             <div className="w-0.5 h-12 bg-zinc-100 my-1" />
+                    {/* Locations */}
+                    <div className="space-y-4">
+                      <div>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Pickup Location</span>
+                        <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-100 flex items-start gap-2">
+                          <MapPin className="w-3.5 h-3.5 text-zinc-400 mt-0.5 shrink-0" />
+                          <div className="flex flex-col overflow-hidden">
+                            <span className="text-xs font-semibold text-zinc-700 truncate">{selectedOrder.fromDestination || selectedOrder.pickupAddress || 'Dubai'}</span>
+                            <span className="text-[10px] text-zinc-500 font-medium truncate">{selectedOrder.merchantName || 'Store'}</span>
                           </div>
-                          <div>
-                             <p className="text-[11px] font-black text-zinc-400 uppercase tracking-widest mb-1">Origin</p>
-                             <p className="text-[13px] font-black text-zinc-900">{selectedOrder.pickupAddress || 'Verified Merchant Warehouse'}</p>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Dropoff Location</span>
+                        <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-100 flex items-start gap-2">
+                          <MapPin className="w-3.5 h-3.5 text-zinc-400 mt-0.5 shrink-0" />
+                          <div className="flex flex-col overflow-hidden">
+                            <span className="text-xs font-semibold text-zinc-700 truncate">{selectedOrder.toDestination || selectedOrder.address || 'Dubai'}</span>
+                            <span className="text-[10px] text-zinc-500 font-medium truncate">{selectedOrder.name || user?.displayName || 'Customer'}</span>
                           </div>
-                       </div>
-                       <div className="flex gap-4">
-                          <div className="flex flex-col items-center pt-1.5">
-                             <div className="w-3.5 h-3.5 rounded-full border-2 border-zinc-900 bg-white" />
-                          </div>
-                          <div>
-                             <p className="text-[11px] font-black text-zinc-400 uppercase tracking-widest mb-1">Destination (Home)</p>
-                             <p className="text-[13px] font-black text-zinc-900">{selectedOrder.address || selectedOrder.toDestination}</p>
-                          </div>
-                       </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Settlement / Financials */}
-                  <div className="space-y-4">
-                    <h3 className="text-xs font-black text-zinc-900 uppercase tracking-widest flex items-center gap-2">
-                       <CreditCard className="w-4 h-4 text-blue-600" />
-                       Financial Settlement
-                    </h3>
-                    <div className="p-5 bg-zinc-900 rounded-[2rem] text-white space-y-4 shadow-xl">
-                       <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Payment Protocol</span>
-                          <span className="text-xs font-black uppercase bg-white/10 px-2 py-0.5 rounded">{selectedOrder.paymentMethod || 'Prepaid'}</span>
-                       </div>
-                       <div className="flex items-center justify-between border-t border-white/10 pt-4">
-                          <div>
-                             <span className="text-[10px] font-black uppercase tracking-widest opacity-60 block leading-none">Order Value</span>
-                             <span className="text-lg font-black mt-1 block tracking-tight">{selectedOrder.orderAmount || '0.00 AED'}</span>
-                          </div>
-                          <div className="text-right">
-                             <span className="text-[10px] font-black uppercase tracking-widest opacity-60 block leading-none">Payable at Door</span>
-                             <span className="text-lg font-black mt-1 block tracking-tight text-blue-400">{selectedOrder.paymentMethod === 'COD' ? selectedOrder.orderAmount : '0.00 AED'}</span>
-                          </div>
-                       </div>
+                    {/* Package Specs */}
+                    <div>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Package Specifications</span>
+                      <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-100 flex justify-between items-center">
+                        <div className="flex flex-col">
+                          <span className="text-[10px] text-zinc-500 uppercase font-black tracking-wider">Weight</span>
+                          <span className="text-sm font-bold text-zinc-800">{selectedOrder.weight || '1'} kg</span>
+                        </div>
+                        <div className="w-px h-6 bg-zinc-200" />
+                        <div className="flex flex-col text-right">
+                          <span className="text-[10px] text-zinc-500 uppercase font-black tracking-wider">Dimensions</span>
+                          <span className="text-sm font-bold text-zinc-800">
+                            {selectedOrder.dimensions || '10x10x10'} cm
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Billing Breakdown */}
+                    <div className="bg-[#113f36]/5 border border-[#113f36]/15 rounded-2xl p-5 space-y-4 mt-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[11px] uppercase font-black tracking-widest text-zinc-500">Base Rate Fee</span>
+                        <span className="text-xs font-bold text-zinc-900">AED {(() => { const amt = selectedOrder.orderAmount ? parseFloat(selectedOrder.orderAmount) : 0; return (amt * 0.70).toFixed(2); })()}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-[11px] uppercase font-black tracking-widest text-zinc-500">Processing Commission</span>
+                        <span className="text-xs font-bold text-zinc-900">AED {(() => { const amt = selectedOrder.orderAmount ? parseFloat(selectedOrder.orderAmount) : 0; return (amt * 0.15).toFixed(2); })()}</span>
+                      </div>
+                      
+                      <div className="border-t border-[#113f36]/10 pt-3 flex justify-between items-end">
+                        <div>
+                          <span className="text-[10px] uppercase font-black tracking-widest text-zinc-400 block">Total Charge</span>
+                          <span className="text-xs text-zinc-500 font-medium">{selectedOrder.paymentMethod || 'Incl. VAT'}</span>
+                        </div>
+                        <span className="font-display font-black text-xl text-[#113f36]">
+                          AED {selectedOrder.orderAmount ? parseFloat(selectedOrder.orderAmount).toFixed(2) : '0.00'}
+                        </span>
+                      </div>
                     </div>
                   </div>
 

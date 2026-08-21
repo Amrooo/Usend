@@ -1,3 +1,5 @@
+import { auth } from '../firebase';
+
 export interface CourierCredentials {
   version?: string;
   accountNumber?: string;
@@ -106,13 +108,13 @@ export const createdWaybills = new Set<string>();
 async function getAuthHeaders(extra?: Record<string, string>): Promise<Record<string, string>> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json', ...extra };
   try {
-    // Dynamically import to avoid circular dependency with firebase module
-    const { getAuth } = await import('firebase/auth');
-    const { auth } = await import('../firebase');
+    await auth.authStateReady();
     const currentUser = auth.currentUser;
     if (currentUser) {
       const token = await currentUser.getIdToken(false);
       headers['Authorization'] = `Bearer ${token}`;
+    } else {
+      console.warn('[getAuthHeaders] auth.currentUser is null. Token will not be attached.');
     }
   } catch (e) {
     // Non-fatal: requests will return 401 if auth is required

@@ -187,6 +187,7 @@ app.use((req, res, next) => {
 // Public routes (health, payments/config, webhooks, SSE) are excluded.
 async function requireAuth(req: any, res: express.Response, next: express.NextFunction) {
   const authHeader = req.headers['authorization'];
+  console.log(`[AuthMiddleware] Path: ${req.path} | AuthHeader: ${authHeader ? 'PRESENT' : 'MISSING'}`);
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized: Missing or invalid Authorization header' });
   }

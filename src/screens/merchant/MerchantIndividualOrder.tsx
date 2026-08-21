@@ -33,7 +33,7 @@ import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-
 import { getStripePublishableKey, createStripePaymentIntent } from '../../lib/paymentUtils';
 import StripeCheckoutForm from '../../components/merchant/StripeCheckoutForm';
 
-export const UAE_ADDRESS_SUGGESTIONS = [
+const UAE_ADDRESS_SUGGESTIONS = [
   { name: "Dubai Mall, Financial Center Road, Downtown Dubai", position: [25.1972, 55.2797] },
   { name: "Mall of the Emirates, Al Barsha Road, Al Barsha 1, Dubai", position: [25.1181, 55.2006] },
   { name: "Burj Khalifa, 1 Sheikh Mohammed bin Rashid Blvd, Downtown Dubai", position: [25.1972, 55.2744] },
@@ -58,7 +58,7 @@ export const UAE_ADDRESS_SUGGESTIONS = [
   { name: "Dubai Logistics City, Aviation City, Dubai South", position: [24.8961, 55.1611] }
 ];
 
-export function getDeterministicCoordinates(addressText: string): [number, number] {
+function getDeterministicCoordinates(addressText: string): [number, number] {
   if (!addressText) return [25.2048, 55.2708]; // Dubai Center fallback
   let hash1 = 0;
   let hash2 = 0;
@@ -601,9 +601,14 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
           }
         } catch (err: any) {
           console.error(`${formData.carrier} Sandbox Dispatch failed`, err);
-          setIsSubmitting(false);
+          
+          await updateRequest(reqId, { 
+            status: 'Dispatch Failed',
+            dispatchError: err.message || `${formData.carrier} API failed to create shipment.`
+          });
+          
           window.dispatchEvent(new CustomEvent('app_toast', { detail: { title: `${formData.carrier} Integration Error`, message: err.message, type: 'error' } }));
-          return;
+          // Do not return here, we want to proceed to merchant_tracking so the user can see the failed order
         }
       }
 
@@ -1160,37 +1165,99 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                   </div>
                 </div>
 
-                {/* Confirm Dispatch Bar */}
-                <div className="bg-[#113f36]/5 border border-[#113f36]/15 text-zinc-850 rounded-[2.5rem] p-8 space-y-5 shadow-xs">
-                  <div className="space-y-3">
-                    <div className="flex justify-between text-zinc-500 text-xs uppercase tracking-widest font-black">
-                      <span>Base rate fee</span>
-                      <span className="text-zinc-900 font-bold">AED {dynamicPricing.baseFee.toFixed(2)}</span>
+              </div>
+              
+              {/* RIGHT SIDE MENU: SUMMARY & PAYMENT */}
+              <div className="lg:col-span-1">
+                <div className="sticky top-6 space-y-6">
+                  <div className="bg-white border border-[#EBEFE9] rounded-[2.5rem] p-6 shadow-[0_8px_30px_rgb(220,225,235,0.45)] flex flex-col gap-5">
+                    
+                    {/* Header */}
+                    <div className="flex items-center gap-3 border-b border-[#EBEFE9] pb-4">
+                      <div className="w-10 h-10 rounded-xl bg-[#546a40]/10 flex items-center justify-center text-[#546a40]">
+                        <Check className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-black text-sm text-zinc-900 uppercase tracking-widest">Summary & Payment</h3>
+                        <p className="text-[11px] text-[#546a40] font-bold mt-0.5">Order Parameters Ready</p>
+                      </div>
                     </div>
-                    <div className="flex justify-between text-zinc-500 text-xs uppercase tracking-widest font-black">
-                      <span>Processing commission</span>
-                      <span className="text-zinc-900 font-bold">AED {dynamicPricing.commission.toFixed(2)}</span>
-                    </div>
-                    <div className="pt-3 border-t border-[#113f36]/15 flex justify-between font-bold text-lg">
-                      <span className="uppercase text-xs tracking-widest font-black text-zinc-500">Total charge</span>
-                      <span className="font-mono text-xl font-black text-[#113f36]">AED {dynamicPricing.total.toFixed(2)}</span>
-                    </div>
-                  </div>
 
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full h-14 bg-[#113f36] hover:bg-[#113f36]/90 text-white rounded-2xl font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 font-display uppercase text-xs tracking-widest"
-                  >
-                    {isSubmitting ? (
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <>
-                        <Send className="w-4 h-4" />
-                        Dispatch To Fleet
-                      </>
-                    )}
-                  </button>
+                    {/* Locations */}
+                    <div className="space-y-4">
+                      <div>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Pickup Location</span>
+                        <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-100 flex items-start gap-2">
+                          <MapPin className="w-3.5 h-3.5 text-zinc-400 mt-0.5 shrink-0" />
+                          <span className="text-xs font-semibold text-zinc-700 truncate">{formData.pickupAddress || 'Not Selected'}</span>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Dropoff Location</span>
+                        <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-100 flex items-start gap-2">
+                          <MapPin className="w-3.5 h-3.5 text-zinc-400 mt-0.5 shrink-0" />
+                          <span className="text-xs font-semibold text-zinc-700 truncate">{formData.address || 'Not Selected'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Package Specs */}
+                    <div>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Package Specifications</span>
+                      <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-100 flex justify-between items-center">
+                        <div className="flex flex-col">
+                          <span className="text-[10px] text-zinc-500 uppercase font-black tracking-wider">Weight</span>
+                          <span className="text-sm font-bold text-zinc-800">{formData.weightKg || '0'} kg</span>
+                        </div>
+                        <div className="w-px h-6 bg-zinc-200" />
+                        <div className="flex flex-col text-right">
+                          <span className="text-[10px] text-zinc-500 uppercase font-black tracking-wider">Dimensions</span>
+                          <span className="text-sm font-bold text-zinc-800">
+                            {formData.lengthCm || '0'}x{formData.widthCm || '0'}x{formData.heightCm || '0'} cm
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Billing Breakdown */}
+                    <div className="bg-[#113f36]/5 border border-[#113f36]/15 rounded-2xl p-5 space-y-4 mt-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[11px] uppercase font-black tracking-widest text-zinc-500">Base Rate Fee</span>
+                        <span className="text-xs font-bold text-zinc-900">AED {dynamicPricing.baseFee.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-[11px] uppercase font-black tracking-widest text-zinc-500">Processing Commission</span>
+                        <span className="text-xs font-bold text-zinc-900">AED {dynamicPricing.commission.toFixed(2)}</span>
+                      </div>
+                      
+                      <div className="border-t border-[#113f36]/10 pt-3 flex justify-between items-end">
+                        <div>
+                          <span className="text-[10px] uppercase font-black tracking-widest text-zinc-400 block">Total Charge</span>
+                          <span className="text-xs text-zinc-500 font-medium">Incl. VAT</span>
+                        </div>
+                        <span className="font-display font-black text-xl text-[#113f36]">
+                          AED {dynamicPricing.total.toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Submit Button */}
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full h-14 bg-[#113f36] hover:bg-[#113f36]/90 text-white rounded-2xl font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 font-display uppercase text-xs tracking-widest mt-2 shadow-[0_8px_20px_rgba(17,63,54,0.2)]"
+                    >
+                      {isSubmitting ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4" />
+                          Dispatch To Fleet
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             </form>
@@ -1437,7 +1504,8 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
               </div>
 
               {/* Quote Result Panel */}
-              <div className="space-y-6">
+              <div className="lg:col-span-1">
+                <div className="sticky top-6 space-y-6">
                 <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-8 border border-zinc-200/80 shadow-md flex flex-col h-full justify-between">
                   <div className="space-y-6">
                     <div className="flex items-center gap-3">
@@ -1514,6 +1582,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                         ))}
                       </div>
                     )}
+                    </div>
                   </div>
                 </div>
               </div>
