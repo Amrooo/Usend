@@ -69,8 +69,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
         });
 
         let redirectScreen: Screen = 'user_dashboard';
-        if (targetRole === 'admin') redirectScreen = 'admin_dashboard';
-        else if (targetRole === 'merchant') redirectScreen = 'merchant_dashboard';
+        if (targetRole === 'merchant') redirectScreen = 'merchant_dashboard';
         else redirectScreen = 'user_dashboard';
 
         onNavigate(redirectScreen);
@@ -99,8 +98,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
         
         if (userDocSnap.exists()) {
           const data = userDocSnap.data();
-          if (data.role === 'admin') redirectScreen = 'admin_dashboard';
-          else if (data.role === 'user' || (data.role as string) === 'Individual' || data.role === 'driver') redirectScreen = 'user_dashboard';
+          if (data.role === 'user' || (data.role as string) === 'Individual' || data.role === 'driver') redirectScreen = 'user_dashboard';
         }
       } catch (docErr) {
         // Ignored

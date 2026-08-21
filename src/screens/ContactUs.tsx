@@ -12,6 +12,7 @@ import { signInWithEmailAndPassword, signInAnonymously } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { useLanguage } from '../context/LanguageContext';
+import SmartChatbot from '../components/SmartChatbot';
 import { useApp } from '../context/AppContext';
 import LogoIcon from '../components/LogoIcon';
 import Header from '../components/Header';
@@ -26,12 +27,7 @@ import sectorContainer from '../assets/sector-container.png';
 import ctaCargoShip from '../assets/cta-cargo-ship.png';
 
 const AiFace3DIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
-  <svg viewBox="0 0 44 44" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
-    <circle cx="22" cy="22" r="20" fill="currentColor" fillOpacity="0.1" stroke="currentColor" strokeWidth="1.5" />
-    <path d="M14 24C14 24 16.5 28 22 28C27.5 28 30 24 30 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    <circle cx="17.5" cy="18.5" r="1.5" fill="currentColor" />
-    <circle cx="26.5" cy="18.5" r="1.5" fill="currentColor" />
-  </svg>
+  <img src="/src/assets/ai.png" alt="AI Chatbot" className={`object-contain ${className}`} />
 );
 
 interface LandingPageProps {
@@ -247,7 +243,6 @@ const ContactUs = ({ onNavigate }: LandingPageProps) => {
 
     let redirectScreen: Screen = 'merchant_dashboard';
     if (loginRole === 'user' || (loginRole as string) === 'driver') redirectScreen = 'user_dashboard';
-    else if (loginRole === 'admin') redirectScreen = 'admin_dashboard';
 
     try {
       await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
@@ -322,12 +317,6 @@ const ContactUs = ({ onNavigate }: LandingPageProps) => {
     }, 7500);
     return () => clearInterval(interval);
   }, []);
-
-const [botOpen, setBotOpen] = useState(false);
-  const [botMessages, setBotMessages] = useState<{sender: 'bot'|'user', text: string}[]>([
-    { sender: 'bot', text: content.botGreeting }
-  ]);
-  const [botInput, setBotInput] = useState('');
 
   const { activeRequests, allOrders, signIn, setUser, user, signOut } = useApp();
 
@@ -430,43 +419,6 @@ const [botOpen, setBotOpen] = useState(false);
 
   const unreadNotifsCount = notifications.filter(n => !n.read).length;
 
-  const handleBotSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!botInput.trim()) return;
-
-    const userMsg = botInput.trim();
-    setBotMessages(prev => [...prev, { sender: 'user', text: userMsg }]);
-    setBotInput('');
-
-    setTimeout(() => {
-      let reply = "";
-      const matchOrder = userMsg.match(/REQ-\d+/i);
-      
-      if (matchOrder) {
-        const orderNum = matchOrder[0].toUpperCase();
-        const found = activeRequests.find(r => r.id.toUpperCase() === orderNum);
-        if (found) {
-          reply = `Order ${found.id} Found!
-• Status: ${found.status.toUpperCase()}
-• Recipient: ${found.name}
-• Route: ${found.fromDestination} ➔ ${found.toDestination}
-• Carrier: ${found.courier || 'USend Fleet'}
-• Item Type: ${found.itemType || 'Package'}
-• COD Amount: ${found.orderAmount || '0 AED'}
-• Delivery Fee: ${found.deliveryFee || '0 AED'}
-• ETA Time: ${found.etaTime || 'Calculating...'}`;
-        } else {
-          reply = `Status for ${orderNum}: • Current Location: Dubai Al Quoz Sorting Facility• Shipping Line: Aramex Express (Sandbox)• Expected Delivery: Next Business Day before 6:00 PM• Payout Mode: Cash on Delivery (320.00 AED)`;
-        }
-      } else if (userMsg.toLowerCase().includes('rate') || userMsg.toLowerCase().includes('price') || userMsg.toLowerCase().includes('cost')) {
-        reply = "Our standard UAE domestic rates:• Dubai to Abu Dhabi (Express Road): Starting at 25 AED base• Local messengers (Same Day): 15 AED flat rate• Extra Weight tariff: 1.5 AED per extra KGUse the Live Shipping Calculator on our home page to compare exact tariffs.";
-      } else {
-        reply = "Thanks for reaching out! I can track any 'REQ-' code in our UAE sandbox. Enter an order code or type 'rates' to see our current shipping prices.";
-      }
-
-      setBotMessages(prev => [...prev, { sender: 'bot', text: reply }]);
-    }, 850);
-  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -633,77 +585,9 @@ const [botOpen, setBotOpen] = useState(false);
           </div>
         </footer>
 
-      {/* FLOAT CHATBOT DIALOGUE - USend AI */}
-      <AnimatePresence>
-        {botOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 30, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 30, scale: 0.95 }}
-            className={`fixed bottom-24 ${isRTL ? 'left-4 md:left-8' : 'right-4 md:right-8'} z-50 w-[330px] md:w-96 bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col`}
-          >
-             {/* Header */}
-             <div className="bg-slate-900 p-5 text-white flex justify-between items-center border-b border-slate-800">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[#113f36]/10 flex items-center justify-center border border-[#113f36]/20 text-[#113f36] animate-bounce">
-                    <AiFace3DIcon className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-extrabold text-xs uppercase tracking-wide font-sans">{isRTL ? 'يو سند الدعم الفني' : 'USend AI Support'}</h3>
-                    <p className="text-[12px] text-cyan-400 font-bold uppercase tracking-widest font-mono">{isRTL ? 'الحالة: نشط' : 'Status: active'}</p>
-                  </div>
-                </div>
-                <button onClick={() => setBotOpen(false)} className="hover:bg-white/10 p-1.5 rounded-full transition-colors text-slate-400 hover:text-white">
-                  <XCircle className="w-5 h-5" />
-                </button>
-             </div>
-             
-             {/* Chat Messages */}
-             <div className="flex-1 p-5 max-h-[300px] overflow-y-auto bg-slate-50 space-y-4">
-               {botMessages.map((msg, idx) => (
-                 <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                   <div 
-                     className={`p-3.5 rounded-2xl max-w-[85%] text-xs font-semibold leading-relaxed ${
-                       msg.sender === 'user' 
-                         ? 'bg-[#113f36] text-white rounded-br-none' 
-                         : 'bg-white border border-slate-200 text-slate-800 rounded-bl-none shadow-xs'
-                     }`}
-                     style={{ whiteSpace: 'pre-line' }}
-                   >
-                     {msg.text}
-                   </div>
-                 </div>
-               ))}
-             </div>
-
-             {/* Input form */}
-             <form onSubmit={handleBotSubmit} className="p-3 bg-white border-t border-slate-100 flex gap-2">
-                <input 
-                  type="text" 
-                  value={botInput}
-                  onChange={(e) => setBotInput(e.target.value)}
-                  placeholder="Enter order REQ-... or ask standard rates"
-                  className="flex-1 outline-none text-xs bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:border-[#113f36] transition-all font-semibold"
-                />
-                <button type="submit" className="w-11 h-11 bg-slate-900 hover:bg-[#113f36] text-white rounded-xl flex items-center justify-center shadow-lg transition-colors shrink-0">
-                  <ArrowRight className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />
-                </button>
-             </form>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Floating Buttons layout */}
       <div className={`fixed bottom-6 ${isRTL ? 'left-6' : 'right-6'} z-40 flex items-center gap-3`}>
-        
-        {/* Toggle bot button */}
-        <button
-          onClick={() => setBotOpen(!botOpen)}
-          className="px-5 py-3 rounded-full bg-slate-900 hover:bg-[#113f36] text-white border border-slate-700 shadow-xl items-center gap-2.5 transition-all text-[13px] font-black uppercase tracking-widest flex hover:-translate-y-0.5 active:translate-y-0 select-none cursor-pointer"
-          id="docked-bot-trigger"
-        >
-          <AiFace3DIcon className="w-6 h-6 text-[#6d8c55] rotate-12" />
-        </button>
+        <SmartChatbot isRTL={isRTL} />
 
         {/* Back To Top Button */}
         <AnimatePresence>

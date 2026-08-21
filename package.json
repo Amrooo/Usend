@@ -5,11 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --outfile=functions/server.cjs && mkdir -p assets && cp -r dist/assets/* assets/",
+    "build": "npm run build:app && npm run build:admin && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --outfile=functions/server.cjs && mkdir -p assets && cp -r dist/assets/* assets/",
+    "build:app": "BUILD_TARGET=app vite build",
+    "build:admin": "BUILD_TARGET=admin vite build",
     "build:protected": "npm run build && javascript-obfuscator functions/server.cjs --output functions/server.cjs --compact true --self-defending true --string-array true --string-array-encoding base64 --dead-code-injection true",
     "start": "node functions/server.cjs",
     "preview": "vite preview",
-    "clean": "rm -rf dist",
+    "clean": "rm -rf dist dist-admin",
     "lint": "tsc --noEmit"
   },
   "dependencies": {

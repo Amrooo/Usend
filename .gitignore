@@ -5,3 +5,11 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Build files
+dist/
+dist-admin/
+assets/
+
+# Test scripts
+test-genai.cjs

@@ -5,7 +5,16 @@ import {defineConfig, loadEnv} from 'vite';
 
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
+  const isAdmin = process.env.BUILD_TARGET === 'admin';
+
   return {
+    build: {
+      outDir: isAdmin ? 'dist-admin' : 'dist',
+      emptyOutDir: true,
+      rollupOptions: {
+        input: isAdmin ? path.resolve(__dirname, 'admin.html') : path.resolve(__dirname, 'index.html'),
+      }
+    },
     plugins: [react(), tailwindcss()],
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
@@ -24,7 +33,7 @@ export default defineConfig(({mode}) => {
       // Do not modify—file watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
       watch: {
-        ignored: ['**/assets/**', '**/dist/**', '**/functions/**', '**/node_modules/**'],
+        ignored: ['**/assets/**', '**/dist/**', '**/dist-admin/**', '**/functions/**', '**/node_modules/**'],
       },
     },
     // Exclude pre-built asset files from Vite's crawl/scan in dev mode

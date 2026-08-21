@@ -9,7 +9,6 @@ import ContactUs from './screens/ContactUs';
 import Onboarding from './screens/Onboarding';
 import PhoneAuth from './screens/PhoneAuth';
 import Login from './screens/Login';
-import AdminDashboard from './screens/admin/AdminDashboard';
 import Home from './screens/Home';
 import Details from './screens/Details';
 import Confirm from './screens/Confirm';
@@ -39,7 +38,7 @@ import { AppProvider, useApp } from './context/AppContext';
 
 import PortalRegister from './screens/PortalRegister';
 
-function AuthGuard({ children, requiredRole, onNavigate }: { children: React.ReactNode, requiredRole?: 'merchant' | 'user' | 'admin', onNavigate?: (screen: Screen) => void }) {
+function AuthGuard({ children, requiredRole, onNavigate }: { children: React.ReactNode, requiredRole?: 'merchant' | 'user', onNavigate?: (screen: Screen) => void }) {
   const { user, handleLogout } = useApp();
   
   const handleExit = async () => {
@@ -47,33 +46,7 @@ function AuthGuard({ children, requiredRole, onNavigate }: { children: React.Rea
     if (onNavigate) onNavigate('landing_page');
   };
 
-  if (requiredRole === 'admin' && user?.role !== 'admin') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-50 p-6">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white shadow-xl border border-red-100 rounded-3xl max-w-md w-full p-8 text-center"
-        >
-          <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
-            <ShieldAlert className="w-8 h-8" />
-          </div>
-          <h2 className="text-2xl font-black text-zinc-900 mb-3 tracking-tight">Admin Access Denied</h2>
-          <p className="text-zinc-500 mb-8 leading-relaxed">
-            This module is restricted to <strong className="text-zinc-700">Administrator</strong> accounts. You do not have permission to view the Admin Management Portal.
-          </p>
-          <button 
-            onClick={handleExit}
-            className="w-full bg-zinc-900 text-white font-bold py-3.5 rounded-xl hover:bg-zinc-800 transition-colors cursor-pointer"
-          >
-            Sign Out
-          </button>
-        </motion.div>
-      </div>
-    );
-  }
-
-  if (requiredRole === 'merchant' && user?.role !== 'merchant' && user?.role !== 'admin') {
+  if (requiredRole === 'merchant' && user?.role !== 'merchant') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-zinc-50 p-6">
         <motion.div 
@@ -193,7 +166,7 @@ export default function App() {
 
   const isMerchantScreen = currentScreen.startsWith('merchant_');
   const isUserScreen = currentScreen.startsWith('user_');
-  const isAdminScreen = currentScreen === 'admin_dashboard';
+
   const isPublicScreen = currentScreen === 'landing_page' || currentScreen === 'about_us' || currentScreen === 'contact_us';
   const isLogin = currentScreen === 'login' || currentScreen === 'hub';
 
@@ -241,10 +214,6 @@ export default function App() {
               {currentScreen === 'user_orders' && <UserOrders key="user_orders" onNavigate={navigate} />}
             </AnimatePresence>
           </div>
-        </AuthGuard>
-      ) : isAdminScreen ? (
-        <AuthGuard requiredRole="admin" onNavigate={navigate}>
-          <AdminDashboard onNavigate={navigate} />
         </AuthGuard>
       ) : (
         <div className="min-h-screen bg-zinc-100 flex items-center justify-center p-4 sm:p-8 font-sans transition-colors duration-300">

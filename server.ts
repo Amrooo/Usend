@@ -1098,6 +1098,7 @@ async function startServer() {
   const distPath = path.join(process.cwd(), "dist");
 
   if (!isProd) {
+    const fs = await import('fs');
     const vite = await createViteServer({
       configFile: path.resolve(process.cwd(), "vite.config.ts"),
       mode: "development",
@@ -1107,9 +1108,29 @@ async function startServer() {
           ignored: ['**/node_modules/**', '**/.git/**', '**/.firebase/**']
         }
       },
-      appType: "spa",
+      appType: "custom", // Changed from 'spa' to 'custom' to handle multiple endpoints manually
     });
     app.use(vite.middlewares);
+
+    // Manual HTML serving for Vite
+    app.use('*', async (req, res, next) => {
+      // Skip API routes and assets
+      if (req.originalUrl.startsWith('/api') || req.originalUrl.includes('.')) {
+        return next();
+      }
+      try {
+        const url = req.originalUrl;
+        const templateFile = url.startsWith('/admin') ? 'admin.html' : 'index.html';
+        const templatePath = path.resolve(process.cwd(), templateFile);
+        
+        let template = await fs.promises.readFile(templatePath, 'utf-8');
+        template = await vite.transformIndexHtml(url, template);
+        res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
+      } catch (e: any) {
+        vite.ssrFixStacktrace(e);
+        next(e);
+      }
+    });
   }
 
   // Static asset fallbacks to ensure logos, photos, and media are served with correct MIME types

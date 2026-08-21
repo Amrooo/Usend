@@ -315,8 +315,6 @@ export default function Header({ onNavigate, setLoginRole, setLoginModalOpen, co
                   let dest: Screen = 'user_dashboard';
                   if (user?.role === 'merchant') {
                     dest = 'merchant_dashboard';
-                  } else if (user?.role === 'admin') {
-                    dest = 'admin_dashboard';
                   } else {
                     dest = 'user_dashboard';
                   }
@@ -413,7 +411,6 @@ export default function Header({ onNavigate, setLoginRole, setLoginModalOpen, co
                 onClick={() => {
                   let dest: Screen = 'user_dashboard';
                   if (user.role === 'merchant') dest = 'merchant_dashboard';
-                  else if (user.role === 'admin') dest = 'admin_dashboard';
                   onNavigate(dest);
                   document.getElementById('mobile-nav-overlay')!.style.display = 'none';
                 }}

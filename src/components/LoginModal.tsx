@@ -75,8 +75,7 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
         });
 
         let redirectScreen: Screen = 'user_dashboard';
-        if (targetRole === 'admin') redirectScreen = 'admin_dashboard';
-        else if (targetRole === 'merchant') redirectScreen = 'merchant_dashboard';
+        if (targetRole === 'merchant') redirectScreen = 'merchant_dashboard';
         else redirectScreen = 'user_dashboard';
 
         onClose();
@@ -111,8 +110,7 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
         }
       }
       let redirectScreen: Screen = 'merchant_dashboard';
-      if (targetRole === 'admin') redirectScreen = 'admin_dashboard';
-      else if (targetRole === 'user' || (targetRole as string) === 'Individual' || (targetRole as string) === 'driver') redirectScreen = 'user_dashboard';
+      if (targetRole === 'user' || (targetRole as string) === 'Individual' || (targetRole as string) === 'driver') redirectScreen = 'user_dashboard';
 
       onClose();
       onNavigate(redirectScreen);
@@ -122,8 +120,7 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
       if (password === 'password') {
         let targetRole = selectedRole;
         let redirectScreen: Screen = 'merchant_dashboard';
-        if (targetRole === 'admin') redirectScreen = 'admin_dashboard';
-        else if (targetRole === 'user' || (targetRole as string) === 'driver') redirectScreen = 'user_dashboard';
+        if (targetRole === 'user' || (targetRole as string) === 'driver') redirectScreen = 'user_dashboard';
         
         setUser({
           uid: 'demo-fallback-uid',
