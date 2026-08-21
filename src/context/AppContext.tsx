@@ -46,6 +46,8 @@ export interface USendRequest {
   phone?: string;
   pickupAddress?: string;
   printFormat?: 'PDF' | 'ZPL';
+  carrierLogs?: { request?: any; response?: any; error?: string; timestamp?: string };
+  dispatchError?: string;
 }
 
 export interface Merchant {

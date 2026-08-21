@@ -11,7 +11,7 @@ export const auth = getAuth(app);
 
 // Initialize AI Logic using official Google GenAI SDK
 export const aiModel = new GoogleGenAI({ 
-  apiKey: import.meta.env.VITE_GEMINI_API_KEY || 'MISSING_API_KEY' 
+  apiKey: (import.meta as any).env.VITE_GEMINI_API_KEY || 'MISSING_API_KEY' 
 });
 
 // Create a configured chat model helper

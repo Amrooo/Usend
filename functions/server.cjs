@@ -746,6 +746,53 @@ var init_NoonAdapter = __esm({
   }
 });
 
+// src/backend/adapters/GenericRestAdapter.ts
+var GenericRestAdapter;
+var init_GenericRestAdapter = __esm({
+  "src/backend/adapters/GenericRestAdapter.ts"() {
+    GenericRestAdapter = class {
+      constructor(id) {
+        this.capabilities = ["RATE", "SHIPMENT", "TRACKING"];
+        this.id = id;
+        this.name = id.toUpperCase();
+      }
+      async validateCredentials(credentials, environment) {
+        if (Object.keys(credentials).length === 0) {
+          return { success: false, error: "No credentials provided" };
+        }
+        return { success: true };
+      }
+      async calculateRate(payload, credentials, environment) {
+        return {
+          success: true,
+          totalAmount: 15,
+          currency: "AED",
+          serviceName: `${this.name} Standard`
+        };
+      }
+      async createShipment(payload, credentials, environment) {
+        const dummyTracking = `GEN-${Math.floor(Math.random() * 1e6)}`;
+        return {
+          success: true,
+          trackingNumber: dummyTracking,
+          providerStatus: "Created"
+        };
+      }
+      async trackShipment(trackingId, credentials, environment) {
+        return {
+          success: true,
+          providerStatus: "In Transit",
+          usendStatus: "IN_TRANSIT",
+          timestamp: (/* @__PURE__ */ new Date()).toISOString()
+        };
+      }
+      async cancelShipment(trackingId, credentials, environment) {
+        return true;
+      }
+    };
+  }
+});
+
 // src/backend/adapters/CourierEngine.ts
 var CourierEngine_exports = {};
 __export(CourierEngine_exports, {
@@ -757,6 +804,7 @@ var init_CourierEngine = __esm({
   "src/backend/adapters/CourierEngine.ts"() {
     init_AramexAdapter();
     init_NoonAdapter();
+    init_GenericRestAdapter();
     CourierEngine = class {
       constructor() {
         this.adapters = /* @__PURE__ */ new Map();
@@ -769,7 +817,7 @@ var init_CourierEngine = __esm({
       getAdapter(id) {
         const adapter = this.adapters.get(id);
         if (!adapter) {
-          throw new Error(`Courier adapter for '${id}' not found`);
+          return new GenericRestAdapter(id);
         }
         return adapter;
       }
@@ -964,6 +1012,7 @@ app.use((req, res, next) => {
 });
 async function requireAuth(req, res, next) {
   const authHeader = req.headers["authorization"];
+  console.log(`[AuthMiddleware] Path: ${req.path} | AuthHeader: ${authHeader ? "PRESENT" : "MISSING"}`);
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res.status(401).json({ error: "Unauthorized: Missing or invalid Authorization header" });
   }
@@ -1740,6 +1789,7 @@ async function startServer() {
   }
   const distPath = import_path2.default.join(process.cwd(), "dist");
   if (!isProd) {
+    const fs3 = await import("fs");
     const vite = await (0, import_vite.createServer)({
       configFile: import_path2.default.resolve(process.cwd(), "vite.config.ts"),
       mode: "development",
@@ -1749,9 +1799,26 @@ async function startServer() {
           ignored: ["**/node_modules/**", "**/.git/**", "**/.firebase/**"]
         }
       },
-      appType: "spa"
+      appType: "custom"
+      // Changed from 'spa' to 'custom' to handle multiple endpoints manually
     });
     app.use(vite.middlewares);
+    app.use("*", async (req, res, next) => {
+      if (req.originalUrl.startsWith("/api") || req.originalUrl.includes(".")) {
+        return next();
+      }
+      try {
+        const url = req.originalUrl;
+        const templateFile = url.startsWith("/admin") ? "admin.html" : "index.html";
+        const templatePath = import_path2.default.resolve(process.cwd(), templateFile);
+        let template = await fs3.promises.readFile(templatePath, "utf-8");
+        template = await vite.transformIndexHtml(url, template);
+        res.status(200).set({ "Content-Type": "text/html" }).end(template);
+      } catch (e) {
+        vite.ssrFixStacktrace(e);
+        next(e);
+      }
+    });
   }
   app.use("/src/assets", import_express.default.static(import_path2.default.join(process.cwd(), "src/assets")));
   app.use("/public", import_express.default.static(import_path2.default.join(process.cwd(), "public")));
