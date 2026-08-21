@@ -1142,9 +1142,14 @@ async function startServer() {
 
   if (isProd) {
     app.use(express.static(distPath));
+    app.use(express.static(distAdminPath));
+    
     app.get("*", (req, res, next) => {
       if (req.path.startsWith("/api")) {
         return next();
+      }
+      if (req.path.startsWith("/admin")) {
+        return res.sendFile(path.join(distAdminPath, "admin.html"));
       }
       res.sendFile(path.join(distPath, "index.html"));
     });
