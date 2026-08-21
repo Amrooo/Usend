@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { Screen } from '../../types';
 import UserSidebar from '../../components/UserSidebar';
-import { Search, MapPin, Package, Clock, X, Phone, FileText, CheckCircle2, AlertCircle, Truck, Navigation, User, CreditCard, Hash, Check } from 'lucide-react';
+import { Search, MapPin, Package, Clock, X, Phone, FileText, CheckCircle2, AlertCircle, Truck, Navigation, User, CreditCard, Hash, Check, Calendar } from 'lucide-react';
 import { useState, useEffect, ReactNode, FC } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useApp, USendRequest } from '../../context/AppContext';
@@ -10,13 +10,7 @@ import 'leaflet/dist/leaflet.css';
 import * as L from 'leaflet';
 import Barcode from 'react-barcode';
 
-// Fix for default marker icons in react-leaflet
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
+
 
 interface UserTrackingProps {
   key?: string;
@@ -596,6 +590,66 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                       </div>
                     </motion.div>
                   )}
+
+                  {/* Order Details */}
+                  <div className="bg-white border border-[#EBEFE9] rounded-[2.5rem] p-6 shadow-[0_8px_30px_rgb(220,225,235,0.45)] flex flex-col gap-5 mt-2">
+                    <div className="flex items-center gap-3 border-b border-[#EBEFE9] pb-4">
+                      <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600">
+                        <FileText className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-black text-sm text-zinc-900 uppercase tracking-widest">Order Details</h3>
+                        <p className="text-[11px] text-blue-600 font-bold mt-0.5">Time & Courier Info</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Date & Time */}
+                      <div>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Created At</span>
+                        <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-100 flex items-start gap-2">
+                          <Calendar className="w-3.5 h-3.5 text-zinc-400 mt-0.5 shrink-0" />
+                          <div>
+                            <p className="text-xs font-black text-zinc-900">
+                              {selectedOrder.createdAt 
+                                ? ((selectedOrder.createdAt as any)?.toDate 
+                                    ? (selectedOrder.createdAt as any).toDate().toLocaleDateString('en-GB') 
+                                    : new Date(selectedOrder.createdAt as string).toLocaleDateString('en-GB')) 
+                                : 'N/A'}
+                            </p>
+                            <p className="text-[10px] font-bold text-zinc-500 mt-0.5">
+                              {selectedOrder.createdAt 
+                                ? ((selectedOrder.createdAt as any)?.toDate 
+                                    ? (selectedOrder.createdAt as any).toDate().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) 
+                                    : new Date(selectedOrder.createdAt as string).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })) 
+                                : ''}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Courier Info */}
+                      <div>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Courier</span>
+                        <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-100 flex items-start gap-2">
+                          <Truck className="w-3.5 h-3.5 text-zinc-400 mt-0.5 shrink-0" />
+                          <div>
+                            <p className="text-xs font-black text-zinc-900 uppercase">
+                               {selectedOrder.courier || 'USEND'}
+                            </p>
+                            <div className="mt-1">
+                               {(selectedOrder.courier || '').toLowerCase().includes('noon') && (
+                                  <div className="bg-[#feee00] text-black text-[9px] font-black uppercase px-2 py-0.5 rounded-md inline-block">noon</div>
+                               )}
+                               {(selectedOrder.courier || '').toLowerCase().includes('aramex') && (
+                                  <div className="bg-[#e2001a] text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-md inline-block">Aramex</div>
+                               )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
                   {/* SUMMARY & PAYMENT EXACT LAYOUT */}
                   <div className="bg-white border border-[#EBEFE9] rounded-[2.5rem] p-6 shadow-[0_8px_30px_rgb(220,225,235,0.45)] flex flex-col gap-5 mt-2">

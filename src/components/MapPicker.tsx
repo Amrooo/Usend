@@ -5,13 +5,7 @@ import * as L from 'leaflet';
 import { MapPin, Search } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
-// Fix Leaflet icons
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-});
+
 
 interface MapPickerProps {
   onSelect?: (address: string, position: [number, number]) => void;
