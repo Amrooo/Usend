@@ -1121,7 +1121,7 @@ async function startServer() {
       }
       try {
         const url = req.originalUrl;
-        const templateFile = url.startsWith('/admin') ? 'admin.html' : 'index.html';
+        const templateFile = url.startsWith('/usendadmin2026') ? 'admin.html' : 'index.html';
         const templatePath = path.resolve(process.cwd(), templateFile);
         
         let template = await fs.promises.readFile(templatePath, 'utf-8');
@@ -1148,7 +1148,7 @@ async function startServer() {
       if (req.path.startsWith("/api")) {
         return next();
       }
-      if (req.path.startsWith("/admin")) {
+      if (req.path.startsWith("/usendadmin2026")) {
         return res.sendFile(path.join(distAdminPath, "admin.html"));
       }
       res.sendFile(path.join(distPath, "index.html"));
