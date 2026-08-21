@@ -9,7 +9,7 @@ export default defineConfig(({mode}) => {
 
   return {
     build: {
-      outDir: isAdmin ? 'dist-admin' : 'dist',
+      outDir: isAdmin ? 'usendadmin2026' : 'dist',
       emptyOutDir: true,
       rollupOptions: {
         input: isAdmin ? path.resolve(__dirname, 'admin.html') : path.resolve(__dirname, 'index.html'),
