@@ -75,6 +75,13 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
   const gridPaginatedRequests = gridFilteredRequests.slice((gridPage - 1) * gridPageSize, gridPage * gridPageSize);
 
   const [selectedOrder, setSelectedOrder] = useState<USendRequest | null>(null);
+
+  const getDispatchError = (order: USendRequest) => {
+    if (order.carrierLogs?.error) return order.carrierLogs.error;
+    if (order.aramexLogs?.response?.error) return order.aramexLogs.response.error;
+    if (order.aramexLogs?.response?.Notifications?.[0]?.Message) return order.aramexLogs.response.Notifications[0].Message;
+    return order.dispatchError || "The order could not be sent to the courier. Please contact support.";
+  };
   const liveSelectedOrder = selectedOrder ? (activeRequests.find(r => r.id === selectedOrder.id) || selectedOrder) : null;
   const [aramexSteps, setAramexSteps] = useState<any[]>([]);
   const [showApiLogs, setShowApiLogs] = useState(false);
@@ -571,7 +578,7 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                              <div>
                                 <h4 className="text-xs font-bold text-red-900 uppercase tracking-widest mb-1">Dispatch Failed</h4>
                                 <p className="text-xs text-red-700 leading-relaxed font-medium">
-                                   {liveSelectedOrder.dispatchError || "The order could not be sent to the courier. Please contact support."}
+                                   {liveSelectedOrder ? getDispatchError(liveSelectedOrder) : "The order could not be sent to the courier. Please contact support."}
                                 </p>
                              </div>
                           </div>

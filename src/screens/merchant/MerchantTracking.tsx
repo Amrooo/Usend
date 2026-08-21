@@ -106,6 +106,13 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
   const [isDispatching, setIsDispatching] = useState(false);
   const [showSoapLogs, setShowSoapLogs] = useState(false);
 
+  const getDispatchError = (order: USendRequest) => {
+    if (order.carrierLogs?.error) return order.carrierLogs.error;
+    if (order.aramexLogs?.response?.error) return order.aramexLogs.response.error;
+    if (order.aramexLogs?.response?.Notifications?.[0]?.Message) return order.aramexLogs.response.Notifications[0].Message;
+    return order.dispatchError || "The order could not be sent to the courier. Please check the provided details and try again or contact support.";
+  };
+
   const handleAramexDispatch = async (req: USendRequest) => {
     setIsDispatching(true);
     try {
@@ -818,7 +825,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                              <div>
                                 <h4 className="text-xs font-bold text-red-900 uppercase tracking-widest mb-1">Dispatch Failed</h4>
                                 <p className="text-xs text-red-700 leading-relaxed font-medium">
-                                   {liveSelectedOrder.dispatchError || "The order could not be sent to the courier. Please check the provided details and try again or contact support."}
+                                   {getDispatchError(liveSelectedOrder)}
                                 </p>
                              </div>
                           </div>

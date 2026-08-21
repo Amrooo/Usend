@@ -111,14 +111,16 @@ async function getAuthHeaders(extra?: Record<string, string>): Promise<Record<st
     await auth.authStateReady();
     const currentUser = auth.currentUser;
     if (currentUser) {
-      const token = await currentUser.getIdToken(false);
+      // Force token refresh to ensure it hasn't expired silently
+      const token = await currentUser.getIdToken(true);
       headers['Authorization'] = `Bearer ${token}`;
     } else {
-      console.warn('[getAuthHeaders] auth.currentUser is null. Token will not be attached.');
+      console.error('[getAuthHeaders] auth.currentUser is null. User must be logged in.');
+      throw new Error("Authentication required. Please log in again.");
     }
   } catch (e) {
-    // Non-fatal: requests will return 401 if auth is required
-    console.warn('[CourierService] Could not get auth token:', e);
+    console.error('[CourierService] Could not get auth token:', e);
+    throw e;
   }
   return headers;
 }
