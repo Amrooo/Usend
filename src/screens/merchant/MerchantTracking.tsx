@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { Screen } from '../../types';
 import MerchantSidebar from '../../components/MerchantSidebar';
-import { Search, MapPin, Package, Clock, X, Phone, User, FileText, Star, AlertCircle, ChevronRight, CheckCircle2, Play, Check, Terminal, Printer, RefreshCw, Navigation, CreditCard, Hash, Truck, Send, Zap } from 'lucide-react';
+import { Search, MapPin, Package, Clock, X, Phone, User, FileText, Star, AlertCircle, ChevronRight, CheckCircle2, Play, Check, Terminal, Printer, RefreshCw, Navigation, CreditCard, Hash, Truck, Send, Zap, ArrowRight } from 'lucide-react';
 import { useState, useEffect, ReactNode, FC } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useApp, USendRequest } from '../../context/AppContext';
@@ -744,7 +744,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                 animate={{ x: 0 }}
                 exit={{ x: isRTL ? '-100%' : '100%' }}
                 transition={{ type: 'spring', damping: 25, stiffness: 240 }}
-                className={`relative bg-white shadow-2xl w-[90%] md:w-full md:max-w-sm h-full overflow-hidden flex flex-col ${isRTL ? 'text-right' : 'text-left'}`}
+                className={`relative bg-white shadow-2xl w-[95%] md:w-full md:max-w-2xl h-full overflow-hidden flex flex-col ${isRTL ? 'text-right' : 'text-left'}`}
               >
                 <div className="p-6 border-b border-zinc-200 flex items-center justify-between shadow-xs z-10">
                   <div>
@@ -786,37 +786,89 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                     </div>
                   </div>
 
-                  {/* Financial Summary - matches OrderWizard breakdown style */}
-                  <div className="space-y-3">
-                    <h3 className="text-xs font-black text-zinc-900 uppercase tracking-widest flex items-center gap-2">
-                       <CreditCard className="w-4 h-4 text-[#113f36]" />
-                       Billing Breakdown
-                    </h3>
-                    <div className="p-5 bg-zinc-50 rounded-2xl border border-zinc-200 space-y-3">
-                      {/* Payment Method badge */}
-                      <div className="flex items-center justify-between pb-3 border-b border-zinc-200">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Payment Mode</span>
-                        <span className="text-[11px] font-black uppercase bg-[#113f36]/10 text-[#113f36] px-2 py-0.5 rounded-md border border-[#113f36]/10">{liveSelectedOrder.paymentMethod || 'Prepaid'}</span>
-                      </div>
-                      {/* Line items matching OrderWizard */}
-                      <div className="space-y-2 text-xs font-semibold">
-                        <div className="flex justify-between items-center text-zinc-500">
-                          <span>Courier Base Fee ({liveSelectedOrder.carrier === 'aramex' ? 'Aramex' : liveSelectedOrder.carrier === 'noon' ? 'Noon' : 'USend Fleet'})</span>
-                          <span className="font-semibold text-zinc-800">{(() => { const amt = liveSelectedOrder.orderAmount ? parseFloat(liveSelectedOrder.orderAmount) : 0; return (amt * 0.72).toFixed(2); })()} AED</span>
-                        </div>
-                        <div className="flex justify-between items-center text-zinc-500">
-                          <span>Platform Service Fee (5%)</span>
-                          <span className="font-semibold text-zinc-800">{(() => { const amt = liveSelectedOrder.orderAmount ? parseFloat(liveSelectedOrder.orderAmount) : 0; return (amt * 0.05).toFixed(2); })()} AED</span>
-                        </div>
-                        <div className="flex justify-between items-center text-zinc-500">
-                          <span>Merchant Commission</span>
-                          <span className="font-semibold text-zinc-800">{(() => { const amt = liveSelectedOrder.orderAmount ? parseFloat(liveSelectedOrder.orderAmount) : 0; return (amt * 0.08).toFixed(2); })()} AED</span>
-                        </div>
-                        <div className="flex justify-between items-center text-xl font-black text-[#113f36] pt-3 border-t border-slate-100 mt-2">
-                          <span>Total Cost</span>
-                          <span>{liveSelectedOrder.orderAmount || '0.00 AED'}</span>
-                        </div>
-                      </div>
+                  {/* Visual Route Banner */}
+                  <div className="bg-zinc-50 rounded-2xl p-5 flex items-center justify-between border border-zinc-100 mt-2">
+                    <div>
+                      <span className="text-xs font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'نقطة الاستلام' : 'Pickup Location'}</span>
+                      <p className="font-bold text-sm text-zinc-800">{liveSelectedOrder.fromDestination || 'Dubai'}</p>
+                      <p className="text-[11px] text-zinc-500 font-semibold">{liveSelectedOrder.name} ({liveSelectedOrder.phone || 'N/A'})</p>
+                    </div>
+                    <div className="flex flex-col items-center justify-center px-4">
+                      <ArrowRight className="text-[#113f36] w-5 h-5" />
+                      <span className="text-[8px] uppercase font-bold text-zinc-400 mt-1 tracking-widest">Land Transport</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-xs font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'نقطة التسليم' : 'Dropoff Location'}</span>
+                      <p className="font-bold text-sm text-zinc-800">{liveSelectedOrder.toDestination || 'Dubai'}</p>
+                      <p className="text-[11px] text-zinc-500 font-semibold">Customer</p>
+                    </div>
+                  </div>
+
+                  {/* Comprehensive Address Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-zinc-50/70 p-4 rounded-2xl border border-zinc-100 text-xs">
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-black uppercase text-[#113f36] tracking-wider block">{isRTL ? 'تفاصيل عنوان الاستلام' : 'FULL PICKUP ADDRESS'}</span>
+                      <p className="font-bold text-zinc-900">{liveSelectedOrder.name || 'Merchant'}</p>
+                      <p className="text-zinc-600 font-medium">{liveSelectedOrder.phone || 'N/A'}</p>
+                      <p className="text-zinc-600">{liveSelectedOrder.pickupAddress || 'Dubai UAE'}</p>
+                    </div>
+                    <div className="space-y-1 border-t md:border-t-0 md:border-l border-zinc-200 pt-3 md:pt-0 md:pl-4">
+                      <span className="text-[10px] font-black uppercase text-[#113f36] tracking-wider block">{isRTL ? 'تفاصيل عنوان التسليم' : 'FULL DELIVERY ADDRESS'}</span>
+                      <p className="font-bold text-zinc-900">Customer</p>
+                      <p className="text-zinc-600 font-medium">{liveSelectedOrder.phone || 'N/A'}</p>
+                      <p className="text-zinc-600">{liveSelectedOrder.address}</p>
+                    </div>
+                  </div>
+
+                  {/* Package Specifications Grid */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-semibold text-zinc-600 border-y border-zinc-100 py-4">
+                    <div>
+                      <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'محتوى الطرد' : 'Item Description'}</span>
+                      <span className="text-zinc-900 font-bold">{liveSelectedOrder.description || 'General Cargo'}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'الوزن والكمية' : 'Actual Weight & Qty'}</span>
+                      <span className="text-zinc-900 font-bold">1 kg (1 Units)</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'الأبعاد والوزن الحجمي' : 'Dimensions (Volumetric)'}</span>
+                      <span className="text-zinc-900 font-bold">10×10×10 cm (0.20 kg)</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'الناقل المختار' : 'Carrier Partner'}</span>
+                      <span className="text-[#113f36] font-bold uppercase">{liveSelectedOrder.carrier === 'aramex' ? 'Aramex Express' : liveSelectedOrder.carrier === 'noon' ? 'Noon Hyperlocal' : 'USend Direct Fleet'}</span>
+                    </div>
+                    <div className="col-span-2 md:col-span-4 mt-2">
+                      <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'وقت التسليم المتوقع' : 'Estimated Transit'}</span>
+                      <span className="text-zinc-900 font-bold">Same-Day Express (2-4 hrs)</span>
+                    </div>
+                  </div>
+
+                  {/* Financial Summary */}
+                  <div className="space-y-2 text-xs font-semibold pt-2">
+                    <div className="flex justify-between items-center text-zinc-500">
+                      <span>Courier Base Transport Fee ({liveSelectedOrder.carrier === 'aramex' ? 'Aramex' : liveSelectedOrder.carrier === 'noon' ? 'Noon' : 'USend Direct'})</span>
+                      <span className="font-semibold text-zinc-800">{(() => { const amt = liveSelectedOrder.orderAmount ? parseFloat(liveSelectedOrder.orderAmount) : 0; return (amt * 0.70).toFixed(2); })()} AED</span>
+                    </div>
+                    <div className="flex justify-between items-center text-zinc-500">
+                      <span>Distance Surcharge (Estimated)</span>
+                      <span className="font-semibold text-zinc-800">{(() => { const amt = liveSelectedOrder.orderAmount ? parseFloat(liveSelectedOrder.orderAmount) : 0; return (amt * 0.15).toFixed(2); })()} AED</span>
+                    </div>
+                    <div className="flex justify-between items-center text-zinc-500">
+                      <span>Platform & Technology Processing Fee (5%)</span>
+                      <span className="font-semibold text-zinc-800">{(() => { const amt = liveSelectedOrder.orderAmount ? parseFloat(liveSelectedOrder.orderAmount) : 0; return (amt * 0.05).toFixed(2); })()} AED</span>
+                    </div>
+                    <div className="flex justify-between items-center text-zinc-500 pt-3 border-t border-slate-100 mt-2">
+                      <span>Subtotal</span>
+                      <span className="font-semibold text-zinc-800">{(() => { const amt = liveSelectedOrder.orderAmount ? parseFloat(liveSelectedOrder.orderAmount) : 0; return (amt * 0.90).toFixed(2); })()} AED</span>
+                    </div>
+                    <div className="flex justify-between items-center text-zinc-500">
+                      <span>UAE Value Added Tax (5% VAT)</span>
+                      <span className="font-semibold text-zinc-800">{(() => { const amt = liveSelectedOrder.orderAmount ? parseFloat(liveSelectedOrder.orderAmount) : 0; return (amt * 0.10).toFixed(2); })()} AED</span>
+                    </div>
+                    <div className="flex justify-between items-center text-2xl font-black text-[#113f36] pt-4 border-t border-slate-100 mt-2">
+                      <span>Total Amount Payable</span>
+                      <span>{liveSelectedOrder.orderAmount ? parseFloat(liveSelectedOrder.orderAmount).toFixed(2) : '0.00'} AED</span>
                     </div>
                   </div>
 
