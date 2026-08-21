@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "npm run build:app && npm run build:admin && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --outfile=functions/server.cjs && mkdir -p assets && cp -r dist/assets/* assets/",
+    "build": "npm run build:app && npm run build:admin && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --outfile=functions/server.cjs && mkdir -p assets && cp -r dist/assets/* assets/ && cp -r dist-admin/assets/* assets/",
     "build:app": "BUILD_TARGET=app vite build",
     "build:admin": "BUILD_TARGET=admin vite build",
     "build:protected": "npm run build && javascript-obfuscator functions/server.cjs --output functions/server.cjs --compact true --self-defending true --string-array true --string-array-encoding base64 --dead-code-injection true",
