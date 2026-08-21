@@ -8,6 +8,7 @@ export default defineConfig(({mode}) => {
   const isAdmin = process.env.BUILD_TARGET === 'admin';
 
   return {
+    base: isAdmin ? '/usendadmin2026/' : '/',
     build: {
       outDir: isAdmin ? 'usendadmin2026' : 'dist',
       emptyOutDir: true,

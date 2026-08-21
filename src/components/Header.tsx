@@ -168,7 +168,7 @@ export default function Header({ onNavigate, setLoginRole, setLoginModalOpen, co
               title={isRTL ? 'الإشعارات' : 'Notifications'}
             >
               <Bell className="w-4 h-4" />
-              {unreadNotifsCount > 0 && (
+              {user && unreadNotifsCount > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center animate-pulse">
                   {unreadNotifsCount}
                 </span>
