@@ -1097,6 +1097,7 @@ async function startServer() {
 }
 
   const distPath = path.join(process.cwd(), "dist");
+  const distAdminPath = path.join(process.cwd(), "dist-admin");
 
   if (!isProd) {
     const fs = await import('fs');
