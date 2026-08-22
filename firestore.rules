@@ -114,6 +114,10 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    match /private_settings/{settingId} {
+      allow read, write: if isAdmin();
+    }
+
     // Noon webhook event deduplication records — server writes only
     match /noon_webhook_events/{eventId} {
       allow read: if isAdmin();

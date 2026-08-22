@@ -12,14 +12,15 @@ import LogoIcon from '../components/LogoIcon';
 
 interface LoginProps {
   onNavigate: (screen: Screen) => void;
+  isAdminApp?: boolean;
 }
 
-type LoginType = 'individual' | 'business' | null;
+type LoginType = 'individual' | 'business' | 'admin' | null;
 
-const Login: React.FC<LoginProps> = ({ onNavigate }) => {
+const Login: React.FC<LoginProps> = ({ onNavigate, isAdminApp }) => {
   const { t, isRTL, language, setLanguage } = useLanguage();
   const { setUser } = useApp();
-  const [loginType, setLoginType] = useState<LoginType>(null);
+  const [loginType, setLoginType] = useState<LoginType>(isAdminApp ? 'admin' : null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -92,16 +93,20 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
       
       let redirectScreen: Screen = 'merchant_dashboard';
       
-      try {
-        const userDocRef = doc(db, 'users', cred.user.uid);
-        const userDocSnap = await getDoc(userDocRef);
-        
-        if (userDocSnap.exists()) {
-          const data = userDocSnap.data();
-          if (data.role === 'user' || (data.role as string) === 'Individual' || data.role === 'driver') redirectScreen = 'user_dashboard';
+      if (isAdminApp) {
+        redirectScreen = 'admin_dashboard';
+      } else {
+        try {
+          const userDocRef = doc(db, 'users', cred.user.uid);
+          const userDocSnap = await getDoc(userDocRef);
+          
+          if (userDocSnap.exists()) {
+            const data = userDocSnap.data();
+            if (data.role === 'user' || (data.role as string) === 'Individual' || data.role === 'driver') redirectScreen = 'user_dashboard';
+          }
+        } catch (docErr) {
+          // Ignored
         }
-      } catch (docErr) {
-        // Ignored
       }
 
       onNavigate(redirectScreen);
@@ -215,6 +220,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
                   </div>
 
                   {/* Primary Google Quick Sign-In Button */}
+                  {!isAdminApp && (
                   <button
                     type="button"
                     onClick={handleGoogleSignIn}
@@ -229,6 +235,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
                     </svg>
                     <span>{isRTL ? 'تسجيل الدخول بواسطة Google' : 'Sign in with Google'}</span>
                   </button>
+                  )}
 
                   <div className="relative my-4">
                     <div className="absolute inset-0 flex items-center">
@@ -283,12 +290,13 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
                 >
                   <div className={`mb-6 ${isRTL ? 'text-right' : 'text-center'}`}>
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#113f36]/10 text-[13px] font-black uppercase tracking-widest text-[#113f36] mb-3">
-                      {loginType === 'business' ? (isRTL ? 'بوابة الأعمال' : 'Business Portal') : (isRTL ? 'بوابة الأفراد' : 'Individual Portal')}
+                      {loginType === 'business' ? (isRTL ? 'بوابة الأعمال' : 'Business Portal') : loginType === 'admin' ? 'Admin Portal' : (isRTL ? 'بوابة الأفراد' : 'Individual Portal')}
                     </div>
                     <h2 className="text-2xl font-extrabold uppercase tracking-tight text-zinc-950 leading-tight">Access Terminal</h2>
                   </div>
 
                   {/* Google Quick Sign-In Button */}
+                  {!isAdminApp && (
                   <button
                     type="button"
                     onClick={handleGoogleSignIn}
@@ -303,6 +311,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate }) => {
                     </svg>
                     <span>{isRTL ? 'تسجيل الدخول بواسطة Google' : 'Sign in with Google'}</span>
                   </button>
+                  )}
 
                   <div className="relative my-4">
                     <div className="absolute inset-0 flex items-center">

@@ -1,0 +1,695 @@
+function CouriersIntegrationsHub() {
+  const { courierConfigs, updateCourierConfigs } = useApp();
+  const [selectedCourierId, setSelectedCourierId] = useState<string>('aramex');
+  const [localConfigs, setLocalConfigs] = useState<any>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+
+  // Add Courier Modal States
+  const [showAddCourierModal, setShowAddCourierModal] = useState(false);
+  const [newCourierId, setNewCourierId] = useState('');
+  const [newCourierName, setNewCourierName] = useState('');
+  const [newUsername, setNewUsername] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newAccountNumber, setNewAccountNumber] = useState('');
+  const [newAccountPin, setNewAccountPin] = useState('');
+  const [newAccountEntity, setNewAccountEntity] = useState('');
+  const [newAccountCountryCode, setNewAccountCountryCode] = useState('AE');
+  const [newSource, setNewSource] = useState('0');
+  const [newApiKey, setNewApiKey] = useState('');
+  const [newDomesticExpress, setNewDomesticExpress] = useState('20');
+  const [newDomesticStandard, setNewDomesticStandard] = useState('15');
+  const [newIntlExpress, setNewIntlExpress] = useState('85');
+  const [newIntlStandard, setNewIntlStandard] = useState('60');
+
+  const [isTesting, setIsTesting] = useState(false);
+  const [testLogs, setTestLogs] = useState<string[]>([]);
+  const [testResult, setTestResult] = useState<'success' | 'error' | null>(null);
+
+  const handleTestConnection = async () => {
+    const activeConfig = localConfigs?.[selectedCourierId];
+    if (!activeConfig) return;
+
+    setIsTesting(true);
+    setTestLogs([`Initializing connection check for ${activeConfig.name}...`]);
+    setTestResult(null);
+
+    const creds = activeConfig.currentMode === 'sandbox' ? activeConfig.sandboxCreds : activeConfig.productionCreds;
+    const hasUsername = creds && !!creds.username;
+    
+    // Determine configuration state based on real presence of credentials
+    let hasCredentials = false;
+    if (selectedCourierId === 'aramex') {
+      hasCredentials = !!(creds.username && (creds.password || creds.accountPin) && creds.accountNumber && creds.accountEntity);
+    } else if (selectedCourierId === 'noon') {
+      hasCredentials = !!(creds.apiKey || creds.password);
+    } else {
+      hasCredentials = !!(creds.username && creds.accountNumber);
+    }
+
+    if (!hasCredentials) {
+      const updatedStatus: CourierConnectionStatus = {
+        state: 'NOT_CONFIGURED',
+        lastTestedAt: new Date().toISOString(),
+        lastTestedMode: activeConfig.currentMode,
+        errorMessage: 'Credentials missing or incomplete. Username, password, and account information are required.'
+      };
+      const updatedConfigs = {
+        ...localConfigs,
+        [selectedCourierId]: {
+          ...activeConfig,
+          connectionStatus: updatedStatus
+        }
+      };
+      setLocalConfigs(updatedConfigs);
+      await updateCourierConfigs(updatedConfigs);
+      setTestLogs(prev => [
+        ...prev,
+        `[ERROR] Configuration check failed: Credentials missing.`,
+        `[STATUS] CONFIGURATION REQUIRED`
+      ]);
+      setTestResult('error');
+      setIsTesting(false);
+      return;
+    }
+
+    await new Promise(r => setTimeout(r, 600));
+    setTestLogs(prev => [...prev, `[INFO] Resolving endpoint: ${activeConfig.currentMode === 'sandbox' ? (activeConfig.baseUrlUat || 'UAT Sandbox') : (activeConfig.baseUrlProd || 'Production API')}`]);
+    
+    await new Promise(r => setTimeout(r, 600));
+    setTestLogs(prev => [...prev, `[INFO] Building authentication headers...`]);
+
+    try {
+      if (selectedCourierId === 'aramex' || selectedCourierId === 'noon') {
+        setTestLogs(prev => [...prev, `[INFO] Dispatching test payload to Courier Engine...`]);
+        const response = await fetch('/api/courier/test-connection', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            courierId: selectedCourierId, 
+            credentials: creds, 
+            environment: activeConfig.currentMode 
+          })
+        });
+        const result = await response.json();
+        if (result.success) {
+          const updatedStatus: CourierConnectionStatus = {
+            state: 'PARTIALLY_VERIFIED',
+            lastTestedAt: new Date().toISOString(),
+            lastTestedMode: activeConfig.currentMode,
+            errorMessage: null
+          };
+          const updatedConfigs = {
+            ...localConfigs,
+            [selectedCourierId]: {
+              ...activeConfig,
+              connectionStatus: updatedStatus
+            }
+          };
+          setLocalConfigs(updatedConfigs);
+          await updateCourierConfigs(updatedConfigs);
+
+          setTestLogs(prev => [
+            ...prev,
+            `[SUCCESS] Connection handshake complete. Provider responded with 200 OK.`,
+            `[STATUS] ACTIVE & ONLINE`
+          ]);
+          setTestResult('success');
+        } else {
+          const updatedStatus: CourierConnectionStatus = {
+            state: 'AUTHENTICATION_FAILED',
+            lastTestedAt: new Date().toISOString(),
+            lastTestedMode: activeConfig.currentMode,
+            errorMessage: result.error || 'Authentication failed'
+          };
+          const updatedConfigs = {
+            ...localConfigs,
+            [selectedCourierId]: {
+              ...activeConfig,
+              connectionStatus: updatedStatus
+            }
+          };
+          setLocalConfigs(updatedConfigs);
+          await updateCourierConfigs(updatedConfigs);
+
+          setTestLogs(prev => [
+            ...prev,
+            `[ERROR] Provider API returned error: ${result.error}`,
+            `[STATUS] CONNECTION FAILED`
+          ]);
+          setTestResult('error');
+        }
+      } else {
+        // Generic/DHL/FedEx connection check fails because no endpoints are implemented
+        const updatedStatus: CourierConnectionStatus = {
+          state: 'CONNECTIVITY_FAILED',
+          lastTestedAt: new Date().toISOString(),
+          lastTestedMode: activeConfig.currentMode,
+          errorMessage: `No test connection handler configured for ${activeConfig.name} endpoint.`
+        };
+        const updatedConfigs = {
+          ...localConfigs,
+          [selectedCourierId]: {
+            ...activeConfig,
+            connectionStatus: updatedStatus
+          }
+        };
+        setLocalConfigs(updatedConfigs);
+        await updateCourierConfigs(updatedConfigs);
+
+        setTestLogs(prev => [
+          ...prev,
+          `[ERROR] Failed to establish connection: Endpoint unavailable.`,
+          `[STATUS] CONNECTION FAILED`
+        ]);
+        setTestResult('error');
+      }
+    } catch (e: any) {
+      const updatedStatus: CourierConnectionStatus = {
+        state: 'CONNECTIVITY_FAILED',
+        lastTestedAt: new Date().toISOString(),
+        lastTestedMode: activeConfig.currentMode,
+        errorMessage: e.message || 'Network error'
+      };
+      const updatedConfigs = {
+        ...localConfigs,
+        [selectedCourierId]: {
+          ...activeConfig,
+          connectionStatus: updatedStatus
+        }
+      };
+      setLocalConfigs(updatedConfigs);
+      await updateCourierConfigs(updatedConfigs);
+
+      setTestLogs(prev => [
+        ...prev,
+        `[ERROR] Network error connecting to proxy: ${e.message}`,
+        `[STATUS] CONNECTION FAILED`
+      ]);
+      setTestResult('error');
+    }
+    setIsTesting(false);
+  };
+
+  useEffect(() => {
+    if (courierConfigs) {
+      setLocalConfigs(courierConfigs);
+    }
+  }, [courierConfigs]);
+
+  const triggerToast = (msg: string) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(null), 3000);
+  };
+
+  if (!localConfigs) {
+    return (
+      <div className="flex items-center justify-center p-20 bg-white border border-zinc-200 rounded-[3rem] shadow-sm animate-pulse">
+        <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  const currentConfig = localConfigs[selectedCourierId] || {
+    id: selectedCourierId,
+    name: selectedCourierId.toUpperCase(),
+    status: 'Inactive',
+    currentMode: 'sandbox',
+    sandboxCreds: { username: '', accountNumber: '', accountPin: '', accountEntity: '', accountCountryCode: 'AE', source: '' },
+    productionCreds: { username: '', accountNumber: '', accountPin: '', accountEntity: '', accountCountryCode: 'AE', source: '' },
+    rates: {
+      guest: { baseFee: 0, perKmRate: 0, perKgRate: 0, expressSurcharge: 0, codFee: 0 },
+      user: { baseFee: 0, perKmRate: 0, perKgRate: 0, expressSurcharge: 0, codFee: 0 },
+      merchant: { baseFee: 0, perKmRate: 0, perKgRate: 0, expressSurcharge: 0, codFee: 0 }
+    }
+  };
+
+  const handleCredChange = (mode: 'sandbox' | 'production', field: string, value: string) => {
+    setLocalConfigs((prev: any) => {
+      const targetMode = mode === 'sandbox' ? 'sandboxCreds' : 'productionCreds';
+      return {
+        ...prev,
+        [selectedCourierId]: {
+          ...prev[selectedCourierId],
+          [targetMode]: {
+            ...prev[selectedCourierId][targetMode],
+            [field]: value
+          }
+        }
+      };
+    });
+  };
+
+  const handleRateChange = (userType: 'guest' | 'user' | 'merchant', field: string, value: number) => {
+    setLocalConfigs((prev: any) => {
+      return {
+        ...prev,
+        [selectedCourierId]: {
+          ...prev[selectedCourierId],
+          rates: {
+            ...prev[selectedCourierId].rates,
+            [userType]: {
+              ...prev[selectedCourierId].rates[userType],
+              [field]: value
+            }
+          }
+        }
+      };
+    });
+  };
+
+  const handleToggleStatus = () => {
+    const activeConfig = localConfigs[selectedCourierId];
+    if (activeConfig.status !== 'Active') {
+      // Trying to activate
+      // If we are activating production mode, require verification
+      if (activeConfig.currentMode === 'production' && activeConfig.connectionStatus?.state !== 'PARTIALLY_VERIFIED' && activeConfig.connectionStatus?.state !== 'E2E_VERIFIED') {
+        alert("PRODUCTION ACTIVATION BLOCKED: You cannot activate a courier in Production mode until the connection is successfully tested and verified. Please use the Test Center to verify credentials.");
+        return;
+      }
+    }
+
+    setLocalConfigs((prev: any) => ({
+      ...prev,
+      [selectedCourierId]: {
+        ...prev[selectedCourierId],
+        status: prev[selectedCourierId].status === 'Active' ? 'Inactive' : 'Active'
+      }
+    }));
+  };
+
+  const handleToggleMode = (mode: 'sandbox' | 'production') => {
+    setLocalConfigs((prev: any) => {
+      const config = prev[selectedCourierId];
+      let newStatus = config.status;
+
+      if (mode === 'production' && config.status === 'Active') {
+        if (config.connectionStatus?.state !== 'PARTIALLY_VERIFIED' && config.connectionStatus?.state !== 'E2E_VERIFIED') {
+           alert("PRODUCTION ACTIVATION SAFETY: This courier is not verified for production. It has been deactivated. Please test the connection before reactivating.");
+           newStatus = 'Inactive';
+        }
+      }
+
+      return {
+        ...prev,
+        [selectedCourierId]: {
+          ...config,
+          currentMode: mode,
+          status: newStatus
+        }
+      };
+    });
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await updateCourierConfigs(localConfigs);
+      triggerToast(`Saved ${currentConfig.name} configuration successfully!`);
+    } catch (err: any) {
+      triggerToast(`Error: ${err.message || 'Failed to save settings'}`);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleAddCourier = () => {
+    if (!newCourierId || !newCourierName) {
+      alert("Please fill in Courier ID and Name.");
+      return;
+    }
+    const cleanId = newCourierId.toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+    if (localConfigs?.[cleanId]) {
+      alert("A courier with this ID already exists.");
+      return;
+    }
+
+    const newConfig = {
+      name: newCourierName,
+      status: 'Inactive',
+      currentMode: 'sandbox',
+      sandboxCreds: {
+        username: newUsername,
+        password: newPassword,
+        accountNumber: newAccountNumber,
+        accountPin: newAccountPin,
+        accountEntity: newAccountEntity,
+        accountCountryCode: newAccountCountryCode,
+        source: newSource || '0',
+        apiKey: newApiKey || '',
+        version: 'v1.0'
+      },
+      productionCreds: {
+        username: newUsername,
+        password: newPassword,
+        accountNumber: newAccountNumber,
+        accountPin: newAccountPin,
+        accountEntity: newAccountEntity,
+        accountCountryCode: newAccountCountryCode,
+        source: newSource || '0',
+        apiKey: newApiKey || '',
+        version: 'v1.0'
+      },
+      rates: {
+        guest: { baseFee: parseFloat(newDomesticExpress) || 20, perKmRate: 1.5, perKgRate: 2.0, expressSurcharge: 10, codFee: 5 },
+        user: { baseFee: parseFloat(newDomesticStandard) || 15, perKmRate: 1.2, perKgRate: 1.5, expressSurcharge: 8, codFee: 4 },
+        merchant: { baseFee: parseFloat(newIntlExpress) || 12, perKmRate: 1.0, perKgRate: 1.2, expressSurcharge: 6, codFee: 3 }
+      }
+    };
+
+    setLocalConfigs((prev: any) => ({
+      ...prev,
+      [cleanId]: newConfig
+    }));
+
+    setSelectedCourierId(cleanId);
+    setShowAddCourierModal(false);
+    
+    // Clear form
+    setNewCourierId('');
+    setNewCourierName('');
+    setNewUsername('');
+    setNewPassword('');
+    setNewAccountNumber('');
+    setNewAccountPin('');
+    setNewAccountEntity('');
+    setNewAccountCountryCode('AE');
+    setNewSource('0');
+    setNewApiKey('');
+    setNewDomesticExpress('20');
+    setNewDomesticStandard('15');
+    setNewIntlExpress('85');
+    setNewIntlStandard('60');
+
+    triggerToast(`Registered new courier ${newCourierName}! Click Save to write to Cloud.`);
+  };
+
+  const activeCreds = currentConfig.currentMode === 'sandbox' ? currentConfig.sandboxCreds : currentConfig.productionCreds;
+
+  const courierLogos: Record<string, string> = {
+    aramex: 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?q=80&w=100&auto=format&fit=crop',
+    noon: 'https://images.unsplash.com/photo-1607082349566-187342175e2f?q=80&w=100&auto=format&fit=crop',
+    dhl: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=100&auto=format&fit=crop',
+    fedex: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=100&auto=format&fit=crop'
+  };
+
+  return (
+    <div className="space-y-8 animate-in fade-in duration-500">
+      {/* Toast */}
+      {toastMsg && (
+        <div className="fixed bottom-6 right-6 z-50 bg-[#113f36] text-white px-6 py-4 rounded-2xl shadow-xl flex items-center gap-3 border border-[#113f36]/80 animate-in slide-in-from-bottom-4">
+          <div className="w-2 h-2 rounded-full bg-white animate-ping" />
+          <span className="text-xs font-bold uppercase tracking-wider">{toastMsg}</span>
+        </div>
+      )}
+
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-display font-semibold uppercase tracking-tight text-zinc-900">Courier Integration Hub</h2>
+          <p className="text-sm text-zinc-500 mt-1">Manage API credentials, environment modes, and rate matrices for each active courier partner.</p>
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowAddCourierModal(true)}
+            className="px-5 py-3 border border-zinc-200 text-zinc-700 bg-white rounded-full font-bold text-xs uppercase tracking-widest hover:bg-zinc-50 transition-all flex items-center gap-2 shadow-sm"
+          >
+            <Plus className="w-4 h-4" /> Register Courier
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="px-7 py-3 bg-[#113f36] text-white rounded-full font-bold text-xs uppercase tracking-widest hover:bg-[#0d3029] transition-all flex items-center gap-2 shadow-lg shadow-[#113f36]/20 disabled:opacity-60"
+          >
+            {isSaving ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Check className="w-4 h-4" />}
+            Save All Settings
+          </button>
+        </div>
+      </div>
+
+      {/* Courier Cards Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {Object.keys(localConfigs || {}).map((id) => {
+          const cfg = localConfigs[id];
+          const isSelected = selectedCourierId === id;
+          // Branded colors
+          const brandColor =
+            id === 'aramex' ? { bg: 'bg-[#d12421]', text: 'text-white', ring: 'ring-[#d12421]/30', badge: 'bg-[#d12421]' } :
+            id === 'noon'   ? { bg: 'bg-[#feee00]', text: 'text-black', ring: 'ring-[#feee00]/50', badge: 'bg-amber-400' } :
+            id === 'dhl'    ? { bg: 'bg-yellow-400', text: 'text-red-700', ring: 'ring-yellow-400/40', badge: 'bg-yellow-400' } :
+            id === 'fedex'  ? { bg: 'bg-purple-600', text: 'text-white', ring: 'ring-purple-600/30', badge: 'bg-purple-600' } :
+                              { bg: 'bg-zinc-700', text: 'text-white', ring: 'ring-zinc-400/30', badge: 'bg-zinc-700' };
+
+          // Honest status configuration
+          const connState = cfg.connectionStatus?.state || 'NOT_CONFIGURED';
+          let statusText = 'Not Configured';
+          let dotColor = 'bg-zinc-350';
+          let badgeStyle = 'bg-zinc-100 text-zinc-600 border border-zinc-200';
+
+          if (connState === 'CONFIGURED_NOT_TESTED') {
+            statusText = 'Not Tested';
+            dotColor = 'bg-amber-500';
+            badgeStyle = 'bg-amber-50 text-amber-700 border border-amber-200';
+          } else if (connState === 'AUTHENTICATION_FAILED' || connState === 'CONNECTIVITY_FAILED') {
+            statusText = 'Connection Failed';
+            dotColor = 'bg-red-500 animate-pulse';
+            badgeStyle = 'bg-red-50 text-red-700 border border-red-200';
+          } else if (connState === 'PARTIALLY_VERIFIED' || connState === 'E2E_VERIFIED' || connState === 'OPERATIONAL') {
+            statusText = connState === 'OPERATIONAL' ? 'Operational' : (connState === 'E2E_VERIFIED' ? 'Verified' : 'Partially Verified');
+            dotColor = 'bg-[#6d8c55] animate-ping-slow';
+            badgeStyle = 'bg-[#6d8c55]/10 text-[#344633] border border-[#6d8c55]/30';
+          }
+
+          return (
+            <button
+              key={id}
+              onClick={() => setSelectedCourierId(id)}
+              className={`relative bg-white rounded-[2rem] p-5 border-2 shadow-sm hover:shadow-md transition-all text-left cursor-pointer ${
+                isSelected ? `border-orange-500 ring-4 ${brandColor.ring}` : 'border-zinc-200 hover:border-zinc-300'
+              }`}
+            >
+              {/* Status dot */}
+              <div className="absolute top-4 right-4 flex items-center justify-center">
+                <div className={`w-2.5 h-2.5 rounded-full ${dotColor}`} />
+              </div>
+
+              {/* Logo circle */}
+              <div className={`w-12 h-12 ${brandColor.bg} ${brandColor.text} rounded-2xl flex items-center justify-center font-black text-base mb-4 shadow-sm`}>
+                {id === 'aramex' ? 'ARX' : id === 'noon' ? 'NON' : id === 'dhl' ? 'DHL' : id === 'fedex' ? 'FDX' : id.slice(0,3).toUpperCase()}
+              </div>
+
+              <p className="font-black text-sm text-zinc-900 leading-tight">{cfg.name}</p>
+              <div className="flex items-center gap-2 mt-2 flex-wrap">
+                <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${badgeStyle}`}>
+                  {statusText}
+                </span>
+                <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${cfg.currentMode === 'sandbox' ? 'bg-amber-50 text-amber-700' : 'bg-blue-50 text-blue-700'}`}>
+                  {cfg.currentMode === 'sandbox' ? 'UAT' : 'LIVE'}
+                </span>
+              </div>
+
+              {/* Endpoint URL */}
+              <p className="text-[9px] font-mono text-zinc-400 mt-2 truncate leading-tight">
+                {cfg.currentMode === 'sandbox' ? (cfg.baseUrlUat || '—') : (cfg.baseUrlProd || '—')}
+              </p>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Selected Courier Detail Panel */}
+      {localConfigs && selectedCourierId && localConfigs[selectedCourierId] && (() => {
+        const cfg = localConfigs[selectedCourierId];
+        const creds = cfg.currentMode === 'sandbox' ? cfg.sandboxCreds : cfg.productionCreds;
+        const isAramex = selectedCourierId === 'aramex';
+        const isNoon = selectedCourierId === 'noon';
+
+        // Detail status configuration
+        const connState = cfg.connectionStatus?.state || 'NOT_CONFIGURED';
+        let detailStatusText = 'Not Configured';
+        let detailBadgeStyle = 'bg-zinc-100 text-zinc-600 border border-zinc-200';
+        if (connState === 'CONFIGURED_NOT_TESTED') {
+          detailStatusText = 'Credentials Saved (Not Tested)';
+          detailBadgeStyle = 'bg-amber-50 text-amber-700 border border-amber-200';
+        } else if (connState === 'AUTHENTICATION_FAILED' || connState === 'CONNECTIVITY_FAILED') {
+          detailStatusText = 'Connection Failed';
+          detailBadgeStyle = 'bg-red-50 text-red-700 border border-red-200';
+        } else if (connState === 'PARTIALLY_VERIFIED' || connState === 'E2E_VERIFIED' || connState === 'OPERATIONAL') {
+          detailStatusText = `${connState === 'OPERATIONAL' ? 'Operational' : (connState === 'E2E_VERIFIED' ? 'Verified' : 'Partially Verified')} (${cfg.currentMode === 'sandbox' ? 'Staging/UAT' : 'Production'})`;
+          detailBadgeStyle = 'bg-[#6d8c55]/10 text-[#344633] border border-[#6d8c55]/30';
+        }
+
+        return (
+          <div className="bg-white border border-zinc-200 rounded-[2.5rem] p-8 shadow-sm space-y-8">
+            {/* Panel Header */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-zinc-100">
+              <div className="flex items-center gap-4">
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-base shadow-sm ${
+                  selectedCourierId === 'aramex' ? 'bg-[#d12421] text-white' :
+                  selectedCourierId === 'noon' ? 'bg-[#feee00] text-black' :
+                  selectedCourierId === 'dhl' ? 'bg-yellow-400 text-red-700' :
+                  selectedCourierId === 'fedex' ? 'bg-purple-600 text-white' : 'bg-zinc-700 text-white'
+                }`}>
+                  {selectedCourierId === 'aramex' ? 'ARX' : selectedCourierId === 'noon' ? 'NON' : selectedCourierId === 'dhl' ? 'DHL' : selectedCourierId === 'fedex' ? 'FDX' : selectedCourierId.slice(0,3).toUpperCase()}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-lg font-black text-zinc-900">{cfg.name}</h3>
+                    <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${detailBadgeStyle}`}>
+                      {detailStatusText}
+                    </span>
+                  </div>
+                  <p className="text-xs text-zinc-500 mt-0.5">
+                    {cfg.currentMode === 'sandbox' ? `UAT Endpoint: ${cfg.baseUrlUat || 'N/A'}` : `Production Endpoint: ${cfg.baseUrlProd || 'N/A'}`}
+                  </p>
+                  {cfg.connectionStatus?.lastTestedAt && (
+                    <p className="text-[9px] text-zinc-400 mt-0.5">
+                      Last Tested: {new Date(cfg.connectionStatus.lastTestedAt).toLocaleString()}
+                    </p>
+                  )}
+                  {isAramex && (
+                    <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                      <a href="https://www.aramex.com/docs/default-source/resourses/resourcesdata/aramex-rates-calculator-manual.pdf" target="_blank" rel="noopener noreferrer"
+                         className="text-[10px] font-bold text-orange-600 hover:text-orange-800 underline underline-offset-2 flex items-center gap-0.5">Rate Calc Docs ↗</a>
+                      <a href="https://www.aramex.com/docs/default-source/resourses/resourcesdata/shipping-services-api-manual.pdf" target="_blank" rel="noopener noreferrer"
+                         className="text-[10px] font-bold text-orange-600 hover:text-orange-800 underline underline-offset-2 flex items-center gap-0.5">Shipping API Docs ↗</a>
+                      <a href="https://www.aramex.com/docs/default-source/resourses/resourcesdata/shipments-tracking-api-manual.pdf" target="_blank" rel="noopener noreferrer"
+                         className="text-[10px] font-bold text-orange-600 hover:text-orange-800 underline underline-offset-2 flex items-center gap-0.5">Tracking API Docs ↗</a>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Mode Toggle + Status */}
+              <div className="flex items-center gap-4">
+                <div>
+                  <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1.5">Environment</p>
+                  <div className="grid grid-cols-2 gap-1 bg-zinc-100 p-1 rounded-xl">
+                    <button
+                      onClick={() => handleToggleMode('sandbox')}
+                      className={`py-1.5 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${cfg.currentMode === 'sandbox' ? 'bg-amber-400 text-amber-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-800'}`}
+                    >UAT</button>
+                    <button
+                      onClick={() => handleToggleMode('production')}
+                      className={`py-1.5 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${cfg.currentMode === 'production' ? 'bg-[#113f36] text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-800'}`}
+                    >LIVE</button>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1.5">Gateway Status</p>
+                  <button
+                    onClick={handleToggleStatus}
+                    className={`w-14 h-7 rounded-full relative transition-colors cursor-pointer ${cfg.status === 'Active' ? 'bg-[#113f36]' : 'bg-zinc-300'}`}
+                  >
+                    <div className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-all shadow-sm ${cfg.status === 'Active' ? 'right-1' : 'left-1'}`} />
+                  </button>
+                  <p className={`text-[9px] font-black uppercase tracking-widest mt-1 ${cfg.status === 'Active' ? 'text-[#6d8c55]' : 'text-zinc-400'}`}>{cfg.status}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* 2-COLUMN LAYOUT: API Credentials (left) + Rate Matrix (right) */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+
+              {/* LEFT: API Credentials */}
+              <div className="space-y-6">
+                <div className="flex items-center gap-2 pb-3 border-b border-zinc-100">
+                  <Code2 className="w-4 h-4 text-orange-500" />
+                  <h4 className="font-black text-sm text-zinc-900 uppercase tracking-widest">API Credentials ({cfg.currentMode === 'sandbox' ? 'UAT' : 'LIVE'})</h4>
+                </div>
+
+                {/* Endpoint Info */}
+                <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-4 space-y-3">
+                  <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Endpoints</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-[9px] font-bold text-amber-600 uppercase tracking-wider mb-1">UAT Base URL</p>
+                      <p className="text-xs font-mono font-bold text-zinc-800 break-all">{cfg.baseUrlUat || '—'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-bold text-[#113f36] uppercase tracking-wider mb-1">Production Base URL</p>
+                      <p className="text-xs font-mono font-bold text-zinc-800 break-all">{cfg.baseUrlProd || '—'}</p>
+                    </div>
+                  </div>
+                  {isAramex && (
+                    <div className="pt-2 border-t border-zinc-200">
+                      <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider mb-1">Services</p>
+                      <div className="flex gap-2 flex-wrap">
+                        <span className="text-[9px] bg-red-50 text-[#d12421] px-2 py-0.5 rounded-full font-bold border border-red-100">Rate Calculator</span>
+                        <span className="text-[9px] bg-red-50 text-[#d12421] px-2 py-0.5 rounded-full font-bold border border-red-100">Shipping Service</span>
+                        <span className="text-[9px] bg-red-50 text-[#d12421] px-2 py-0.5 rounded-full font-bold border border-red-100">Tracking Service</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Credentials Fields */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Username / Email</label>
+                    <input type="text" value={creds?.username || ''} onChange={(e) => handleCredChange(cfg.currentMode, 'username', e.target.value)}
+                      placeholder="API username" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Password / Secret</label>
+                    <input type="password" value={creds?.password || ''} onChange={(e) => handleCredChange(cfg.currentMode, 'password', e.target.value)}
+                      placeholder="••••••••••••" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Account Number</label>
+                    <input type="text" value={creds?.accountNumber || ''} onChange={(e) => handleCredChange(cfg.currentMode, 'accountNumber', e.target.value)}
+                      placeholder={isAramex ? 'e.g. 154454' : isNoon ? 'e.g. 77T4HCOD4G' : 'Account #'} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Account PIN</label>
+                    <input type="text" value={creds?.accountPin || ''} onChange={(e) => handleCredChange(cfg.currentMode, 'accountPin', e.target.value)}
+                      placeholder="e.g. 115216" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Entity / Node</label>
+                    <input type="text" value={creds?.accountEntity || ''} onChange={(e) => handleCredChange(cfg.currentMode, 'accountEntity', e.target.value)}
+                      placeholder="e.g. DXB" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Country Code</label>
+                    <input type="text" value={creds?.accountCountryCode || 'AE'} onChange={(e) => handleCredChange(cfg.currentMode, 'accountCountryCode', e.target.value)}
+                      placeholder="AE" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Source ID</label>
+                    <input type="text" value={creds?.source || ''} onChange={(e) => handleCredChange(cfg.currentMode, 'source', e.target.value)}
+                      placeholder="e.g. 0" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">API Key / Bearer Token</label>
+                    <input type="text" value={creds?.apiKey || ''} onChange={(e) => handleCredChange(cfg.currentMode, 'apiKey', e.target.value)}
+                      placeholder="Optional JWT or API token" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800" />
+                  </div>
+                </div>
+
+                {/* Connection Tester */}
+                <div className="pt-4 border-t border-zinc-100 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-bold text-zinc-800">Connection Handshake</p>
+                      <p className="text-[11px] text-zinc-400">Test credentials against {cfg.currentMode === 'sandbox' ? 'UAT' : 'Production'} gateway.</p>
+                    </div>
+                    <button
+                      onClick={handleTestConnection}
+                      disabled={isTesting}
+                      className="px-5 py-2.5 bg-[#113f36] hover:bg-[#0d3029] disabled:bg-zinc-300 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center gap-2 cursor-pointer transition-colors"
+                    >
+                      {isTesting ? <><div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" /> Testing...</> : 'Test Connection'}
+                    </button>
+                  </div>
+
+                  {testLogs.length > 0 && (
+                    <div className="bg-[#113f36]/5 border border-[#113f36]/15 font-mono text-[10px] p-4 rounded-xl space-y-0.5 overflow-x-auto leading-relaxed">
+                      {testLogs.map((log, idx) => (
+                        <div key={idx} className={log.includes('[ERROR]') ? 'text-red-600 font-bold' : log.includes('[SUCCESS]') ? 'text-[#113f36] font-black' : log.includes('[WARNING]') ? 'text-amber-600' : 'text-zinc-600'}>{log}</div>
+                      ))}
+                    </div>
+                  )}
+                  {testResult === 'success' && (
+                    <div className="bg-[#6d8c55]/10 border border-[#6d8c55]/30 text-[#344633] px-4 py-3 rounded-xl text-xs font-semibold flex items-center gap-2">

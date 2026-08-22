@@ -8,14 +8,16 @@ import Login from './screens/Login';
 import { Screen } from './types';
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { user, handleLogout } = useApp();
+  const { user, signOut } = useApp();
   
   const handleExit = async () => {
-    await handleLogout();
+    if (signOut) {
+      await signOut();
+    }
   };
 
   if (!user) {
-    return <Login onNavigate={() => {}} />;
+    return <Login onNavigate={() => {}} isAdminApp={true} />;
   }
 
   if (user?.role !== 'admin') {

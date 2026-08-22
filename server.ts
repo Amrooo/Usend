@@ -539,19 +539,21 @@ app.post("/api/aramex/:serviceType", async (req, res) => {
     const isProduction = (process.env.ARAMEX_ENV !== "sandbox") && (req.headers["x-aramex-env"] !== "sandbox");
     const baseUrl = process.env.ARAMEX_BASE_URL || (isProduction ? "https://ws.aramex.net" : "https://ws.uat.aramex.net");
 
-    // Credentials come exclusively from environment variables — never hardcoded.
-    // Set ARAMEX_USERNAME, ARAMEX_PASSWORD, etc. in the server .env file.
-    const envUserName = process.env.ARAMEX_USERNAME || "";
-    const envPassword = process.env.ARAMEX_PASSWORD || "";
-    const envAccountNumber = process.env.ARAMEX_ACCOUNT_NUMBER || "";
-    const envAccountPin = process.env.ARAMEX_ACCOUNT_PIN || "";
-    const envAccountEntity = process.env.ARAMEX_ACCOUNT_ENTITY || "DXB";
-    const envAccountCountryCode = process.env.ARAMEX_ACCOUNT_COUNTRY_CODE || "AE";
-    const envSource = process.env.ARAMEX_SOURCE !== undefined ? Number(process.env.ARAMEX_SOURCE) : 0;
-    const envVersion = process.env.ARAMEX_VERSION || "v1.0";
+    // Credentials come exclusively from Firestore private_settings, falling back to environment variables.
+    // Set ARAMEX_USERNAME, ARAMEX_PASSWORD, etc. in the server .env file as fallback.
+    const aramexCreds = serverCourierCredentials?.aramex?.[isProduction ? 'productionCreds' : 'sandboxCreds'] || {};
+    
+    const envUserName = aramexCreds.username || process.env.ARAMEX_USERNAME || "";
+    const envPassword = aramexCreds.password || process.env.ARAMEX_PASSWORD || "";
+    const envAccountNumber = aramexCreds.accountNumber || process.env.ARAMEX_ACCOUNT_NUMBER || "";
+    const envAccountPin = aramexCreds.accountPin || process.env.ARAMEX_ACCOUNT_PIN || "";
+    const envAccountEntity = aramexCreds.accountEntity || process.env.ARAMEX_ACCOUNT_ENTITY || "DXB";
+    const envAccountCountryCode = aramexCreds.accountCountryCode || process.env.ARAMEX_ACCOUNT_COUNTRY_CODE || "AE";
+    const envSource = aramexCreds.source !== undefined ? Number(aramexCreds.source) : (process.env.ARAMEX_SOURCE !== undefined ? Number(process.env.ARAMEX_SOURCE) : 0);
+    const envVersion = aramexCreds.version || process.env.ARAMEX_VERSION || "v1.0";
 
     // If client sends non-sandbox credentials (i.e. admin override), prefer those.
-    // Otherwise always fall back to server-side env vars (never trust client creds for prod).
+    // Otherwise always fall back to server-side env vars/Firestore (never trust client creds for prod).
     const isUsingTestCreds = (u: string) => !u || u === "testingapi@aramex.com";
     const finalUserName = (!isUsingTestCreds(userClientInfo.UserName)) ? userClientInfo.UserName : envUserName;
     const finalPassword = (userClientInfo.Password && userClientInfo.Password !== "R123456789$r") ? userClientInfo.Password : envPassword;
@@ -640,8 +642,10 @@ const getNoonBaseUrl = (req: any): string => {
 };
 
 const getNoonApiKey = (req: any): string => {
-  // Prefer env var (server-side only), fallback to request header for internal calls
-  const envKey = process.env.NOON_API_KEY;
+  // Prefer Firestore credentials, fallback to env var, fallback to request header for internal calls
+  const isProd = process.env.NODE_ENV === "production";
+  const noonCreds = serverCourierCredentials?.noon?.[isProd ? 'productionCreds' : 'sandboxCreds'] || {};
+  const envKey = noonCreds.apiKey || process.env.NOON_API_KEY;
   if (envKey) return envKey;
   const clientApiKey = req.headers["x-noon-api-key"] || req.query.apiKey || (req.body && req.body.apiKey);
   // Reject obvious placeholder keys
@@ -1030,13 +1034,29 @@ app.post("/api/gemini/analyze-item", async (req, res) => {
 // Vite Middleware for development mode
 const isProd = process.env.NODE_ENV === "production";
 
+let serverCourierCredentials: any = null;
+
 async function startServer() {
   // Non-blocking firestore seed for courier integrations configuration
   if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY || process.env.FIRESTORE_EMULATOR_HOST) {
     try {
+      // 1. Listen to private courier credentials
+      dbAdmin.collection('private_settings').doc('courier_credentials').onSnapshot(
+        (docSnap) => {
+          if (docSnap.exists) {
+            serverCourierCredentials = docSnap.data();
+            console.log("[Firestore Sync] Loaded secure courier credentials from private_settings.");
+          }
+        },
+        (err) => {
+          console.error("[Firestore Sync] Failed to read private_settings/courier_credentials:", err.message);
+        }
+      );
+
+      // 2. Seed public and private configs if they don't exist
       dbAdmin.collection('settings').doc('courier_configs').get().then((docSnap) => {
       if (!docSnap.exists) {
-        const initialConfigs = {
+        const initialPublicConfigs = {
           aramex: {
             id: 'aramex',
             name: 'Aramex Express',
@@ -1044,7 +1064,21 @@ async function startServer() {
             currentMode: 'production',
             baseUrlUat: 'ws.aramex.net',
             baseUrlProd: 'ws.aramex.net',
-            connectionStatus: 'UNTESTED',
+            connectionStatus: 'UNTESTED'
+          },
+          noon: {
+            id: 'noon',
+            name: 'Noon Hyperlocal',
+            status: 'Active',
+            currentMode: 'sandbox',
+            baseUrlUat: 'https://food-api-team.noonstg.team',
+            baseUrlProd: 'https://food-api.noon.com',
+            connectionStatus: 'UNTESTED'
+          }
+        };
+        
+        const initialPrivateConfigs = {
+          aramex: {
             sandboxCreds: {
               username: "testingapi@aramex.com",
               password: "R123456789$r",
@@ -1067,13 +1101,6 @@ async function startServer() {
             }
           },
           noon: {
-            id: 'noon',
-            name: 'Noon Hyperlocal',
-            status: 'Active',
-            currentMode: 'sandbox',
-            baseUrlUat: 'https://food-api-team.noonstg.team',
-            baseUrlProd: 'https://food-api.noon.com',
-            connectionStatus: 'UNTESTED',
             sandboxCreds: {
               apiKey: 'noon_secret_key_123',
               storeId: ''
@@ -1084,9 +1111,16 @@ async function startServer() {
             }
           }
         };
-        dbAdmin.collection('settings').doc('courier_configs').set(initialConfigs)
-          .then(() => console.log("[Firestore Seed] Successfully initialized default courier configurations."))
-          .catch((err: any) => console.error("[Firestore Seed] Failed to set default courier configs:", err.message));
+        dbAdmin.collection('settings').doc('courier_configs').set(initialPublicConfigs)
+          .then(() => console.log("[Firestore Seed] Successfully initialized default public courier configurations."))
+          .catch((err: any) => console.error("[Firestore Seed] Failed to set default public courier configs:", err.message));
+          
+        dbAdmin.collection('private_settings').doc('courier_credentials').get().then((privateSnap) => {
+          if (!privateSnap.exists) {
+            dbAdmin.collection('private_settings').doc('courier_credentials').set(initialPrivateConfigs)
+              .then(() => console.log("[Firestore Seed] Successfully initialized default private courier credentials."));
+          }
+        });
       }
     }).catch((err: any) => {
       console.warn("[Firestore Seed] Failed to read settings/courier_configs:", err.message);

@@ -1,0 +1,16 @@
+#!/usr/bin/expect -f
+set timeout -1
+spawn rsync -avz -e "ssh -o StrictHostKeyChecking=no" dist/ master_awqbxuyqcq@134.209.28.27:/home/1150801.cloudwaysapps.com/mksqztfeks/public_html/
+expect "password:"
+send "rW9MJAfvXn4n\r"
+expect eof
+
+spawn rsync -avz -e "ssh -o StrictHostKeyChecking=no" usendadmin2026/ master_awqbxuyqcq@134.209.28.27:/home/1150801.cloudwaysapps.com/mksqztfeks/public_html/usendadmin2026/
+expect "password:"
+send "rW9MJAfvXn4n\r"
+expect eof
+
+spawn rsync -avz -e "ssh -o StrictHostKeyChecking=no" functions/server.cjs master_awqbxuyqcq@134.209.28.27:/home/1150801.cloudwaysapps.com/mksqztfeks/public_html/functions/server.cjs
+expect "password:"
+send "rW9MJAfvXn4n\r"
+expect eof
