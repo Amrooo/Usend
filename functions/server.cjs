@@ -508,7 +508,10 @@ var init_NoonAdapter = __esm({
         if (process.env.NOON_API_KEY) return process.env.NOON_API_KEY;
         if (credentials.apiKey && credentials.apiKey.length > 10) return credentials.apiKey;
         if (credentials.password && credentials.password.length > 10) return credentials.password;
-        return env === "sandbox" ? "SstJi9Ho0EHG2t7kQVSz7nA2hOeL3iiwVxHxb0Njk60QJ0LfmvoXOsimw1zQC7VugHXiIRRMnWyU6f0uHcEcLlco5Eujqbd5pTwDlfBXpacuRI4m4AAj61NwM0B7Ihk" : credentials.apiKey || "";
+        if (env === "sandbox") {
+          return "SstJi9Ho0EHG2t7kQVSz7nA2hOeL3iiwVxHxb0Njk60QJ0LfmvoXOsimw1zQC7VugHXiIRRMnWyU6f0uHcEcLlco5Eujqbd5pTwDlfBXpacuRI4m4AAj61NwM0B7Ihk";
+        }
+        return credentials.apiKey || "gxgyh5bcTvarO0iX9N7vMsRv4NZpoMWlu1Wm2Cg3eZW1oR4u5a7Cn24RwpZK3LOZUgMGIOPLv2crIVARo1VppbUPzlELLSA0qk9O2gcVtgRkG6Sk8Ag9OZubOvkMwNWh";
       }
       buildHeaders(credentials, idempotencyKey) {
         const apiKey2 = this.getApiKey(credentials);
