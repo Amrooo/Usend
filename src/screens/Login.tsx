@@ -158,12 +158,14 @@ const Login: React.FC<LoginProps> = ({ onNavigate, isAdminApp }) => {
               <LogoIcon className="w-auto h-[46px] lg:h-[52px]" />
             </div>
             
-            <div className="hidden xl:flex items-center gap-10 text-[12px] font-bold text-zinc-500 uppercase tracking-[0.25em]">
-              <span className="hover:text-zinc-900 transition-colors cursor-pointer" onClick={() => onNavigate('landing_page')}>{content.navFeatures}</span>
-              <span className="hover:text-zinc-900 transition-colors cursor-pointer" onClick={() => onNavigate('landing_page')}>{content.navSolutions}</span>
-              <span className="hover:text-zinc-900 transition-colors cursor-pointer" onClick={() => onNavigate('landing_page')}>{content.navMarketplace}</span>
-              <span className="hover:text-zinc-900 transition-colors cursor-pointer" onClick={() => onNavigate('landing_page')}>{content.navFees}</span>
-            </div>
+            {!isAdminApp && (
+              <div className="hidden xl:flex items-center gap-10 text-[12px] font-bold text-zinc-500 uppercase tracking-[0.25em]">
+                <span className="hover:text-zinc-900 transition-colors cursor-pointer" onClick={() => onNavigate('landing_page')}>{content.navFeatures}</span>
+                <span className="hover:text-zinc-900 transition-colors cursor-pointer" onClick={() => onNavigate('landing_page')}>{content.navSolutions}</span>
+                <span className="hover:text-zinc-900 transition-colors cursor-pointer" onClick={() => onNavigate('landing_page')}>{content.navMarketplace}</span>
+                <span className="hover:text-zinc-900 transition-colors cursor-pointer" onClick={() => onNavigate('landing_page')}>{content.navFees}</span>
+              </div>
+            )}
 
             <div className="flex items-center gap-3 md:gap-5">
               <button 
@@ -173,21 +175,21 @@ const Login: React.FC<LoginProps> = ({ onNavigate, isAdminApp }) => {
                 <Globe2 className="w-4 h-4" />
               </button>
               
-              {loginType ? (
+              {!isAdminApp && loginType ? (
                 <button 
                   onClick={() => setLoginType(null)}
                   className="px-6 py-2.5 rounded-full bg-[#111111] hover:bg-zinc-800 text-white text-[12px] font-black uppercase tracking-widest transition-all active:scale-95"
                 >
                   {isRTL ? 'العودة' : 'Back'}
                 </button>
-              ) : (
+              ) : !isAdminApp ? (
                 <button 
                   onClick={() => onNavigate('hub')}
                   className="px-6 py-2.5 rounded-full bg-[#113f36] hover:bg-[#1a5c4e] text-white text-[12px] font-black uppercase tracking-widest transition-all shadow-md active:scale-95"
                 >
                   {content.loginCustomer}
                 </button>
-              )}
+              ) : null}
             </div>
           </div>
         </nav>

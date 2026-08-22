@@ -1,6 +1,0 @@
-{
-  "name": "USend",
-  "description": "Smart, secure, and fast last-mile delivery and merchant management platform.",
-  "requestFramePermissions": ["camera", "microphone"],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
