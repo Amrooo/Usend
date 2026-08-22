@@ -14,3 +14,13 @@ spawn rsync -avz -e "ssh -o StrictHostKeyChecking=no" functions/server.cjs maste
 expect "password:"
 send "rW9MJAfvXn4n\r"
 expect eof
+
+spawn rsync -avz -e "ssh -o StrictHostKeyChecking=no" api.php master_awqbxuyqcq@134.209.28.27:/home/1150801.cloudwaysapps.com/mksqztfeks/public_html/api.php
+expect "password:"
+send "rW9MJAfvXn4n\r"
+expect eof
+
+spawn rsync -avz -e "ssh -o StrictHostKeyChecking=no" .htaccess master_awqbxuyqcq@134.209.28.27:/home/1150801.cloudwaysapps.com/mksqztfeks/public_html/.htaccess
+expect "password:"
+send "rW9MJAfvXn4n\r"
+expect eof

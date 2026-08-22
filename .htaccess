@@ -1,0 +1,16 @@
+DirectoryIndex index.html
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  
+  # Proxy admin requests to api.php bridge 
+  RewriteRule ^usendadmin2026(.*)$ api.php [L,QSA]
+
+  # Proxy /api/ requests to api.php bridge instead of mod_proxy
+  RewriteRule ^api/(.*)$ api.php [L,QSA]
+
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ index.html [L]
+</IfModule>
