@@ -77,6 +77,21 @@ export class AramexAdapter implements CourierAdapter {
     const baseUrl = this.getBaseUrl(environment);
     const path = "/ShippingAPI.V2/RateCalculator/Service_1_0.svc/json/CalculateRate";
 
+    const missingFields: string[] = [];
+    if (!credentials.username) missingFields.push('Username');
+    if (!credentials.password) missingFields.push('Password');
+    if (!credentials.accountNumber) missingFields.push('Account Number');
+    if (!credentials.accountPin) missingFields.push('Account PIN');
+    if (!credentials.accountEntity) missingFields.push('Account Entity');
+    if (!credentials.accountCountryCode) missingFields.push('Account Country Code');
+
+    if (missingFields.length > 0) {
+      return { 
+        success: false, 
+        error: `Missing required Aramex credentials: ${missingFields.join(', ')}. Please fill in all fields.` 
+      };
+    }
+
     const payload = {
       ClientInfo: {
         UserName: credentials.username,
@@ -127,11 +142,15 @@ export class AramexAdapter implements CourierAdapter {
     try {
       const data = await this.postRequest(`${baseUrl}${path}`, payload);
       if (data.HasErrors) {
-        return { success: false, error: data.Notifications?.[0]?.Message || `Aramex API credentials validation failed. Raw response: ${JSON.stringify(data)}` };
+        const aramexError = data.Notifications?.[0]?.Message || 'Unknown Aramex API Error';
+        return { 
+          success: false, 
+          error: `Aramex API Rejected Credentials: ${aramexError}. Please double-check your Username, Password, Account Number, and PIN.` 
+        };
       }
       return { success: true };
     } catch (error: any) {
-      return { success: false, error: error.message || "Network error while connecting to Aramex" };
+      return { success: false, error: `Network error while connecting to Aramex: ${error.message}` };
     }
   }
 

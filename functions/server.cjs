@@ -92,6 +92,19 @@ var init_AramexAdapter = __esm({
       async validateCredentials(credentials, environment) {
         const baseUrl = this.getBaseUrl(environment);
         const path3 = "/ShippingAPI.V2/RateCalculator/Service_1_0.svc/json/CalculateRate";
+        const missingFields = [];
+        if (!credentials.username) missingFields.push("Username");
+        if (!credentials.password) missingFields.push("Password");
+        if (!credentials.accountNumber) missingFields.push("Account Number");
+        if (!credentials.accountPin) missingFields.push("Account PIN");
+        if (!credentials.accountEntity) missingFields.push("Account Entity");
+        if (!credentials.accountCountryCode) missingFields.push("Account Country Code");
+        if (missingFields.length > 0) {
+          return {
+            success: false,
+            error: `Missing required Aramex credentials: ${missingFields.join(", ")}. Please fill in all fields.`
+          };
+        }
         const payload = {
           ClientInfo: {
             UserName: credentials.username,
@@ -144,11 +157,15 @@ var init_AramexAdapter = __esm({
         try {
           const data = await this.postRequest(`${baseUrl}${path3}`, payload);
           if (data.HasErrors) {
-            return { success: false, error: data.Notifications?.[0]?.Message || `Aramex API credentials validation failed. Raw response: ${JSON.stringify(data)}` };
+            const aramexError = data.Notifications?.[0]?.Message || "Unknown Aramex API Error";
+            return {
+              success: false,
+              error: `Aramex API Rejected Credentials: ${aramexError}. Please double-check your Username, Password, Account Number, and PIN.`
+            };
           }
           return { success: true };
         } catch (error) {
-          return { success: false, error: error.message || "Network error while connecting to Aramex" };
+          return { success: false, error: `Network error while connecting to Aramex: ${error.message}` };
         }
       }
       async calculateRate(payload, credentials, environment) {
@@ -529,7 +546,8 @@ var init_NoonAdapter = __esm({
       async validateCredentials(credentials, environment) {
         const baseUrl = this.getBaseUrl(environment);
         const apiKey2 = this.getApiKey(credentials);
-        if (!apiKey2) return { success: false, error: "Missing Noon API key" };
+        const outletCode = credentials.outletCode || credentials.accountNumber;
+        if (!apiKey2) return { success: false, error: "Noon API Key is missing. Please provide a valid API Key." };
         try {
           const response = await fetch(`${baseUrl}/public/v1/pickup-points/list`, {
             method: "GET",
@@ -538,14 +556,40 @@ var init_NoonAdapter = __esm({
           });
           const text = await response.text();
           if (text.includes("FortiGuard") || text.includes("Web Filter")) {
-            return { success: false, error: "Access blocked by corporate firewall. Try from another network." };
+            return { success: false, error: "Access blocked by corporate firewall. Please whitelist the Noon API." };
+          }
+          if (response.status === 401 || response.status === 403) {
+            return { success: false, error: "Invalid Noon API Key. Authentication failed." };
           }
           if (!response.ok) {
-            return { success: false, error: `Noon returned HTTP ${response.status}` };
+            return { success: false, error: `Noon API returned an unexpected error (HTTP ${response.status}).` };
+          }
+          let data;
+          try {
+            data = JSON.parse(text);
+          } catch (e) {
+            return { success: false, error: "Noon API returned an invalid response format." };
+          }
+          const points = Array.isArray(data) ? data : data.pickup_points || data.data || [];
+          const availableCodes = points.map((p) => p.outlet_code || p.id).filter(Boolean);
+          if (!outletCode) {
+            if (availableCodes.length > 0) {
+              return {
+                success: false,
+                error: `API Key is Valid! However, the Outlet Code is missing. Available Outlet Codes on this account are: ${availableCodes.join(", ")}. Please enter one of these in the Outlet Code / Account Number field.`
+              };
+            }
+            return { success: false, error: "API Key is Valid! However, the Outlet Code is missing, and we could not find any active pickup points on this account." };
+          }
+          if (availableCodes.length > 0 && !availableCodes.includes(outletCode)) {
+            return {
+              success: false,
+              error: `API Key is Valid, but the Outlet Code "${outletCode}" was not found. Available Outlet Codes are: ${availableCodes.join(", ")}.`
+            };
           }
           return { success: true };
         } catch (e) {
-          return { success: false, error: e.message || "Network error" };
+          return { success: false, error: `Network Error: ${e.message || "Could not reach Noon API"}` };
         }
       }
       // ─── Calculate Rate ───────────────────────────────────────────────────────

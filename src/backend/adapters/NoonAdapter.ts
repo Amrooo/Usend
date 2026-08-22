@@ -64,7 +64,9 @@ export class NoonAdapter implements CourierAdapter {
   ): Promise<{ success: boolean; error?: string }> {
     const baseUrl = this.getBaseUrl(environment);
     const apiKey = this.getApiKey(credentials);
-    if (!apiKey) return { success: false, error: 'Missing Noon API key' };
+    const outletCode = credentials.outletCode || credentials.accountNumber;
+
+    if (!apiKey) return { success: false, error: 'Noon API Key is missing. Please provide a valid API Key.' };
 
     try {
       const response = await fetch(`${baseUrl}/public/v1/pickup-points/list`, {
@@ -73,15 +75,51 @@ export class NoonAdapter implements CourierAdapter {
         signal: AbortSignal.timeout(10000),
       });
       const text = await response.text();
+      
       if (text.includes('FortiGuard') || text.includes('Web Filter')) {
-        return { success: false, error: 'Access blocked by corporate firewall. Try from another network.' };
+        return { success: false, error: 'Access blocked by corporate firewall. Please whitelist the Noon API.' };
       }
+      
+      if (response.status === 401 || response.status === 403) {
+        return { success: false, error: 'Invalid Noon API Key. Authentication failed.' };
+      }
+      
       if (!response.ok) {
-        return { success: false, error: `Noon returned HTTP ${response.status}` };
+        return { success: false, error: `Noon API returned an unexpected error (HTTP ${response.status}).` };
       }
+
+      // API Key is valid! Now check the Outlet Code if provided.
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        return { success: false, error: 'Noon API returned an invalid response format.' };
+      }
+
+      const points = Array.isArray(data) ? data : (data.pickup_points || data.data || []);
+      const availableCodes = points.map((p: any) => p.outlet_code || p.id).filter(Boolean);
+
+      if (!outletCode) {
+        if (availableCodes.length > 0) {
+          return { 
+            success: false, 
+            error: `API Key is Valid! However, the Outlet Code is missing. Available Outlet Codes on this account are: ${availableCodes.join(', ')}. Please enter one of these in the Outlet Code / Account Number field.` 
+          };
+        }
+        return { success: false, error: 'API Key is Valid! However, the Outlet Code is missing, and we could not find any active pickup points on this account.' };
+      }
+
+      // Check if the provided outlet code actually exists
+      if (availableCodes.length > 0 && !availableCodes.includes(outletCode)) {
+        return { 
+          success: false, 
+          error: `API Key is Valid, but the Outlet Code "${outletCode}" was not found. Available Outlet Codes are: ${availableCodes.join(', ')}.` 
+        };
+      }
+
       return { success: true };
     } catch (e: any) {
-      return { success: false, error: e.message || 'Network error' };
+      return { success: false, error: `Network Error: ${e.message || 'Could not reach Noon API'}` };
     }
   }
 
