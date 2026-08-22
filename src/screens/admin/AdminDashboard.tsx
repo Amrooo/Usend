@@ -623,32 +623,34 @@ function RequestsHub() {
         </button>
       </div>
       <div className="bg-white border border-zinc-200 rounded-2xl p-5 flex flex-col gap-4 shadow-sm mb-6">
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border-b border-zinc-100 pb-4">
-          <div className="flex gap-2 overflow-x-auto w-full lg:w-auto pb-2 lg:pb-0 scrollbar-none">
-            <button onClick={() => setStatusFilter('All Requests')} className={`px-5 py-2.5 rounded-xl text-[13px] font-bold uppercase tracking-wider shadow-sm flex items-center gap-2.5 transition-all ${statusFilter === 'All Requests' ? 'bg-[#113f36] text-white shadow-md' : 'bg-zinc-50 text-zinc-600 hover:bg-zinc-100 border border-zinc-200'}`}>
-              <div className={`w-2 h-2 rounded-full ${statusFilter === 'All Requests' ? 'bg-white' : 'bg-zinc-400'}`}></div>All
-            </button>
-            <button onClick={() => setStatusFilter('Pending')} className={`px-5 py-2.5 rounded-xl text-[13px] font-bold uppercase tracking-wider transition-all flex items-center gap-2.5 border ${statusFilter === 'Pending' ? 'bg-orange-50 text-orange-700 border-orange-200 shadow-sm' : 'bg-zinc-50 text-zinc-600 hover:bg-zinc-100 border-zinc-200'}`}>
-              <div className="w-2 h-2 rounded-full bg-orange-500"></div>Pending
-            </button>
-            <button onClick={() => setStatusFilter('Cancelled')} className={`px-5 py-2.5 rounded-xl text-[13px] font-bold uppercase tracking-wider transition-all flex items-center gap-2.5 border ${statusFilter === 'Cancelled' ? 'bg-red-50 text-red-700 border-red-200 shadow-sm' : 'bg-zinc-50 text-zinc-600 hover:bg-zinc-100 border-zinc-200'}`}>
-              <div className="w-2 h-2 rounded-full bg-red-500"></div>{t('cancelled') || 'Cancelled'}
-            </button>
-            <button onClick={() => setStatusFilter('Reviewing')} className={`px-5 py-2.5 rounded-xl text-[13px] font-bold uppercase tracking-wider transition-all flex items-center gap-2.5 border ${statusFilter === 'Reviewing' ? 'bg-indigo-50 text-indigo-700 border-indigo-200 shadow-sm' : 'bg-zinc-50 text-zinc-600 hover:bg-zinc-100 border-zinc-200'}`}>
-              <div className="w-2 h-2 rounded-full bg-indigo-500"></div>Reviewing
-            </button>
-            <button onClick={() => setStatusFilter('Approved')} className={`px-5 py-2.5 rounded-xl text-[13px] font-bold uppercase tracking-wider transition-all flex items-center gap-2.5 border ${statusFilter === 'Approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm' : 'bg-zinc-50 text-zinc-600 hover:bg-zinc-100 border-zinc-200'}`}>
-              <div className="w-2 h-2 rounded-full bg-emerald-500"></div>Approved
-            </button>
-            <button onClick={() => setStatusFilter('assigning')} className={`px-5 py-2.5 rounded-xl text-[13px] font-bold uppercase tracking-wider transition-all flex items-center gap-2.5 border ${statusFilter === 'assigning' ? 'bg-[#113f36]/10 text-[#113f36] border-[#113f36]/30 shadow-sm' : 'bg-zinc-50 text-zinc-600 hover:bg-zinc-100 border-zinc-200'}`}>
-              <div className="w-2 h-2 rounded-full bg-[#113f36]"></div>Assigning
-            </button>
-            <button onClick={() => setStatusFilter('in_transit')} className={`px-5 py-2.5 rounded-xl text-[13px] font-bold uppercase tracking-wider transition-all flex items-center gap-2.5 border ${statusFilter === 'in_transit' ? 'bg-purple-50 text-purple-700 border-purple-200 shadow-sm' : 'bg-zinc-50 text-zinc-600 hover:bg-zinc-100 border-zinc-200'}`}>
-              <div className="w-2 h-2 rounded-full bg-purple-500"></div>In Transit
-            </button>
-            <button onClick={() => setStatusFilter('delivered')} className={`px-5 py-2.5 rounded-xl text-[13px] font-bold uppercase tracking-wider transition-all flex items-center gap-2.5 border ${statusFilter === 'delivered' ? 'bg-[#113f36]/10 text-[#113f36] border-[#113f36]/30 shadow-sm' : 'bg-zinc-50 text-zinc-600 hover:bg-zinc-100 border-zinc-200'}`}>
-              <div className="w-2 h-2 rounded-full bg-[#113f36] animate-pulse"></div>Delivered
-            </button>
+        <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 border-b border-zinc-100 pb-4">
+          <div className="flex flex-wrap gap-2 w-full xl:w-auto">
+            {[
+              { id: 'All Requests', label: 'All', dot: (active: boolean) => active ? 'bg-white' : 'bg-zinc-400' },
+              { id: 'Pending', label: 'Pending', dot: () => 'bg-orange-500' },
+              { id: 'Cancelled', label: t('cancelled') || 'Cancelled', dot: () => 'bg-red-500' },
+              { id: 'Reviewing', label: 'Reviewing', dot: () => 'bg-indigo-500' },
+              { id: 'Approved', label: 'Approved', dot: () => 'bg-emerald-500' },
+              { id: 'assigning', label: 'Assigning', dot: () => 'bg-[#113f36]' },
+              { id: 'in_transit', label: 'In Transit', dot: () => 'bg-purple-500' },
+              { id: 'delivered', label: 'Delivered', dot: () => 'bg-[#113f36]', pulse: true },
+            ].map(tab => {
+              const isActive = statusFilter === tab.id;
+              return (
+                <button 
+                  key={tab.id}
+                  onClick={() => setStatusFilter(tab.id)} 
+                  className={`px-4 py-2 rounded-xl text-[12px] font-bold uppercase tracking-wider flex items-center gap-2 transition-all ${
+                    isActive 
+                      ? 'bg-[#113f36] text-white shadow-md ring-2 ring-[#113f36]/20 border-transparent' 
+                      : 'bg-zinc-50 text-zinc-600 hover:bg-zinc-100 border border-zinc-200 hover:border-zinc-300'
+                  }`}
+                >
+                  <div className={`w-2 h-2 rounded-full ${tab.dot(isActive)} ${tab.pulse ? 'animate-pulse' : ''}`}></div>
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
           
           <div className="flex gap-2 w-full lg:w-auto">
@@ -2159,7 +2161,7 @@ function AdminSettings() {
   );
 }
 
-import { db } from '../../firebase';
+import { db, auth } from '../../firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 function CouriersIntegrationsHub() {
   const { courierConfigs, updateCourierConfigs } = useApp();
@@ -2245,9 +2247,13 @@ function CouriersIntegrationsHub() {
     try {
       if (selectedCourierId === 'aramex' || selectedCourierId === 'noon') {
         setTestLogs(prev => [...prev, `[INFO] Dispatching test payload to Courier Engine...`]);
+        const token = await auth.currentUser?.getIdToken();
         const response = await fetch('/api/courier/test-connection', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': token ? `Bearer ${token}` : '' 
+          },
           body: JSON.stringify({ 
             courierId: selectedCourierId, 
             credentials: creds, 

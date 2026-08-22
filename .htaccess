@@ -2,6 +2,9 @@ DirectoryIndex index.html
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
+  SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+  RewriteCond %{HTTP:Authorization} ^(.*)
+  RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
   RewriteBase /
   
   # Proxy admin requests to api.php bridge 
@@ -15,4 +18,7 @@ DirectoryIndex index.html
   RewriteRule ^ index.html [L]
 </IfModule>
 RewriteEngine On
+  SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+  RewriteCond %{HTTP:Authorization} ^(.*)
+  RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
 RewriteRule ^api2/(.*)$ api2.php [L,QSA]

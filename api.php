@@ -10,6 +10,10 @@ $nodeUrl = 'http://127.0.0.1:3005' . $forwardUri;
 $method = $_SERVER['REQUEST_METHOD'];
 $headers = function_exists('getallheaders') ? getallheaders() : [];
 $curlHeaders = [];
+if (isset($_SERVER["HTTP_AUTHORIZATION"])) {
+    $headers["Authorization"] = $_SERVER["HTTP_AUTHORIZATION"];
+}
+
 
 foreach ($headers as $key => $value) {
     if (strtolower($key) !== 'host') {

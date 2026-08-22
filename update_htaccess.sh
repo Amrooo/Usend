@@ -1,0 +1,1 @@
+sed -i '' 's/RewriteEngine On/RewriteEngine On\n  SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1\n  RewriteCond %{HTTP:Authorization} ^(.*)\n  RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]/g' .htaccess
