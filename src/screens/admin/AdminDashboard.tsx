@@ -622,80 +622,96 @@ function RequestsHub() {
           <Plus className="w-4 h-4" /> Book Delivery
         </button>
       </div>
-      <div className="bg-white border border-zinc-200 rounded-[2.5rem] p-5 flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 shadow-sm">
-        <div className="flex gap-1.5 overflow-x-auto w-full xl:w-auto pb-2 xl:pb-0 scrollbar-none">
-          <button onClick={() => setStatusFilter('All Requests')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider shadow-sm flex items-center gap-2 transition-colors ${statusFilter === 'All Requests' ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-zinc-400"></div>All</button>
-          <button onClick={() => setStatusFilter('Pending')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Pending' ? 'bg-orange-50 text-orange-655 ring-1 ring-orange-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-orange-400"></div>Pending</button>
-              <button onClick={() => setStatusFilter('Cancelled')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Cancelled' ? 'bg-red-50 text-red-650 ring-1 ring-red-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>{t('cancelled') || 'Cancelled'}</button>
-              <button onClick={() => setStatusFilter('Reviewing')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Reviewing' ? 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>Reviewing</button>
-              <button onClick={() => setStatusFilter('Approved')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'Approved' ? 'bg-[#113f36]/5 text-[#113f36] ring-1 ring-blue-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-[#6d8c55]"></div>Approved</button>
-              <button onClick={() => setStatusFilter('assigning')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'assigning' ? 'bg-[#113f36]/5 text-[#113f36] ring-1 ring-blue-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-[#113f36]"></div>Assigning</button>
-              <button onClick={() => setStatusFilter('in_transit')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'in_transit' ? 'bg-purple-50 text-purple-600 ring-1 ring-purple-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>In Transit</button>
-              <button onClick={() => setStatusFilter('delivered')} className={`px-4 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${statusFilter === 'delivered' ? 'bg-[#113f36]/5 text-blue-705 ring-1 ring-green-200' : 'text-zinc-500 hover:bg-zinc-100'}`}><div className="w-1.5 h-1.5 rounded-full bg-[#113f36] animate-pulse"></div>Delivered</button>
+      <div className="bg-white border border-zinc-200 rounded-2xl p-5 flex flex-col gap-4 shadow-sm mb-6">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border-b border-zinc-100 pb-4">
+          <div className="flex gap-2 overflow-x-auto w-full lg:w-auto pb-2 lg:pb-0 scrollbar-none">
+            <button onClick={() => setStatusFilter('All Requests')} className={`px-5 py-2.5 rounded-xl text-[13px] font-bold uppercase tracking-wider shadow-sm flex items-center gap-2.5 transition-all ${statusFilter === 'All Requests' ? 'bg-[#113f36] text-white shadow-md' : 'bg-zinc-50 text-zinc-600 hover:bg-zinc-100 border border-zinc-200'}`}>
+              <div className={`w-2 h-2 rounded-full ${statusFilter === 'All Requests' ? 'bg-white' : 'bg-zinc-400'}`}></div>All
+            </button>
+            <button onClick={() => setStatusFilter('Pending')} className={`px-5 py-2.5 rounded-xl text-[13px] font-bold uppercase tracking-wider transition-all flex items-center gap-2.5 border ${statusFilter === 'Pending' ? 'bg-orange-50 text-orange-700 border-orange-200 shadow-sm' : 'bg-zinc-50 text-zinc-600 hover:bg-zinc-100 border-zinc-200'}`}>
+              <div className="w-2 h-2 rounded-full bg-orange-500"></div>Pending
+            </button>
+            <button onClick={() => setStatusFilter('Cancelled')} className={`px-5 py-2.5 rounded-xl text-[13px] font-bold uppercase tracking-wider transition-all flex items-center gap-2.5 border ${statusFilter === 'Cancelled' ? 'bg-red-50 text-red-700 border-red-200 shadow-sm' : 'bg-zinc-50 text-zinc-600 hover:bg-zinc-100 border-zinc-200'}`}>
+              <div className="w-2 h-2 rounded-full bg-red-500"></div>{t('cancelled') || 'Cancelled'}
+            </button>
+            <button onClick={() => setStatusFilter('Reviewing')} className={`px-5 py-2.5 rounded-xl text-[13px] font-bold uppercase tracking-wider transition-all flex items-center gap-2.5 border ${statusFilter === 'Reviewing' ? 'bg-indigo-50 text-indigo-700 border-indigo-200 shadow-sm' : 'bg-zinc-50 text-zinc-600 hover:bg-zinc-100 border-zinc-200'}`}>
+              <div className="w-2 h-2 rounded-full bg-indigo-500"></div>Reviewing
+            </button>
+            <button onClick={() => setStatusFilter('Approved')} className={`px-5 py-2.5 rounded-xl text-[13px] font-bold uppercase tracking-wider transition-all flex items-center gap-2.5 border ${statusFilter === 'Approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm' : 'bg-zinc-50 text-zinc-600 hover:bg-zinc-100 border-zinc-200'}`}>
+              <div className="w-2 h-2 rounded-full bg-emerald-500"></div>Approved
+            </button>
+            <button onClick={() => setStatusFilter('assigning')} className={`px-5 py-2.5 rounded-xl text-[13px] font-bold uppercase tracking-wider transition-all flex items-center gap-2.5 border ${statusFilter === 'assigning' ? 'bg-[#113f36]/10 text-[#113f36] border-[#113f36]/30 shadow-sm' : 'bg-zinc-50 text-zinc-600 hover:bg-zinc-100 border-zinc-200'}`}>
+              <div className="w-2 h-2 rounded-full bg-[#113f36]"></div>Assigning
+            </button>
+            <button onClick={() => setStatusFilter('in_transit')} className={`px-5 py-2.5 rounded-xl text-[13px] font-bold uppercase tracking-wider transition-all flex items-center gap-2.5 border ${statusFilter === 'in_transit' ? 'bg-purple-50 text-purple-700 border-purple-200 shadow-sm' : 'bg-zinc-50 text-zinc-600 hover:bg-zinc-100 border-zinc-200'}`}>
+              <div className="w-2 h-2 rounded-full bg-purple-500"></div>In Transit
+            </button>
+            <button onClick={() => setStatusFilter('delivered')} className={`px-5 py-2.5 rounded-xl text-[13px] font-bold uppercase tracking-wider transition-all flex items-center gap-2.5 border ${statusFilter === 'delivered' ? 'bg-[#113f36]/10 text-[#113f36] border-[#113f36]/30 shadow-sm' : 'bg-zinc-50 text-zinc-600 hover:bg-zinc-100 border-zinc-200'}`}>
+              <div className="w-2 h-2 rounded-full bg-[#113f36] animate-pulse"></div>Delivered
+            </button>
           </div>
           
-          <div className="flex flex-col xl:flex-row flex-wrap gap-2 w-full xl:w-auto items-center xl:justify-end mt-2 xl:mt-0">
-               <div className="flex gap-2 w-full md:w-auto">
-                 <input 
-                    type="date" 
-                    value={dateRange.start} 
-                    onChange={(e) => setDateRange(p => ({...p, start: e.target.value}))}
-                    className="bg-zinc-50 border border-zinc-200 rounded-full px-3 py-2 text-xs font-semibold text-zinc-600 outline-none w-full md:w-auto"
-                 />
-                 <span className="text-zinc-400 self-center">-</span>
-                 <input 
-                    type="date" 
-                    value={dateRange.end} 
-                    onChange={(e) => setDateRange(p => ({...p, end: e.target.value}))}
-                    className="bg-zinc-50 border border-zinc-200 rounded-full px-3 py-2 text-xs font-semibold text-zinc-600 outline-none w-full md:w-auto"
-                 />
-               </div>
-               
-               <select
-                 value={sortOrder}
-                 onChange={(e) => setSortOrder(e.target.value as any)}
-                 className="bg-zinc-50 flex-1 md:flex-none border border-zinc-200 rounded-full px-4 py-2 text-xs font-bold text-zinc-650 outline-none cursor-pointer hover:bg-zinc-100 transition-colors w-full md:w-auto"
-               >
-                 <option value="newest">Newest First</option>
-                 <option value="oldest">Oldest First</option>
-               </select>
-
-               <div className="flex flex-col md:flex-row gap-2 w-full xl:w-auto">
-                 <div className="relative w-full md:w-64">
-                   <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400" />
-                   <input 
-                     type="text" 
-                     placeholder="Search express..."
-                     value={expressSearch}
-                     onChange={(e) => setExpressSearch(e.target.value)}
-                     className="w-full bg-zinc-50 border border-zinc-200 rounded-full py-2 pl-9 pr-4 text-xs font-semibold text-zinc-700 placeholder-zinc-400 outline-none focus:border-brand transition-all"
-                   />
-                 </div>
-
-                 <select 
-                   value={carrierFilter} 
-                   onChange={(e) => setCarrierFilter(e.target.value)} 
-                   className="bg-zinc-50 border border-zinc-200 rounded-full px-4 py-2 text-xs font-bold text-zinc-650 outline-none cursor-pointer hover:bg-zinc-100 transition-colors w-full md:w-auto"
-                 >
-                   <option value="All Carriers">{t('all_carriers') || 'All Carriers'}</option>
-                   <option value="aramex">Aramex</option>
-                   <option value="dhl_express">DHL Express</option>
-                   <option value="usend">USend Fleet</option>
-                 </select>
-
-                 <select 
-                   value={channelFilter} 
-                   onChange={(e) => setChannelFilter(e.target.value)} 
-                   className="bg-zinc-50 border border-zinc-200 rounded-full px-4 py-2 text-xs font-bold text-zinc-650 outline-none cursor-pointer hover:bg-zinc-100 transition-colors w-full md:w-auto"
-                 >
-                   <option>All Channels</option>
-                   <option>Merchant Portal</option>
-                   <option>Mobile App</option>
-                   <option>User Portal</option>
-                 </select>
-               </div>
+          <div className="flex gap-2 w-full lg:w-auto">
+             <input 
+                type="date" 
+                value={dateRange.start} 
+                onChange={(e) => setDateRange(p => ({...p, start: e.target.value}))}
+                className="bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-zinc-700 outline-none w-full md:w-auto focus:border-[#113f36] transition-colors"
+             />
+             <span className="text-zinc-400 self-center font-bold">-</span>
+             <input 
+                type="date" 
+                value={dateRange.end} 
+                onChange={(e) => setDateRange(p => ({...p, end: e.target.value}))}
+                className="bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-zinc-700 outline-none w-full md:w-auto focus:border-[#113f36] transition-colors"
+             />
           </div>
         </div>
+        
+        <div className="flex flex-col md:flex-row gap-3 w-full">
+           <div className="relative flex-1">
+             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+             <input 
+               type="text" 
+               placeholder="Search express by ID, phone, or name..."
+               value={expressSearch}
+               onChange={(e) => setExpressSearch(e.target.value)}
+               className="w-full bg-zinc-50 border border-zinc-200 rounded-xl py-3 pl-11 pr-4 text-sm font-semibold text-zinc-800 placeholder-zinc-400 outline-none focus:border-[#113f36] focus:ring-1 focus:ring-[#113f36]/20 transition-all"
+             />
+           </div>
+
+           <select
+             value={sortOrder}
+             onChange={(e) => setSortOrder(e.target.value as any)}
+             className="bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-bold text-zinc-700 outline-none cursor-pointer hover:bg-zinc-100 transition-colors focus:border-[#113f36]"
+           >
+             <option value="newest">Newest First</option>
+             <option value="oldest">Oldest First</option>
+           </select>
+
+           <select 
+             value={carrierFilter} 
+             onChange={(e) => setCarrierFilter(e.target.value)} 
+             className="bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-bold text-zinc-700 outline-none cursor-pointer hover:bg-zinc-100 transition-colors focus:border-[#113f36]"
+           >
+             <option value="All Carriers">{t('all_carriers') || 'All Carriers'}</option>
+             <option value="aramex">Aramex</option>
+             <option value="dhl_express">DHL Express</option>
+             <option value="usend">USend Fleet</option>
+           </select>
+
+           <select 
+             value={channelFilter} 
+             onChange={(e) => setChannelFilter(e.target.value)} 
+             className="bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-bold text-zinc-700 outline-none cursor-pointer hover:bg-zinc-100 transition-colors focus:border-[#113f36]"
+           >
+             <option>All Channels</option>
+             <option>Merchant Portal</option>
+             <option>Mobile App</option>
+             <option>User Portal</option>
+           </select>
+        </div>
+      </div>
 
       {/* UAE Requests Map (Full Area) */}
       <div className="rounded-[3rem] overflow-hidden relative shadow-sm h-[400px] border border-zinc-200/80 z-0 bg-zinc-100 shadow-[0_20px_40px_-20px_rgba(0,0,0,0.1)] animate-in fade-in">
@@ -3536,7 +3552,6 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
             {[
               { id: 'overview', icon: <LayoutDashboard className="w-[17px] h-[17px]" />, label: t('dashboard') || 'Dashboard' },
               { id: 'requests', icon: <Inbox className="w-[17px] h-[17px]" />, label: t('requests_orders') || 'Courier Requests & Orders' },
-              { id: 'batches', icon: <ClipboardList className="w-[17px] h-[17px]" />, label: t('csv_batch_dispatches') || 'CSV Batch Dispatches' },
               { id: 'finance', icon: <Coins className="w-[17px] h-[17px]" />, label: t('ledger_cod_settling') || 'Platform Wallets & Ledger' },
               { id: 'merchants', icon: <Building2 className="w-[17px] h-[17px]" />, label: t('merchant_directory') || 'Merchant Directory' },
               { id: 'users', icon: <UserCircle2 className="w-[17px] h-[17px]" />, label: t('users_directory') || 'Users Directory' },

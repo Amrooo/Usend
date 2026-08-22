@@ -687,7 +687,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const updateCourierConfigs = async (newConfigs: Record<string, CourierIntegrationConfig>) => {
     setCourierConfigs(newConfigs);
     try {
-      await setDoc(doc(db, 'settings', 'courier_configs'), newConfigs);
+      // Strip undefined values which cause Firestore errors
+      const sanitizedConfigs = JSON.parse(JSON.stringify(newConfigs));
+      await setDoc(doc(db, 'settings', 'courier_configs'), sanitizedConfigs);
     } catch (e) {
       console.warn('Firestore courier configs write failed:', e);
     }

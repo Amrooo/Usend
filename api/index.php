@@ -1,7 +1,6 @@
 <?php
 $requestUri = $_SERVER['REQUEST_URI'];
-$forwardUri = str_replace('/api.php', '/api', $requestUri);
-$nodeUrl = 'http://127.0.0.1:3005' . $forwardUri;
+$nodeUrl = 'http://127.0.0.1:3005' . $requestUri;
 
 $method = $_SERVER['REQUEST_METHOD'];
 $headers = function_exists('getallheaders') ? getallheaders() : [];
