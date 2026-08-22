@@ -1302,14 +1302,15 @@ app.post("/api/aramex/:serviceType", async (req, res) => {
     const userClientInfo = payload.ClientInfo || {};
     const isProduction = process.env.ARAMEX_ENV !== "sandbox" && req.headers["x-aramex-env"] !== "sandbox";
     const baseUrl = process.env.ARAMEX_BASE_URL || (isProduction ? "https://ws.aramex.net" : "https://ws.uat.aramex.net");
-    const envUserName = process.env.ARAMEX_USERNAME || "";
-    const envPassword = process.env.ARAMEX_PASSWORD || "";
-    const envAccountNumber = process.env.ARAMEX_ACCOUNT_NUMBER || "";
-    const envAccountPin = process.env.ARAMEX_ACCOUNT_PIN || "";
-    const envAccountEntity = process.env.ARAMEX_ACCOUNT_ENTITY || "DXB";
-    const envAccountCountryCode = process.env.ARAMEX_ACCOUNT_COUNTRY_CODE || "AE";
-    const envSource = process.env.ARAMEX_SOURCE !== void 0 ? Number(process.env.ARAMEX_SOURCE) : 0;
-    const envVersion = process.env.ARAMEX_VERSION || "v1.0";
+    const aramexCreds = serverCourierCredentials?.aramex?.[isProduction ? "productionCreds" : "sandboxCreds"] || {};
+    const envUserName = aramexCreds.username || process.env.ARAMEX_USERNAME || "";
+    const envPassword = aramexCreds.password || process.env.ARAMEX_PASSWORD || "";
+    const envAccountNumber = aramexCreds.accountNumber || process.env.ARAMEX_ACCOUNT_NUMBER || "";
+    const envAccountPin = aramexCreds.accountPin || process.env.ARAMEX_ACCOUNT_PIN || "";
+    const envAccountEntity = aramexCreds.accountEntity || process.env.ARAMEX_ACCOUNT_ENTITY || "DXB";
+    const envAccountCountryCode = aramexCreds.accountCountryCode || process.env.ARAMEX_ACCOUNT_COUNTRY_CODE || "AE";
+    const envSource = aramexCreds.source !== void 0 ? Number(aramexCreds.source) : process.env.ARAMEX_SOURCE !== void 0 ? Number(process.env.ARAMEX_SOURCE) : 0;
+    const envVersion = aramexCreds.version || process.env.ARAMEX_VERSION || "v1.0";
     const isUsingTestCreds = (u) => !u || u === "testingapi@aramex.com";
     const finalUserName = !isUsingTestCreds(userClientInfo.UserName) ? userClientInfo.UserName : envUserName;
     const finalPassword = userClientInfo.Password && userClientInfo.Password !== "R123456789$r" ? userClientInfo.Password : envPassword;
@@ -1383,7 +1384,9 @@ var getNoonBaseUrl = (req) => {
   return req.headers["x-noon-base-url"] || req.query.baseUrl || req.body && req.body.baseUrl || process.env.NOON_API_BASE_URL || "https://food-api-team.noonstg.team";
 };
 var getNoonApiKey = (req) => {
-  const envKey = process.env.NOON_API_KEY;
+  const isProd2 = process.env.NODE_ENV === "production";
+  const noonCreds = serverCourierCredentials?.noon?.[isProd2 ? "productionCreds" : "sandboxCreds"] || {};
+  const envKey = noonCreds.apiKey || process.env.NOON_API_KEY;
   if (envKey) return envKey;
   const clientApiKey = req.headers["x-noon-api-key"] || req.query.apiKey || req.body && req.body.apiKey;
   if (clientApiKey && clientApiKey !== "noon_secret_key_123") return clientApiKey;
@@ -1725,12 +1728,24 @@ app.post("/api/gemini/analyze-item", async (req, res) => {
   }
 });
 var isProd = process.env.NODE_ENV === "production";
+var serverCourierCredentials = null;
 async function startServer() {
   if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY || process.env.FIRESTORE_EMULATOR_HOST) {
     try {
+      dbAdmin.collection("private_settings").doc("courier_credentials").onSnapshot(
+        (docSnap) => {
+          if (docSnap.exists) {
+            serverCourierCredentials = docSnap.data();
+            console.log("[Firestore Sync] Loaded secure courier credentials from private_settings.");
+          }
+        },
+        (err) => {
+          console.error("[Firestore Sync] Failed to read private_settings/courier_credentials:", err.message);
+        }
+      );
       dbAdmin.collection("settings").doc("courier_configs").get().then((docSnap) => {
         if (!docSnap.exists) {
-          const initialConfigs = {
+          const initialPublicConfigs = {
             aramex: {
               id: "aramex",
               name: "Aramex Express",
@@ -1738,7 +1753,20 @@ async function startServer() {
               currentMode: "production",
               baseUrlUat: "ws.aramex.net",
               baseUrlProd: "ws.aramex.net",
-              connectionStatus: "UNTESTED",
+              connectionStatus: "UNTESTED"
+            },
+            noon: {
+              id: "noon",
+              name: "Noon Hyperlocal",
+              status: "Active",
+              currentMode: "sandbox",
+              baseUrlUat: "https://food-api-team.noonstg.team",
+              baseUrlProd: "https://food-api.noon.com",
+              connectionStatus: "UNTESTED"
+            }
+          };
+          const initialPrivateConfigs = {
+            aramex: {
               sandboxCreds: {
                 username: "testingapi@aramex.com",
                 password: "R123456789$r",
@@ -1761,13 +1789,6 @@ async function startServer() {
               }
             },
             noon: {
-              id: "noon",
-              name: "Noon Hyperlocal",
-              status: "Active",
-              currentMode: "sandbox",
-              baseUrlUat: "https://food-api-team.noonstg.team",
-              baseUrlProd: "https://food-api.noon.com",
-              connectionStatus: "UNTESTED",
               sandboxCreds: {
                 apiKey: "noon_secret_key_123",
                 storeId: ""
@@ -1778,7 +1799,12 @@ async function startServer() {
               }
             }
           };
-          dbAdmin.collection("settings").doc("courier_configs").set(initialConfigs).then(() => console.log("[Firestore Seed] Successfully initialized default courier configurations.")).catch((err) => console.error("[Firestore Seed] Failed to set default courier configs:", err.message));
+          dbAdmin.collection("settings").doc("courier_configs").set(initialPublicConfigs).then(() => console.log("[Firestore Seed] Successfully initialized default public courier configurations.")).catch((err) => console.error("[Firestore Seed] Failed to set default public courier configs:", err.message));
+          dbAdmin.collection("private_settings").doc("courier_credentials").get().then((privateSnap) => {
+            if (!privateSnap.exists) {
+              dbAdmin.collection("private_settings").doc("courier_credentials").set(initialPrivateConfigs).then(() => console.log("[Firestore Seed] Successfully initialized default private courier credentials."));
+            }
+          });
         }
       }).catch((err) => {
         console.warn("[Firestore Seed] Failed to read settings/courier_configs:", err.message);
@@ -1828,6 +1854,61 @@ async function startServer() {
   if (isProd) {
     app.use(import_express.default.static(distPath));
     app.use(import_express.default.static(distAdminPath));
+    app.get("/api/internal/test-couriers", async (req, res) => {
+      try {
+        const engine = await getCourierEngine();
+        const noonCredentials = serverCourierCredentials?.noon || {};
+        const aramexCredentials = serverCourierCredentials?.aramex || {};
+        let results = { noon: {}, aramex: {} };
+        if (noonCredentials.test) {
+          const result = await engine.getAdapter("noon").validateCredentials(noonCredentials.test, "sandbox");
+          results.noon.sandbox = result;
+        }
+        if (noonCredentials.production) {
+          const result = await engine.getAdapter("noon").validateCredentials(noonCredentials.production, "production");
+          results.noon.production = result;
+        }
+        if (aramexCredentials.test) {
+          const result = await engine.getAdapter("aramex").validateCredentials(aramexCredentials.test, "sandbox");
+          results.aramex.sandbox = result;
+        }
+        if (aramexCredentials.production) {
+          const result = await engine.getAdapter("aramex").validateCredentials(aramexCredentials.production, "production");
+          results.aramex.production = result;
+        }
+        res.json(results);
+      } catch (e) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+    app.get("/api/internal/collections", async (req, res) => {
+      try {
+        const collections = await getDbAdmin().listCollections();
+        res.json(collections.map((c) => c.id));
+      } catch (e) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+    app.post("/api/internal/delete-collection/:name", async (req, res) => {
+      try {
+        const name = req.params.name;
+        if (name === "users" || name === "webhooks" || name === "private_settings") {
+          return res.status(403).json({ error: "Cannot delete protected collection" });
+        }
+        const db = getDbAdmin();
+        const batch = db.batch();
+        const snapshot = await db.collection(name).get();
+        let count = 0;
+        snapshot.docs.forEach((doc) => {
+          batch.delete(doc.ref);
+          count++;
+        });
+        await batch.commit();
+        res.json({ success: true, count, collection: name });
+      } catch (e) {
+        res.status(500).json({ error: e.message });
+      }
+    });
     app.get("*", (req, res, next) => {
       if (req.path.startsWith("/api")) {
         return next();

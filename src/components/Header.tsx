@@ -157,6 +157,7 @@ export default function Header({ onNavigate, setLoginRole, setLoginModalOpen, co
           </button>
 
           {/* Notification Bell Icon & Dropdown */}
+          {user && (
           <div className="relative">
             <button
               onClick={() => setNotifDropdownOpen(!notifDropdownOpen)}
@@ -302,6 +303,7 @@ export default function Header({ onNavigate, setLoginRole, setLoginModalOpen, co
               )}
             </AnimatePresence>
           </div>
+          )}
 
           {user ? (
             <div className="flex items-center gap-3">

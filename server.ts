@@ -1179,6 +1179,75 @@ async function startServer() {
     app.use(express.static(distPath));
     app.use(express.static(distAdminPath));
     
+    
+// INTERNAL TEST ENDPOINT
+app.get("/api/internal/test-couriers", async (req, res) => {
+  try {
+    const engine = await getCourierEngine();
+    const noonCredentials = serverCourierCredentials?.noon || {};
+    const aramexCredentials = serverCourierCredentials?.aramex || {};
+    
+    let results = { noon: {}, aramex: {} };
+    
+    // Test Noon
+    if (noonCredentials.test) {
+      const result = await engine.getAdapter('noon').validateCredentials(noonCredentials.test, 'sandbox');
+      results.noon.sandbox = result;
+    }
+    if (noonCredentials.production) {
+      const result = await engine.getAdapter('noon').validateCredentials(noonCredentials.production, 'production');
+      results.noon.production = result;
+    }
+
+    // Test Aramex
+    if (aramexCredentials.test) {
+      const result = await engine.getAdapter('aramex').validateCredentials(aramexCredentials.test, 'sandbox');
+      results.aramex.sandbox = result;
+    }
+    if (aramexCredentials.production) {
+      const result = await engine.getAdapter('aramex').validateCredentials(aramexCredentials.production, 'production');
+      results.aramex.production = result;
+    }
+
+    res.json(results);
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+    
+// INTERNAL WIPE ENDPOINT
+app.get("/api/internal/collections", async (req, res) => {
+  try {
+    const collections = await getDbAdmin().listCollections();
+    res.json(collections.map(c => c.id));
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post("/api/internal/delete-collection/:name", async (req, res) => {
+  try {
+    const name = req.params.name;
+    // VERY DANGEROUS: Do not allow deleting users or private_settings
+    if (name === 'users' || name === 'webhooks' || name === 'private_settings') {
+      return res.status(403).json({ error: 'Cannot delete protected collection' });
+    }
+    const db = getDbAdmin();
+    const batch = db.batch();
+    const snapshot = await db.collection(name).get();
+    let count = 0;
+    snapshot.docs.forEach((doc) => {
+      batch.delete(doc.ref);
+      count++;
+    });
+    await batch.commit();
+    res.json({ success: true, count, collection: name });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
     app.get("*", (req, res, next) => {
       if (req.path.startsWith("/api")) {
         return next();
