@@ -1817,7 +1817,7 @@ async function startServer() {
     }
   }
   const distPath = import_path2.default.join(process.cwd(), "dist");
-  const distAdminPath = import_path2.default.join(process.cwd(), "dist-admin");
+  const distAdminPath = import_path2.default.join(process.cwd(), "usendadmin2026");
   if (!isProd) {
     const fs3 = await import("fs");
     const vite = await (0, import_vite.createServer)({
@@ -1917,6 +1917,7 @@ async function startServer() {
         return next();
       }
       if (req.path.startsWith("/usendadmin2026")) {
+        res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
         return res.sendFile(import_path2.default.join(distAdminPath, "admin.html"));
       }
       res.sendFile(import_path2.default.join(distPath, "index.html"));
