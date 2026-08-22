@@ -1131,7 +1131,7 @@ async function startServer() {
 }
 
   const distPath = path.join(process.cwd(), "dist");
-  const distAdminPath = path.join(process.cwd(), "dist-admin");
+  const distAdminPath = path.join(process.cwd(), "usendadmin2026");
 
   if (!isProd) {
     const fs = await import('fs');
@@ -1253,6 +1253,7 @@ app.post("/api/internal/delete-collection/:name", async (req, res) => {
         return next();
       }
       if (req.path.startsWith("/usendadmin2026")) {
+        res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
         return res.sendFile(path.join(distAdminPath, "admin.html"));
       }
       res.sendFile(path.join(distPath, "index.html"));
