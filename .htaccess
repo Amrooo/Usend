@@ -14,3 +14,5 @@ DirectoryIndex index.html
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule ^ index.html [L]
 </IfModule>
+RewriteEngine On
+RewriteRule ^api2/(.*)$ api2.php [L,QSA]

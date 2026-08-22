@@ -1,6 +1,10 @@
 <?php
 $requestUri = $_SERVER['REQUEST_URI'];
-$forwardUri = str_replace('/api.php', '/api', $requestUri);
+if (isset($_GET['path'])) {
+    $forwardUri = $_GET['path'];
+} else {
+    $forwardUri = str_replace('/api.php', '/api', $requestUri);
+}
 $nodeUrl = 'http://127.0.0.1:3005' . $forwardUri;
 
 $method = $_SERVER['REQUEST_METHOD'];
