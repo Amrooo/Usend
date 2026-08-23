@@ -66,13 +66,13 @@ export interface ShipmentParams {
 
 export const defaultAramexCreds: CourierCredentials = {
   version: "v1.0",
-  accountNumber: "",
-  accountPin: "",
+  accountNumber: "75788705",
+  accountPin: "217147",
   accountEntity: "DXB",
   accountCountryCode: "AE",
   source: "0",
-  username: "",
-  password: "",
+  username: "care@trsh.ae",
+  password: "#Usend2027",
   apiEnv: 'production'
 };
 

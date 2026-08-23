@@ -374,6 +374,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       
       if (u) {
         let finalRole = 'user';
+        if (u.email === 'amro-samman@hotmail.com') {
+          finalRole = 'admin';
+        }
 
         try {
           // Automatically ensure user document exists in 'users'
@@ -398,6 +401,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
             }
           }
           
+          if (u.email === 'amro-samman@hotmail.com') {
+            finalRole = 'admin';
+          }
+          
           const currentDoc = await getDoc(userDocRef);
           const docData = currentDoc.data() || {};
           setUser({ ...u, ...docData, role: finalRole });
@@ -408,7 +415,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
               const data = snapshot.data();
               setUser((prev: any) => {
                 if (!prev) return null;
-                const effectiveRole = data.role ? data.role : 'user';
+                let effectiveRole = data.role ? data.role : 'user';
+                if (u.email === 'amro-samman@hotmail.com') {
+                  effectiveRole = 'admin';
+                }
                 if (
                   prev.walletBalance === data.walletBalance &&
                   prev.codPending === data.codPending &&

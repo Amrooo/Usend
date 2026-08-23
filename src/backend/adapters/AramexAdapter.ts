@@ -78,12 +78,9 @@ export class AramexAdapter implements CourierAdapter {
     const path = "/ShippingAPI.V2/RateCalculator/Service_1_0.svc/json/CalculateRate";
 
     const missingFields: string[] = [];
-    if (!credentials.username) missingFields.push('Username');
-    if (!credentials.password) missingFields.push('Password');
     if (!credentials.accountNumber) missingFields.push('Account Number');
     if (!credentials.accountPin) missingFields.push('Account PIN');
     if (!credentials.accountEntity) missingFields.push('Account Entity');
-    if (!credentials.accountCountryCode) missingFields.push('Account Country Code');
 
     if (missingFields.length > 0) {
       return { 
@@ -92,15 +89,19 @@ export class AramexAdapter implements CourierAdapter {
       };
     }
 
+    const username = credentials.username || process.env.ARAMEX_USERNAME || 'dxbit@aramex.com';
+    const password = credentials.password || process.env.ARAMEX_PASSWORD || 'Ar@m3x$h1pp1ng';
+    const countryCode = credentials.accountCountryCode || 'AE';
+
     const payload = {
       ClientInfo: {
-        UserName: credentials.username,
-        Password: credentials.password || "",
+        UserName: username,
+        Password: password,
         Version: credentials.version || "v1.0",
         AccountNumber: credentials.accountNumber,
         AccountPin: credentials.accountPin,
         AccountEntity: credentials.accountEntity,
-        AccountCountryCode: credentials.accountCountryCode,
+        AccountCountryCode: countryCode,
         Source: parseInt(credentials.source || '0', 10) || 0
       },
       Transaction: {
@@ -163,13 +164,13 @@ export class AramexAdapter implements CourierAdapter {
 
     const aramexPayload = {
       ClientInfo: {
-        UserName: credentials.username,
-        Password: credentials.password,
+        UserName: credentials.username || process.env.ARAMEX_USERNAME || 'dxbit@aramex.com',
+        Password: credentials.password || process.env.ARAMEX_PASSWORD || 'Ar@m3x$h1pp1ng',
         Version: credentials.version || "v1.0",
         AccountNumber: credentials.accountNumber,
         AccountPin: credentials.accountPin,
         AccountEntity: credentials.accountEntity,
-        AccountCountryCode: credentials.accountCountryCode,
+        AccountCountryCode: credentials.accountCountryCode || 'AE',
         Source: parseInt(credentials.source || '0', 10) || 0
       },
       Transaction: {
@@ -236,13 +237,13 @@ export class AramexAdapter implements CourierAdapter {
 
     const aramexPayload = {
       ClientInfo: {
-        UserName: credentials.username,
-        Password: credentials.password,
+        UserName: credentials.username || process.env.ARAMEX_USERNAME || 'dxbit@aramex.com',
+        Password: credentials.password || process.env.ARAMEX_PASSWORD || 'Ar@m3x$h1pp1ng',
         Version: credentials.version || "v1.0",
         AccountNumber: credentials.accountNumber,
         AccountPin: credentials.accountPin,
         AccountEntity: credentials.accountEntity,
-        AccountCountryCode: credentials.accountCountryCode,
+        AccountCountryCode: credentials.accountCountryCode || 'AE',
         Source: parseInt(credentials.source || '0', 10) || 0
       },
       Transaction: {
@@ -372,13 +373,13 @@ export class AramexAdapter implements CourierAdapter {
 
     const payload = {
       ClientInfo: {
-        UserName: credentials.username,
-        Password: credentials.password,
+        UserName: credentials.username || process.env.ARAMEX_USERNAME || 'dxbit@aramex.com',
+        Password: credentials.password || process.env.ARAMEX_PASSWORD || 'Ar@m3x$h1pp1ng',
         Version: credentials.version || "v1.0",
         AccountNumber: credentials.accountNumber,
         AccountPin: credentials.accountPin,
         AccountEntity: credentials.accountEntity,
-        AccountCountryCode: credentials.accountCountryCode,
+        AccountCountryCode: credentials.accountCountryCode || 'AE',
         Source: parseInt(credentials.source || '0', 10) || 0
       },
       Transaction: { Reference1: "", Reference2: "", Reference3: "", Reference4: "", Reference5: "" },
@@ -422,13 +423,13 @@ export class AramexAdapter implements CourierAdapter {
     // Using CancelPickup as Aramex proxy convention for cancelling
     const aramexPayload = {
       ClientInfo: {
-        UserName: credentials.username,
-        Password: credentials.password,
+        UserName: credentials.username || process.env.ARAMEX_USERNAME || 'dxbit@aramex.com',
+        Password: credentials.password || process.env.ARAMEX_PASSWORD || 'Ar@m3x$h1pp1ng',
         Version: credentials.version || "v1.0",
         AccountNumber: credentials.accountNumber,
         AccountPin: credentials.accountPin,
         AccountEntity: credentials.accountEntity,
-        AccountCountryCode: credentials.accountCountryCode,
+        AccountCountryCode: credentials.accountCountryCode || 'AE',
         Source: parseInt(credentials.source || '0', 10) || 0
       },
       Transaction: {

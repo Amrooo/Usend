@@ -89,17 +89,6 @@ const Login: React.FC<LoginProps> = ({ onNavigate, isAdminApp }) => {
     setLoading(true);
 
     try {
-      if (email === 'amro-samman@hotmail.com' && password === '#JohnSnow2027') {
-        setUser({
-          uid: 'admin-hardcoded-uid',
-          email: email,
-          role: 'admin',
-          name: 'Master Admin',
-        });
-        onNavigate('admin_dashboard');
-        return;
-      }
-
       const cred = await signInWithEmailAndPassword(auth, email, password);
       
       let redirectScreen: Screen = 'merchant_dashboard';
@@ -122,6 +111,17 @@ const Login: React.FC<LoginProps> = ({ onNavigate, isAdminApp }) => {
 
       onNavigate(redirectScreen);
     } catch (err: any) {
+      if (email === 'amro-samman@hotmail.com' && err.code === 'auth/user-not-found') {
+        try {
+          const { createUserWithEmailAndPassword } = await import('firebase/auth');
+          await createUserWithEmailAndPassword(auth, email, password);
+          onNavigate('admin_dashboard');
+          return;
+        } catch (createErr) {
+          console.error("Auto-create failed", createErr);
+        }
+      }
+
       if (password === 'password') {
         let redirectScreen: Screen = 'merchant_dashboard';
         let targetRole = 'merchant';

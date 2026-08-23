@@ -262,17 +262,18 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
   const [estWeight, setEstWeight] = useState(5);
   const [estWidth, setEstWidth] = useState(30);
   const [estLength, setEstLength] = useState(30);
+  const [estHeight, setEstHeight] = useState(30);
   
   const [calculating, setCalculating] = useState(false);
-  const [estimateResult, setEstimateResult] = useState<{
-    calculated: boolean;
+  const [estimateResults, setEstimateResults] = useState<{
+    courier: string;
     basePrice: number;
     weightSurcharge: number;
     volumeSurcharge: number;
     totalPrice: number;
     duration: string;
-    routeType: 'Domestic Express' | 'Express Road' | 'Local Messenger';
-  } | null>(null);
+    routeType: string;
+  }[] | null>(null);
 
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
 
@@ -1176,7 +1177,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 mt-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
               <div>
                 <label className="text-[11px] uppercase tracking-wider text-slate-350 font-black block mb-2">{content.pricingWeight}</label>
                 <input 
@@ -1204,6 +1205,15 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                   className="w-full h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:border-[#113f36] outline-none transition-all"
                 />
               </div>
+              <div>
+                <label className="text-[11px] uppercase tracking-wider text-slate-350 font-black block mb-2">Height (cm)</label>
+                <input 
+                  type="number"
+                  value={estHeight}
+                  onChange={(e) => setEstHeight(Number(e.target.value))}
+                  className="w-full h-12 bg-white/5 border border-white/10 rounded-xl px-4 text-xs font-semibold text-white focus:border-[#113f36] outline-none transition-all"
+                />
+              </div>
             </div>
 
             <button 
@@ -1212,18 +1222,64 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 setTimeout(() => {
                   setCalculating(false);
                   const isInterEmirate = estSource !== estTarget;
-                  const baseVal = isInterEmirate ? 25 : 15;
-                  const weightSur = estWeight * 1.5;
-                  const volSur = ((estWidth * estLength) / 5000) * 1.0;
-                  setEstimateResult({
-                    calculated: true,
-                    basePrice: baseVal,
-                    weightSurcharge: weightSur,
-                    volumeSurcharge: volSur,
-                    totalPrice: baseVal + weightSur + volSur,
-                    duration: isInterEmirate ? '24-48 Hours Express Transit' : '2-4 Hours Local Messenger Delivery',
-                    routeType: isInterEmirate ? 'Express Road' : 'Local Messenger'
+                  const volWeight = (estWidth * estLength * estHeight) / 5000;
+                  const chargeableWeight = Math.max(estWeight, volWeight);
+                  
+                  const results = [];
+                  
+                  // Noon (Standard E-commerce)
+                  let noonBase = isInterEmirate ? 18 : 14;
+                  let noonSurcharge = chargeableWeight > 5 ? (chargeableWeight - 5) * 1.0 : 0;
+                  results.push({
+                    courier: 'Noon',
+                    basePrice: noonBase,
+                    weightSurcharge: noonSurcharge,
+                    volumeSurcharge: 0,
+                    totalPrice: noonBase + noonSurcharge,
+                    duration: 'Same-day / Next-day',
+                    routeType: isInterEmirate ? 'Express Road' : 'Local E-commerce'
                   });
+
+                  // Aramex (Express)
+                  let aramexBase = isInterEmirate ? 25 : 18;
+                  let aramexSurcharge = chargeableWeight > 5 ? (chargeableWeight - 5) * 1.5 : 0;
+                  results.push({
+                    courier: 'Aramex',
+                    basePrice: aramexBase,
+                    weightSurcharge: aramexSurcharge,
+                    volumeSurcharge: 0,
+                    totalPrice: aramexBase + aramexSurcharge,
+                    duration: '24-48 Hours Transit',
+                    routeType: isInterEmirate ? 'Domestic Express' : 'Local Express'
+                  });
+
+                  // FedEx (Standard)
+                  let fedexBase = isInterEmirate ? 28 : 22;
+                  let fedexSurcharge = chargeableWeight > 5 ? (chargeableWeight - 5) * 2.0 : 0;
+                  results.push({
+                    courier: 'FedEx',
+                    basePrice: fedexBase,
+                    weightSurcharge: fedexSurcharge,
+                    volumeSurcharge: 0,
+                    totalPrice: fedexBase + fedexSurcharge,
+                    duration: '1-2 Days Standard',
+                    routeType: 'Domestic Standard'
+                  });
+
+                  // DHL (Premium Express)
+                  let dhlBase = isInterEmirate ? 45 : 30;
+                  let dhlSurcharge = chargeableWeight > 3 ? (chargeableWeight - 3) * 2.5 : 0;
+                  results.push({
+                    courier: 'DHL',
+                    basePrice: dhlBase,
+                    weightSurcharge: dhlSurcharge,
+                    volumeSurcharge: 0,
+                    totalPrice: dhlBase + dhlSurcharge,
+                    duration: isInterEmirate ? 'Next-day Premium' : '2-4 Hours Messenger',
+                    routeType: 'Premium Express'
+                  });
+
+                  setEstimateResults(results.sort((a, b) => a.totalPrice - b.totalPrice));
                 }, 1200);
               }}
               className="w-full h-13 bg-[#113f36] hover:bg-[#0d3029] text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-md mt-8 flex items-center justify-center gap-2 cursor-pointer"
@@ -1242,22 +1298,50 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
             </button>
 
             <AnimatePresence>
-              {estimateResult && !calculating && (
+              {estimateResults && !calculating && (
                 <motion.div 
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  className="mt-8 pt-8 border-t border-white/10 grid grid-cols-1 md:grid-cols-2 gap-6 text-white"
+                  className="mt-8 pt-8 border-t border-white/10 space-y-4"
                 >
-                  <div className="space-y-3">
-                    <span className="text-[11px] font-black uppercase text-[#6d8c55] tracking-wider">Calculated Results</span>
-                    <h4 className="text-2xl font-black">{estimateResult.totalPrice.toFixed(2)} AED</h4>
-                    <p className="text-xs font-bold text-slate-450">{estimateResult.duration}</p>
-                  </div>
-                  <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-[12px] font-semibold text-slate-300 space-y-2">
-                    <div className="flex justify-between"><span>Base Rate:</span><span>{estimateResult.basePrice} AED</span></div>
-                    <div className="flex justify-between"><span>Weight Surcharge:</span><span>{estimateResult.weightSurcharge.toFixed(2)} AED</span></div>
-                    <div className="flex justify-between"><span>Volume Metric Charge:</span><span>{estimateResult.volumeSurcharge.toFixed(2)} AED</span></div>
+                  <span className="text-[11px] font-black uppercase text-[#6d8c55] tracking-wider block text-start">Calculated Real-Time Rates</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {estimateResults.map((result, idx) => {
+                      let tagColor = 'bg-[#113f36]/20 text-[#6d8c55] border-[#113f36]';
+                      if (result.courier === 'Noon') tagColor = 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
+                      if (result.courier === 'Aramex') tagColor = 'bg-red-500/10 text-red-500 border-red-500/20';
+                      if (result.courier === 'DHL') tagColor = 'bg-orange-500/10 text-orange-400 border-orange-500/20';
+                      if (result.courier === 'FedEx') tagColor = 'bg-purple-500/10 text-purple-400 border-purple-500/20';
+                      
+                      return (
+                        <div key={idx} className={`bg-white/5 border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-colors flex flex-col justify-between shadow-xl ${idx === 0 ? 'ring-1 ring-[#6d8c55] shadow-[#113f36]/40 shadow-lg' : ''}`}>
+                          <div>
+                            <div className="flex items-center justify-between mb-4">
+                              <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-md border ${tagColor}`}>
+                                {result.courier}
+                              </span>
+                              {idx === 0 && <span className="text-[9px] uppercase font-black tracking-widest text-[#6d8c55] bg-[#113f36]/40 px-2 py-1 rounded-full">Best Value</span>}
+                            </div>
+                            <h4 className="text-2xl font-black text-white">{result.totalPrice.toFixed(2)} AED</h4>
+                            <p className="text-[11px] font-bold text-slate-450 mt-1">{result.duration}</p>
+                          </div>
+                          
+                          <div className="mt-4 pt-4 border-t border-white/10 space-y-1">
+                            <div className="flex justify-between text-[10px] font-semibold text-slate-350">
+                              <span>Base Rate</span>
+                              <span>{result.basePrice.toFixed(2)}</span>
+                            </div>
+                            {result.weightSurcharge > 0 && (
+                              <div className="flex justify-between text-[10px] font-semibold text-slate-350">
+                                <span>Vol/Wt Surcharge</span>
+                                <span>+{result.weightSurcharge.toFixed(2)}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </motion.div>
               )}

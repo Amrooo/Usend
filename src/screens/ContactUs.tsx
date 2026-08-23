@@ -287,27 +287,27 @@ const ContactUs = ({ onNavigate }: LandingPageProps) => {
   const heroSlides = [
     {
       type: 'image',
-      image: uaeFlag,
-      titleEn: 'Proudly serving businesses across all of the UAE',
-      titleAr: 'نفخر بخدمة الشركات في جميع أنحاء دولة الإمارات العربية المتحدة',
-      descEn: 'With state-of-the-art logistics infrastructure, we make the impossible possible.',
-      descAr: 'من خلال البنية التحتية اللوجستية الحديثة، نجعل المستحيل ممكناً.',
-    },
-    {
-      type: 'video',
-      video: heroVideo,
-      titleEn: 'Smart shipping infrastructure built for tomorrow',
-      titleAr: 'بنية تحتية للشحن الذكي مبنية للمستقبل',
-      descEn: 'Optimize your logistics lifecycle with direct API and driver-companion connections.',
-      descAr: 'حسن دورة حياة الخدمات اللوجستية الخاصة بك مع الاتصال المباشر للواجهة البرمجية والسائق.',
+      image: heroTruck,
+      titleEn: 'We Are Here To Help',
+      titleAr: 'نحن هنا لمساعدتك',
+      descEn: 'Our support team is available 24/7 to answer your inquiries and resolve any issues.',
+      descAr: 'فريق الدعم لدينا متاح على مدار الساعة للإجابة على استفساراتك وحل أي مشكلات.',
     },
     {
       type: 'image',
-      image: ctaCargoShip,
-      titleEn: 'Taking your cargo further, faster, and more securely',
-      titleAr: 'نأخذ شحنتك إلى أبعد من ذلك، أسرع، وبأمان أكبر',
-      descEn: 'We are your dependable partner for delivering your precious items and ensuring your products reach their destination safely.',
-      descAr: 'نحن شريكك الموثوق به لتسليم أغراضك الثمينة وضمان وصول منتجاتك إلى وجهتها بأمان.',
+      image: sectorContainer,
+      titleEn: 'Global Support Network',
+      titleAr: 'شبكة دعم عالمية',
+      descEn: 'Reach out to our experts across various logistics sectors.',
+      descAr: 'تواصل مع خبرائنا في مختلف القطاعات اللوجستية.',
+    },
+    {
+      type: 'image',
+      image: shipmentImg,
+      titleEn: 'Track & Resolve',
+      titleAr: 'تتبع وحل',
+      descEn: 'Need help with a specific shipment? Contact our dedicated tracking support.',
+      descAr: 'هل تحتاج إلى مساعدة في شحنة معينة؟ اتصل بدعم التتبع المخصص لدينا.',
     }
   ];
 
@@ -466,43 +466,153 @@ const ContactUs = ({ onNavigate }: LandingPageProps) => {
       
       <div className="w-full relative z-10 bg-white px-6 md:px-16 py-4 pb-0">
         <div className="relative w-full h-[400px] md:h-[500px] rounded-[2rem] overflow-hidden shadow-sm flex flex-col items-center justify-center text-center">
-          {/* Background Image */}
-          <img 
-            src="/src/assets/contact-us.png" 
-            alt="Contact Support" 
-            className="absolute inset-0 w-full h-full object-cover select-none"
-          />
+          {/* Background Slider */}
+          <AnimatePresence mode="wait">
+            {heroSlides[heroSlideIdx].type === 'video' ? (
+              <motion.video
+                key={heroSlideIdx}
+                src={heroSlides[heroSlideIdx].video}
+                autoPlay
+                loop
+                muted
+                playsInline
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 1.0, ease: 'easeOut' }}
+                style={{ y: yParallax }}
+                className="absolute -top-[5%] inset-x-0 w-full h-[115%] object-cover object-top select-none"
+              />
+            ) : (
+              <motion.img
+                key={heroSlideIdx}
+                src={heroSlides[heroSlideIdx].image}
+                alt="Contact Support"
+                referrerPolicy="no-referrer"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 1.0, ease: 'easeOut' }}
+                style={{ y: yParallax }}
+                className="absolute -top-[5%] inset-x-0 w-full h-[115%] object-cover object-top select-none"
+              />
+            )}
+          </AnimatePresence>
           
           {/* Overlay Gradient */}
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-900/50 to-slate-900/30 pointer-events-none"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-900/60 to-slate-900/40 pointer-events-none"></div>
 
           {/* Content */}
-          <div className="relative z-10 px-6 max-w-4xl mx-auto pt-16">
-            <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tight text-white mb-6 drop-shadow-lg">
-              {isRTL ? 'اتصل بنا' : 'Contact Us'}
-            </h1>
-            <p className="text-lg text-slate-200 max-w-2xl mx-auto font-medium leading-relaxed drop-shadow-md">
-              {isRTL 
-                ? 'فريق الدعم متاح على مدار الساعة للإجابة على استفساراتكم.' 
-                : 'Our support team is available 24/7 to answer your inquiries.'}
-            </p>
+          <div className="absolute inset-0 flex flex-col justify-center px-6 md:px-24 z-10 max-w-5xl pt-16">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={heroSlideIdx}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.8, ease: 'easeOut' }}
+                className="text-center md:text-start"
+              >
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-white mb-6 drop-shadow-lg leading-tight">
+                  {isRTL ? heroSlides[heroSlideIdx].titleAr : heroSlides[heroSlideIdx].titleEn}
+                </h1>
+                <p className="text-lg text-slate-200 md:max-w-2xl font-medium leading-relaxed drop-shadow-md">
+                  {isRTL ? heroSlides[heroSlideIdx].descAr : heroSlides[heroSlideIdx].descEn}
+                </p>
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Slider Dots */}
+            <div className="absolute bottom-10 left-6 md:left-24 flex items-center justify-center md:justify-start w-full md:w-auto gap-2 z-20">
+              {heroSlides.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setHeroSlideIdx(idx)}
+                  className={`w-12 h-1.5 rounded-full transition-all cursor-pointer ${idx === heroSlideIdx ? 'bg-[#113f36]' : 'bg-white/30 hover:bg-white/50'}`}
+                  aria-label={`Go to slide ${idx + 1}`}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
       <div className="w-full relative z-10 bg-white px-6 md:px-16 py-16 flex flex-col items-center justify-center">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl text-start">
-          <div className="bg-slate-50 p-8 rounded-3xl border border-slate-100 shadow-sm">
-            <h3 className="text-xl font-bold mb-4 text-slate-900">{isRTL ? 'المقر الرئيسي' : 'Headquarters'}</h3>
-            <p className="text-slate-500 mb-2">Dubai Silicon Oasis, UAE</p>
-            <p className="text-slate-500 mb-2">+971 4 123 4567</p>
-            <p className="text-slate-500">support@usend.com</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl text-start">
+          <div className="flex flex-col gap-8">
+            <div className="bg-slate-50 p-8 rounded-3xl border border-slate-100 shadow-sm flex-1">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-full bg-[#113f36]/10 flex items-center justify-center">
+                  <MapPin className="w-5 h-5 text-[#113f36]" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900">{isRTL ? 'المقر الرئيسي' : 'Headquarters'}</h3>
+              </div>
+              <p className="text-slate-600 mb-3 font-medium flex items-center gap-2">
+                <Building className="w-4 h-4 text-slate-400" />
+                Dubai Silicon Oasis, UAE
+              </p>
+              <p className="text-slate-600 mb-3 font-medium flex items-center gap-2">
+                <Phone className="w-4 h-4 text-slate-400" />
+                +971 4 123 4567
+              </p>
+              <p className="text-slate-600 font-medium flex items-center gap-2">
+                <Mail className="w-4 h-4 text-slate-400" />
+                support@usend.com
+              </p>
+            </div>
+            
+            <div className="bg-[#113f36] text-white p-8 rounded-3xl shadow-sm flex-1 relative overflow-hidden">
+              <div className="absolute -right-10 -bottom-10 opacity-10">
+                <Globe2 className="w-40 h-40" />
+              </div>
+              <h3 className="text-xl font-bold mb-4">{isRTL ? 'ساعات العمل' : 'Support Hours'}</h3>
+              <p className="mb-2 text-white/80">{isRTL ? 'نحن متاحون لخدمتكم' : 'We are available to serve you'}</p>
+              <ul className="space-y-2 mt-4 font-medium">
+                <li className="flex justify-between border-b border-white/20 pb-2">
+                  <span>{isRTL ? 'الاثنين - الجمعة' : 'Monday - Friday'}</span>
+                  <span>9:00 AM - 6:00 PM</span>
+                </li>
+                <li className="flex justify-between border-b border-white/20 pb-2">
+                  <span>{isRTL ? 'السبت' : 'Saturday'}</span>
+                  <span>10:00 AM - 4:00 PM</span>
+                </li>
+                <li className="flex justify-between pb-2">
+                  <span>{isRTL ? 'الأحد' : 'Sunday'}</span>
+                  <span>{isRTL ? 'مغلق' : 'Closed'}</span>
+                </li>
+              </ul>
+            </div>
           </div>
-          <div className="bg-slate-50 p-8 rounded-3xl border border-slate-100 shadow-sm">
-            <h3 className="text-xl font-bold mb-4 text-slate-900">{isRTL ? 'أرسل رسالة' : 'Send a Message'}</h3>
-            <input type="text" placeholder={isRTL ? 'الاسم' : 'Name'} className="w-full mb-4 p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#113f36]" />
-            <input type="email" placeholder={isRTL ? 'البريد الإلكتروني' : 'Email'} className="w-full mb-4 p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#113f36]" />
-            <button className="w-full py-3 bg-[#113f36] hover:bg-[#0d3029] text-white rounded-xl font-bold transition-colors">{isRTL ? 'إرسال' : 'Submit'}</button>
+          
+          <div className="bg-slate-50 p-8 rounded-3xl border border-slate-100 shadow-sm h-full flex flex-col">
+            <h3 className="text-xl font-bold mb-6 text-slate-900">{isRTL ? 'أرسل رسالة' : 'Send a Message'}</h3>
+            <div className="space-y-4 flex-1">
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">{isRTL ? 'الاسم الكامل' : 'Full Name'}</label>
+                <input type="text" placeholder={isRTL ? 'الاسم' : 'Name'} className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#113f36] bg-white transition-all" />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">{isRTL ? 'البريد الإلكتروني' : 'Email Address'}</label>
+                <input type="email" placeholder={isRTL ? 'البريد الإلكتروني' : 'Email'} className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#113f36] bg-white transition-all" />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">{isRTL ? 'الموضوع' : 'Subject'}</label>
+                <select className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#113f36] bg-white text-slate-600 transition-all">
+                  <option value="">{isRTL ? 'اختر الموضوع' : 'Select a topic'}</option>
+                  <option value="tracking">{isRTL ? 'تتبع الشحنة' : 'Shipment Tracking'}</option>
+                  <option value="billing">{isRTL ? 'الفواتير' : 'Billing Inquiry'}</option>
+                  <option value="partnership">{isRTL ? 'الشراكة' : 'Partnership'}</option>
+                  <option value="other">{isRTL ? 'أخرى' : 'Other'}</option>
+                </select>
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm font-bold text-slate-700 mb-1">{isRTL ? 'الرسالة' : 'Message'}</label>
+                <textarea rows={4} placeholder={isRTL ? 'كيف يمكننا مساعدتك؟' : 'How can we help you?'} className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#113f36] bg-white transition-all resize-none"></textarea>
+              </div>
+            </div>
+            <button className="w-full mt-6 py-4 bg-[#113f36] hover:bg-[#0d3029] text-white rounded-xl font-bold transition-all shadow-md flex items-center justify-center gap-2">
+              {isRTL ? 'إرسال الرسالة' : 'Submit Message'}
+            </button>
           </div>
         </div>
       </div>

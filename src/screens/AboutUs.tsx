@@ -287,27 +287,27 @@ const AboutUs = ({ onNavigate }: LandingPageProps) => {
   const heroSlides = [
     {
       type: 'image',
-      image: uaeFlag,
-      titleEn: 'Proudly serving businesses across all of the UAE',
-      titleAr: 'نفخر بخدمة الشركات في جميع أنحاء دولة الإمارات العربية المتحدة',
-      descEn: 'With state-of-the-art logistics infrastructure, we make the impossible possible.',
-      descAr: 'من خلال البنية التحتية اللوجستية الحديثة، نجعل المستحيل ممكناً.',
-    },
-    {
-      type: 'video',
-      video: heroVideo,
-      titleEn: 'Smart shipping infrastructure built for tomorrow',
-      titleAr: 'بنية تحتية للشحن الذكي مبنية للمستقبل',
-      descEn: 'Optimize your logistics lifecycle with direct API and driver-companion connections.',
-      descAr: 'حسن دورة حياة الخدمات اللوجستية الخاصة بك مع الاتصال المباشر للواجهة البرمجية والسائق.',
+      image: ctaCargoShip,
+      titleEn: 'Your Logistics Partner',
+      titleAr: 'شريكك اللوجستي',
+      descEn: 'Connecting you with the best delivery networks across the UAE.',
+      descAr: 'نربطك بأفضل شبكات التوصيل في جميع أنحاء الإمارات.',
     },
     {
       type: 'image',
-      image: ctaCargoShip,
-      titleEn: 'Taking your cargo further, faster, and more securely',
-      titleAr: 'نأخذ شحنتك إلى أبعد من ذلك، أسرع، وبأمان أكبر',
-      descEn: 'We are your dependable partner for delivering your precious items and ensuring your products reach their destination safely.',
-      descAr: 'نحن شريكك الموثوق به لتسليم أغراضك الثمينة وضمان وصول منتجاتك إلى وجهتها بأمان.',
+      image: uaeFlag,
+      titleEn: 'Built for the UAE',
+      titleAr: 'صُنع للإمارات',
+      descEn: 'Our platform is designed specifically for the unique needs of UAE e-commerce.',
+      descAr: 'تم تصميم منصتنا خصيصاً لتلبية الاحتياجات الفريدة للتجارة الإلكترونية في الإمارات.',
+    },
+    {
+      type: 'image',
+      image: heroTruck,
+      titleEn: 'Reliable & Fast',
+      titleAr: 'موثوق وسريع',
+      descEn: 'We ensure your packages reach their destination on time, every time.',
+      descAr: 'نضمن وصول طرودك إلى وجهتها في الوقت المحدد، في كل مرة.',
     }
   ];
 
@@ -466,26 +466,135 @@ const AboutUs = ({ onNavigate }: LandingPageProps) => {
       
       <div className="w-full relative z-10 bg-white px-6 md:px-16 py-4 pb-0">
         <div className="relative w-full h-[400px] md:h-[500px] rounded-[2rem] overflow-hidden shadow-sm flex flex-col items-center justify-center text-center">
-          {/* Background Image */}
-          <img 
-            src="/src/assets/cta-cargo-ship.png" 
-            alt="About USend" 
-            className="absolute inset-0 w-full h-full object-cover select-none"
-          />
+          {/* Background Slider */}
+          <AnimatePresence mode="wait">
+            {heroSlides[heroSlideIdx].type === 'video' ? (
+              <motion.video
+                key={heroSlideIdx}
+                src={heroSlides[heroSlideIdx].video}
+                autoPlay
+                loop
+                muted
+                playsInline
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 1.0, ease: 'easeOut' }}
+                style={{ y: yParallax }}
+                className="absolute -top-[5%] inset-x-0 w-full h-[115%] object-cover object-top select-none"
+              />
+            ) : (
+              <motion.img
+                key={heroSlideIdx}
+                src={heroSlides[heroSlideIdx].image}
+                alt="About USend"
+                referrerPolicy="no-referrer"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 1.0, ease: 'easeOut' }}
+                style={{ y: yParallax }}
+                className="absolute -top-[5%] inset-x-0 w-full h-[115%] object-cover object-top select-none"
+              />
+            )}
+          </AnimatePresence>
           
           {/* Overlay Gradient */}
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-900/50 to-slate-900/30 pointer-events-none"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-900/60 to-slate-900/40 pointer-events-none"></div>
 
           {/* Content */}
-          <div className="relative z-10 px-6 max-w-4xl mx-auto pt-16">
-            <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tight text-white mb-6 drop-shadow-lg">
-              {isRTL ? 'من نحن' : 'About Us'}
-            </h1>
-            <p className="text-lg text-slate-200 max-w-2xl mx-auto font-medium leading-relaxed drop-shadow-md">
+          <div className="absolute inset-0 flex flex-col justify-center px-6 md:px-24 z-10 max-w-5xl pt-16">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={heroSlideIdx}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.8, ease: 'easeOut' }}
+                className="text-center md:text-start"
+              >
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-white mb-6 drop-shadow-lg leading-tight">
+                  {isRTL ? heroSlides[heroSlideIdx].titleAr : heroSlides[heroSlideIdx].titleEn}
+                </h1>
+                <p className="text-lg text-slate-200 md:max-w-2xl font-medium leading-relaxed drop-shadow-md">
+                  {isRTL ? heroSlides[heroSlideIdx].descAr : heroSlides[heroSlideIdx].descEn}
+                </p>
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Slider Dots */}
+            <div className="absolute bottom-10 left-6 md:left-24 flex items-center justify-center md:justify-start w-full md:w-auto gap-2 z-20">
+              {heroSlides.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setHeroSlideIdx(idx)}
+                  className={`w-12 h-1.5 rounded-full transition-all cursor-pointer ${idx === heroSlideIdx ? 'bg-[#113f36]' : 'bg-white/30 hover:bg-white/50'}`}
+                  aria-label={`Go to slide ${idx + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="w-full relative z-10 bg-white px-6 md:px-16 py-16 flex flex-col items-center justify-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 w-full max-w-6xl text-start">
+          <div className="space-y-6">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-full bg-[#113f36]/10 flex items-center justify-center">
+                <Globe2 className="w-5 h-5 text-[#113f36]" />
+              </div>
+              <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">
+                {isRTL ? 'مهمتنا' : 'Our Mission'}
+              </h2>
+            </div>
+            <p className="text-slate-600 leading-relaxed font-medium">
               {isRTL 
-                ? 'نحن منصة يو سند، بوابتك اللوجستية المتكاملة لربط المتاجر الإلكترونية مع أفضل خدمات التوصيل في الإمارات.' 
-                : 'We are USend, your unified logistics gateway connecting e-commerce stores with the best delivery networks across the UAE.'}
+                ? 'مهمتنا هي تمكين التجارة الإلكترونية في الإمارات من خلال توفير حلول شحن مبتكرة ومتكاملة، تقلل من التكاليف وترفع من كفاءة التوصيل وتزيد من رضا العملاء النهائيين.'
+                : 'Our mission is to empower e-commerce in the UAE by providing innovative, integrated shipping solutions that reduce costs, improve delivery efficiency, and maximize end-customer satisfaction.'}
             </p>
+            <p className="text-slate-600 leading-relaxed font-medium">
+              {isRTL
+                ? 'نسعى لأن نكون الجسر التقني الموثوق الذي يربط بين المتاجر وشبكات التوصيل المختلفة بكل يسر وسهولة.'
+                : 'We strive to be the trusted technical bridge connecting online stores to various delivery networks seamlessly and effortlessly.'}
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-full bg-[#cca073]/10 flex items-center justify-center">
+                <Shield className="w-5 h-5 text-[#cca073]" />
+              </div>
+              <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">
+                {isRTL ? 'لماذا يو سند؟' : 'Why Choose USend?'}
+              </h2>
+            </div>
+            <ul className="space-y-4">
+              <li className="flex gap-3">
+                <Check className="w-5 h-5 text-[#113f36] shrink-0 mt-0.5" />
+                <span className="text-slate-700 font-medium">
+                  {isRTL ? 'إدارة جميع شحناتك من لوحة تحكم واحدة' : 'Manage all your shipments from a single dashboard'}
+                </span>
+              </li>
+              <li className="flex gap-3">
+                <Check className="w-5 h-5 text-[#113f36] shrink-0 mt-0.5" />
+                <span className="text-slate-700 font-medium">
+                  {isRTL ? 'مقارنة أسعار الشحن في الوقت الفعلي لاختيار الأفضل' : 'Real-time shipping rate comparison to choose the best value'}
+                </span>
+              </li>
+              <li className="flex gap-3">
+                <Check className="w-5 h-5 text-[#113f36] shrink-0 mt-0.5" />
+                <span className="text-slate-700 font-medium">
+                  {isRTL ? 'تسويات مالية فورية للمدفوعات عند الاستلام (COD)' : 'Instant financial settlements for Cash on Delivery (COD) orders'}
+                </span>
+              </li>
+              <li className="flex gap-3">
+                <Check className="w-5 h-5 text-[#113f36] shrink-0 mt-0.5" />
+                <span className="text-slate-700 font-medium">
+                  {isRTL ? 'تغطية شاملة لجميع أنحاء الإمارات' : 'Comprehensive coverage across all Emirates'}
+                </span>
+              </li>
+            </ul>
           </div>
         </div>
       </div>

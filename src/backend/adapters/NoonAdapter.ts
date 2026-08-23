@@ -31,21 +31,23 @@ export class NoonAdapter implements CourierAdapter {
   }
 
   private getApiKey(credentials: CourierCredentials, env: CourierEnvironment = 'sandbox'): string {
+    // 1. TESTING ENVIRONMENT ONLY: Always use Noon's official shared staging key.
+    // This ignores whatever is typed in the UI to prevent production keys from breaking UAT.
+    if (env === 'sandbox') {
+      return 'SstJi9Ho0EHG2t7kQVSz7nA2hOeL3iiwVxHxb0Njk60QJ0LfmvoXoOsimw1zQC7VugHXiIRRMnWyU6f0uHcEcLlco5Eujqbd5pTwDlfBXpacuRI4m4AAj61NwM0B7Ihk';
+    }
+
+    // 2. PRODUCTION ENVIRONMENT: Use the credentials from the UI or environment variables
     if (process.env.NOON_API_KEY) return process.env.NOON_API_KEY;
     if (credentials.apiKey && credentials.apiKey.length > 10) return credentials.apiKey;
     if (credentials.password && credentials.password.length > 10) return credentials.password;
-    
-    // Official Staging API Key from Noon RoD Integration Documentation
-    if (env === 'sandbox') {
-      return 'SstJi9Ho0EHG2t7kQVSz7nA2hOeL3iiwVxHxb0Njk60QJ0LfmvoXOsimw1zQC7VugHXiIRRMnWyU6f0uHcEcLlco5Eujqbd5pTwDlfBXpacuRI4m4AAj61NwM0B7Ihk';
-    }
-    
+
     // Production API Key for TRSH (FZC)
     return credentials.apiKey || 'gxgyh5bcTvarO0iX9N7vMsRv4NZpoMWlu1Wm2Cg3eZW1oR4u5a7Cn24RwpZK3LOZUgMGIOPLv2crIVARo1VppbUPzlELLSA0qk9O2gcVtgRkG6Sk8Ag9OZubOvkMwNWh';
   }
 
-  private buildHeaders(credentials: CourierCredentials, idempotencyKey?: string): Record<string, string> {
-    const apiKey = this.getApiKey(credentials);
+  private buildHeaders(credentials: CourierCredentials, env: CourierEnvironment = 'sandbox', idempotencyKey?: string): Record<string, string> {
+    const apiKey = this.getApiKey(credentials, env);
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
@@ -63,7 +65,7 @@ export class NoonAdapter implements CourierAdapter {
     environment: CourierEnvironment
   ): Promise<{ success: boolean; error?: string }> {
     const baseUrl = this.getBaseUrl(environment);
-    const apiKey = this.getApiKey(credentials);
+    const apiKey = this.getApiKey(credentials, environment);
     const outletCode = credentials.outletCode || credentials.accountNumber;
 
     if (!apiKey) return { success: false, error: 'Noon API Key is missing. Please provide a valid API Key.' };
@@ -71,21 +73,25 @@ export class NoonAdapter implements CourierAdapter {
     try {
       const response = await fetch(`${baseUrl}/public/v1/pickup-points/list`, {
         method: 'GET',
-        headers: this.buildHeaders(credentials),
+        headers: this.buildHeaders(credentials, environment),
         signal: AbortSignal.timeout(10000),
       });
       const text = await response.text();
-      
+
       if (text.includes('FortiGuard') || text.includes('Web Filter')) {
         return { success: false, error: 'Access blocked by corporate firewall. Please whitelist the Noon API.' };
       }
-      
+
       if (response.status === 401 || response.status === 403) {
         return { success: false, error: 'Invalid Noon API Key. Authentication failed.' };
       }
-      
+
+      if (text.includes("You don't have any outlets")) {
+        return { success: true, error: "Connection Successful! Note: Your Noon account does not have any pickup points (outlets) configured yet. You will need to create one in your Noon dashboard to generate waybills." };
+      }
+
       if (!response.ok) {
-        return { success: false, error: `Noon API returned an unexpected error (HTTP ${response.status}).` };
+        return { success: false, error: `Noon API returned an unexpected error (HTTP ${response.status}). Details: ${text}` };
       }
 
       // API Key is valid! Now check the Outlet Code if provided.
@@ -101,9 +107,9 @@ export class NoonAdapter implements CourierAdapter {
 
       if (!outletCode) {
         if (availableCodes.length > 0) {
-          return { 
-            success: false, 
-            error: `API Key is Valid! However, the Outlet Code is missing. Available Outlet Codes on this account are: ${availableCodes.join(', ')}. Please enter one of these in the Outlet Code / Account Number field.` 
+          return {
+            success: false,
+            error: `API Key is Valid! However, the Outlet Code is missing. Available Outlet Codes on this account are: ${availableCodes.join(', ')}. Please enter one of these in the Outlet Code / Account Number field.`
           };
         }
         return { success: false, error: 'API Key is Valid! However, the Outlet Code is missing, and we could not find any active pickup points on this account.' };
@@ -111,9 +117,9 @@ export class NoonAdapter implements CourierAdapter {
 
       // Check if the provided outlet code actually exists
       if (availableCodes.length > 0 && !availableCodes.includes(outletCode)) {
-        return { 
-          success: false, 
-          error: `API Key is Valid, but the Outlet Code "${outletCode}" was not found. Available Outlet Codes are: ${availableCodes.join(', ')}.` 
+        return {
+          success: false,
+          error: `API Key is Valid, but the Outlet Code "${outletCode}" was not found. Available Outlet Codes are: ${availableCodes.join(', ')}.`
         };
       }
 
@@ -148,10 +154,10 @@ export class NoonAdapter implements CourierAdapter {
     const baseUrl = this.getBaseUrl(environment);
 
     // Resolve outlet code: payload > credentials > staging official default
-    const outletCode = payload.outletCode 
-      || credentials.outletCode 
+    const outletCode = payload.outletCode
+      || credentials.outletCode
       || credentials.storeId
-      || credentials.accountNumber 
+      || credentials.accountNumber
       || (environment === 'sandbox' ? '77T4HCOD4G' : '');
     if (!outletCode) {
       return { success: false, error: 'Noon: No outlet_code provided. Select a pickup point first.' };
@@ -200,7 +206,7 @@ export class NoonAdapter implements CourierAdapter {
     try {
       const response = await fetch(`${baseUrl}/public/v1/create-task`, {
         method: 'POST',
-        headers: this.buildHeaders(credentials, idempotencyKey),
+        headers: this.buildHeaders(credentials, environment, idempotencyKey),
         body: JSON.stringify(noonPayload),
         signal: AbortSignal.timeout(15000),
       });

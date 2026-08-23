@@ -1,0 +1,7 @@
+#!/usr/bin/expect -f
+set timeout 10
+spawn ssh -o StrictHostKeyChecking=no master_awqbxuyqcq@134.209.28.27 "kill \$(ps aux | grep 'node functions/server.cjs' | grep -v grep | awk '{print \$2}') ; cd /home/1150801.cloudwaysapps.com/mksqztfeks/public_html && nohup node functions/server.cjs > server.log 2>&1 < /dev/null &"
+expect "*assword:*"
+send "rW9MJAfvXn4n\r"
+sleep 3
+exit 0
