@@ -1,31 +1,33 @@
 #!/usr/bin/expect -f
-set timeout -1
-spawn rsync -avz -e "ssh -o StrictHostKeyChecking=no" dist/ master_awqbxuyqcq@134.209.28.27:/home/1150801.cloudwaysapps.com/mksqztfeks/public_html/
-expect "password:"
-send "rW9MJAfvXn4n\r"
-expect eof
+set timeout 120
 
-spawn rsync -avz -e "ssh -o StrictHostKeyChecking=no" usendadmin2026/ master_awqbxuyqcq@134.209.28.27:/home/1150801.cloudwaysapps.com/mksqztfeks/public_html/usendadmin2026/
-expect "password:"
-send "rW9MJAfvXn4n\r"
-expect eof
+proc run_rsync {src dst} {
+    spawn rsync -avz --inplace -e "ssh -o StrictHostKeyChecking=no" $src $dst
+    expect {
+        -nocase "password:" {
+            send "rW9MJAfvXn4n\r"
+            exp_continue
+        }
+        eof
+    }
+}
 
-spawn rsync -avz -e "ssh -o StrictHostKeyChecking=no" functions/server.cjs master_awqbxuyqcq@134.209.28.27:/home/1150801.cloudwaysapps.com/mksqztfeks/public_html/functions/server.cjs
-expect "password:"
-send "rW9MJAfvXn4n\r"
-expect eof
+puts "=== Syncing dist/ ==="
+run_rsync "dist/" "master_awqbxuyqcq@134.209.28.27:/home/1150801.cloudwaysapps.com/mksqztfeks/public_html/"
 
-spawn rsync -avz -e "ssh -o StrictHostKeyChecking=no" api.php master_awqbxuyqcq@134.209.28.27:/home/1150801.cloudwaysapps.com/mksqztfeks/public_html/api.php
-expect "password:"
-send "rW9MJAfvXn4n\r"
-expect eof
+puts "=== Syncing usendadmin2026/ ==="
+run_rsync "usendadmin2026/" "master_awqbxuyqcq@134.209.28.27:/home/1150801.cloudwaysapps.com/mksqztfeks/public_html/usendadmin2026/"
 
-spawn rsync -avz -e "ssh -o StrictHostKeyChecking=no" .htaccess master_awqbxuyqcq@134.209.28.27:/home/1150801.cloudwaysapps.com/mksqztfeks/public_html/.htaccess
-expect "password:"
-send "rW9MJAfvXn4n\r"
-expect eof
+puts "=== Syncing functions/server.cjs ==="
+run_rsync "functions/server.cjs" "master_awqbxuyqcq@134.209.28.27:/home/1150801.cloudwaysapps.com/mksqztfeks/public_html/functions/server.cjs"
 
-spawn rsync -avz -e "ssh -o StrictHostKeyChecking=no" api/ master_awqbxuyqcq@134.209.28.27:/home/1150801.cloudwaysapps.com/mksqztfeks/public_html/api/
-expect "password:"
-send "rW9MJAfvXn4n\r"
-expect eof
+puts "=== Syncing api.php ==="
+run_rsync "api.php" "master_awqbxuyqcq@134.209.28.27:/home/1150801.cloudwaysapps.com/mksqztfeks/public_html/api.php"
+
+puts "=== Syncing .htaccess ==="
+run_rsync ".htaccess" "master_awqbxuyqcq@134.209.28.27:/home/1150801.cloudwaysapps.com/mksqztfeks/public_html/.htaccess"
+
+puts "=== Syncing api/ ==="
+run_rsync "api/" "master_awqbxuyqcq@134.209.28.27:/home/1150801.cloudwaysapps.com/mksqztfeks/public_html/api/"
+
+puts "=== Deployment Sync Completed! ==="

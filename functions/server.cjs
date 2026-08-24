@@ -210,14 +210,14 @@ var init_AramexAdapter = __esm({
             CountryCode: payload.destCountry
           },
           ShipmentDetails: {
-            PaymentType: payload.codAmount ? "C" : "P",
-            // C = COD, P = Prepaid
+            PaymentType: "P",
             ProductGroup: payload.originCountry === payload.destCountry ? "DOM" : "EXP",
             ProductType: payload.isExpress ? "PPX" : "OND",
             ActualWeight: { Value: payload.weightKg, Unit: "KG" },
             ChargeableWeight: { Value: payload.weightKg, Unit: "KG" },
             NumberOfPieces: 1,
             Services: payload.codAmount ? "CODS" : "",
+            CashOnDeliveryAmount: payload.codAmount ? { Value: payload.codAmount, CurrencyCode: payload.currency || "AED" } : null,
             Dimensions: { Length: 10, Width: 10, Height: 10, Unit: "CM" },
             DescriptionOfGoods: "Rate check",
             GoodsOriginCountry: payload.originCountry,
@@ -1832,8 +1832,8 @@ async function startServer() {
                 version: "v1"
               },
               productionCreds: {
-                username: "octman.sam@gmail.com",
-                password: "#JohnSnow2027",
+                username: "care@trsh.ae",
+                password: "#Usend2027",
                 accountNumber: "75788705",
                 accountPin: "217147",
                 accountEntity: "DXB",
