@@ -196,13 +196,14 @@ export class AramexAdapter implements CourierAdapter {
         CountryCode: payload.destCountry
       },
       ShipmentDetails: {
-        PaymentType: payload.codAmount ? "C" : "P", // C = COD, P = Prepaid
+        PaymentType: "P",
         ProductGroup: payload.originCountry === payload.destCountry ? "DOM" : "EXP",
         ProductType: payload.isExpress ? "PPX" : "OND",
         ActualWeight: { Value: payload.weightKg, Unit: "KG" },
         ChargeableWeight: { Value: payload.weightKg, Unit: "KG" },
         NumberOfPieces: 1,
         Services: payload.codAmount ? "CODS" : "",
+        CashOnDeliveryAmount: payload.codAmount ? { Value: payload.codAmount, CurrencyCode: payload.currency || "AED" } : null,
         Dimensions: { Length: 10, Width: 10, Height: 10, Unit: "CM" },
         DescriptionOfGoods: "Rate check",
         GoodsOriginCountry: payload.originCountry,
