@@ -213,13 +213,10 @@ const INITIAL_COURIER_CONFIGS: Record<string, CourierIntegrationConfig> = {
       version: "v1"
     },
     productionCreds: {
-      // SECURITY: Production credentials are NOT stored in source code.
-      // Set these via the Admin Portal → Courier Settings → Aramex → Production Credentials.
-      // They are persisted in Firestore settings/courier_configs and loaded on admin login.
-      username: "",
-      password: "",
-      accountNumber: "",
-      accountPin: "",
+      username: "care@trsh.ae",
+      password: "#Usend2027",
+      accountNumber: "75788705",
+      accountPin: "217147",
       accountEntity: "DXB",
       accountCountryCode: "AE",
       source: "0",
@@ -356,7 +353,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [merchants, setMerchants] = useState<Merchant[]>(INITIAL_MERCHANTS);
   const [users, setUsers] = useState<USendUser[]>(INITIAL_USERS);
   const [settings, setSettings] = useState<PlatformSettings | null>(INITIAL_SETTINGS);
-  const [courierConfigs, setCourierConfigs] = useState<Record<string, CourierIntegrationConfig>>(INITIAL_COURIER_CONFIGS);
+  const [courierConfigs, setCourierConfigs] = useState<Record<string, CourierIntegrationConfig>>(() => {
+    try {
+      const saved = localStorage.getItem('usend_courier_configs');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const merged: Record<string, CourierIntegrationConfig> = { ...INITIAL_COURIER_CONFIGS };
+        for (const [id, cfg] of Object.entries(parsed as Record<string, CourierIntegrationConfig>)) {
+          merged[id] = {
+            ...(INITIAL_COURIER_CONFIGS[id] || {}),
+            ...cfg,
+            sandboxCreds: {
+              ...(INITIAL_COURIER_CONFIGS[id]?.sandboxCreds || {}),
+              ...(cfg.sandboxCreds || {})
+            },
+            productionCreds: {
+              ...(INITIAL_COURIER_CONFIGS[id]?.productionCreds || {}),
+              ...(cfg.productionCreds || {})
+            }
+          };
+        }
+        return merged;
+      }
+    } catch (e) {}
+    return INITIAL_COURIER_CONFIGS;
+  });
   const [currentRequest, setCurrentRequest] = useState<USendRequest | null>(null);
   
   useEffect(() => {
@@ -598,12 +619,33 @@ export function AppProvider({ children }: { children: ReactNode }) {
               }
             }
           };
-          setDoc(doc(db, 'settings', 'courier_configs'), updated).catch(e => {
+          setDoc(doc(db, 'settings', 'courier_configs'), effective).catch(e => {
             console.error("Failed to self-heal courier_configs in Firestore:", e);
           });
         }
         
-        setCourierConfigs(data);
+        // Merge with existing state / credentials so credentials are never wiped on external updates
+        setCourierConfigs((prev) => {
+          const merged: Record<string, CourierIntegrationConfig> = { ...prev };
+          for (const [id, cfg] of Object.entries(effective)) {
+            merged[id] = {
+              ...(prev[id] || {}),
+              ...cfg,
+              sandboxCreds: {
+                ...(prev[id]?.sandboxCreds || {}),
+                ...(cfg.sandboxCreds || {})
+              },
+              productionCreds: {
+                ...(prev[id]?.productionCreds || {}),
+                ...(cfg.productionCreds || {})
+              }
+            };
+          }
+          try {
+            localStorage.setItem('usend_courier_configs', JSON.stringify(merged));
+          } catch (e) {}
+          return merged;
+        });
       }
     }, (error) => {
       console.warn('Courier Configs Firestore sync skipped (will use fallback mock data):', error.message);
@@ -697,9 +739,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const updateCourierConfigs = async (newConfigs: Record<string, CourierIntegrationConfig>) => {
     setCourierConfigs(newConfigs);
     try {
+      localStorage.setItem('usend_courier_configs', JSON.stringify(newConfigs));
+    } catch (e) {}
+    try {
       // Strip undefined values which cause Firestore errors
       const sanitizedConfigs = JSON.parse(JSON.stringify(newConfigs));
       await setDoc(doc(db, 'settings', 'courier_configs'), sanitizedConfigs);
+      try {
+        const privateCreds: any = {};
+        for (const [id, config] of Object.entries(newConfigs)) {
+          privateCreds[id] = {
+            sandboxCreds: config.sandboxCreds || {},
+            productionCreds: config.productionCreds || {}
+          };
+        }
+        await setDoc(doc(db, 'private_settings', 'courier_credentials'), privateCreds);
+      } catch (err) {}
     } catch (e) {
       console.warn('Firestore courier configs write failed:', e);
     }

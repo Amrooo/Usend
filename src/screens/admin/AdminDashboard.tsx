@@ -2365,19 +2365,42 @@ function CouriersIntegrationsHub() {
     const fetchConfigs = async () => {
       if (!courierConfigs) return;
       try {
-        const privateSnap = await getDoc(doc(db, 'private_settings', 'courier_credentials'));
-        const privateCreds = privateSnap.exists() ? privateSnap.data() : {};
+        let privateCreds: any = {};
+        try {
+          const privateSnap = await getDoc(doc(db, 'private_settings', 'courier_credentials'));
+          if (privateSnap.exists()) {
+            privateCreds = privateSnap.data();
+          }
+        } catch (e) {
+          console.warn('Private credentials read skipped:', e);
+        }
+
+        let localStored: any = {};
+        try {
+          const saved = localStorage.getItem('usend_courier_configs');
+          if (saved) localStored = JSON.parse(saved);
+        } catch (e) {}
         
-        // Merge public configs with private creds
+        // Merge public configs with private creds and local state
         const merged: any = { ...courierConfigs };
         for (const [id, config] of Object.entries(merged)) {
-          if (privateCreds[id]) {
-            merged[id] = {
-              ...(config as any),
-              sandboxCreds: privateCreds[id].sandboxCreds || (config as any).sandboxCreds,
-              productionCreds: privateCreds[id].productionCreds || (config as any).productionCreds
-            };
-          }
+          const storedCfg = localStored[id] || {};
+          const privCfg = privateCreds[id] || {};
+          const curCfg = config as any;
+
+          merged[id] = {
+            ...curCfg,
+            sandboxCreds: {
+              ...(curCfg.sandboxCreds || {}),
+              ...(storedCfg.sandboxCreds || {}),
+              ...(privCfg.sandboxCreds || {})
+            },
+            productionCreds: {
+              ...(curCfg.productionCreds || {}),
+              ...(storedCfg.productionCreds || {}),
+              ...(privCfg.productionCreds || {})
+            }
+          };
         }
         setLocalConfigs(merged);
       } catch (err) {
@@ -2418,7 +2441,7 @@ function CouriersIntegrationsHub() {
   const handleCredChange = (mode: 'sandbox' | 'production', field: string, value: string) => {
     setLocalConfigs((prev: any) => {
       const targetMode = mode === 'sandbox' ? 'sandboxCreds' : 'productionCreds';
-      return {
+      const updated = {
         ...prev,
         [selectedCourierId]: {
           ...prev[selectedCourierId],
@@ -2428,12 +2451,16 @@ function CouriersIntegrationsHub() {
           }
         }
       };
+      try {
+        localStorage.setItem('usend_courier_configs', JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
     });
   };
 
   const handleRateChange = (userType: 'guest' | 'user' | 'merchant', field: string, value: number) => {
     setLocalConfigs((prev: any) => {
-      return {
+      const updated = {
         ...prev,
         [selectedCourierId]: {
           ...prev[selectedCourierId],
@@ -2446,6 +2473,10 @@ function CouriersIntegrationsHub() {
           }
         }
       };
+      try {
+        localStorage.setItem('usend_courier_configs', JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
     });
   };
 
@@ -2460,13 +2491,19 @@ function CouriersIntegrationsHub() {
       }
     }
 
-    setLocalConfigs((prev: any) => ({
-      ...prev,
-      [selectedCourierId]: {
-        ...prev[selectedCourierId],
-        status: prev[selectedCourierId].status === 'Active' ? 'Inactive' : 'Active'
-      }
-    }));
+    setLocalConfigs((prev: any) => {
+      const updated = {
+        ...prev,
+        [selectedCourierId]: {
+          ...prev[selectedCourierId],
+          status: prev[selectedCourierId].status === 'Active' ? 'Inactive' : 'Active'
+        }
+      };
+      try {
+        localStorage.setItem('usend_courier_configs', JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
   };
 
   const handleToggleMode = (mode: 'sandbox' | 'production') => {
@@ -2481,7 +2518,7 @@ function CouriersIntegrationsHub() {
         }
       }
 
-      return {
+      const updated = {
         ...prev,
         [selectedCourierId]: {
           ...config,
@@ -2489,17 +2526,21 @@ function CouriersIntegrationsHub() {
           status: newStatus
         }
       };
+      try {
+        localStorage.setItem('usend_courier_configs', JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
     });
   };
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const publicConfigs: any = {};
+      const fullConfigs: any = {};
       const privateCreds: any = {};
       
       for (const [id, config] of Object.entries(localConfigs) as any) {
-        publicConfigs[id] = {
+        fullConfigs[id] = {
           id: config.id,
           name: config.name,
           status: config.status,
@@ -2507,7 +2548,9 @@ function CouriersIntegrationsHub() {
           baseUrlUat: config.baseUrlUat,
           baseUrlProd: config.baseUrlProd,
           connectionStatus: config.connectionStatus,
-          rates: config.rates
+          rates: config.rates,
+          sandboxCreds: config.sandboxCreds || {},
+          productionCreds: config.productionCreds || {}
         };
         privateCreds[id] = {
           sandboxCreds: config.sandboxCreds || {},
@@ -2515,8 +2558,20 @@ function CouriersIntegrationsHub() {
         };
       }
       
-      await updateCourierConfigs(publicConfigs);
-      await setDoc(doc(db, 'private_settings', 'courier_credentials'), privateCreds);
+      // Save locally immediately
+      try {
+        localStorage.setItem('usend_courier_configs', JSON.stringify(fullConfigs));
+      } catch (e) {}
+
+      // Update AppContext and settings/courier_configs
+      await updateCourierConfigs(fullConfigs);
+
+      // Also persist to private_settings/courier_credentials
+      try {
+        await setDoc(doc(db, 'private_settings', 'courier_credentials'), privateCreds);
+      } catch (err: any) {
+        console.warn('Backup private_settings write skipped:', err);
+      }
       
       triggerToast(`Saved ${currentConfig.name} configuration successfully!`);
     } catch (err: any) {

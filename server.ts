@@ -1096,8 +1096,8 @@ async function startServer() {
               version: "v1"
             },
             productionCreds: {
-              username: "octman.sam@gmail.com",
-              password: "#JohnSnow2027",
+              username: "care@trsh.ae",
+              password: "#Usend2027",
               accountNumber: "75788705",
               accountPin: "217147",
               accountEntity: "DXB",
