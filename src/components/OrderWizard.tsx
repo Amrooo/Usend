@@ -127,7 +127,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
     description: '', 
     quantity: '1', 
     photo: null as string | null, 
-    courier: 'usend' as 'usend' | 'aramex' | 'noon', 
+    courier: 'aramex' as 'aramex' | 'noon', 
     declaredValue: '',
     // Optional: cash amount to collect FROM customer at delivery (COD for customer)
     collectCashFromCustomer: false,
@@ -977,23 +977,8 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
                 
                 <div className="space-y-4 md:col-span-2 pt-4 border-t border-zinc-100">
                   <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Select Courier & Shipping Speed</label>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     
-                    {/* USend Fleet Option */}
-                    <label className={`flex flex-col justify-between p-5 rounded-2xl border-2 cursor-pointer transition-all ${shipmentData.courier === 'usend' ? 'border-brand bg-brand/5 shadow-md shadow-brand/5' : 'border-zinc-200 bg-white hover:border-zinc-300'}`}>
-                      <input type="radio" value="usend" checked={shipmentData.courier === 'usend'} onChange={() => setShipmentData(p =>({...p, courier: 'usend'}))} className="hidden"/>
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-1.5 font-sans select-none text-base">
-                          <span className="text-[#113f36] font-black tracking-tight">USend</span>
-                          <span className="text-[#cca073] font-black tracking-tight -ml-1">Fleet</span>
-                        </div>
-                        <div>
-                          <span className="font-black text-xl text-brand">30 AED</span>
-                          <p className="text-[10px] text-zinc-500 font-bold uppercase mt-1">Instant Delivery</p>
-                        </div>
-                      </div>
-                    </label>
-
                     {/* Aramex Option */}
                     <label 
                       onClick={() => { setShipmentData(p =>({...p, courier: 'aramex'})); setIsAramexBoxModalOpen(true); }}
@@ -1143,7 +1128,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
                   </div>
                   <div>
                     <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider block">{isRTL ? 'الناقل المختار' : 'Carrier Partner'}</span>
-                    <span className="text-brand font-bold uppercase">{shipmentData.courier === 'aramex' ? 'Aramex Express' : shipmentData.courier === 'noon' ? 'Noon Hyperlocal' : 'USend Direct Fleet'}</span>
+                    <span className="text-brand font-bold uppercase">{shipmentData.courier === 'aramex' ? 'Aramex Express' : 'Noon Hyperlocal'}</span>
                   </div>
                   {parseFloat(shipmentData.declaredValue || '0') > 0 && (
                     <div>
@@ -1169,7 +1154,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
                   return (
                     <div className="space-y-2.5 text-xs font-semibold pt-2">
                       <div className="flex justify-between items-center text-zinc-600">
-                        <span>{isRTL ? 'رسوم الناقل الأساسية' : 'Courier Base Transport Fee'} ({shipmentData.courier === 'aramex' ? 'Aramex Express' : shipmentData.courier === 'noon' ? 'Noon Direct' : 'USend Fleet'})</span>
+                        <span>{isRTL ? 'رسوم الناقل الأساسية' : 'Courier Base Transport Fee'} ({shipmentData.courier === 'aramex' ? 'Aramex Express' : 'Noon Hyperlocal'})</span>
                         <span className="font-semibold text-zinc-900">{bd.baseFee.toFixed(2)} AED</span>
                       </div>
 

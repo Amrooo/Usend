@@ -986,17 +986,15 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                     />
                   </div>
                 </div>
-              </div>
 
                 {/* Purchase Details Panel */}
-                <div className="space-y-6">
-                  <div className="bg-white rounded-[2.5rem] p-8 border border-zinc-200/80 shadow-sm space-y-6">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-violet-500/10 text-violet-600 flex items-center justify-center">
-                        <DollarSign className="w-[18px] h-[18px]" />
-                      </div>
-                      <h2 className="font-bold text-lg text-zinc-800">Cod Value Mapping</h2>
+                <div className="bg-white rounded-[2.5rem] p-8 border border-zinc-200/80 shadow-sm space-y-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-violet-500/10 text-violet-600 flex items-center justify-center">
+                      <DollarSign className="w-[18px] h-[18px]" />
                     </div>
+                    <h2 className="font-bold text-lg text-zinc-800">Cod Value Mapping</h2>
+                  </div>
 
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 mb-2">
