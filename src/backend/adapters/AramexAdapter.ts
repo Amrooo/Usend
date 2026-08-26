@@ -159,6 +159,7 @@ export class AramexAdapter implements CourierAdapter {
     const baseUrl = this.getBaseUrl(environment);
     const path = "/ShippingAPI.V2/RateCalculator/Service_1_0.svc/json/CalculateRate";
 
+    const isDomestic = (payload.originCountry || 'AE').toUpperCase() === (payload.destCountry || 'AE').toUpperCase();
     const sanitizedOriginCity = this.sanitizeCity(payload.originCity, "", payload.originCountry);
     const sanitizedDestCity = this.sanitizeCity(payload.destCity, "", payload.destCountry);
 
@@ -197,8 +198,8 @@ export class AramexAdapter implements CourierAdapter {
       },
       ShipmentDetails: {
         PaymentType: "P",
-        ProductGroup: payload.originCountry === payload.destCountry ? "DOM" : "EXP",
-        ProductType: payload.isExpress ? "PPX" : "OND",
+        ProductGroup: isDomestic ? "DOM" : "EXP",
+        ProductType: isDomestic ? "OND" : (payload.isExpress ? "PPX" : "EPX"),
         ActualWeight: { Value: payload.weightKg, Unit: "KG" },
         ChargeableWeight: { Value: payload.weightKg, Unit: "KG" },
         NumberOfPieces: 1,

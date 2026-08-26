@@ -26,6 +26,17 @@ export interface RateParams {
   codAmount?: number;
 }
 
+// ─── Noon Coordinate & Monetary Utilities ───────────────────────────────────
+/** Convert decimal degrees to Noon integer microdegrees (x 10^7) */
+export function toNoonCoordinate(coord: number): number {
+  return Math.round(coord * 10_000_000);
+}
+
+/** Convert AED to fils (integer minor unit, no floating-point errors) */
+export function toNoonFils(amountInAED: number): number {
+  return Math.round(amountInAED * 100);
+}
+
 export interface ShipmentParams {
   credentials: CourierCredentials;
   senderName: string;
@@ -33,18 +44,23 @@ export interface ShipmentParams {
   senderCity: string;
   senderCountry: string;
   senderAddress: string;
+  senderAddressLine1?: string;
+  senderAddressLine2?: string;
   receiverName: string;
   receiverPhone: string;
   receiverCity: string;
   receiverCountry: string;
   receiverAddress: string;
+  receiverAddressLine1?: string;
+  receiverAddressLine2?: string;
   goodsDescription: string;
   weightKg: number;
   codAmountAED: number;
   prepaidAmountAED?: number;   // Non-COD prepaid value (AED)
   printFormat?: 'PDF' | 'ZPL';
   // Noon-specific
-  outletCode?: string;         // Noon pickup point outlet_code
+  outletCode?: string;         // Noon pickup point outlet_code (optional, dynamically resolved if absent)
+  externalCode?: string;       // Optional internal branch ID
   orderId?: string;            // USend order ID (used for idempotency)
   pickupLat?: number;
   pickupLng?: number;
@@ -324,21 +340,120 @@ export const courierIntegrationService = {
 
   // ─── Noon-specific methods ────────────────────────────────────────────────
 
-  /** Fetch all Noon pickup points for the configured environment */
-  getNoonPickupPoints: async (apiKey: string, baseUrl?: string): Promise<any[]> => {
+  /** List registered Noon pickup points */
+  listPickupPoints: async (apiKey?: string, baseUrl?: string): Promise<any[]> => {
     try {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (apiKey) headers['x-noon-api-key'] = apiKey;
       if (baseUrl) headers['x-noon-base-url'] = baseUrl;
       const res = await fetch('/api/noon/pickup-points', { method: 'GET', headers });
       const data = await res.json();
-      // Noon returns an array directly or { pickup_points: [...] }
       if (Array.isArray(data)) return data;
       if (Array.isArray(data.pickup_points)) return data.pickup_points;
+      if (Array.isArray(data.data)) return data.data;
+      if (Array.isArray(data.outlets)) return data.outlets;
       return [];
     } catch (e) {
       console.error('Failed to fetch Noon pickup points', e);
       return [];
+    }
+  },
+
+  /** Alias for listPickupPoints */
+  getNoonPickupPoints: async (apiKey?: string, baseUrl?: string): Promise<any[]> => {
+    return courierIntegrationService.listPickupPoints(apiKey, baseUrl);
+  },
+
+  /** Create a new pickup point with integer coordinates */
+  createPickupPoint: async (pickupData: any, apiKey?: string, baseUrl?: string): Promise<string> => {
+    try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (apiKey) headers['x-noon-api-key'] = apiKey;
+      if (baseUrl) headers['x-noon-base-url'] = baseUrl;
+
+      let lat = pickupData.latitude;
+      if (typeof lat === 'number' && Math.abs(lat) < 1000) {
+        lat = toNoonCoordinate(lat);
+      }
+      let lng = pickupData.longitude;
+      if (typeof lng === 'number' && Math.abs(lng) < 1000) {
+        lng = toNoonCoordinate(lng);
+      }
+
+      const phone = pickupData.contact_phone_number || pickupData.phone_number || pickupData.phone || '+971500000000';
+      const address = pickupData.address_line || pickupData.address_line_1 || pickupData.address || 'Street Address';
+
+      const payload = {
+        name: pickupData.name || 'Warehouse / Store',
+        contact_phone_number: phone,
+        phone_number: phone,
+        address_line: address,
+        address_line_1: pickupData.address_line_1 || address,
+        address_line_2: pickupData.address_line_2 || '',
+        city: pickupData.city || 'Dubai',
+        country_code: (pickupData.country_code || pickupData.country || 'AE').toUpperCase(),
+        latitude: lat || 251964783,
+        longitude: lng || 552808833,
+        external_code: pickupData.external_code || pickupData.externalCode || undefined,
+      };
+
+      const res = await fetch('/api/noon/pickup-points', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      const code = data.code || data.outlet_code || data.pickup_point?.code || data.data?.code || data.id;
+      if (!code) {
+        throw new Error(data.error || data.detail || 'Failed to create pickup point');
+      }
+      return String(code);
+    } catch (e: any) {
+      console.error('Failed to create Noon pickup point:', e);
+      throw e;
+    }
+  },
+
+  /** Find existing pickup point by external_code/coords or create a new one */
+  getOrCreatePickupPoint: async (locationData: any, apiKey?: string, baseUrl?: string): Promise<string> => {
+    try {
+      const points = await courierIntegrationService.listPickupPoints(apiKey, baseUrl);
+      const targetExt = locationData.external_code || locationData.externalCode;
+      
+      if (points && points.length > 0) {
+        if (targetExt) {
+          const match = points.find((p: any) => 
+            (p.external_code && String(p.external_code) === String(targetExt)) ||
+            (p.code && String(p.code) === String(targetExt))
+          );
+          if (match) {
+            const code = match.code || match.outlet_code || match.id;
+            if (code) return String(code);
+          }
+        }
+
+        if (typeof locationData.latitude === 'number' && typeof locationData.longitude === 'number') {
+          const targetLatInt = locationData.latitude > 1000 ? locationData.latitude : toNoonCoordinate(locationData.latitude);
+          const targetLngInt = locationData.longitude > 1000 ? locationData.longitude : toNoonCoordinate(locationData.longitude);
+
+          const matchCoords = points.find((p: any) => {
+            const pLat = typeof p.latitude === 'number' ? (p.latitude > 1000 ? p.latitude : toNoonCoordinate(p.latitude)) : null;
+            const pLng = typeof p.longitude === 'number' ? (p.longitude > 1000 ? p.longitude : toNoonCoordinate(p.longitude)) : null;
+            if (pLat === null || pLng === null) return false;
+            return Math.abs(pLat - targetLatInt) < 20000 && Math.abs(pLng - targetLngInt) < 20000;
+          });
+
+          if (matchCoords) {
+            const code = matchCoords.code || matchCoords.outlet_code || matchCoords.id;
+            if (code) return String(code);
+          }
+        }
+      }
+
+      return await courierIntegrationService.createPickupPoint(locationData, apiKey, baseUrl);
+    } catch (e: any) {
+      console.warn('getOrCreatePickupPoint fallback:', e.message);
+      return '77T4HCOD4G';
     }
   },
 

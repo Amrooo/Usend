@@ -2902,12 +2902,12 @@ function CouriersIntegrationsHub() {
                           placeholder="Noon API Key" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800" />
                       </div>
                       <div className="space-y-1.5 col-span-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Outlet Code / Account Number <span className="text-orange-400 font-bold lowercase">(Optional for testing)</span></label>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Outlet Code <span className="text-emerald-500 font-bold lowercase">(Optional - Dynamically resolved via Pickup Points API)</span></label>
                         <input type="text" value={creds?.outletCode || creds?.accountNumber || ''} onChange={(e) => {
                           handleCredChange(cfg.currentMode, 'outletCode', e.target.value);
                           handleCredChange(cfg.currentMode, 'accountNumber', e.target.value); // fallback
                         }}
-                          placeholder="e.g. 77T4HCOD4G (Required for Dispatching)" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800" />
+                          placeholder="e.g. 77T4HCOD4G (Leave empty to auto-resolve)" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800" />
                       </div>
                     </>
                   ) : (
@@ -2992,18 +2992,52 @@ function CouriersIntegrationsHub() {
                 </div>
               </div>
 
-              {/* RIGHT: Rate Matrix */}
+              {/* RIGHT: Rate Matrix & Pricing Logic */}
               <div className="space-y-6">
-                <div className="flex items-center gap-2 pb-3 border-b border-zinc-100">
-                  <DollarSign className="w-4 h-4 text-orange-500" />
-                  <h4 className="font-black text-sm text-zinc-900 uppercase tracking-widest">Tiered Rate Matrix (AED)</h4>
+                <div className="flex items-center justify-between pb-3 border-b border-zinc-100 flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="w-4 h-4 text-orange-500" />
+                    <h4 className="font-black text-sm text-zinc-900 uppercase tracking-widest">
+                      {isAramex ? 'Dynamic API Pricing & Retail Markup' : isNoon ? 'Noon RoD Fleet Rate Card' : 'Tiered Rate Matrix (AED)'}
+                    </h4>
+                  </div>
+                  <span className="text-[9px] font-black uppercase px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-600 border border-zinc-200">
+                    {isAramex ? 'Live Wholesale API' : isNoon ? 'Partner Fleet Contract' : 'Standard Matrix'}
+                  </span>
                 </div>
+
+                {/* Specific Pricing Mechanism Cards */}
+                {isAramex && (
+                  <div className="bg-red-50/50 border border-red-100/80 rounded-2xl p-4 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-3.5 h-3.5 text-[#d12421]" />
+                      <p className="text-[10px] font-black text-[#d12421] uppercase tracking-widest">Dynamic Aramex Wholesale Engine</p>
+                    </div>
+                    <p className="text-[11px] text-zinc-600 leading-relaxed">
+                      Wholesale shipping costs are queried in <span className="font-bold text-zinc-800">real-time</span> from the Aramex Rate Calculator API based on your contracted account (<span className="font-mono font-bold text-[#d12421]">#75788705</span>). The table below configures your <span className="font-bold text-zinc-800">customer retail markups & fallback baseline</span> per user tier.
+                    </p>
+                  </div>
+                )}
+
+                {isNoon && (
+                  <div className="bg-amber-50/60 border border-amber-200/60 rounded-2xl p-4 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Truck className="w-3.5 h-3.5 text-amber-700" />
+                      <p className="text-[10px] font-black text-amber-800 uppercase tracking-widest">Noon Rider-on-Demand Fleet SLA</p>
+                    </div>
+                    <p className="text-[11px] text-zinc-600 leading-relaxed">
+                      Noon RoD charges flat contract rates per local drop on your monthly partner billing. Orders automatically resolve dynamic pickup point codes (<span className="font-mono font-bold text-amber-900">PCKP_...</span>). The table below sets the <span className="font-bold text-zinc-800">retail drop fee</span> charged to customers.
+                    </p>
+                  </div>
+                )}
 
                 <div className="overflow-x-auto border border-zinc-200 rounded-2xl">
                   <table className="w-full text-left border-collapse min-w-[420px]">
                     <thead>
                       <tr className="bg-zinc-50 text-zinc-500 text-[10px] font-black uppercase tracking-widest border-b border-zinc-200">
-                        <th className="p-4 w-1/3">Rate Component</th>
+                        <th className="p-4 w-1/3">
+                          {isAramex ? 'Retail Margin / Component' : isNoon ? 'Drop Rate Component' : 'Rate Component'}
+                        </th>
                         <th className="p-4 text-center">Guest</th>
                         <th className="p-4 text-center">User</th>
                         <th className="p-4 text-center">Merchant</th>
@@ -3011,11 +3045,31 @@ function CouriersIntegrationsHub() {
                     </thead>
                     <tbody className="text-xs font-semibold text-zinc-700">
                       {[
-                        { field: 'baseFee', label: 'Base Delivery Fee', desc: 'Flat starting charge' },
-                        { field: 'perKgRate', label: 'Per KG Surcharge', desc: 'Per extra kilogram' },
-                        { field: 'perKmRate', label: 'Per KM Distance', desc: 'Per route kilometer' },
-                        { field: 'expressSurcharge', label: 'Express Premium', desc: 'Priority speed add-on' },
-                        { field: 'codFee', label: 'COD Handling Fee', desc: 'Cash on delivery' },
+                        { 
+                          field: 'baseFee', 
+                          label: isAramex ? 'Base Delivery Fee / Markup' : isNoon ? 'Flat Drop Fee' : 'Base Delivery Fee', 
+                          desc: isAramex ? 'Retail baseline / platform charge' : isNoon ? 'Flat cost per on-demand drop' : 'Flat starting charge' 
+                        },
+                        { 
+                          field: 'perKgRate', 
+                          label: 'Per KG Surcharge', 
+                          desc: isNoon ? 'Weight fee for heavy parcels (>5kg)' : 'Per extra kilogram' 
+                        },
+                        { 
+                          field: 'perKmRate', 
+                          label: 'Per KM Distance', 
+                          desc: isAramex ? 'Distance adjustment (if applicable)' : 'Per route kilometer' 
+                        },
+                        { 
+                          field: 'expressSurcharge', 
+                          label: 'Express Premium', 
+                          desc: isNoon ? 'Instant priority rider dispatch' : 'Priority speed add-on' 
+                        },
+                        { 
+                          field: 'codFee', 
+                          label: 'COD Handling Fee', 
+                          desc: 'Cash on delivery handling fee' 
+                        },
                       ].map(({ field, label, desc }) => (
                         <tr key={field} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50">
                           <td className="p-4">
@@ -3039,11 +3093,27 @@ function CouriersIntegrationsHub() {
                 </div>
 
                 {/* Rate Formula Note */}
-                <div className="bg-amber-50/50 border border-amber-100 rounded-2xl p-4">
-                  <p className="text-[10px] font-black text-amber-700 uppercase tracking-widest mb-1.5">How rates are calculated</p>
+                <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-4">
+                  <p className="text-[10px] font-black text-zinc-700 uppercase tracking-widest mb-1.5">
+                    {isAramex ? 'Aramex Calculation Pipeline' : isNoon ? 'Noon Calculation Pipeline' : 'How rates are calculated'}
+                  </p>
                   <p className="text-[11px] text-zinc-600 leading-relaxed">
-                    <span className="font-bold text-zinc-800">Total = Base Fee + (Weight × Per KG Rate) + (Distance × Per KM Rate) + Express Premium (if selected) + COD Fee (if cash payment)</span>
-                    <br />All rates apply per-order. Merchant rates receive bulk discounts. Platform fee (5%) is added separately on top.
+                    {isAramex ? (
+                      <>
+                        <span className="font-bold text-zinc-800">Final Price = Live Aramex API Wholesale Rate + Base Margin + COD Fee (if cash)</span>
+                        <br />Automatically checks live city matrix (Dubai, Abu Dhabi, Sharjah, etc.) and package weight.
+                      </>
+                    ) : isNoon ? (
+                      <>
+                        <span className="font-bold text-zinc-800">Final Price = Flat Drop Fee + Express Premium + COD Fee</span>
+                        <br />Billed per instant drop according to your Noon SLA contract.
+                      </>
+                    ) : (
+                      <>
+                        <span className="font-bold text-zinc-800">Total = Base Fee + (Weight × Per KG Rate) + (Distance × Per KM Rate) + Express Premium + COD Fee</span>
+                        <br />All rates apply per-order. Merchant rates receive volume discounts.
+                      </>
+                    )}
                   </p>
                 </div>
               </div>

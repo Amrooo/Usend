@@ -640,22 +640,23 @@ app.post("/api/aramex/:serviceType", async (req, res) => {
 // --- NOON HYPERLOCAL LOGISTICS API PROXY ---
 
 const getNoonBaseUrl = (req: any): string => {
-  return req.headers["x-noon-base-url"]
-    || req.query.baseUrl
-    || (req.body && req.body.baseUrl)
-    || process.env.NOON_API_BASE_URL
-    || "https://food-api-team.noonstg.team";
+  if (req.headers["x-noon-base-url"]) return req.headers["x-noon-base-url"];
+  if (req.query.baseUrl) return req.query.baseUrl;
+  if (req.body && req.body.baseUrl) return req.body.baseUrl;
+  if (process.env.NOON_API_BASE_URL) return process.env.NOON_API_BASE_URL;
+  const isProd = (process.env.NODE_ENV === "production") || (req.headers["x-noon-env"] === "production");
+  return isProd ? "https://food-api-team.noon.team" : "https://food-api-team.noonstg.team";
 };
 
 const getNoonApiKey = (req: any): string => {
-  // Prefer Firestore credentials, fallback to env var, fallback to request header for internal calls
-  const isProd = process.env.NODE_ENV === "production";
+  const clientApiKey = req.headers["x-noon-api-key"] || req.query.apiKey || (req.body && req.body.apiKey);
+  // Reject obvious placeholder keys
+  if (clientApiKey && clientApiKey !== "noon_secret_key_123" && clientApiKey.length > 5) return clientApiKey;
+  // Fallback to Firestore server-stored credentials or env var
+  const isProd = process.env.NODE_ENV === "production" || req.headers["x-noon-env"] === "production";
   const noonCreds = serverCourierCredentials?.noon?.[isProd ? 'productionCreds' : 'sandboxCreds'] || {};
   const envKey = noonCreds.apiKey || process.env.NOON_API_KEY;
   if (envKey) return envKey;
-  const clientApiKey = req.headers["x-noon-api-key"] || req.query.apiKey || (req.body && req.body.apiKey);
-  // Reject obvious placeholder keys
-  if (clientApiKey && clientApiKey !== "noon_secret_key_123") return clientApiKey;
   return "";
 };
 

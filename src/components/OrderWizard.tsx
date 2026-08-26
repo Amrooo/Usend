@@ -593,8 +593,8 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
         ? (noonConfig.currentMode === 'sandbox' ? noonConfig.sandboxCreds : noonConfig.productionCreds)
         : undefined;
 
-      // Outlet code: prefer config, fallback to accountNumber (some setups store it there)
-      const outletCode = noonCreds?.outletCode || noonCreds?.accountNumber || '';
+      // Outlet code: optional (NoonAdapter will dynamically resolve / create pickup point if not provided)
+      const outletCode = noonCreds?.outletCode || noonCreds?.accountNumber || undefined;
 
       // Use receiver map position for drop-off coords if available
       const receiverPos = receiverData.position;
@@ -643,6 +643,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
       
       const courierRes = await res.json();
       const noonTaskId = courierRes.noonTaskId || courierRes.trackingNumber;
+      const finalOutletCode = courierRes.outletCode || outletCode || '';
       
       setNoonTestingLogs({
         request: canonicalPayload,
@@ -657,7 +658,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
           carrier: 'noon',
           externalTrackingNumber: noonTaskId,
           noonTaskId: noonTaskId,
-          noonOutletCode: outletCode,
+          noonOutletCode: finalOutletCode,
           noonProviderStatus: 'pending_assignment',
           noonStatusLabel: 'Finding Driver',
           noonCancellable: true,

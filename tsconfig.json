@@ -23,5 +23,6 @@
     "allowImportingTsExtensions": true,
     "noEmit": true
   },
-  "exclude": ["scratch"]
+  "include": ["src/**/*", "server.ts"],
+  "exclude": ["node_modules", "dist", "dist-admin", "scratch", "functions"]
 }

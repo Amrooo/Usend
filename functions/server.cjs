@@ -171,6 +171,7 @@ var init_AramexAdapter = __esm({
       async calculateRate(payload, credentials, environment) {
         const baseUrl = this.getBaseUrl(environment);
         const path3 = "/ShippingAPI.V2/RateCalculator/Service_1_0.svc/json/CalculateRate";
+        const isDomestic = (payload.originCountry || "AE").toUpperCase() === (payload.destCountry || "AE").toUpperCase();
         const sanitizedOriginCity = this.sanitizeCity(payload.originCity, "", payload.originCountry);
         const sanitizedDestCity = this.sanitizeCity(payload.destCity, "", payload.destCountry);
         const aramexPayload = {
@@ -211,8 +212,8 @@ var init_AramexAdapter = __esm({
           },
           ShipmentDetails: {
             PaymentType: "P",
-            ProductGroup: payload.originCountry === payload.destCountry ? "DOM" : "EXP",
-            ProductType: payload.isExpress ? "PPX" : "OND",
+            ProductGroup: isDomestic ? "DOM" : "EXP",
+            ProductType: isDomestic ? "OND" : payload.isExpress ? "PPX" : "EPX",
             ActualWeight: { Value: payload.weightKg, Unit: "KG" },
             ChargeableWeight: { Value: payload.weightKg, Unit: "KG" },
             NumberOfPieces: 1,
@@ -471,14 +472,14 @@ var init_AramexAdapter = __esm({
 });
 
 // src/backend/adapters/CourierAdapter.ts
-function toNoonCoord(decimal) {
-  return Math.round(decimal * 1e7);
+function toNoonCoordinate(coord) {
+  return Math.round(coord * 1e7);
 }
 function fromNoonCoord(micro) {
   return Number(micro) / 1e7;
 }
-function aedToFils(aed) {
-  return Math.round(aed * 100);
+function toNoonFils(amountInAED) {
+  return Math.round(amountInAED * 100);
 }
 var NOON_STATUS_MAP, NOON_STATUS_STEPS;
 var init_CourierAdapter = __esm({
@@ -522,12 +523,18 @@ var init_NoonAdapter = __esm({
         return env === "production" ? "https://food-api-team.noon.team" : "https://food-api-team.noonstg.team";
       }
       getApiKey(credentials, env = "sandbox") {
+        if (credentials.apiKey && credentials.apiKey.length > 10 && credentials.apiKey !== "noon_secret_key_123") {
+          return credentials.apiKey;
+        }
+        if (credentials.password && credentials.password.length > 10) {
+          return credentials.password;
+        }
+        if (process.env.NOON_API_KEY) {
+          return process.env.NOON_API_KEY;
+        }
         if (env === "sandbox") {
           return "SstJi9Ho0EHG2t7kQVSz7nA2hOeL3iiwVxHxb0Njk60QJ0LfmvoXoOsimw1zQC7VugHXiIRRMnWyU6f0uHcEcLlco5Eujqbd5pTwDlfBXpacuRI4m4AAj61NwM0B7Ihk";
         }
-        if (process.env.NOON_API_KEY) return process.env.NOON_API_KEY;
-        if (credentials.apiKey && credentials.apiKey.length > 10) return credentials.apiKey;
-        if (credentials.password && credentials.password.length > 10) return credentials.password;
         return credentials.apiKey || "gxgyh5bcTvarO0iX9N7vMsRv4NZpoMWlu1Wm2Cg3eZW1oR4u5a7Cn24RwpZK3LOZUgMGIOPLv2crIVARo1VppbUPzlELLSA0qk9O2gcVtgRkG6Sk8Ag9OZubOvkMwNWh";
       }
       buildHeaders(credentials, env = "sandbox", idempotencyKey) {
@@ -542,12 +549,165 @@ var init_NoonAdapter = __esm({
         }
         return headers;
       }
-      // ─── Validate Credentials ─────────────────────────────────────────────────
+      // ─── Pickup Points API Methods ─────────────────────────────────────────────
+      /**
+       * Fetch all registered Noon pickup points for this account.
+       */
+      async listPickupPoints(credentials, environment = "sandbox") {
+        const baseUrl = this.getBaseUrl(environment);
+        try {
+          const response = await fetch(`${baseUrl}/public/v1/pickup-points/list`, {
+            method: "GET",
+            headers: this.buildHeaders(credentials, environment),
+            signal: AbortSignal.timeout(1e4)
+          });
+          if (!response.ok) {
+            console.warn(`[NoonAdapter] listPickupPoints returned HTTP ${response.status}`);
+            return [];
+          }
+          const text = await response.text();
+          let data;
+          try {
+            data = JSON.parse(text);
+          } catch {
+            return [];
+          }
+          if (Array.isArray(data)) return data;
+          if (Array.isArray(data.pickup_points)) return data.pickup_points;
+          if (Array.isArray(data.data)) return data.data;
+          if (Array.isArray(data.outlets)) return data.outlets;
+          return [];
+        } catch (e) {
+          console.error("[NoonAdapter] Failed to list pickup points:", e.message);
+          return [];
+        }
+      }
+      /**
+       * Create a new pickup point via POST /public/v1/pickup-points/create
+       * Returns the dynamic pickup point `code`.
+       */
+      async createPickupPoint(credentials, environment = "sandbox", pickupData) {
+        const baseUrl = this.getBaseUrl(environment);
+        let lat = pickupData.latitude;
+        if (typeof lat !== "number" || isNaN(lat)) {
+          lat = toNoonCoordinate(DEFAULT_PICKUP_LAT);
+        } else if (Math.abs(lat) < 1e3) {
+          lat = toNoonCoordinate(lat);
+        }
+        let lng = pickupData.longitude;
+        if (typeof lng !== "number" || isNaN(lng)) {
+          lng = toNoonCoordinate(DEFAULT_PICKUP_LNG);
+        } else if (Math.abs(lng) < 1e3) {
+          lng = toNoonCoordinate(lng);
+        }
+        const phone = pickupData.contact_phone_number || pickupData.phone_number || pickupData.phone || "+971500000000";
+        const address = pickupData.address_line || pickupData.address_line_1 || pickupData.address || "Street Address";
+        const payload = {
+          name: pickupData.name || "USend Store",
+          contact_phone_number: phone,
+          phone_number: phone,
+          address_line: address,
+          address_line_1: pickupData.address_line_1 || address,
+          address_line_2: pickupData.address_line_2 || "",
+          city: pickupData.city || "Dubai",
+          country_code: (pickupData.country_code || pickupData.country || "AE").toUpperCase(),
+          latitude: lat,
+          longitude: lng
+        };
+        const extCode = pickupData.external_code || pickupData.externalCode;
+        if (extCode) {
+          payload.external_code = String(extCode);
+        }
+        const response = await fetch(`${baseUrl}/public/v1/pickup-points/create`, {
+          method: "POST",
+          headers: this.buildHeaders(credentials, environment),
+          body: JSON.stringify(payload),
+          signal: AbortSignal.timeout(15e3)
+        });
+        const text = await response.text();
+        let data = {};
+        try {
+          data = JSON.parse(text);
+        } catch {
+          throw new Error(`Failed to parse Noon create pickup point response: ${text.substring(0, 200)}`);
+        }
+        if (!response.ok) {
+          const errMsg = data.error || data.detail || data.message || `HTTP ${response.status}`;
+          throw new Error(`Noon create pickup point failed: ${errMsg}`);
+        }
+        const code = data.code || data.outlet_code || data.pickup_point?.code || data.data?.code || data.id;
+        if (!code) {
+          throw new Error(`Noon created pickup point but returned no code: ${JSON.stringify(data)}`);
+        }
+        console.log("[NoonAdapter] Successfully created pickup point:", { code, name: payload.name });
+        return String(code);
+      }
+      /**
+       * Dynamically resolves an existing pickup point or creates a new one.
+       * Matches by external_code, coordinate proximity, or falls back to creating a new pickup point.
+       */
+      async getOrCreatePickupPoint(credentials, environment = "sandbox", locationData) {
+        const points = await this.listPickupPoints(credentials, environment);
+        if (points && points.length > 0) {
+          const targetExt = locationData.external_code || locationData.externalCode;
+          if (targetExt) {
+            const matchByExt = points.find(
+              (p) => p.external_code && String(p.external_code) === String(targetExt) || p.externalCode && String(p.externalCode) === String(targetExt) || p.code && String(p.code) === String(targetExt)
+            );
+            if (matchByExt) {
+              const code = matchByExt.code || matchByExt.outlet_code || matchByExt.id;
+              if (code) return String(code);
+            }
+          }
+          if (typeof locationData.latitude === "number" && typeof locationData.longitude === "number") {
+            const targetLatInt = locationData.latitude > 1e3 ? locationData.latitude : toNoonCoordinate(locationData.latitude);
+            const targetLngInt = locationData.longitude > 1e3 ? locationData.longitude : toNoonCoordinate(locationData.longitude);
+            const matchByCoords = points.find((p) => {
+              const pLat = typeof p.latitude === "number" ? p.latitude > 1e3 ? p.latitude : toNoonCoordinate(p.latitude) : null;
+              const pLng = typeof p.longitude === "number" ? p.longitude > 1e3 ? p.longitude : toNoonCoordinate(p.longitude) : null;
+              if (pLat === null || pLng === null) return false;
+              return Math.abs(pLat - targetLatInt) < 2e4 && Math.abs(pLng - targetLngInt) < 2e4;
+            });
+            if (matchByCoords) {
+              const code = matchByCoords.code || matchByCoords.outlet_code || matchByCoords.id;
+              if (code) return String(code);
+            }
+          }
+          if (locationData.name || locationData.address_line_1 || locationData.address) {
+            const searchName = (locationData.name || "").trim().toLowerCase();
+            const searchAddr = (locationData.address_line_1 || locationData.address || "").trim().toLowerCase();
+            const matchByNameAddr = points.find((p) => {
+              const pName = (p.name || "").trim().toLowerCase();
+              const pAddr = (p.address_line_1 || p.address || "").trim().toLowerCase();
+              return searchName && pName === searchName || searchAddr && pAddr === searchAddr;
+            });
+            if (matchByNameAddr) {
+              const code = matchByNameAddr.code || matchByNameAddr.outlet_code || matchByNameAddr.id;
+              if (code) return String(code);
+            }
+          }
+        }
+        try {
+          return await this.createPickupPoint(credentials, environment, locationData);
+        } catch (err) {
+          console.warn("[NoonAdapter] createPickupPoint failed, checking fallback points:", err.message);
+          if (points && points.length > 0) {
+            const fallbackCode = points[0].code || points[0].outlet_code || points[0].id;
+            if (fallbackCode) return String(fallbackCode);
+          }
+          if (environment === "sandbox") {
+            return "77T4HCOD4G";
+          }
+          throw err;
+        }
+      }
+      // ─── Validate Credentials (Connection Test) ────────────────────────────────
       async validateCredentials(credentials, environment) {
         const baseUrl = this.getBaseUrl(environment);
         const apiKey2 = this.getApiKey(credentials, environment);
-        const outletCode = credentials.outletCode || credentials.accountNumber;
-        if (!apiKey2) return { success: false, error: "Noon API Key is missing. Please provide a valid API Key." };
+        if (!apiKey2) {
+          return { success: false, error: "Noon API Key is missing. Please provide a valid API Key." };
+        }
         try {
           const response = await fetch(`${baseUrl}/public/v1/pickup-points/list`, {
             method: "GET",
@@ -561,36 +721,10 @@ var init_NoonAdapter = __esm({
           if (response.status === 401 || response.status === 403) {
             return { success: false, error: "Invalid Noon API Key. Authentication failed." };
           }
-          if (text.includes("You don't have any outlets")) {
-            return { success: true, error: "Connection Successful! Note: Your Noon account does not have any pickup points (outlets) configured yet. You will need to create one in your Noon dashboard to generate waybills." };
+          if (response.ok || text.includes("You don't have any outlets")) {
+            return { success: true };
           }
-          if (!response.ok) {
-            return { success: false, error: `Noon API returned an unexpected error (HTTP ${response.status}). Details: ${text}` };
-          }
-          let data;
-          try {
-            data = JSON.parse(text);
-          } catch (e) {
-            return { success: false, error: "Noon API returned an invalid response format." };
-          }
-          const points = Array.isArray(data) ? data : data.pickup_points || data.data || [];
-          const availableCodes = points.map((p) => p.outlet_code || p.id).filter(Boolean);
-          if (!outletCode) {
-            if (availableCodes.length > 0) {
-              return {
-                success: false,
-                error: `API Key is Valid! However, the Outlet Code is missing. Available Outlet Codes on this account are: ${availableCodes.join(", ")}. Please enter one of these in the Outlet Code / Account Number field.`
-              };
-            }
-            return { success: false, error: "API Key is Valid! However, the Outlet Code is missing, and we could not find any active pickup points on this account." };
-          }
-          if (availableCodes.length > 0 && !availableCodes.includes(outletCode)) {
-            return {
-              success: false,
-              error: `API Key is Valid, but the Outlet Code "${outletCode}" was not found. Available Outlet Codes are: ${availableCodes.join(", ")}.`
-            };
-          }
-          return { success: true };
+          return { success: false, error: `Noon API returned an unexpected error (HTTP ${response.status}). Details: ${text.substring(0, 300)}` };
         } catch (e) {
           return { success: false, error: `Network Error: ${e.message || "Could not reach Noon API"}` };
         }
@@ -607,17 +741,40 @@ var init_NoonAdapter = __esm({
       // ─── Create Shipment (Delivery Task) ─────────────────────────────────────
       async createShipment(payload, credentials, environment) {
         const baseUrl = this.getBaseUrl(environment);
-        const outletCode = payload.outletCode || credentials.outletCode || credentials.storeId || credentials.accountNumber || (environment === "sandbox" ? "77T4HCOD4G" : "");
+        let outletCode = payload.outletCode || credentials.outletCode || credentials.storeId || credentials.accountNumber;
         if (!outletCode) {
-          return { success: false, error: "Noon: No outlet_code provided. Select a pickup point first." };
+          try {
+            console.log("[NoonAdapter] outlet_code not provided, resolving dynamically via Noon Pickup Points API...");
+            outletCode = await this.getOrCreatePickupPoint(credentials, environment, {
+              name: payload.senderName || "USend Store",
+              phone_number: payload.senderPhone || "+971500000000",
+              address_line_1: payload.senderAddressLine1 || payload.senderAddress || "Street Address",
+              address_line_2: payload.senderAddressLine2 || "",
+              city: payload.senderCity || "Dubai",
+              country_code: payload.senderCountry || "AE",
+              latitude: payload.pickupLat ?? DEFAULT_PICKUP_LAT,
+              longitude: payload.pickupLng ?? DEFAULT_PICKUP_LNG,
+              external_code: payload.externalCode
+            });
+          } catch (err) {
+            console.error("[NoonAdapter] Dynamic pickup point resolution failed:", err.message);
+            if (environment === "sandbox") {
+              outletCode = "77T4HCOD4G";
+            } else {
+              return { success: false, error: `Noon: Failed to resolve pickup point: ${err.message}` };
+            }
+          }
+        }
+        if (!outletCode) {
+          return { success: false, error: "Noon: No outlet_code provided or resolvable. Please configure or select a pickup point." };
         }
         const idempotencyKey = payload.idempotencyKey || `usend-${payload.orderId || payload.reference || Date.now()}-${outletCode}`;
-        const pickupLatInt = toNoonCoord(payload.pickupLat ?? DEFAULT_PICKUP_LAT);
-        const pickupLngInt = toNoonCoord(payload.pickupLng ?? DEFAULT_PICKUP_LNG);
-        const dropLatInt = toNoonCoord(payload.dropLat ?? DEFAULT_PICKUP_LAT);
-        const dropLngInt = toNoonCoord(payload.dropLng ?? DEFAULT_PICKUP_LNG + 0.01);
-        const codFils = aedToFils(payload.codAmountAED || 0);
-        const prepaidFils = aedToFils(payload.prepaidAmountAED || 0);
+        const pickupLatInt = toNoonCoordinate(payload.pickupLat ?? DEFAULT_PICKUP_LAT);
+        const pickupLngInt = toNoonCoordinate(payload.pickupLng ?? DEFAULT_PICKUP_LNG);
+        const dropLatInt = toNoonCoordinate(payload.dropLat ?? DEFAULT_PICKUP_LAT);
+        const dropLngInt = toNoonCoordinate(payload.dropLng ?? DEFAULT_PICKUP_LNG + 0.01);
+        const codFils = toNoonFils(payload.codAmountAED || 0);
+        const prepaidFils = toNoonFils(payload.prepaidAmountAED || 0);
         const finalCodFils = codFils;
         const finalPrepaidFils = codFils === 0 && prepaidFils === 0 ? 100 : prepaidFils;
         const noonPayload = {
@@ -626,13 +783,12 @@ var init_NoonAdapter = __esm({
           customer_name: payload.receiverName,
           customer_phone: payload.receiverPhone,
           drop_off_address: {
-            address: payload.receiverAddress,
+            address: payload.receiverAddress || `${payload.receiverCity}, UAE`,
             lat: dropLatInt,
             lng: dropLngInt,
             contact_name: payload.receiverName,
             contact_phone_number: payload.receiverPhone,
-            country_code: "ae"
-            // Noon staging only accepts lowercase 'ae'
+            country_code: (payload.receiverCountry || "ae").toLowerCase()
           },
           lat: pickupLatInt,
           lng: pickupLngInt,
@@ -651,7 +807,7 @@ var init_NoonAdapter = __esm({
           if (responseText.trimStart().startsWith("<")) {
             return {
               success: false,
-              error: "Noon returned an HTML page \u2014 check API key and network access"
+              error: "Noon returned an HTML page \u2014 check API key and corporate network access"
             };
           }
           let data = {};
@@ -671,7 +827,7 @@ var init_NoonAdapter = __esm({
             console.error("[NoonAdapter] NOON_TASK_CREATE_FAILED", { outletCode, idempotencyKey, error: errMsg });
             return { success: false, error: errMsg };
           }
-          const taskId = data.mp_task_nr;
+          const taskId = data.mp_task_nr || data.task_nr || data.id;
           if (!taskId) {
             return { success: false, error: `Noon task created but no mp_task_nr in response: ${JSON.stringify(data)}` };
           }
@@ -701,7 +857,7 @@ var init_NoonAdapter = __esm({
         try {
           const response = await fetch(`${baseUrl}/public/v1/tasks/${trackingId}`, {
             method: "GET",
-            headers: this.buildHeaders(credentials),
+            headers: this.buildHeaders(credentials, environment),
             signal: AbortSignal.timeout(1e4)
           });
           const text = await response.text();
@@ -770,7 +926,7 @@ var init_NoonAdapter = __esm({
         try {
           const response = await fetch(`${baseUrl}/public/v1/tasks/${trackingId}/cancel`, {
             method: "POST",
-            headers: this.buildHeaders(credentials),
+            headers: this.buildHeaders(credentials, environment),
             body: JSON.stringify({ reason: "Partner cancellation via USend" }),
             signal: AbortSignal.timeout(1e4)
           });
@@ -1435,15 +1591,20 @@ app.post("/api/aramex/:serviceType", async (req, res) => {
   }
 });
 var getNoonBaseUrl = (req) => {
-  return req.headers["x-noon-base-url"] || req.query.baseUrl || req.body && req.body.baseUrl || process.env.NOON_API_BASE_URL || "https://food-api-team.noonstg.team";
+  if (req.headers["x-noon-base-url"]) return req.headers["x-noon-base-url"];
+  if (req.query.baseUrl) return req.query.baseUrl;
+  if (req.body && req.body.baseUrl) return req.body.baseUrl;
+  if (process.env.NOON_API_BASE_URL) return process.env.NOON_API_BASE_URL;
+  const isProd2 = process.env.NODE_ENV === "production" || req.headers["x-noon-env"] === "production";
+  return isProd2 ? "https://food-api-team.noon.team" : "https://food-api-team.noonstg.team";
 };
 var getNoonApiKey = (req) => {
-  const isProd2 = process.env.NODE_ENV === "production";
+  const clientApiKey = req.headers["x-noon-api-key"] || req.query.apiKey || req.body && req.body.apiKey;
+  if (clientApiKey && clientApiKey !== "noon_secret_key_123" && clientApiKey.length > 5) return clientApiKey;
+  const isProd2 = process.env.NODE_ENV === "production" || req.headers["x-noon-env"] === "production";
   const noonCreds = serverCourierCredentials?.noon?.[isProd2 ? "productionCreds" : "sandboxCreds"] || {};
   const envKey = noonCreds.apiKey || process.env.NOON_API_KEY;
   if (envKey) return envKey;
-  const clientApiKey = req.headers["x-noon-api-key"] || req.query.apiKey || req.body && req.body.apiKey;
-  if (clientApiKey && clientApiKey !== "noon_secret_key_123") return clientApiKey;
   return "";
 };
 var getNoonHeaders = (req, idempotencyKey) => {

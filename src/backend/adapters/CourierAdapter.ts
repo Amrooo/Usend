@@ -38,11 +38,15 @@ export interface CanonicalShipmentPayload {
   senderCity: string;
   senderCountry: string;
   senderAddress: string;
+  senderAddressLine1?: string;
+  senderAddressLine2?: string;
   receiverName: string;
   receiverPhone: string;
   receiverCity: string;
   receiverCountry: string;
   receiverAddress: string;
+  receiverAddressLine1?: string;
+  receiverAddressLine2?: string;
   goodsDescription: string;
   weightKg: number;
   codAmountAED: number;
@@ -57,6 +61,7 @@ export interface CanonicalShipmentPayload {
   dropLng?: number;
   // Noon-specific
   outletCode?: string;         // Noon pickup point code (outlet_code)
+  externalCode?: string;       // Optional internal branch / warehouse ID
   dimensions?: {
     length: number;
     width: number;
@@ -136,8 +141,8 @@ export const NOON_STATUS_STEPS = [
 
 // ─── Coordinate & Currency Utilities ─────────────────────────────────────────
 /** Convert decimal degrees to Noon integer microdegrees (x 10^7) */
-export function toNoonCoord(decimal: number): number {
-  return Math.round(decimal * 1e7);
+export function toNoonCoordinate(coord: number): number {
+  return Math.round(coord * 10_000_000);
 }
 
 /** Convert Noon integer microdegrees to decimal degrees */
@@ -146,6 +151,11 @@ export function fromNoonCoord(micro: number | string): number {
 }
 
 /** Convert AED to fils (integer minor unit, no floating-point errors) */
-export function aedToFils(aed: number): number {
-  return Math.round(aed * 100);
+export function toNoonFils(amountInAED: number): number {
+  return Math.round(amountInAED * 100);
 }
+
+// Aliases for backwards compatibility
+export const toNoonCoord = toNoonCoordinate;
+export const aedToFils = toNoonFils;
+
