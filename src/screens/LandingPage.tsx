@@ -112,7 +112,7 @@ const landingTranslations = {
     faq4A: 'Our smart wallet tracks driver feedback instantly. Once the receiver confirms signature and pays, the amount is credited to your Merchant Wallet to withdraw anytime.',
     footerLead: 'Accelerate E-Commerce Deliveries & Settle Payments Instantly',
     footerLeadDesc: 'Link your store with our multi-courier aggregator and optimize your delivery operational speed.',
-    copyright: '© 2026 USEND SYSTEMS (SHIPLIFIER GATEWAY AGENCY). REGULATION COMPLIANT IN UAE.',
+    copyright: '© 2026 USEND LOGISTICS TECHNOLOGIES. REGULATION COMPLIANT IN UAE.',
     botGreeting: 'Hello! I am USend AI Assistant. Enter any Order Number (e.g., REQ-1001) to track your delivery, or ask about our e-commerce integrations.',
     smartSolutionsTitle: 'Smart Solutions',
     smartSolutionsForShipping: 'for Shipping',

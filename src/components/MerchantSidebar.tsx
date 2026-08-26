@@ -69,7 +69,7 @@ export default function MerchantSidebar({ currentScreen, onNavigate }: SidebarPr
     {
       title: t('reports') || 'Reports',
       items: [
-        { id: 'merchant_tracking', icon: Map, label: t('tracking') || 'Live Tracking' },
+        { id: 'merchant_tracking', icon: Package, label: t('requests_orders') || 'Requests & Orders' },
         { id: 'merchant_customers', icon: Users, label: t('customers') || 'Customers & Analytics' }
       ]
     },

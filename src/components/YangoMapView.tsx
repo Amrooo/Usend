@@ -97,7 +97,7 @@ export default function YangoMapView({
       if (window.ymaps && window.ymaps.geocode) {
         window.ymaps.geocode(`${val.trim()}, UAE`, {
           results: 5,
-          boundedBy: [[24.0, 54.0], [26.2, 56.5]], // UAE Bounding Box
+          boundedBy: [[24.0, 54.0], [26.2, 56.5]],
           strictBounds: false
         }).then((res: any) => {
           setIsSearching(false);
@@ -147,6 +147,58 @@ export default function YangoMapView({
     }
   };
 
+  // Central location setter for clicks on map, icons, landmarks, or POIs
+  const applySelectedLocation = useCallback((pos: [number, number], customName?: string) => {
+    if (activeMode === 'pickup') {
+      setPickupCoords(pos);
+      if (pickupPlacemarkRef.current) {
+        pickupPlacemarkRef.current.geometry.setCoordinates(pos);
+        if (mapInstanceRef.current && mapInstanceRef.current.geoObjects.indexOf(pickupPlacemarkRef.current) === -1) {
+          mapInstanceRef.current.geoObjects.add(pickupPlacemarkRef.current);
+        }
+      }
+      if (customName) {
+        setPickupAddress(customName);
+        setSearchQuery(customName);
+      } else {
+        reverseGeocode(pos, (addr) => {
+          setPickupAddress(addr);
+          setSearchQuery(addr);
+        });
+      }
+    } else if (activeMode === 'dropoff') {
+      setDropoffCoords(pos);
+      if (dropoffPlacemarkRef.current) {
+        dropoffPlacemarkRef.current.geometry.setCoordinates(pos);
+        if (mapInstanceRef.current && mapInstanceRef.current.geoObjects.indexOf(dropoffPlacemarkRef.current) === -1) {
+          mapInstanceRef.current.geoObjects.add(dropoffPlacemarkRef.current);
+        }
+      }
+      if (customName) {
+        setDropoffAddress(customName);
+        setSearchQuery(customName);
+      } else {
+        reverseGeocode(pos, (addr) => {
+          setDropoffAddress(addr);
+          setSearchQuery(addr);
+        });
+      }
+    } else {
+      setDropoffCoords(pos);
+      if (dropoffPlacemarkRef.current) {
+        dropoffPlacemarkRef.current.geometry.setCoordinates(pos);
+      }
+      if (customName) {
+        setDropoffAddress(customName);
+      } else {
+        reverseGeocode(pos, (addr) => {
+          setDropoffAddress(addr);
+          recalculateYangoRoute(pickupCoords, pos);
+        });
+      }
+    }
+  }, [activeMode, pickupCoords, reverseGeocode]);
+
   // Initialize Native Yango Map
   useEffect(() => {
     let isMounted = true;
@@ -169,7 +221,9 @@ export default function YangoMapView({
             zoom: 14,
             controls: ['zoomControl', 'geolocationControl']
           }, {
-            suppressMapOpenBlock: true
+            suppressMapOpenBlock: true,
+            yandexMapDisablePoiInteractivity: true, // Disables native POI popups so clicks pass straight to our handler!
+            autoFitToViewport: 'always'
           });
 
           mapInstanceRef.current = map;
@@ -186,12 +240,7 @@ export default function YangoMapView({
           pickupPlacemark.events.add('dragend', () => {
             const newCoords = pickupPlacemark.geometry.getCoordinates();
             const pos: [number, number] = [newCoords[0], newCoords[1]];
-            setPickupCoords(pos);
-            reverseGeocode(pos, (addr) => {
-              setPickupAddress(addr);
-              if (activeMode === 'pickup') setSearchQuery(addr);
-              if (activeMode === 'route') recalculateYangoRoute(pos, dropoffCoords);
-            });
+            applySelectedLocation(pos);
           });
 
           if (activeMode === 'pickup' || activeMode === 'route') {
@@ -210,12 +259,7 @@ export default function YangoMapView({
           dropoffPlacemark.events.add('dragend', () => {
             const newCoords = dropoffPlacemark.geometry.getCoordinates();
             const pos: [number, number] = [newCoords[0], newCoords[1]];
-            setDropoffCoords(pos);
-            reverseGeocode(pos, (addr) => {
-              setDropoffAddress(addr);
-              if (activeMode === 'dropoff') setSearchQuery(addr);
-              if (activeMode === 'route') recalculateYangoRoute(pickupCoords, pos);
-            });
+            applySelectedLocation(pos);
           });
 
           if (activeMode === 'dropoff' || activeMode === 'route') {
@@ -223,38 +267,22 @@ export default function YangoMapView({
           }
           dropoffPlacemarkRef.current = dropoffPlacemark;
 
-          // 3. Robust Map Click Listener: Clicking ANYWHERE sets position directly!
+          // 3. Map Click Listener (Direct canvas, icons, roads, hotspots)
           map.events.add('click', (e: any) => {
             const coords = e.get('coords');
-            const pos: [number, number] = [coords[0], coords[1]];
+            if (coords) {
+              applySelectedLocation([coords[0], coords[1]]);
+            }
+          });
 
-            if (activeMode === 'pickup') {
-              setPickupCoords(pos);
-              pickupPlacemark.geometry.setCoordinates(pos);
-              if (map.geoObjects.indexOf(pickupPlacemark) === -1) {
-                map.geoObjects.add(pickupPlacemark);
-              }
-              reverseGeocode(pos, (addr) => {
-                setPickupAddress(addr);
-                setSearchQuery(addr);
-              });
-            } else if (activeMode === 'dropoff') {
-              setDropoffCoords(pos);
-              dropoffPlacemark.geometry.setCoordinates(pos);
-              if (map.geoObjects.indexOf(dropoffPlacemark) === -1) {
-                map.geoObjects.add(dropoffPlacemark);
-              }
-              reverseGeocode(pos, (addr) => {
-                setDropoffAddress(addr);
-                setSearchQuery(addr);
-              });
-            } else {
-              setDropoffCoords(pos);
-              dropoffPlacemark.geometry.setCoordinates(pos);
-              reverseGeocode(pos, (addr) => {
-                setDropoffAddress(addr);
-                recalculateYangoRoute(pickupCoords, pos);
-              });
+          // 4. GeoObjects / POIs Click Listener (Sightseeing icons, attractions, custom landmarks)
+          map.geoObjects.events.add('click', (e: any) => {
+            const target = e.get('target');
+            if (target === pickupPlacemark || target === dropoffPlacemark) return;
+            const coords = e.get('coords') || (target && target.geometry && target.geometry.getCoordinates());
+            const name = target && target.properties && (target.properties.get('name') || target.properties.get('balloonContent'));
+            if (coords) {
+              applySelectedLocation([coords[0], coords[1]], name);
             }
           });
 
@@ -285,7 +313,7 @@ export default function YangoMapView({
         } catch (e) {}
       }
     };
-  }, [activeMode, mapContainerId, reverseGeocode]);
+  }, [activeMode, mapContainerId, applySelectedLocation]);
 
   // Route calculation
   const recalculateYangoRoute = (p1: [number, number], p2: [number, number]) => {
@@ -337,20 +365,8 @@ export default function YangoMapView({
       (pos) => {
         setIsLocating(false);
         const coords: [number, number] = [pos.coords.latitude, pos.coords.longitude];
-        reverseGeocode(coords, (addr) => {
-          if (activeMode === 'pickup') {
-            setPickupCoords(coords);
-            setPickupAddress(addr);
-            setSearchQuery(addr);
-            if (pickupPlacemarkRef.current) pickupPlacemarkRef.current.geometry.setCoordinates(coords);
-          } else {
-            setDropoffCoords(coords);
-            setDropoffAddress(addr);
-            setSearchQuery(addr);
-            if (dropoffPlacemarkRef.current) dropoffPlacemarkRef.current.geometry.setCoordinates(coords);
-          }
-          if (mapInstanceRef.current) mapInstanceRef.current.setCenter(coords, 15);
-        });
+        applySelectedLocation(coords);
+        if (mapInstanceRef.current) mapInstanceRef.current.setCenter(coords, 15);
       },
       () => {
         setIsLocating(false);
@@ -401,8 +417,8 @@ export default function YangoMapView({
             }}
             placeholder={
               activeMode === 'pickup' 
-                ? (isRTL ? "ابحث أو اضغط على الخريطة لتحديد الاستلام..." : "Search or click map for pickup...")
-                : (isRTL ? "ابحث أو اضغط على الخريطة لتحديد التسليم..." : "Search or click map for dropoff...")
+                ? (isRTL ? "ابحث أو اضغط على أي معلم بالخريطة لتحديد الاستلام..." : "Search or tap any landmark/spot for pickup...")
+                : (isRTL ? "ابحث أو اضغط على أي معلم بالخريطة لتحديد التسليم..." : "Search or tap any landmark/spot for dropoff...")
             }
             className="w-full bg-transparent text-xs font-semibold text-zinc-800 placeholder:text-zinc-400 outline-none"
           />

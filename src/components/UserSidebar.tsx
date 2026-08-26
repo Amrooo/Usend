@@ -35,7 +35,7 @@ export default function UserSidebar({ currentScreen, onNavigate }: SidebarProps)
     { id: 'user_dashboard', icon: LayoutDashboard, label: t('dashboard') || 'Dashboard' },
     { id: 'user_individual', icon: PlusCircle, label: t('individual_order') || 'New Order' },
     { id: 'user_orders', icon: History, label: t('previous_orders') || 'Orders' },
-    { id: 'user_tracking', icon: Map, label: t('tracking') || 'Tracking' },
+    { id: 'user_tracking', icon: Package, label: t('requests_orders') || 'Requests & Orders' },
     { id: 'user_payments', icon: CreditCard, label: t('payments') || 'Payment Methods' },
   ];
   

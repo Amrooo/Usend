@@ -196,7 +196,7 @@ export default function PortalRegister({ onNavigate }: { onNavigate: (s: Screen)
                           
                           <div className="space-y-2">
                              <label className="text-xs font-bold text-brand block">Company Name</label>
-                             <input type="text" placeholder="Ex: Shiplifier LLC" value={companyName} onChange={e => setCompanyName(e.target.value)} className="w-full px-5 py-3 border border-[#85AEE0] rounded-full text-slate-700 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-brand/30 bg-transparent font-medium" />
+                             <input type="text" placeholder="Ex: USend Logistics LLC" value={companyName} onChange={e => setCompanyName(e.target.value)} className="w-full px-5 py-3 border border-[#85AEE0] rounded-full text-slate-700 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-brand/30 bg-transparent font-medium" />
                           </div>
                           
                           <div className="flex justify-end">

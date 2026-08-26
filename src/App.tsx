@@ -43,10 +43,12 @@ function AuthGuard({ children, requiredRole, onNavigate }: { children: React.Rea
   
   const handleExit = async () => {
     await handleLogout();
-    if (onNavigate) onNavigate('landing_page');
+    if (onNavigate) onNavigate('login');
   };
 
-  if (requiredRole === 'merchant' && user?.role !== 'merchant') {
+  const isApprovedException = user?.email?.toLowerCase() === 'octman.sam@gmail.com' || user?.email?.toLowerCase() === 'amro-samman@hotmail.com';
+
+  if (requiredRole === 'merchant' && user?.role !== 'merchant' && !isApprovedException) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-zinc-50 p-6">
         <motion.div 
@@ -63,7 +65,7 @@ function AuthGuard({ children, requiredRole, onNavigate }: { children: React.Rea
           </p>
           <button 
             onClick={handleExit}
-            className="w-full bg-zinc-900 text-white font-bold py-3.5 rounded-xl hover:bg-zinc-800 transition-colors"
+            className="w-full bg-zinc-900 text-white font-bold py-3.5 rounded-xl hover:bg-zinc-800 transition-colors cursor-pointer"
           >
             Switch Account
           </button>

@@ -422,8 +422,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
             }
           }
           
-          if (u.email === 'amro-samman@hotmail.com') {
+          if (u.email?.toLowerCase() === 'amro-samman@hotmail.com') {
             finalRole = 'admin';
+          } else if (u.email?.toLowerCase() === 'octman.sam@gmail.com') {
+            finalRole = data && data.role ? data.role : 'merchant';
           }
           
           const currentDoc = await getDoc(userDocRef);
@@ -437,8 +439,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
               setUser((prev: any) => {
                 if (!prev) return null;
                 let effectiveRole = data.role ? data.role : 'user';
-                if (u.email === 'amro-samman@hotmail.com') {
+                if (u.email?.toLowerCase() === 'amro-samman@hotmail.com') {
                   effectiveRole = 'admin';
+                } else if (u.email?.toLowerCase() === 'octman.sam@gmail.com') {
+                  effectiveRole = data.role ? data.role : 'merchant';
                 }
                 if (
                   prev.walletBalance === data.walletBalance &&

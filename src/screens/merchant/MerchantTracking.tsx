@@ -381,9 +381,16 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
         >
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl md:text-3xl font-black text-zinc-900">{t('order_tracking')}</h1>
-              <p className="text-zinc-500 mt-1">{t('monitor_active_deliveries')}</p>
+              <h1 className="text-2xl md:text-3xl font-black text-zinc-900">{t('requests_orders') || 'Requests and Orders'}</h1>
+              <p className="text-zinc-500 mt-1">Manage parcel shipping orders, assign courier carriers, and track delivery statuses.</p>
             </div>
+            <button 
+              onClick={() => onNavigate('merchant_individual')}
+              className="px-6 py-3.5 bg-[#113f36] hover:bg-[#0e332c] text-white text-xs font-black uppercase tracking-widest rounded-2xl transition-all shadow-lg shadow-[#113f36]/20 hover:shadow-xl hover:shadow-[#113f36]/30 active:scale-[0.98] flex items-center gap-2 cursor-pointer self-start md:self-auto"
+            >
+              <Package className="w-4 h-4 text-emerald-400" />
+              <span>Create Order</span>
+            </button>
           </div>
 
           {/* Quick Stats Summary */}
@@ -404,7 +411,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                    </div>
                    <span className="text-[12px] font-black text-[#113f36]/60 uppercase tracking-wider">{t('in_transit')}</span>
                 </div>
-                <div className="text-2xl font-black text-zinc-900">1</div>
+                <div className="text-2xl font-black text-zinc-900">{activeOrders.filter(o => o.status === 'in_transit' || o.status === 'En-route').length}</div>
              </div>
              <div className="bg-white p-5 rounded-3xl border border-zinc-200 shadow-sm overflow-hidden relative group">
                 <div className="flex items-center justify-between mb-2">
@@ -413,7 +420,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                    </div>
                    <span className="text-[12px] font-black text-purple-500/60 uppercase tracking-wider">{t('picked_up')}</span>
                 </div>
-                <div className="text-2xl font-black text-zinc-900">1</div>
+                <div className="text-2xl font-black text-zinc-900">{activeOrders.filter(o => o.status === 'picked_up' || o.status === 'Picked Up').length}</div>
              </div>
              <div className="bg-white p-5 rounded-3xl border border-zinc-200 shadow-sm overflow-hidden relative group">
                 <div className="flex items-center justify-between mb-2">
@@ -422,175 +429,12 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                    </div>
                    <span className="text-[12px] font-black text-orange-500/60 uppercase tracking-wider">{t('pending')}</span>
                 </div>
-                <div className="text-2xl font-black text-zinc-900">1</div>
+                <div className="text-2xl font-black text-zinc-900">{activeOrders.filter(o => o.status === 'Pending' || o.status === 'pending' || o.status === 'assigning').length}</div>
              </div>
           </div>
 
-          <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
-            <h3 className="text-sm font-black uppercase tracking-widest text-zinc-700">Live Fleet Dispatch & Routing</h3>
-            <div className="flex items-center gap-1.5 bg-zinc-100 p-1 rounded-xl">
-              <button
-                onClick={() => setMapEngine('yango')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
-                  mapEngine === 'yango' ? 'bg-[#113f36] text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-800'
-                }`}
-              >
-                Yango Live Map
-              </button>
-              <button
-                onClick={() => setMapEngine('leaflet')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
-                  mapEngine === 'leaflet' ? 'bg-[#113f36] text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-800'
-                }`}
-              >
-                Standard Fleet
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative">
-            {/* Real Map */}
-            <div className="lg:col-span-2 bg-zinc-900 rounded-3xl h-[380px] lg:h-[480px] relative overflow-hidden border border-zinc-200 shadow-sm z-0">
-              {mapEngine === 'yango' ? (
-                <YangoMapView
-                  initialPickup={selectedOrder?.pickupAddress || 'Downtown Dubai, UAE'}
-                  initialDropoff={selectedOrder?.deliveryAddress || 'Dubai Marina, UAE'}
-                />
-              ) : isMapReady ? (
-                <MapContainer center={mapCenter} zoom={13} style={{ height: '100%', width: '100%' }}>
-                  <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-                  />
-                  {activeOrders.map((order) => (
-                    <Marker 
-                      key={order.id} 
-                      position={order.position || [25.2, 55.2]}
-                      eventHandlers={{
-                        click: () => setSelectedOrder(order),
-                      }}
-                    >
-                      <Popup>
-                        <div className="text-sm">
-                          <strong>{order.id}</strong><br />
-                          {order.customer}<br />
-                          {order.status}
-                        </div>
-                      </Popup>
-                    </Marker>
-                  ))}
-                </MapContainer>
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <div className="w-8 h-8 border-4 border-[#113f36] border-t-transparent rounded-full animate-spin"></div>
-                </div>
-              )}
-            </div>
-
-            {/* Active Orders List */}
-            <div className="bg-white rounded-3xl shadow-sm border border-zinc-200 flex flex-col min-h-[240px] lg:h-[300px] transition-colors">
-              <div className="p-6 border-b border-zinc-200">
-                <h2 className="text-xl font-bold text-zinc-900 flex items-center gap-3">
-                  <div className="w-2 h-2 bg-[#113f36] rounded-full animate-pulse"></div>
-                  {t('active_orders')} ({filteredOrders.length})
-                </h2>
-              </div>
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {paginatedOrders.length > 0 ? paginatedOrders.map((order) => {
-                    const isRejected = order.status === 'Rejected' || order.status === 'Cancelled';
-                    return (
-                  <button 
-                    key={order.id} 
-                    onClick={() => setSelectedOrder(order)}
-                    className={`w-full text-left bg-zinc-50 hover:bg-zinc-100 rounded-2xl p-4 border transition-all relative overflow-hidden group ${selectedOrder?.id === order.id ? 'border-[#113f36] ring-4 ring-blue-500/10 translate-x-1 shadow-md' : 'border-zinc-200 hover:border-zinc-300'} ${isRTL ? 'text-right' : 'text-left'} ${isRejected ? 'opacity-50 grayscale' : ''}`}
-                  >
-                    {/* Status accent bar indicator */}
-                    <div className={`absolute top-0 bottom-0 ${isRTL ? 'right-0' : 'left-0'} w-1.5 ${
-                      isRejected ? 'bg-red-500' :
-                      order.status === 'delivered' || order.status === 'Completed' ? 'bg-[#113f36]' :
-                      order.status === 'in_transit' ? 'bg-amber-500' :
-                      order.status === 'Assigned' ? 'bg-indigo-500' :
-                      order.status === 'Approved' ? 'bg-purple-500' :
-                      'bg-orange-500'
-                    }`} />
-
-                    <div className={`flex flex-col gap-3 ${isRTL ? 'pr-4' : 'pl-4'}`}>
-                      <div className="flex justify-between items-start">
-                        <div className="flex flex-col">
-                           <div className="flex flex-wrap items-center gap-2">
-                             <h3 className="text-sm font-bold text-zinc-900">{order.name}</h3>
-                             {order.carrier === 'aramex' && <span className="bg-[#d12421] text-white px-1.5 py-0.5 rounded-md text-[13px] font-black uppercase">Aramex</span>}
-                              {order.carrier === 'noon' && <span className="bg-[#feee00] text-black px-1.5 py-0.5 rounded-md text-[13px] font-black uppercase border border-amber-300">Noon</span>}
-                             {order.carrier === 'dhl_express' && <span className="bg-yellow-400 text-red-600 px-1.5 py-0.5 rounded-md text-[13px] font-black uppercase">DHL</span>}
-                             {order.carrier === 'usend' && <span className="bg-zinc-900 text-white px-1.5 py-0.5 rounded-md text-[13px] font-black uppercase">USend</span>}
-                             <span className="px-1.5 py-0.5 rounded-md bg-zinc-200/50 text-[12px] font-black text-zinc-500">
-                               {order.id}
-                             </span>
-                           </div>
-                           <div className="flex items-center gap-1 mt-1 text-[13px] font-medium text-zinc-500">
-                             <MapPin className="w-3 h-3 text-zinc-400 shrink-0" />
-                             <span className="truncate max-w-[140px] leading-tight">{order.address}</span>
-                           </div>
-                        </div>
-                        <div className="flex flex-col items-end gap-1">
-                           <span className={`px-2 py-0.5 rounded-lg text-[13px] font-black tracking-wider uppercase ${
-                              order.status === 'delivered' || order.status === 'Completed' ? 'bg-[#113f36]/10 text-[#113f36]' :
-                              order.status === 'in_transit' ? 'bg-amber-50 text-amber-700' :
-                              order.status === 'Assigned' ? 'bg-indigo-50 text-indigo-700 font-bold' :
-                              order.status === 'Approved' ? 'bg-purple-50 text-purple-600' :
-                              'bg-orange-50 text-orange-600'
-                            }`}>
-                              {order.status}
-                           </span>
-                           <span className="text-[12px] font-bold text-zinc-400">{order.date}</span>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between pt-3 border-t border-zinc-200/80">
-                        <div className="flex items-center gap-2">
-                          <img src={`https://i.pravatar.cc/100?u=${order.driverId || 'default'}`} alt="Driver" className="w-6 h-6 rounded-full object-cover ring-2 ring-white" referrerPolicy="no-referrer" />
-                          <span className="text-xs font-bold text-zinc-700">{order.driverId || 'Not Assigned'}</span>
-                        </div>
-                        
-                        <div className="flex items-center gap-1.5 bg-zinc-100 px-2 py-1 rounded-md">
-                          <Clock className="w-3 h-3 text-[#113f36]" />
-                          <span className="text-[12px] font-black text-zinc-700">ETA: {order.etaTime}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-                )}) : (
-                   <div className="flex flex-col items-center justify-center h-full text-zinc-400 py-10">
-                      <Package className="w-12 h-12 mb-2 opacity-20" />
-                      <p className="text-sm font-medium">No orders found</p>
-                   </div>
-                )}
-              </div>
-              
-              {totalPages > 1 && (
-                <div className="p-4 border-t border-zinc-200 bg-zinc-50 flex items-center justify-between rounded-b-3xl">
-                  <button 
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                    className="px-4 py-2 border border-zinc-200 rounded-lg text-sm font-bold text-zinc-700 disabled:opacity-50 hover:bg-zinc-100 transition-colors"
-                  >
-                    Prev
-                  </button>
-                  <span className="text-sm font-medium text-zinc-500">Page {currentPage} of {totalPages}</span>
-                  <button 
-                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                    disabled={currentPage === totalPages}
-                    className="px-4 py-2 border border-zinc-200 rounded-lg text-sm font-bold text-zinc-700 disabled:opacity-50 hover:bg-zinc-100 transition-colors"
-                  >
-                    Next
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-
           {/* All Orders Table Grid Section */}
-          <div className="bg-white rounded-3xl shadow-sm border border-zinc-200 overflow-hidden mt-8">
+          <div className="bg-white rounded-3xl shadow-sm border border-zinc-200 overflow-hidden">
             <div className="p-8 border-b border-zinc-200 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div>
                 <h2 className="text-xl font-bold text-zinc-900 flex items-center gap-2">
