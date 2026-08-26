@@ -1,11 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import * as L from 'leaflet';
-import { MapPin, Search } from 'lucide-react';
+import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-
-
+import YangoMapView from './YangoMapView';
+import { MapPin, Navigation } from 'lucide-react';
 
 interface MapPickerProps {
   onSelect?: (address: string, position: [number, number]) => void;
@@ -14,78 +10,29 @@ interface MapPickerProps {
   initialAddress?: string;
 }
 
-function LocationMarker({ position, setPosition, setAddress }: any) {
-  useMapEvents({
-    async click(e) {
-      setPosition(e.latlng);
-      setAddress(`${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}`); // Fallback while loading
-      try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${e.latlng.lat}&lon=${e.latlng.lng}`);
-        const data = await res.json();
-        if (data && data.display_name) {
-          setAddress(data.display_name);
-        }
-      } catch (err) {
-        console.error("Geocoding failed", err);
-      }
-    },
-  });
-
-  return position === null ? null : (
-    <Marker position={position} />
-  );
-}
-
 export default function MapPicker({ onSelect, onClose, initialPosition, initialAddress }: MapPickerProps) {
   const { isRTL } = useLanguage();
-  const [position, setPosition] = useState<L.LatLng | null>(initialPosition ? new L.LatLng(Array.isArray(initialPosition) ? initialPosition[0] : initialPosition.lat, Array.isArray(initialPosition) ? initialPosition[1] : initialPosition.lng) : new L.LatLng(25.2048, 55.2708));
-  const [address, setAddress] = useState(initialAddress || 'Dubai, United Arab Emirates');
-
-  const handleConfirm = () => {
-    if (position && onSelect) {
-      onSelect(address, [position.lat, position.lng]);
-    }
-    if (onClose) onClose();
-  };
+  
+  const parsedCoords: [number, number] = initialPosition
+    ? Array.isArray(initialPosition)
+      ? initialPosition
+      : [initialPosition.lat, initialPosition.lng]
+    : [25.1972, 55.2744]; // Downtown Dubai
 
   return (
-    <div className="flex flex-col h-[65vh] min-h-[400px] max-h-[550px] w-full">
-      <div className="p-4 border-b border-zinc-200 bg-white z-10 relative">
-        <div className="flex items-center gap-3 bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3">
-          <Search className="w-5 h-5 text-zinc-400" />
-          <input
-            type="text"
-            placeholder="Search address (Simulated)..."
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            className="w-full bg-transparent outline-none text-sm font-medium text-zinc-900"
-            dir={isRTL ? "rtl" : "ltr"}
-          />
-        </div>
-      </div>
-      <div className="relative flex-1 z-0">
-        <MapContainer center={position || [25.2048, 55.2708]} zoom={11} style={{ height: '100%', width: '100%' }}>
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-          />
-          <LocationMarker position={position} setPosition={setPosition} setAddress={setAddress} />
-        </MapContainer>
-      </div>
-      <div className="p-4 border-t border-zinc-200 bg-white grid grid-cols-2 gap-3 z-10 relative">
-        <button
-          onClick={onClose}
-          className="py-3.5 rounded-xl border border-zinc-300 font-bold text-zinc-700 hover:bg-zinc-50 transition-colors uppercase cursor-pointer"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={handleConfirm}
-          className="py-3.5 rounded-xl bg-[#1a5c4e] hover:bg-[#113f36] text-white font-bold tracking-widest transition-colors uppercase cursor-pointer"
-        >
-          Confirm Location
-        </button>
-      </div>
+    <div className="flex flex-col h-[75vh] min-h-[500px] max-h-[700px] w-full bg-[#18181b] rounded-2xl overflow-hidden shadow-2xl">
+      <YangoMapView
+        initialPickup={initialAddress || 'Downtown Dubai, UAE'}
+        initialPickupCoords={parsedCoords}
+        onConfirm={(pickup, dropoff, fare) => {
+          if (onSelect) {
+            onSelect(pickup.address, pickup.coords);
+          }
+          if (onClose) onClose();
+        }}
+        onClose={onClose}
+        isModal={true}
+      />
     </div>
   );
 }

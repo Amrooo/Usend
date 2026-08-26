@@ -5,32 +5,32 @@ const { execSync } = require('child_process');
 
 async function deploy() {
   console.log('================================================================');
-  console.log('🚀 DEPLOYING USEND PRODUCTION BUNDLE TO CLOUDWAYS (134.209.28.27)');
+  console.log('🚀 DEPLOYING LIGHTWEIGHT PRODUCTION BUNDLE TO CLOUDWAYS');
   console.log('================================================================\n');
 
   const rootDir = path.resolve(__dirname, '..');
   const tarPath = path.join(rootDir, 'deploy_bundle.tar.gz');
 
   // 1. Build locally
-  console.log('1. Building production bundles locally (App + Admin + Server)...');
+  console.log('1. Building production bundles locally...');
   execSync('npm run build', { cwd: rootDir, stdio: 'inherit' });
 
-  // 2. Package into tar.gz
+  // 2. Package into lightweight tar.gz
   console.log('\n2. Packaging build artifacts into deploy_bundle.tar.gz...');
   if (fs.existsSync(tarPath)) {
     fs.unlinkSync(tarPath);
   }
 
-  // Include dist, usendadmin2026, assets, functions, src, server.ts, package.json
-  execSync('tar -czf deploy_bundle.tar.gz dist usendadmin2026 assets functions src server.ts package.json tsconfig.json vite.config.ts public', {
+  // Create lightweight tar containing built dist, usendadmin2026, functions, src, assets
+  execSync('tar -czf deploy_bundle.tar.gz --exclude="*.mp4" --exclude="node_modules" dist usendadmin2026 assets functions src server.ts package.json tsconfig.json vite.config.ts', {
     cwd: rootDir,
     stdio: 'inherit'
   });
 
   const stats = fs.statSync(tarPath);
-  console.log(`Deployment bundle created: ${(stats.size / (1024 * 1024)).toFixed(2)} MB`);
+  console.log(`Lightweight bundle created: ${(stats.size / (1024 * 1024)).toFixed(2)} MB`);
 
-  // 3. Connect via SSH & SFTP
+  // 3. Connect via SSH & SFTP with retry
   console.log('\n3. Uploading bundle to Cloudways server via SFTP...');
   const conn = new Client();
 
@@ -63,16 +63,17 @@ async function deploy() {
           cp -r dist/assets/* assets/ 2>/dev/null || true &&
           cp -r usendadmin2026/assets/* assets/ 2>/dev/null || true &&
           cp usendadmin2026/index.html admin.html 2>/dev/null || true &&
+          touch index.html admin.html &&
           echo "Restarting Node service..." &&
           pkill -f "node functions/server.cjs" || true &&
           sleep 1 &&
-          nohup node functions/server.cjs > server.log 2>&1 &
+          (setsid node functions/server.cjs > server.log 2>&1 &)
           sleep 2 &&
           echo "=== Verification of Running Processes ===" &&
           ps aux | grep "node functions/server.cjs" | grep -v grep &&
           echo "" &&
-          echo "=== Testing Health Endpoint on Port 3000 ===" &&
-          curl -s http://localhost:3000/api/health || curl -s http://localhost:3005/api/health || true
+          echo "=== Testing Health Endpoint ===" &&
+          curl -s http://localhost:3005/api/health || true
         `;
 
         conn.exec(remoteCmd, (execErr, stream) => {
@@ -85,7 +86,6 @@ async function deploy() {
           stream.on('close', (code, signal) => {
             console.log(`\nRemote deployment commands finished with exit code ${code}`);
             conn.end();
-            // Cleanup local archive
             if (fs.existsSync(tarPath)) fs.unlinkSync(tarPath);
             console.log('================================================================');
             console.log('🎉 LIVE DEPLOYMENT COMPLETE! Site is live on https://www.trsh.ae');
@@ -104,11 +104,15 @@ async function deploy() {
 
       readStream.pipe(writeStream);
     });
+  }).on('error', (cErr) => {
+    console.error('SSH Client Error:', cErr);
   }).connect({
     host: '134.209.28.27',
     port: 22,
     username: 'master_awqbxuyqcq',
-    password: 'rW9MJAfvXn4n'
+    password: 'rW9MJAfvXn4n',
+    readyTimeout: 30000,
+    keepaliveInterval: 10000
   });
 }
 

@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { Screen } from '../../types';
 import UserSidebar from '../../components/UserSidebar';
-import { Search, MapPin, Package, Clock, X, Phone, FileText, CheckCircle2, AlertCircle, Truck, Navigation, User, CreditCard, Hash, Check, Calendar } from 'lucide-react';
+import { Search, MapPin, Package, Clock, X, Phone, FileText, CheckCircle2, AlertCircle, Truck, Navigation, User, CreditCard, Hash, Check, Calendar, Globe2 } from 'lucide-react';
 import { useState, useEffect, ReactNode, FC } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useApp, USendRequest } from '../../context/AppContext';
@@ -9,8 +9,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import * as L from 'leaflet';
 import Barcode from 'react-barcode';
-
-
+import YangoMapView from '../../components/YangoMapView';
 
 interface UserTrackingProps {
   key?: string;
@@ -21,6 +20,7 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
   const { t, isRTL } = useLanguage();
   const { activeRequests, user, updateRequestStatus, updateRequest } = useApp();
   const [isMapReady, setIsMapReady] = useState(false);
+  const [mapEngine, setMapEngine] = useState<'yango' | 'leaflet'>('yango');
   const [filter, setFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
@@ -232,25 +232,51 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 hide-scrollbar">
-             {statusTabs.map(tab => (
+          <div className="flex items-center justify-between gap-2 overflow-x-auto pb-2 hide-scrollbar flex-wrap">
+             <div className="flex items-center gap-2">
+               {statusTabs.map(tab => (
+                 <button
+                   key={tab.id}
+                   onClick={() => setFilter(tab.id)}
+                   className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${
+                     filter === tab.id 
+                       ? 'bg-gradient-to-r from-blue-700 to-blue-500 text-white shadow-lg shadow-[#113f36]/20' 
+                       : 'bg-white text-zinc-500 border border-zinc-200 hover:bg-zinc-50'
+                   }`}
+                 >
+                   {tab.label}
+                 </button>
+               ))}
+             </div>
+
+             <div className="flex items-center gap-1.5 bg-zinc-100 p-1 rounded-xl">
                <button
-                 key={tab.id}
-                 onClick={() => setFilter(tab.id)}
-                 className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${
-                   filter === tab.id 
-                     ? 'bg-gradient-to-r from-blue-700 to-blue-500 text-white shadow-lg shadow-[#113f36]/20' 
-                     : 'bg-white text-zinc-500 border border-zinc-200 hover:bg-zinc-50'
+                 onClick={() => setMapEngine('yango')}
+                 className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                   mapEngine === 'yango' ? 'bg-[#113f36] text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-800'
                  }`}
                >
-                 {tab.label}
+                 Yango Live Map
                </button>
-             ))}
+               <button
+                 onClick={() => setMapEngine('leaflet')}
+                 className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                   mapEngine === 'leaflet' ? 'bg-[#113f36] text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-800'
+                 }`}
+               >
+                 Standard Fleet
+               </button>
+             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative">
-            <div className="lg:col-span-2 bg-zinc-200 rounded-3xl h-[340px] lg:h-[510px] relative overflow-hidden border border-zinc-200 z-0">
-              {isMapReady ? (
+            <div className="lg:col-span-2 bg-zinc-900 rounded-3xl h-[380px] lg:h-[530px] relative overflow-hidden border border-zinc-200 shadow-sm z-0">
+              {mapEngine === 'yango' ? (
+                <YangoMapView
+                  initialPickup={selectedOrder?.pickupAddress || 'Downtown Dubai, UAE'}
+                  initialDropoff={selectedOrder?.deliveryAddress || 'Dubai Marina, UAE'}
+                />
+              ) : isMapReady ? (
                 <MapContainer center={mapCenter} zoom={13} style={{ height: '100%', width: '100%' }}>
                   <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

@@ -7,6 +7,7 @@ import { auth, db } from '../firebase';
 import { signInWithGoogle } from '../lib/firebaseUtils';
 import { Screen } from '../types';
 import { useApp } from '../context/AppContext';
+import LogoIcon from './LogoIcon';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -23,28 +24,14 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Auto-fill values for easy testing
   React.useEffect(() => {
     if (isOpen) {
       setSelectedRole(defaultRole);
-    }
-  }, [isOpen, defaultRole]);
-
-  React.useEffect(() => {
-    if (isOpen) {
       setError(null);
       setPassword('');
-      if (selectedRole === 'admin') {
-        setEmail('admin@usend.com');
-      } else if (selectedRole === 'merchant') {
-        setEmail('merchant@usend.com');
-      } else if (selectedRole === 'user') {
-        setEmail('user@usend.com');
-      } else if (selectedRole === 'driver') {
-        setEmail('driver@usend.com');
-      }
+      setEmail('');
     }
-  }, [isOpen, selectedRole]);
+  }, [isOpen, defaultRole]);
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
@@ -115,25 +102,8 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
       onClose();
       onNavigate(redirectScreen);
     } catch (err: any) {
-      console.warn("Firebase Auth fallback check: ", err.message);
-      // Demo fallback if connection completely fails (not password errors)
-      if (password === 'password') {
-        let targetRole = selectedRole;
-        let redirectScreen: Screen = 'merchant_dashboard';
-        if (targetRole === 'user' || (targetRole as string) === 'driver') redirectScreen = 'user_dashboard';
-        
-        setUser({
-          uid: 'demo-fallback-uid',
-          email: email,
-          role: targetRole,
-          name: 'Demo User',
-        });
-
-        onClose();
-        onNavigate(redirectScreen);
-      } else {
-        setError(err.message || "Failed to login. Please check your credentials.");
-      }
+      console.warn("Authentication error: ", err.message);
+      setError(err.message || "Failed to login. Please check your credentials.");
     } finally {
       setLoading(false);
     }
@@ -166,22 +136,28 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
             {/* Header close button */}
             <button 
               onClick={onClose} 
-              className="absolute top-6 right-6 p-1.5 rounded-full bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all focus:outline-hidden border border-slate-200"
+              className="absolute top-6 right-6 p-2 rounded-full bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all focus:outline-hidden border border-slate-200 cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
 
-            {/* Title block */}
-            <div className="space-y-2 mb-8">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#113f36]/5 border border-[#113f36]/10 text-[#113f36] text-[12px] font-black uppercase tracking-widest font-sans">
-                USend Shipping Portal
-              </span>
-              <h3 className="text-xl md:text-2xl font-bold tracking-tight text-zinc-900">
-                {defaultRole === 'admin' ? 'Sign In as Administrator' : 'Access Your Portal'}
-              </h3>
-              <p className="text-slate-450 text-xs font-medium leading-relaxed">
-                Connect your account to coordinate merchant deliveries, manage shipments, or active fleet routes.
-              </p>
+            {/* Top Logo & Title block */}
+            <div className="space-y-3 mb-6">
+              <div className="flex items-center gap-3">
+                <LogoIcon className="h-10 w-auto" />
+              </div>
+
+              <div className="space-y-1">
+                <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#113f36]/5 border border-[#113f36]/10 text-[#113f36] text-[11px] font-black uppercase tracking-widest font-sans">
+                  USend Shipping Portal
+                </span>
+                <h3 className="text-xl md:text-2xl font-bold tracking-tight text-zinc-900 pt-1">
+                  {defaultRole === 'admin' ? 'Sign In as Administrator' : 'Access Your Portal'}
+                </h3>
+                <p className="text-slate-500 text-xs font-medium leading-relaxed">
+                  Connect your account to coordinate merchant deliveries, manage shipments, or active fleet routes.
+                </p>
+              </div>
             </div>
 
             
@@ -242,7 +218,7 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="user@usend.com"
+                    placeholder="name@company.com"
                     className="w-full h-12.5 bg-slate-50 border border-slate-200 text-slate-900 rounded-xl pl-11 pr-4 focus:ring-2 focus:ring-[#113f36] focus:outline-hidden tracking-normal text-xs font-semibold transition-all"
                   />
                 </div>
@@ -262,9 +238,6 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
                     placeholder="••••••••"
                     className="w-full h-12.5 bg-slate-50 border border-slate-200 text-slate-900 rounded-xl pl-11 pr-4 focus:ring-2 focus:ring-[#113f36] focus:outline-hidden tracking-widest text-xs font-semibold transition-all"
                   />
-                </div>
-                <div className="text-[12px] text-[#113f36] font-medium pt-1 text-right">
-                  Default Demo Password: <span className="font-bold underline">password</span>
                 </div>
               </div>
 

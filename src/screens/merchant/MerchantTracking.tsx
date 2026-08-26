@@ -10,8 +10,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import * as L from 'leaflet';
 import Barcode from 'react-barcode';
-
-
+import YangoMapView from '../../components/YangoMapView';
 
 interface MerchantTrackingProps {
   key?: string;
@@ -22,6 +21,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
   const { t, isRTL } = useLanguage();
   const { activeRequests, user, updateRequest, updateRequestStatus, courierConfigs } = useApp();
   const [isMapReady, setIsMapReady] = useState(false);
+  const [mapEngine, setMapEngine] = useState<'yango' | 'leaflet'>('yango');
   const [filter, setFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [carrierFilter, setCarrierFilter] = useState('all_carriers');
@@ -426,10 +426,37 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
              </div>
           </div>
 
+          <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+            <h3 className="text-sm font-black uppercase tracking-widest text-zinc-700">Live Fleet Dispatch & Routing</h3>
+            <div className="flex items-center gap-1.5 bg-zinc-100 p-1 rounded-xl">
+              <button
+                onClick={() => setMapEngine('yango')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                  mapEngine === 'yango' ? 'bg-[#113f36] text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-800'
+                }`}
+              >
+                Yango Live Map
+              </button>
+              <button
+                onClick={() => setMapEngine('leaflet')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                  mapEngine === 'leaflet' ? 'bg-[#113f36] text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-800'
+                }`}
+              >
+                Standard Fleet
+              </button>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative">
             {/* Real Map */}
-            <div className="lg:col-span-2 bg-zinc-200 rounded-3xl h-[240px] lg:h-[300px] relative overflow-hidden border border-zinc-200 z-0">
-              {isMapReady ? (
+            <div className="lg:col-span-2 bg-zinc-900 rounded-3xl h-[380px] lg:h-[480px] relative overflow-hidden border border-zinc-200 shadow-sm z-0">
+              {mapEngine === 'yango' ? (
+                <YangoMapView
+                  initialPickup={selectedOrder?.pickupAddress || 'Downtown Dubai, UAE'}
+                  initialDropoff={selectedOrder?.deliveryAddress || 'Dubai Marina, UAE'}
+                />
+              ) : isMapReady ? (
                 <MapContainer center={mapCenter} zoom={13} style={{ height: '100%', width: '100%' }}>
                   <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

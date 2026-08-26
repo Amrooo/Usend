@@ -572,24 +572,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (snapshot.exists()) {
         const data = snapshot.data() as Record<string, CourierIntegrationConfig>;
         
+        let effective: Record<string, CourierIntegrationConfig> = data || {};
+
         // Self-heal: If the noon config has empty or default mock key, update it with correct staging key and endpoints
-        const noonConfig = data.noon;
+        const noonConfig = data?.noon;
         const needsHealing = !noonConfig || 
           !noonConfig.sandboxCreds?.apiKey || 
           noonConfig.sandboxCreds?.apiKey === 'noon_secret_key_123' ||
           noonConfig.baseUrlUat !== 'https://food-api-team.noonstg.team';
 
         if (needsHealing) {
-          const updated = {
+          effective = {
             ...data,
             noon: {
               id: 'noon',
               name: 'Noon RoD',
-              status: data.noon?.status || 'Active',
-              currentMode: data.noon?.currentMode || 'sandbox',
+              status: data?.noon?.status || 'Active',
+              currentMode: data?.noon?.currentMode || 'production',
               baseUrlUat: 'https://food-api-team.noonstg.team',
               baseUrlProd: 'https://food-api-team.noon.team',
-              connectionStatus: data.noon?.connectionStatus || { state: 'configured_untested', lastTestedAt: null, lastTestedMode: null, errorMessage: null },
+              connectionStatus: data?.noon?.connectionStatus || { state: 'configured_untested', lastTestedAt: null, lastTestedMode: null, errorMessage: null },
               sandboxCreds: {
                 username: "noon_sandbox_user",
                 password: "",
@@ -601,7 +603,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 apiKey: "SstJi9Ho0EHG2t7kQVSz7nA2hOeL3iiwVxHxb0Njk60QJ0LfmvoXOsimw1zQC7VugHXiIRRMnWyU6f0uHcEcLlco5Eujqbd5pTwDlfBXpacuRI4m4AAj61NwM0B7Ihk",
                 version: "v1.0"
               },
-              productionCreds: data.noon?.productionCreds || {
+              productionCreds: data?.noon?.productionCreds || {
                 username: "",
                 password: "",
                 accountNumber: "",
@@ -609,10 +611,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 accountEntity: "",
                 accountCountryCode: "AE",
                 source: "",
-                apiKey: "",
+                apiKey: "gxgyh5bcTvarO0iX9N7vMsRv4NZpoMWlu1Wm2Cg3eZW1oR4u5a7Cn24RwpZK3LOZUgMGIOPLv2crIVARo1VppbUPzlELLSA0qk9O2gcVtgRkG6Sk8Ag9OZubOvkMwNWh",
                 version: "v1.0"
               },
-              rates: data.noon?.rates || {
+              rates: data?.noon?.rates || {
                 guest: { baseFee: 25, perKmRate: 0, perKgRate: 4.5, expressSurcharge: 20, codFee: 8 },
                 user: { baseFee: 20, perKmRate: 0, perKgRate: 3.5, expressSurcharge: 15, codFee: 6 },
                 merchant: { baseFee: 12, perKmRate: 0, perKgRate: 2.0, expressSurcharge: 8, codFee: 3 }
