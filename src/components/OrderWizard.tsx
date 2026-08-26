@@ -734,8 +734,14 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
 
   return (
     <div id="guest-order-wizard" className={`w-full bg-white rounded-[2.5rem] ${isGuest ? 'shadow-xs' : 'shadow-none'} p-4 md:p-10 text-slate-800 scroll-mt-24`} dir={isRTL ? "rtl" : "ltr"}>
-      <Modal isOpen={isMapOpen} onClose={() => setIsMapOpen(false)} title="Select Location on Map">
-         <MapPicker onSelect={handleMapSelect} onClose={() => setIsMapOpen(false)} />
+      <Modal isOpen={isMapOpen} onClose={() => setIsMapOpen(false)} title={mapTarget === 'shipper' ? (isRTL ? "تحديد موقع الاستلام على الخريطة" : "Select Pickup Location on Map") : (isRTL ? "تحديد موقع التسليم على الخريطة" : "Select Drop-off Location on Map")} maxWidth="max-w-5xl">
+         <MapPicker 
+            target={mapTarget === 'shipper' ? 'pickup' : 'dropoff'}
+            initialAddress={mapTarget === 'shipper' ? shipperData.street : receiverData.street}
+            initialPosition={mapTarget === 'shipper' ? shipperData.position : receiverData.position}
+            onSelect={handleMapSelect} 
+            onClose={() => setIsMapOpen(false)} 
+         />
       </Modal>
 
       <Modal isOpen={isAramexBoxModalOpen} onClose={() => setIsAramexBoxModalOpen(false)} title={isRTL ? "اختر حجم الصندوق (أرامكس)" : "Choose Aramex Box Size"}>

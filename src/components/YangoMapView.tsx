@@ -1,86 +1,35 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useId } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap, useMapEvents } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-import { MapPin, Navigation, Car, Clock, DollarSign, Route, RefreshCw, X, Play, ShieldCheck, Check, Search } from 'lucide-react';
+import { MapPin, Navigation, Route, Check, X, Search, Locate, ArrowRight, Clock, DollarSign, Info } from 'lucide-react';
 
-// Custom Yango/USend Marker Icons
-const greenPinIcon = L.divIcon({
-  className: 'custom-yango-pin-pickup',
-  html: `
-    <div style="position:relative; width:34px; height:34px; display:flex; align-items:center; justify-content:center;">
-      <div style="position:absolute; width:100%; height:100%; border-radius:50%; background:#10b981; opacity:0.25; animation:ping 1.5s cubic-bezier(0,0,0.2,1) infinite;"></div>
-      <div style="width:26px; height:26px; border-radius:50%; background:#10b981; border:3px solid #ffffff; box-shadow:0 4px 12px rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; color:#ffffff; font-size:11px; font-weight:900;">A</div>
-    </div>
-  `,
-  iconSize: [34, 34],
-  iconAnchor: [17, 17]
-});
+declare global {
+  interface Window {
+    ymaps?: any;
+  }
+}
 
-const redPinIcon = L.divIcon({
-  className: 'custom-yango-pin-dropoff',
-  html: `
-    <div style="position:relative; width:34px; height:34px; display:flex; align-items:center; justify-content:center;">
-      <div style="position:absolute; width:100%; height:100%; border-radius:50%; background:#ef4444; opacity:0.25; animation:ping 1.5s cubic-bezier(0,0,0.2,1) infinite;"></div>
-      <div style="width:26px; height:26px; border-radius:50%; background:#ef4444; border:3px solid #ffffff; box-shadow:0 4px 12px rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; color:#ffffff; font-size:11px; font-weight:900;">B</div>
-    </div>
-  `,
-  iconSize: [34, 34],
-  iconAnchor: [17, 17]
-});
-
-const driverVehicleIcon = L.divIcon({
-  className: 'custom-yango-driver',
-  html: `
-    <div style="width:42px; height:42px; background:#113f36; border:3px solid #ffffff; border-radius:50%; box-shadow:0 6px 16px rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; transform:scale(1.05); transition:transform 0.2s ease;">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C2.1 11.2 2 11.6 2 12v4c0 .6.4 1 1 1h2"/>
-        <circle cx="7" cy="17" r="2"/>
-        <path d="M9 17h6"/>
-        <circle cx="17" cy="17" r="2"/>
-      </svg>
-    </div>
-  `,
-  iconSize: [42, 42],
-  iconAnchor: [21, 21]
-});
+export type MapPickerTarget = 'pickup' | 'dropoff' | 'shipper' | 'receiver' | 'route' | 'general';
 
 interface YangoMapViewProps {
+  target?: MapPickerTarget;
   initialPickup?: string;
   initialDropoff?: string;
   initialPickupCoords?: [number, number]; // [lat, lng]
   initialDropoffCoords?: [number, number]; // [lat, lng]
   onRouteCalculated?: (metrics: { distanceKm: number; durationMins: number; estimatedFare: number }) => void;
-  onConfirm?: (pickup: { address: string; coords: [number, number] }, dropoff: { address: string; coords: [number, number] }, fare: number) => void;
+  onConfirm?: (
+    pickup: { address: string; coords: [number, number] },
+    dropoff?: { address: string; coords: [number, number] },
+    metrics?: { distanceKm: number; durationMins: number; estimatedFare: number }
+  ) => void;
   onClose?: () => void;
   isModal?: boolean;
 }
 
-// Sub-component to fit map bounds to route
-function MapBoundsUpdater({ bounds }: { bounds: L.LatLngBoundsExpression | null }) {
-  const map = useMap();
-  useEffect(() => {
-    if (bounds) {
-      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
-    }
-  }, [bounds, map]);
-  return null;
-}
-
-// Sub-component to handle map clicks
-function MapClickHandler({ onClick }: { onClick: (latlng: L.LatLng) => void }) {
-  useMapEvents({
-    click(e) {
-      onClick(e.latlng);
-    }
-  });
-  return null;
-}
-
 export default function YangoMapView({
-  initialPickup = 'Downtown Dubai, Burj Khalifa Area',
-  initialDropoff = 'Dubai Marina Walk, Tower B',
+  target = 'general',
+  initialPickup = 'Downtown Dubai, UAE',
+  initialDropoff = 'Dubai Marina Walk, UAE',
   initialPickupCoords = [25.1972, 55.2744],
   initialDropoffCoords = [25.0785, 55.1390],
   onRouteCalculated,
@@ -89,72 +38,33 @@ export default function YangoMapView({
   isModal = false,
 }: YangoMapViewProps) {
   const { language, isRTL } = useLanguage();
+  const uniqueId = useId().replace(/[^a-zA-Z0-9]/g, '');
+  const mapContainerId = `yango-map-engine-${uniqueId}`;
+  const searchInputId = `yango-search-input-${uniqueId}`;
 
-  const [pickupAddress, setPickupAddress] = useState(initialPickup);
-  const [dropoffAddress, setDropoffAddress] = useState(initialDropoff);
-  const [pickupCoords, setPickupCoords] = useState<[number, number]>(initialPickupCoords);
-  const [dropoffCoords, setDropoffCoords] = useState<[number, number]>(initialDropoffCoords);
+  // Normalized mode
+  const isPickupMode = target === 'pickup' || target === 'shipper';
+  const isDropoffMode = target === 'dropoff' || target === 'receiver';
+  const isRouteMode = target === 'route';
 
-  const [routePolyline, setRoutePolyline] = useState<[number, number][]>([]);
-  const [driverPosition, setDriverPosition] = useState<[number, number] | null>(null);
-  const [isSimulatingDriver, setIsSimulatingDriver] = useState(false);
-  const [activeStep, setActiveStep] = useState<'plan' | 'dispatched' | 'arrived'>('plan');
+  // Active address & coordinates state
+  const [currentAddress, setCurrentAddress] = useState<string>(() => {
+    if (isDropoffMode) return initialDropoff;
+    return initialPickup;
+  });
 
-  const [isSearchingPickup, setIsSearchingPickup] = useState(false);
-  const [isSearchingDropoff, setIsSearchingDropoff] = useState(false);
-  const [pickupSuggestions, setPickupSuggestions] = useState<any[]>([]);
-  const [dropoffSuggestions, setDropoffSuggestions] = useState<any[]>([]);
+  const [currentCoords, setCurrentCoords] = useState<[number, number]>(() => {
+    if (isDropoffMode) return initialDropoffCoords;
+    return initialPickupCoords;
+  });
 
-  const animRef = useRef<number | null>(null);
+  // Secondary point for dual routing
+  const [secondaryAddress, setSecondaryAddress] = useState<string>(initialDropoff);
+  const [secondaryCoords, setSecondaryCoords] = useState<[number, number]>(initialDropoffCoords);
 
-  // Calculate Route & Waypoints (OSRM / Direct interpolation)
-  const calcRoute = async (start: [number, number], end: [number, number]) => {
-    try {
-      // Use OSRM public driving API for actual Dubai road geometry
-      const url = `https://router.project-osrm.org/route/v1/driving/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`;
-      const res = await fetch(url);
-      const data = await res.json();
-
-      if (data && data.routes && data.routes.length > 0) {
-        const route = data.routes[0];
-        const coordinates: [number, number][] = route.geometry.coordinates.map((c: number[]) => [c[1], c[0]]);
-        setRoutePolyline(coordinates);
-
-        const distKm = parseFloat((route.distance / 1000).toFixed(1));
-        const durMins = Math.ceil(route.duration / 60);
-        const fare = parseFloat((12 + distKm * 2.8).toFixed(2));
-
-        const metrics = { distanceKm: distKm, durationMins: durMins, estimatedFare: fare };
-        setRouteMetrics(metrics);
-        if (onRouteCalculated) onRouteCalculated(metrics);
-        return;
-      }
-    } catch (e) {
-      console.warn("OSRM routing fallback:", e);
-    }
-
-    // Fallback: smooth interpolated route line
-    const steps = 30;
-    const fallbackLine: [number, number][] = [];
-    for (let i = 0; i <= steps; i++) {
-      const r = i / steps;
-      fallbackLine.push([
-        start[0] + (end[0] - start[0]) * r,
-        start[1] + (end[1] - start[1]) * r
-      ]);
-    }
-    setRoutePolyline(fallbackLine);
-
-    const latDiff = Math.abs(start[0] - end[0]);
-    const lngDiff = Math.abs(start[1] - end[1]);
-    const dist = Math.max(3.5, parseFloat(((latDiff + lngDiff) * 111).toFixed(1)));
-    const dur = Math.round(dist * 2.2);
-    const fare = parseFloat((12 + dist * 2.8).toFixed(2));
-    const metrics = { distanceKm: dist, durationMins: dur, estimatedFare: fare };
-    setRouteMetrics(metrics);
-    if (onRouteCalculated) onRouteCalculated(metrics);
-  };
-
+  const [activeTab, setActiveTab] = useState<'pickup' | 'dropoff'>(isDropoffMode ? 'dropoff' : 'pickup');
+  const [isMapReady, setIsMapReady] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
   const [routeMetrics, setRouteMetrics] = useState<{
     distanceKm: number;
     durationMins: number;
@@ -162,399 +72,315 @@ export default function YangoMapView({
   }>({
     distanceKm: 18.5,
     durationMins: 22,
-    estimatedFare: 63.80
+    estimatedFare: 25.00
   });
 
+  const mapInstanceRef = useRef<any>(null);
+  const mainPlacemarkRef = useRef<any>(null);
+  const secondaryPlacemarkRef = useRef<any>(null);
+  const routeRef = useRef<any>(null);
+
+  // Yango Maps JS API initialization
   useEffect(() => {
-    calcRoute(pickupCoords, dropoffCoords);
-  }, [pickupCoords, dropoffCoords]);
+    let isMounted = true;
 
-  // Reverse Geocode
-  const reverseGeocode = async (coords: [number, number]): Promise<string> => {
-    try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords[0]}&lon=${coords[1]}&countrycodes=ae`);
-      const data = await res.json();
-      if (data && data.display_name) {
-        const parts = data.display_name.split(',');
-        return parts.slice(0, 3).join(',').trim();
-      }
-    } catch (e) {}
-    return `${coords[0].toFixed(4)}, ${coords[1].toFixed(4)}`;
-  };
+    const loadYangoMaps = () => {
+      const apiKey = localStorage.getItem('yango_maps_api_key') || 'e6e584f2-51a8-4447-b353-84729f27d825';
+      const langParam = language === 'ar' ? 'ar_AE' : 'en_AE';
+      const scriptUrl = `https://api-maps.yandex.ru/2.1/?apikey=${encodeURIComponent(apiKey)}&lang=${langParam}&coordorder=latlong`;
 
-  // Search Address Suggestions
-  const searchAddress = async (query: string, type: 'pickup' | 'dropoff') => {
-    if (!query || query.length < 3) {
-      if (type === 'pickup') setPickupSuggestions([]);
-      else setDropoffSuggestions([]);
-      return;
-    }
-
-    try {
-      // Constrained to UAE bounding box: 24.7 to 25.5 Lat, 54.9 to 55.6 Lng
-      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=ae&limit=5&bounded=1&viewbox=54.9,25.5,55.6,24.7`;
-      const res = await fetch(url);
-      const data = await res.json();
-      if (type === 'pickup') {
-        setPickupSuggestions(data);
-        setIsSearchingPickup(true);
-      } else {
-        setDropoffSuggestions(data);
-        setIsSearchingDropoff(true);
-      }
-    } catch (e) {}
-  };
-
-  // Map Click Handler to set Point A or Point B
-  const handleMapClick = async (latlng: L.LatLng) => {
-    const coords: [number, number] = [latlng.lat, latlng.lng];
-    const addr = await reverseGeocode(coords);
-    if (!pickupCoords) {
-      setPickupCoords(coords);
-      setPickupAddress(addr);
-    } else {
-      setDropoffCoords(coords);
-      setDropoffAddress(addr);
-    }
-  };
-
-  // Start Real-Time Live Driver Tracking (LERP Simulation)
-  const startDriverSimulation = () => {
-    if (!routePolyline || routePolyline.length < 2) return;
-
-    setIsSimulatingDriver(true);
-    setActiveStep('dispatched');
-    setDriverPosition(routePolyline[0]);
-
-    let stepIdx = 0;
-    let progress = 0;
-
-    const animate = () => {
-      if (stepIdx >= routePolyline.length - 1) {
-        setIsSimulatingDriver(false);
-        setActiveStep('arrived');
+      if (window.ymaps && window.ymaps.ready) {
+        initMap();
         return;
       }
 
-      const p1 = routePolyline[stepIdx];
-      const p2 = routePolyline[stepIdx + 1];
-
-      progress += 0.05; // 20 updates per step
-      const lat = p1[0] + (p2[0] - p1[0]) * progress;
-      const lng = p1[1] + (p2[1] - p1[1]) * progress;
-
-      setDriverPosition([lat, lng]);
-
-      if (progress >= 1.0) {
-        progress = 0;
-        stepIdx++;
+      let script = document.getElementById('yango-maps-api-script') as HTMLScriptElement;
+      if (!script) {
+        script = document.createElement('script');
+        script.id = 'yango-maps-api-script';
+        script.type = 'text/javascript';
+        script.src = scriptUrl;
+        script.async = true;
+        document.head.appendChild(script);
       }
 
-      animRef.current = requestAnimationFrame(animate);
+      script.onload = () => {
+        if (isMounted && window.ymaps && window.ymaps.ready) {
+          initMap();
+        }
+      };
     };
 
-    if (animRef.current) cancelAnimationFrame(animRef.current);
-    animRef.current = requestAnimationFrame(animate);
+    const initMap = () => {
+      window.ymaps.ready(() => {
+        if (!isMounted) return;
+        const container = document.getElementById(mapContainerId);
+        if (!container) return;
+
+        container.innerHTML = '';
+
+        try {
+          // Initialize native Yango map centered on selected coords
+          const map = new window.ymaps.Map(mapContainerId, {
+            center: currentCoords,
+            zoom: 14,
+            controls: ['zoomControl', 'geolocationControl']
+          }, {
+            suppressMapOpenBlock: true
+          });
+
+          mapInstanceRef.current = map;
+          setIsMapReady(true);
+
+          // 1. Create Main Interactive Placemark
+          const pinColor = (isDropoffMode || activeTab === 'dropoff') ? 'islands#redDotIcon' : 'islands#darkGreenDotIcon';
+          const placemark = new window.ymaps.Placemark(currentCoords, {
+            hintContent: isDropoffMode ? 'Drop-off Location' : 'Pickup Location',
+            balloonContent: currentAddress
+          }, {
+            preset: pinColor,
+            draggable: true
+          });
+
+          // Handle Drag End -> Reverse Geocode
+          placemark.events.add('dragend', () => {
+            const coords = placemark.geometry.getCoordinates();
+            const pos: [number, number] = [coords[0], coords[1]];
+            setCurrentCoords(pos);
+
+            window.ymaps.geocode(coords).then((res: any) => {
+              const geoObj = res.geoObjects.get(0);
+              const addr = geoObj ? geoObj.getAddressLine() : `${coords[0].toFixed(4)}, ${coords[1].toFixed(4)}`;
+              setCurrentAddress(addr);
+            });
+          });
+
+          map.geoObjects.add(placemark);
+          mainPlacemarkRef.current = placemark;
+
+          // 2. Map Click -> Move Pin & Reverse Geocode
+          map.events.add('click', (e: any) => {
+            const coords = e.get('coords');
+            const pos: [number, number] = [coords[0], coords[1]];
+            setCurrentCoords(pos);
+            placemark.geometry.setCoordinates(coords);
+
+            window.ymaps.geocode(coords).then((res: any) => {
+              const geoObj = res.geoObjects.get(0);
+              const addr = geoObj ? geoObj.getAddressLine() : `${coords[0].toFixed(4)}, ${coords[1].toFixed(4)}`;
+              setCurrentAddress(addr);
+            });
+          });
+
+          // 3. Autocomplete Suggestion Integration
+          if (window.ymaps.SuggestView) {
+            const suggestView = new window.ymaps.SuggestView(searchInputId, {
+              provider: {
+                suggest: (req: string) => window.ymaps.suggest(req, { boundedBy: [[24.7, 54.9], [25.5, 55.6]] })
+              }
+            });
+
+            suggestView.events.add('select', (e: any) => {
+              const selectedAddr = e.get('item').value;
+              window.ymaps.geocode(selectedAddr, { results: 1 }).then((res: any) => {
+                const geoObj = res.geoObjects.get(0);
+                if (geoObj) {
+                  const coords = geoObj.geometry.getCoordinates();
+                  const pos: [number, number] = [coords[0], coords[1]];
+                  setCurrentCoords(pos);
+                  setCurrentAddress(selectedAddr);
+                  placemark.geometry.setCoordinates(coords);
+                  map.setCenter(coords, 15, { duration: 300 });
+                }
+              });
+            });
+          }
+
+        } catch (err) {
+          console.error("Yango Map Init Error:", err);
+        }
+      });
+    };
+
+    loadYangoMaps();
+
+    return () => {
+      isMounted = false;
+      if (mapInstanceRef.current) {
+        try {
+          mapInstanceRef.current.destroy();
+        } catch (e) {}
+      }
+    };
+  }, [language, mapContainerId]);
+
+  // Geolocation handler (My Location)
+  const handleLocateMe = () => {
+    if (!navigator.geolocation || !mapInstanceRef.current || !window.ymaps) return;
+
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setIsLocating(false);
+        const coords: [number, number] = [position.coords.latitude, position.coords.longitude];
+        setCurrentCoords(coords);
+        if (mainPlacemarkRef.current) {
+          mainPlacemarkRef.current.geometry.setCoordinates(coords);
+        }
+        mapInstanceRef.current.setCenter(coords, 16, { duration: 300 });
+
+        window.ymaps.geocode(coords).then((res: any) => {
+          const geoObj = res.geoObjects.get(0);
+          const addr = geoObj ? geoObj.getAddressLine() : `${coords[0].toFixed(4)}, ${coords[1].toFixed(4)}`;
+          setCurrentAddress(addr);
+        });
+      },
+      (err) => {
+        setIsLocating(false);
+        console.warn("Geolocation denied or unavailable:", err);
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
   };
 
-  useEffect(() => {
-    return () => {
-      if (animRef.current) cancelAnimationFrame(animRef.current);
-    };
-  }, []);
-
-  // Compute map bounds
-  const mapBounds = useMemo(() => {
-    if (routePolyline.length > 0) {
-      return L.latLngBounds(routePolyline.map(p => L.latLng(p[0], p[1])));
+  // Confirm Selection
+  const handleConfirmLocation = () => {
+    if (onConfirm) {
+      if (isDropoffMode) {
+        onConfirm(
+          { address: initialPickup, coords: initialPickupCoords },
+          { address: currentAddress, coords: currentCoords },
+          routeMetrics
+        );
+      } else {
+        onConfirm(
+          { address: currentAddress, coords: currentCoords },
+          { address: secondaryAddress, coords: secondaryCoords },
+          routeMetrics
+        );
+      }
     }
-    return L.latLngBounds([pickupCoords, dropoffCoords]);
-  }, [routePolyline, pickupCoords, dropoffCoords]);
+  };
 
   return (
-    <div className={`flex flex-col lg:flex-row w-full h-full bg-[#121214] text-white overflow-hidden ${isModal ? 'rounded-[2rem]' : ''}`}>
-      {/* CONTROL & ROUTE PANEL */}
-      <div className="w-full lg:w-96 p-6 bg-[#18181b] border-b lg:border-b-0 lg:border-r border-zinc-800 flex flex-col justify-between space-y-6 z-20 shrink-0 overflow-y-auto">
-        <div className="space-y-5">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-[#113f36] flex items-center justify-center text-white shadow-sm">
-                <Navigation className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="font-black text-sm text-zinc-100 uppercase tracking-widest">
-                  {isRTL ? 'توجيه وملاحة يانجو' : 'Yango Mobility Route'}
-                </h3>
-                <p className="text-[10px] text-zinc-400 font-medium">
-                  {isRTL ? 'خريطة تفاعلية دقيقة مع حركة المرور المباشرة' : 'Live traffic & GCC road routing'}
-                </p>
-              </div>
-            </div>
-            {isModal && onClose && (
-              <button onClick={onClose} className="p-1.5 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-400 cursor-pointer transition-colors">
-                <X className="w-4 h-4" />
-              </button>
-            )}
+    <div className={`relative w-full h-full min-h-[520px] bg-slate-900 overflow-hidden select-none ${isModal ? 'rounded-2xl' : ''}`}>
+      {/* 1. NATIVE YANGO MAP CANVAS (100% UNCLUTTERED) */}
+      <div
+        id={mapContainerId}
+        className="absolute inset-0 w-full h-full z-0"
+        style={{ width: '100%', height: '100%', minHeight: '520px' }}
+      />
+
+      {/* Loading Overlay */}
+      {!isMapReady && (
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-900/80 backdrop-blur-sm">
+          <div className="w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin mb-3" />
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-200">
+            Loading Yango Maps...
+          </p>
+        </div>
+      )}
+
+      {/* 2. TOP FLOATING SEARCH & TARGET HEADER */}
+      <div className="absolute top-3 inset-x-3 sm:inset-x-auto sm:left-4 sm:right-4 z-20 flex flex-col gap-2 max-w-2xl mx-auto pointer-events-auto">
+        <div className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl p-2.5 flex items-center gap-2">
+          {/* Target Indicator Badge */}
+          <div className={`px-3 py-1.5 rounded-xl text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 shrink-0 ${
+            isDropoffMode 
+              ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20' 
+              : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+          }`}>
+            <span className={`w-2 h-2 rounded-full ${isDropoffMode ? 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]' : 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]'}`} />
+            <span>{isDropoffMode ? (isRTL ? 'نقطة التسليم' : 'Drop-off (B)') : (isRTL ? 'نقطة الاستلام' : 'Pickup (A)')}</span>
           </div>
 
-          {/* Location Inputs with Suggestions */}
-          <div className="space-y-3">
-            {/* Point A */}
-            <div className="relative">
-              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider block mb-1.5 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                {isRTL ? 'نقطة الاستلام (أ)' : 'Pickup Location (Point A)'}
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={pickupAddress}
-                  onChange={(e) => {
-                    setPickupAddress(e.target.value);
-                    searchAddress(e.target.value, 'pickup');
-                  }}
-                  placeholder="Search pickup or drag green pin"
-                  className="w-full bg-[#121214] border border-zinc-700 focus:border-[#113f36] rounded-xl px-3.5 py-2.5 text-xs text-white outline-none font-medium placeholder:text-zinc-500"
-                />
-              </div>
-
-              {isSearchingPickup && pickupSuggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-[#1c1c20] border border-zinc-700 rounded-xl shadow-2xl z-50 overflow-hidden">
-                  {pickupSuggestions.map((item, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        const coords: [number, number] = [parseFloat(item.lat), parseFloat(item.lon)];
-                        setPickupCoords(coords);
-                        setPickupAddress(item.display_name.split(',').slice(0, 3).join(','));
-                        setIsSearchingPickup(false);
-                      }}
-                      className="w-full text-left px-3.5 py-2.5 text-[11px] text-zinc-300 hover:bg-[#113f36] hover:text-white border-b border-zinc-800 last:border-0 transition-colors flex items-center gap-2 cursor-pointer"
-                    >
-                      <MapPin className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                      <span className="truncate">{item.display_name}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Point B */}
-            <div className="relative">
-              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider block mb-1.5 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-rose-500" />
-                {isRTL ? 'نقطة التسليم (ب)' : 'Drop-off Destination (Point B)'}
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={dropoffAddress}
-                  onChange={(e) => {
-                    setDropoffAddress(e.target.value);
-                    searchAddress(e.target.value, 'dropoff');
-                  }}
-                  placeholder="Search destination or drag red pin"
-                  className="w-full bg-[#121214] border border-zinc-700 focus:border-[#113f36] rounded-xl px-3.5 py-2.5 text-xs text-white outline-none font-medium placeholder:text-zinc-500"
-                />
-              </div>
-
-              {isSearchingDropoff && dropoffSuggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-[#1c1c20] border border-zinc-700 rounded-xl shadow-2xl z-50 overflow-hidden">
-                  {dropoffSuggestions.map((item, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        const coords: [number, number] = [parseFloat(item.lat), parseFloat(item.lon)];
-                        setDropoffCoords(coords);
-                        setDropoffAddress(item.display_name.split(',').slice(0, 3).join(','));
-                        setIsSearchingDropoff(false);
-                      }}
-                      className="w-full text-left px-3.5 py-2.5 text-[11px] text-zinc-300 hover:bg-[#113f36] hover:text-white border-b border-zinc-800 last:border-0 transition-colors flex items-center gap-2 cursor-pointer"
-                    >
-                      <MapPin className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-                      <span className="truncate">{item.display_name}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+          {/* Autocomplete Search Input */}
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              id={searchInputId}
+              type="text"
+              value={currentAddress}
+              onChange={(e) => setCurrentAddress(e.target.value)}
+              placeholder={isRTL ? 'ابحث عن العنوان أو حرك الدبوس...' : 'Search street, landmark or drag pin...'}
+              className="w-full bg-zinc-100 dark:bg-zinc-800 border-none rounded-xl pl-9 pr-3 py-2 text-xs font-semibold text-zinc-800 dark:text-zinc-100 outline-none placeholder:text-zinc-400"
+            />
           </div>
 
-          {/* Route Summary Telemetry */}
-          {routeMetrics && (
-            <div className="bg-[#121214] border border-zinc-800 rounded-2xl p-4 space-y-3">
-              <div className="flex items-center justify-between text-xs pb-2 border-b border-zinc-800/80">
-                <span className="text-zinc-400 flex items-center gap-1.5">
-                  <Route className="w-3.5 h-3.5 text-zinc-400" />
-                  {isRTL ? 'المسافة المقدرة' : 'Est. Distance'}
-                </span>
-                <span className="font-mono font-bold text-white">{routeMetrics.distanceKm} km</span>
-              </div>
+          {/* Locate Me GPS Button */}
+          <button
+            type="button"
+            onClick={handleLocateMe}
+            disabled={isLocating}
+            title="Locate Me (GPS)"
+            className="p-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl cursor-pointer transition-colors shrink-0"
+          >
+            <Locate className={`w-4 h-4 ${isLocating ? 'animate-spin text-emerald-500' : ''}`} />
+          </button>
 
-              <div className="flex items-center justify-between text-xs pb-2 border-b border-zinc-800/80">
-                <span className="text-zinc-400 flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-amber-500" />
-                  {isRTL ? 'الوقت مع المرور' : 'Travel Time (Traffic)'}
-                </span>
-                <span className="font-mono font-bold text-amber-400">{routeMetrics.durationMins} mins</span>
-              </div>
-
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-zinc-400 flex items-center gap-1.5">
-                  <DollarSign className="w-3.5 h-3.5 text-emerald-500" />
-                  {isRTL ? 'التكلفة المقدرة' : 'Estimated Fare'}
-                </span>
-                <span className="font-mono font-black text-emerald-400 text-sm">AED {routeMetrics.estimatedFare}</span>
-              </div>
-            </div>
-          )}
-
-          {/* Live Status Badge */}
-          {activeStep === 'dispatched' && (
-            <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-xl text-xs text-blue-400 flex items-center gap-2">
-              <Car className="w-4 h-4 animate-pulse" />
-              <span>{isRTL ? 'السائق في الطريق عبر مسار يانجو...' : 'Driver en-route via Yango Live Telemetry...'}</span>
-            </div>
-          )}
-
-          {activeStep === 'arrived' && (
-            <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-xs text-emerald-400 flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4" />
-              <span>{isRTL ? 'وصل السائق إلى الوجهة المحددة بنجاح!' : 'Driver arrived at destination successfully!'}</span>
-            </div>
+          {/* Close Modal Button (if modal) */}
+          {isModal && onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 rounded-xl cursor-pointer transition-colors shrink-0"
+            >
+              <X className="w-4 h-4" />
+            </button>
           )}
         </div>
 
-        {/* Action Controls */}
-        <div className="space-y-2 pt-2">
-          {activeStep === 'plan' ? (
-            <button
-              onClick={startDriverSimulation}
-              className="w-full py-3 bg-[#113f36] hover:bg-[#0e332c] text-white rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm cursor-pointer transition-all active:scale-[0.99]"
-            >
-              <Play className="w-3.5 h-3.5 fill-current" />
-              {isRTL ? 'محاكاة تتبع السائق المباشر' : 'Simulate Driver Telemetry'}
-            </button>
-          ) : (
-            <button
-              onClick={() => {
-                setActiveStep('plan');
-                setDriverPosition(null);
-              }}
-              className="w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition-all"
-            >
-              <RefreshCw className="w-3 h-3" />
-              {isRTL ? 'إعادة تعيين المسار' : 'Reset Route'}
-            </button>
-          )}
-
-          {onConfirm && (
-            <button
-              onClick={() => onConfirm(
-                { address: pickupAddress, coords: pickupCoords },
-                { address: dropoffAddress, coords: dropoffCoords },
-                routeMetrics.estimatedFare
-              )}
-              className="w-full py-3 bg-white hover:bg-zinc-100 text-black font-black rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-md transition-all"
-            >
-              <Check className="w-4 h-4 text-black" />
-              {isRTL ? 'تأكيد وحفظ المسار' : 'Confirm Location & Route'}
-            </button>
-          )}
+        {/* Tip / Instruction Pill */}
+        <div className="self-center bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold text-white tracking-wide shadow-md flex items-center gap-1.5">
+          <Info className="w-3 h-3 text-emerald-400" />
+          <span>{isRTL ? 'انقر على الخريطة أو اسحب الدبوس لتحديد الموقع بدقة' : 'Click map or drag the pin to set exact coordinates'}</span>
         </div>
       </div>
 
-      {/* MAP VIEWPORT CANVAS */}
-      <div className="flex-1 relative w-full h-[450px] lg:h-full min-h-[400px] bg-[#121214]">
-        <MapContainer
-          center={pickupCoords}
-          zoom={12}
-          style={{ height: '100%', width: '100%', backgroundColor: '#121214' }}
-        >
-          {/* Yango-styled Dark Carto Vector Tiles */}
-          <TileLayer
-            attribution='&copy; <a href="https://carto.com/attributions">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-          />
-
-          <MapBoundsUpdater bounds={mapBounds} />
-          <MapClickHandler onClick={handleMapClick} />
-
-          {/* Point A (Pickup - Draggable) */}
-          <Marker
-            position={pickupCoords}
-            icon={greenPinIcon}
-            draggable={true}
-            eventHandlers={{
-              dragend: async (e) => {
-                const marker = e.target;
-                const newPos = marker.getLatLng();
-                const coords: [number, number] = [newPos.lat, newPos.lng];
-                setPickupCoords(coords);
-                const addr = await reverseGeocode(coords);
-                setPickupAddress(addr);
-              }
-            }}
-          >
-            <Popup>
-              <div className="text-zinc-900 text-xs font-bold p-1">
-                <span className="text-emerald-600 uppercase tracking-widest text-[10px] block">Point A (Pickup)</span>
-                {pickupAddress}
+      {/* 3. BOTTOM FLOATING CONFIRMATION ACTION BAR */}
+      <div className="absolute bottom-3 inset-x-3 sm:inset-x-auto sm:left-4 sm:right-4 z-20 max-w-2xl mx-auto pointer-events-auto">
+        <div className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 shadow-2xl space-y-3">
+          {/* Selected Location Summary */}
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-2.5 min-w-0">
+              <div className={`p-2 rounded-xl shrink-0 mt-0.5 ${
+                isDropoffMode ? 'bg-rose-500/10 text-rose-500' : 'bg-emerald-500/10 text-emerald-500'
+              }`}>
+                <MapPin className="w-4 h-4" />
               </div>
-            </Popup>
-          </Marker>
-
-          {/* Point B (Dropoff - Draggable) */}
-          <Marker
-            position={dropoffCoords}
-            icon={redPinIcon}
-            draggable={true}
-            eventHandlers={{
-              dragend: async (e) => {
-                const marker = e.target;
-                const newPos = marker.getLatLng();
-                const coords: [number, number] = [newPos.lat, newPos.lng];
-                setDropoffCoords(coords);
-                const addr = await reverseGeocode(coords);
-                setDropoffAddress(addr);
-              }
-            }}
-          >
-            <Popup>
-              <div className="text-zinc-900 text-xs font-bold p-1">
-                <span className="text-rose-600 uppercase tracking-widest text-[10px] block">Point B (Destination)</span>
-                {dropoffAddress}
+              <div className="min-w-0">
+                <p className="text-[10px] font-black uppercase tracking-wider text-zinc-400">
+                  {isDropoffMode ? (isRTL ? 'العنوان المحدد للتسليم' : 'Selected Drop-off Location') : (isRTL ? 'العنوان المحدد للاستلام' : 'Selected Pickup Location')}
+                </p>
+                <p className="text-xs font-bold text-zinc-800 dark:text-zinc-100 truncate mt-0.5">
+                  {currentAddress || 'Downtown Dubai, UAE'}
+                </p>
+                <p className="text-[10px] font-mono text-zinc-400 mt-0.5">
+                  {currentCoords[0].toFixed(5)}° N, {currentCoords[1].toFixed(5)}° E
+                </p>
               </div>
-            </Popup>
-          </Marker>
+            </div>
+          </div>
 
-          {/* Route Polyline */}
-          {routePolyline.length > 1 && (
-            <Polyline
-              positions={routePolyline}
-              pathOptions={{
-                color: '#113f36',
-                weight: 5,
-                opacity: 0.95,
-                lineJoin: 'round',
-                lineCap: 'round'
-              }}
-            />
-          )}
-
-          {/* Live Driver Telemetry Marker */}
-          {driverPosition && (
-            <Marker position={driverPosition} icon={driverVehicleIcon}>
-              <Popup>
-                <div className="text-zinc-900 text-xs font-bold p-1">
-                  <span className="text-[#113f36] uppercase tracking-widest text-[10px] block">Live Fleet Telemetry</span>
-                  USend On-Demand Driver
-                </div>
-              </Popup>
-            </Marker>
-          )}
-        </MapContainer>
+          {/* Confirm Button */}
+          <button
+            type="button"
+            onClick={handleConfirmLocation}
+            className={`w-full py-3.5 px-4 rounded-xl text-xs font-black uppercase tracking-widest text-white flex items-center justify-center gap-2 shadow-lg transition-all active:scale-[0.99] cursor-pointer ${
+              isDropoffMode
+                ? 'bg-rose-500 hover:bg-rose-600 shadow-rose-500/25'
+                : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/25'
+            }`}
+          >
+            <Check className="w-4 h-4 stroke-[3]" />
+            <span>
+              {isDropoffMode 
+                ? (isRTL ? 'تأكيد موقع التسليم (نقطة ب)' : 'Confirm Drop-off Location') 
+                : (isRTL ? 'تأكيد موقع الاستلام (نقطة أ)' : 'Confirm Pickup Location')
+              }
+            </span>
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -34,7 +34,7 @@ import {
   ArrowUpRight, ArrowDownRight, MoreVertical,
   LogOut, LayoutDashboard, Database, MessageSquare, DollarSign, Wallet, Percent, CreditCard, ChevronDown, CheckCircle2, XCircle, Clock,
   Inbox, UserCircle2, Building2, MapPin, Code2, Repeat, X,
-  Boxes, ClipboardList, FileText, Coins, TrendingUp, Anchor, Plus, Check
+  Boxes, ClipboardList, FileText, Coins, TrendingUp, Anchor, Plus, Check, Calendar
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
@@ -609,109 +609,160 @@ function RequestsHub() {
         </div>
       )}
       
-      {/* Action Header */}
-      <div className="flex items-center justify-between gap-4">
+      {/* Requests and Orders Header & Analytics Bar */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-display font-black text-zinc-900 uppercase tracking-tight">Courier Requests & Dispatches</h2>
-          <p className="text-xs text-zinc-500 font-medium mt-1">Manage parcel shipping orders, assign courier carriers, and track delivery statuses.</p>
+          <div className="flex items-center gap-3 flex-wrap">
+            <h2 className="text-2xl lg:text-3xl font-display font-black text-zinc-900 tracking-tight">
+              Requests and Orders
+            </h2>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              {filteredRequests.length} Active Orders
+            </span>
+          </div>
+          <p className="text-xs text-zinc-500 font-medium mt-1.5">
+            Manage parcel shipping orders, assign courier carriers, and track delivery statuses across all channels.
+          </p>
         </div>
-        <button 
-          onClick={() => setIsBookingOpen(true)}
-          className="px-6 py-3 bg-brand text-white text-[12px] font-black uppercase tracking-widest rounded-full hover:scale-105 transition-all shadow-xl shadow-brand/20 flex items-center gap-2 cursor-pointer"
-        >
-          <Plus className="w-4 h-4" /> Book Delivery
-        </button>
+
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setIsBookingOpen(true)}
+            className="px-6 py-3.5 bg-[#113f36] hover:bg-[#0e332c] text-white text-xs font-black uppercase tracking-widest rounded-2xl transition-all shadow-lg shadow-[#113f36]/20 hover:shadow-xl hover:shadow-[#113f36]/30 active:scale-[0.98] flex items-center gap-2.5 cursor-pointer"
+          >
+            <Plus className="w-4 h-4 text-emerald-400" />
+            <span>Book Delivery</span>
+          </button>
+        </div>
       </div>
-      <div className="bg-white border border-zinc-200 rounded-2xl p-5 flex flex-col gap-4 shadow-sm mb-6">
-        <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 border-b border-zinc-100 pb-4">
-          <div className="flex flex-wrap gap-2 w-full xl:w-auto">
+
+      {/* Control Console Card */}
+      <div className="bg-white border border-zinc-200/80 rounded-[2rem] p-6 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] mb-6 space-y-5">
+        {/* Status Filter Tabs & Date Range */}
+        <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 border-b border-zinc-100 pb-5">
+          {/* Status Tabs with real dynamic counts */}
+          <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto">
             {[
-              { id: 'All Requests', label: 'All', dot: (active: boolean) => active ? 'bg-white' : 'bg-zinc-400' },
-              { id: 'Pending', label: 'Pending', dot: () => 'bg-orange-500' },
-              { id: 'Cancelled', label: t('cancelled') || 'Cancelled', dot: () => 'bg-red-500' },
-              { id: 'Reviewing', label: 'Reviewing', dot: () => 'bg-indigo-500' },
-              { id: 'Approved', label: 'Approved', dot: () => 'bg-emerald-500' },
-              { id: 'assigning', label: 'Assigning', dot: () => 'bg-[#113f36]' },
-              { id: 'in_transit', label: 'In Transit', dot: () => 'bg-purple-500' },
-              { id: 'delivered', label: 'Delivered', dot: () => 'bg-[#113f36]', pulse: true },
+              { id: 'All Requests', label: 'All', count: activeRequests.length, dot: 'bg-zinc-400' },
+              { id: 'Pending', label: 'Pending', count: activeRequests.filter(r => r.status === 'Pending').length, dot: 'bg-amber-500' },
+              { id: 'Reviewing', label: 'Reviewing', count: activeRequests.filter(r => r.status === 'Reviewing').length, dot: 'bg-indigo-500' },
+              { id: 'Approved', label: 'Approved', count: activeRequests.filter(r => r.status === 'Approved').length, dot: 'bg-emerald-500' },
+              { id: 'assigning', label: 'Assigning', count: activeRequests.filter(r => r.status === 'assigning' || r.status === 'Assigning').length, dot: 'bg-teal-500' },
+              { id: 'in_transit', label: 'In Transit', count: activeRequests.filter(r => r.status === 'in_transit' || r.status === 'In Transit' || r.status === 'En-route').length, dot: 'bg-purple-500' },
+              { id: 'delivered', label: 'Delivered', count: activeRequests.filter(r => r.status === 'delivered' || r.status === 'Delivered').length, dot: 'bg-emerald-500', pulse: true },
+              { id: 'Cancelled', label: t('cancelled') || 'Cancelled', count: activeRequests.filter(r => r.status === 'Cancelled' || r.status === 'Rejected').length, dot: 'bg-rose-500' },
             ].map(tab => {
               const isActive = statusFilter === tab.id;
               return (
                 <button 
                   key={tab.id}
                   onClick={() => setStatusFilter(tab.id)} 
-                  className={`px-4 py-2 rounded-xl text-[12px] font-bold uppercase tracking-wider flex items-center gap-2 transition-all ${
+                  className={`px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer ${
                     isActive 
-                      ? 'bg-[#113f36] text-white shadow-md ring-2 ring-[#113f36]/20 border-transparent' 
-                      : 'bg-zinc-50 text-zinc-600 hover:bg-zinc-100 border border-zinc-200 hover:border-zinc-300'
+                      ? 'bg-[#113f36] text-white shadow-md shadow-[#113f36]/25 ring-2 ring-[#113f36]/20' 
+                      : 'bg-zinc-50 hover:bg-zinc-100 text-zinc-600 border border-zinc-200/80 hover:border-zinc-300'
                   }`}
                 >
-                  <div className={`w-2 h-2 rounded-full ${tab.dot(isActive)} ${tab.pulse ? 'animate-pulse' : ''}`}></div>
-                  {tab.label}
+                  <span className={`w-2 h-2 rounded-full ${tab.dot} ${tab.pulse ? 'animate-pulse' : ''} ${isActive ? 'ring-2 ring-white/50' : ''}`} />
+                  <span>{tab.label}</span>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold ${
+                    isActive ? 'bg-white/20 text-white' : 'bg-zinc-200/70 text-zinc-600'
+                  }`}>
+                    {tab.count}
+                  </span>
                 </button>
               );
             })}
           </div>
           
-          <div className="flex gap-2 w-full lg:w-auto">
-             <input 
-                type="date" 
-                value={dateRange.start} 
-                onChange={(e) => setDateRange(p => ({...p, start: e.target.value}))}
-                className="bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-zinc-700 outline-none w-full md:w-auto focus:border-[#113f36] transition-colors"
-             />
-             <span className="text-zinc-400 self-center font-bold">-</span>
-             <input 
-                type="date" 
-                value={dateRange.end} 
-                onChange={(e) => setDateRange(p => ({...p, end: e.target.value}))}
-                className="bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-zinc-700 outline-none w-full md:w-auto focus:border-[#113f36] transition-colors"
-             />
+          {/* Date Range Picker */}
+          <div className="flex items-center gap-2 w-full xl:w-auto bg-zinc-50 p-1.5 rounded-2xl border border-zinc-200/80">
+             <div className="flex items-center gap-2 px-2">
+               <Calendar className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+               <input 
+                  type="date" 
+                  value={dateRange.start} 
+                  onChange={(e) => setDateRange(p => ({...p, start: e.target.value}))}
+                  className="bg-white border border-zinc-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-zinc-700 outline-none focus:border-[#113f36] transition-colors"
+               />
+             </div>
+             <span className="text-zinc-400 font-bold text-xs">-</span>
+             <div className="flex items-center gap-2 px-2">
+               <input 
+                  type="date" 
+                  value={dateRange.end} 
+                  onChange={(e) => setDateRange(p => ({...p, end: e.target.value}))}
+                  className="bg-white border border-zinc-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-zinc-700 outline-none focus:border-[#113f36] transition-colors"
+               />
+               {(dateRange.start || dateRange.end) && (
+                 <button
+                   onClick={() => setDateRange({ start: '', end: '' })}
+                   className="p-1 text-zinc-400 hover:text-zinc-700 rounded-full hover:bg-zinc-200 transition-colors cursor-pointer"
+                   title="Reset dates"
+                 >
+                   <X className="w-3 h-3" />
+                 </button>
+               )}
+             </div>
           </div>
         </div>
         
-        <div className="flex flex-col md:flex-row gap-3 w-full">
+        {/* Search and Secondary Filter Dropdowns */}
+        <div className="flex flex-col md:flex-row gap-3 w-full items-stretch">
            <div className="relative flex-1">
              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
              <input 
                type="text" 
-               placeholder="Search express by ID, phone, or name..."
+               placeholder="Search by order ID, customer name, phone, or courier..."
                value={expressSearch}
                onChange={(e) => setExpressSearch(e.target.value)}
-               className="w-full bg-zinc-50 border border-zinc-200 rounded-xl py-3 pl-11 pr-4 text-sm font-semibold text-zinc-800 placeholder-zinc-400 outline-none focus:border-[#113f36] focus:ring-1 focus:ring-[#113f36]/20 transition-all"
+               className="w-full bg-zinc-50 border border-zinc-200/80 focus:bg-white rounded-2xl py-3 pl-11 pr-10 text-xs font-semibold text-zinc-800 placeholder-zinc-400 outline-none focus:border-[#113f36] focus:ring-4 focus:ring-[#113f36]/10 transition-all"
              />
+             {expressSearch && (
+               <button
+                 onClick={() => setExpressSearch('')}
+                 className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-zinc-700 rounded-full hover:bg-zinc-200 transition-colors cursor-pointer"
+               >
+                 <X className="w-3.5 h-3.5" />
+               </button>
+             )}
            </div>
 
-           <select
-             value={sortOrder}
-             onChange={(e) => setSortOrder(e.target.value as any)}
-             className="bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-bold text-zinc-700 outline-none cursor-pointer hover:bg-zinc-100 transition-colors focus:border-[#113f36]"
-           >
-             <option value="newest">Newest First</option>
-             <option value="oldest">Oldest First</option>
-           </select>
+           <div className="flex items-center gap-2.5 flex-wrap">
+             <select
+               value={sortOrder}
+               onChange={(e) => setSortOrder(e.target.value as any)}
+               className="bg-zinc-50 border border-zinc-200/80 rounded-2xl px-4 py-3 text-xs font-black uppercase tracking-wider text-zinc-700 outline-none cursor-pointer hover:bg-zinc-100 hover:border-zinc-300 transition-all focus:border-[#113f36] focus:ring-4 focus:ring-[#113f36]/10"
+             >
+               <option value="newest">Newest First</option>
+               <option value="oldest">Oldest First</option>
+             </select>
 
-           <select 
-             value={carrierFilter} 
-             onChange={(e) => setCarrierFilter(e.target.value)} 
-             className="bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-bold text-zinc-700 outline-none cursor-pointer hover:bg-zinc-100 transition-colors focus:border-[#113f36]"
-           >
-             <option value="All Carriers">{t('all_carriers') || 'All Carriers'}</option>
-             <option value="aramex">Aramex</option>
-             <option value="dhl_express">DHL Express</option>
-             <option value="usend">USend Fleet</option>
-           </select>
+             <select 
+               value={carrierFilter} 
+               onChange={(e) => setCarrierFilter(e.target.value)} 
+               className="bg-zinc-50 border border-zinc-200/80 rounded-2xl px-4 py-3 text-xs font-black uppercase tracking-wider text-zinc-700 outline-none cursor-pointer hover:bg-zinc-100 hover:border-zinc-300 transition-all focus:border-[#113f36] focus:ring-4 focus:ring-[#113f36]/10"
+             >
+               <option value="All Carriers">{t('all_carriers') || 'All Carriers'}</option>
+               <option value="aramex">Aramex Express</option>
+               <option value="noon">Noon Delivery (RoD)</option>
+               <option value="dhl_express">DHL Express</option>
+               <option value="usend">USend Dedicated Fleet</option>
+             </select>
 
-           <select 
-             value={channelFilter} 
-             onChange={(e) => setChannelFilter(e.target.value)} 
-             className="bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-bold text-zinc-700 outline-none cursor-pointer hover:bg-zinc-100 transition-colors focus:border-[#113f36]"
-           >
-             <option>All Channels</option>
-             <option>Merchant Portal</option>
-             <option>Mobile App</option>
-             <option>User Portal</option>
-           </select>
+             <select 
+               value={channelFilter} 
+               onChange={(e) => setChannelFilter(e.target.value)} 
+               className="bg-zinc-50 border border-zinc-200/80 rounded-2xl px-4 py-3 text-xs font-black uppercase tracking-wider text-zinc-700 outline-none cursor-pointer hover:bg-zinc-100 hover:border-zinc-300 transition-all focus:border-[#113f36] focus:ring-4 focus:ring-[#113f36]/10"
+             >
+               <option>All Channels</option>
+               <option>Merchant Portal</option>
+               <option>Mobile App</option>
+               <option>User Portal</option>
+               <option>Direct API</option>
+             </select>
+           </div>
         </div>
       </div>
 

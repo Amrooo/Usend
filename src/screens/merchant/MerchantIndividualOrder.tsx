@@ -1657,8 +1657,10 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
         isOpen={isMapOpen} 
         onClose={() => setIsMapOpen(false)} 
         title={t('select_address') || 'Confirm Location on Grid Map'}
+        maxWidth="max-w-5xl"
       >
         <MapPicker 
+          target={isMapOpenQuoteTarget === 'pickup' || isMapOpenQuoteTarget === 'manual_pickup' ? 'pickup' : (isMapOpenQuoteTarget === 'dropoff' || isMapOpenQuoteTarget === 'manual_dropoff' ? 'dropoff' : 'general')}
           initialAddress={
             isMapOpenQuoteTarget === 'pickup' ? quoteData.pickupAddress : 
             isMapOpenQuoteTarget === 'dropoff' ? quoteData.dropoffAddress : 
