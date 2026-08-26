@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState, useId } from 'react';
+import React, { useEffect, useRef, useState, useId, useCallback } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { MapPin, Navigation, Car, Clock, DollarSign, Route, RefreshCw, X, Play, ShieldCheck, Check, Key, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react';
+import { MapPin, Navigation, Search, Check, X, Crosshair, Loader2 } from 'lucide-react';
 
 declare global {
   interface Window {
@@ -8,108 +8,152 @@ declare global {
   }
 }
 
-interface YangoMapViewProps {
+export interface YangoMapViewProps {
+  mode?: 'pickup' | 'dropoff' | 'route';
   initialPickup?: string;
   initialDropoff?: string;
   initialPickupCoords?: [number, number]; // [lat, lng]
   initialDropoffCoords?: [number, number]; // [lat, lng]
-  onRouteCalculated?: (metrics: { distanceKm: number; durationMins: number; estimatedFare: number }) => void;
-  onConfirm?: (pickup: { address: string; coords: [number, number] }, dropoff: { address: string; coords: [number, number] }, fare: number) => void;
+  onSelectLocation?: (address: string, coords: [number, number], distanceKm?: number) => void;
+  onConfirm?: (pickup: { address: string; coords: [number, number] }, dropoff: { address: string; coords: [number, number] }, distanceKm: number) => void;
   onClose?: () => void;
   isModal?: boolean;
 }
 
 export default function YangoMapView({
-  initialPickup = 'Downtown Dubai, Burj Khalifa Area',
-  initialDropoff = 'Dubai Marina Walk, Tower B',
+  mode = 'pickup',
+  initialPickup = 'Downtown Dubai, Dubai, UAE',
+  initialDropoff = 'Dubai Marina Walk, Dubai, UAE',
   initialPickupCoords = [25.1972, 55.2744],
   initialDropoffCoords = [25.0785, 55.1390],
-  onRouteCalculated,
+  onSelectLocation,
   onConfirm,
   onClose,
-  isModal = false,
+  isModal = true,
 }: YangoMapViewProps) {
   const { language, isRTL } = useLanguage();
   const uniqueId = useId().replace(/[^a-zA-Z0-9]/g, '');
-  const mapContainerId = `yango-map-engine-${uniqueId}`;
-  const pickupInputId = `yango-pickup-input-${uniqueId}`;
-  const dropoffInputId = `yango-dropoff-input-${uniqueId}`;
+  const mapContainerId = `yango-map-${uniqueId}`;
 
-  // API Key Management
-  const [apiKey, setApiKey] = useState<string>(() => {
-    return localStorage.getItem('yango_maps_api_key') || 'e6e584f2-51a8-4447-b353-84729f27d825'; // Default sandbox/partner key
-  });
-  const [showKeyModal, setShowKeyModal] = useState(false);
-  const [tempKeyInput, setTempKeyInput] = useState('');
+  const [activeMode, setActiveMode] = useState<'pickup' | 'dropoff' | 'route'>(mode);
+  const [pickupAddress, setPickupAddress] = useState(initialPickup || 'Downtown Dubai, UAE');
+  const [dropoffAddress, setDropoffAddress] = useState(initialDropoff || 'Dubai Marina, UAE');
+  const [pickupCoords, setPickupCoords] = useState<[number, number]>(initialPickupCoords || [25.1972, 55.2744]);
+  const [dropoffCoords, setDropoffCoords] = useState<[number, number]>(initialDropoffCoords || [25.0785, 55.1390]);
 
-  const [pickupAddress, setPickupAddress] = useState(initialPickup);
-  const [dropoffAddress, setDropoffAddress] = useState(initialDropoff);
-  const [pickupCoords, setPickupCoords] = useState<[number, number]>(initialPickupCoords);
-  const [dropoffCoords, setDropoffCoords] = useState<[number, number]>(initialDropoffCoords);
-
-  const [routeMetrics, setRouteMetrics] = useState<{
-    distanceKm: number;
-    durationMins: number;
-    estimatedFare: number;
-  }>({
-    distanceKm: 18.5,
-    durationMins: 22,
-    estimatedFare: 63.80
-  });
-
+  const [searchQuery, setSearchQuery] = useState(mode === 'dropoff' ? dropoffAddress : pickupAddress);
+  const [searchResults, setSearchResults] = useState<Array<{ title: string; coords: [number, number] }>>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  
+  const [calculatedDistanceKm, setCalculatedDistanceKm] = useState<number>(0);
   const [isMapReady, setIsMapReady] = useState(false);
-  const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
-  const [isSimulatingDriver, setIsSimulatingDriver] = useState(false);
-  const [activeStep, setActiveStep] = useState<'plan' | 'dispatched' | 'arrived'>('plan');
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
 
   const mapInstanceRef = useRef<any>(null);
   const pickupPlacemarkRef = useRef<any>(null);
   const dropoffPlacemarkRef = useRef<any>(null);
   const currentRouteRef = useRef<any>(null);
-  const driverPlacemarkRef = useRef<any>(null);
-  const simulationIntervalRef = useRef<any>(null);
+  const searchTimeoutRef = useRef<any>(null);
 
-  // 1. Dynamic Script Loader for Yango Maps JS API
+  // Sync mode changes
+  useEffect(() => {
+    setActiveMode(mode);
+    setSearchQuery(mode === 'dropoff' ? dropoffAddress : pickupAddress);
+  }, [mode]);
+
+  // Reverse geocoding helper using ymaps.geocode
+  const reverseGeocode = useCallback((coords: [number, number], callback: (addr: string) => void) => {
+    if (window.ymaps && window.ymaps.geocode) {
+      window.ymaps.geocode(coords, { results: 1 }).then((res: any) => {
+        const obj = res.geoObjects.get(0);
+        if (obj) {
+          const addr = obj.getAddressLine() || obj.properties.get('name') || `${coords[0].toFixed(5)}, ${coords[1].toFixed(5)}`;
+          callback(addr);
+        } else {
+          callback(`${coords[0].toFixed(5)}, ${coords[1].toFixed(5)}`);
+        }
+      }).catch(() => {
+        callback(`${coords[0].toFixed(5)}, ${coords[1].toFixed(5)}`);
+      });
+    } else {
+      callback(`${coords[0].toFixed(5)}, ${coords[1].toFixed(5)}`);
+    }
+  }, []);
+
+  // Safe search query handler using ymaps.geocode
+  const handleSearchInput = (val: string) => {
+    setSearchQuery(val);
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+
+    if (!val.trim() || val.trim().length < 3) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      setIsSearching(true);
+      if (window.ymaps && window.ymaps.geocode) {
+        window.ymaps.geocode(`${val.trim()}, UAE`, {
+          results: 5,
+          boundedBy: [[24.0, 54.0], [26.2, 56.5]], // UAE Bounding Box
+          strictBounds: false
+        }).then((res: any) => {
+          setIsSearching(false);
+          const results: Array<{ title: string; coords: [number, number] }> = [];
+          res.geoObjects.each((geoObject: any) => {
+            const coords = geoObject.geometry.getCoordinates();
+            const text = geoObject.getAddressLine() || geoObject.properties.get('name');
+            if (coords && text) {
+              results.push({ title: text, coords: [coords[0], coords[1]] });
+            }
+          });
+          setSearchResults(results);
+          setShowSearchResults(results.length > 0);
+        }).catch(() => {
+          setIsSearching(false);
+        });
+      } else {
+        setIsSearching(false);
+      }
+    }, 350);
+  };
+
+  const handleSelectSearchResult = (result: { title: string; coords: [number, number] }) => {
+    setShowSearchResults(false);
+    setSearchQuery(result.title);
+
+    if (activeMode === 'pickup') {
+      setPickupCoords(result.coords);
+      setPickupAddress(result.title);
+      if (pickupPlacemarkRef.current) {
+        pickupPlacemarkRef.current.geometry.setCoordinates(result.coords);
+      }
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.setCenter(result.coords, 15);
+      }
+      if (activeMode === 'route') recalculateYangoRoute(result.coords, dropoffCoords);
+    } else {
+      setDropoffCoords(result.coords);
+      setDropoffAddress(result.title);
+      if (dropoffPlacemarkRef.current) {
+        dropoffPlacemarkRef.current.geometry.setCoordinates(result.coords);
+      }
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.setCenter(result.coords, 15);
+      }
+      if (activeMode === 'route') recalculateYangoRoute(pickupCoords, result.coords);
+    }
+  };
+
+  // Initialize Native Yango Map
   useEffect(() => {
     let isMounted = true;
 
-    const loadYangoScript = () => {
-      const existingScript = document.getElementById('yango-maps-api-script') as HTMLScriptElement;
-      const langParam = language === 'ar' ? 'ar_AE' : 'en_AE';
-      const scriptUrl = `https://api-maps.yandex.ru/2.1/?apikey=${encodeURIComponent(apiKey)}&lang=${langParam}&coordorder=latlong`;
+    const startMap = () => {
+      if (!window.ymaps || !window.ymaps.ready) return;
 
-      if (window.ymaps && window.ymaps.ready) {
-        initYangoMap();
-        return;
-      }
-
-      if (existingScript) {
-        existingScript.remove();
-      }
-
-      const script = document.createElement('script');
-      script.id = 'yango-maps-api-script';
-      script.type = 'text/javascript';
-      script.src = scriptUrl;
-      script.async = true;
-
-      script.onload = () => {
-        if (!isMounted) return;
-        if (window.ymaps && window.ymaps.ready) {
-          initYangoMap();
-        }
-      };
-
-      script.onerror = () => {
-        if (!isMounted) return;
-        setLoadError('Failed to connect to Yango Maps API. Please verify your API Key.');
-      };
-
-      document.head.appendChild(script);
-    };
-
-    const initYangoMap = () => {
       window.ymaps.ready(() => {
         if (!isMounted) return;
         const container = document.getElementById(mapContainerId);
@@ -118,23 +162,22 @@ export default function YangoMapView({
         container.innerHTML = '';
 
         try {
-          // Initialize Yango Map Centered on Dubai
+          const targetCoords = activeMode === 'dropoff' ? dropoffCoords : pickupCoords;
+
           const map = new window.ymaps.Map(mapContainerId, {
-            center: pickupCoords,
-            zoom: 13,
-            controls: ['zoomControl', 'trafficControl', 'geolocationControl']
+            center: targetCoords,
+            zoom: 14,
+            controls: ['zoomControl', 'geolocationControl']
           }, {
             suppressMapOpenBlock: true
           });
 
           mapInstanceRef.current = map;
           setIsMapReady(true);
-          setLoadError(null);
 
-          // 1. Setup Point A (Pickup - Green Pin)
+          // 1. Pickup Placemark (Green Pin)
           const pickupPlacemark = new window.ymaps.Placemark(pickupCoords, {
-            hintContent: 'Pickup Location (Point A)',
-            balloonContent: pickupAddress
+            hintContent: 'Pickup Location (Point A)'
           }, {
             preset: 'islands#darkGreenDotIcon',
             draggable: true
@@ -142,22 +185,23 @@ export default function YangoMapView({
 
           pickupPlacemark.events.add('dragend', () => {
             const newCoords = pickupPlacemark.geometry.getCoordinates();
-            setPickupCoords([newCoords[0], newCoords[1]]);
-            window.ymaps.geocode(newCoords).then((res: any) => {
-              const firstGeoObject = res.geoObjects.get(0);
-              const address = firstGeoObject ? firstGeoObject.getAddressLine() : `${newCoords[0].toFixed(4)}, ${newCoords[1].toFixed(4)}`;
-              setPickupAddress(address);
-              recalculateYangoRoute(newCoords, dropoffCoords);
+            const pos: [number, number] = [newCoords[0], newCoords[1]];
+            setPickupCoords(pos);
+            reverseGeocode(pos, (addr) => {
+              setPickupAddress(addr);
+              if (activeMode === 'pickup') setSearchQuery(addr);
+              if (activeMode === 'route') recalculateYangoRoute(pos, dropoffCoords);
             });
           });
 
-          map.geoObjects.add(pickupPlacemark);
+          if (activeMode === 'pickup' || activeMode === 'route') {
+            map.geoObjects.add(pickupPlacemark);
+          }
           pickupPlacemarkRef.current = pickupPlacemark;
 
-          // 2. Setup Point B (Destination - Red Pin)
+          // 2. Dropoff Placemark (Red Pin)
           const dropoffPlacemark = new window.ymaps.Placemark(dropoffCoords, {
-            hintContent: 'Destination (Point B)',
-            balloonContent: dropoffAddress
+            hintContent: 'Dropoff Destination (Point B)'
           }, {
             preset: 'islands#redDotIcon',
             draggable: true
@@ -165,59 +209,73 @@ export default function YangoMapView({
 
           dropoffPlacemark.events.add('dragend', () => {
             const newCoords = dropoffPlacemark.geometry.getCoordinates();
-            setDropoffCoords([newCoords[0], newCoords[1]]);
-            window.ymaps.geocode(newCoords).then((res: any) => {
-              const firstGeoObject = res.geoObjects.get(0);
-              const address = firstGeoObject ? firstGeoObject.getAddressLine() : `${newCoords[0].toFixed(4)}, ${newCoords[1].toFixed(4)}`;
-              setDropoffAddress(address);
-              recalculateYangoRoute(pickupCoords, newCoords);
+            const pos: [number, number] = [newCoords[0], newCoords[1]];
+            setDropoffCoords(pos);
+            reverseGeocode(pos, (addr) => {
+              setDropoffAddress(addr);
+              if (activeMode === 'dropoff') setSearchQuery(addr);
+              if (activeMode === 'route') recalculateYangoRoute(pickupCoords, pos);
             });
           });
 
-          map.geoObjects.add(dropoffPlacemark);
+          if (activeMode === 'dropoff' || activeMode === 'route') {
+            map.geoObjects.add(dropoffPlacemark);
+          }
           dropoffPlacemarkRef.current = dropoffPlacemark;
 
-          // 3. Map Click Listener
+          // 3. Robust Map Click Listener: Clicking ANYWHERE sets position directly!
           map.events.add('click', (e: any) => {
             const coords = e.get('coords');
-            setDropoffCoords([coords[0], coords[1]]);
-            dropoffPlacemark.geometry.setCoordinates(coords);
-            window.ymaps.geocode(coords).then((res: any) => {
-              const firstGeoObject = res.geoObjects.get(0);
-              const address = firstGeoObject ? firstGeoObject.getAddressLine() : `${coords[0].toFixed(4)}, ${coords[1].toFixed(4)}`;
-              setDropoffAddress(address);
-              recalculateYangoRoute(pickupCoords, coords);
-            });
+            const pos: [number, number] = [coords[0], coords[1]];
+
+            if (activeMode === 'pickup') {
+              setPickupCoords(pos);
+              pickupPlacemark.geometry.setCoordinates(pos);
+              if (map.geoObjects.indexOf(pickupPlacemark) === -1) {
+                map.geoObjects.add(pickupPlacemark);
+              }
+              reverseGeocode(pos, (addr) => {
+                setPickupAddress(addr);
+                setSearchQuery(addr);
+              });
+            } else if (activeMode === 'dropoff') {
+              setDropoffCoords(pos);
+              dropoffPlacemark.geometry.setCoordinates(pos);
+              if (map.geoObjects.indexOf(dropoffPlacemark) === -1) {
+                map.geoObjects.add(dropoffPlacemark);
+              }
+              reverseGeocode(pos, (addr) => {
+                setDropoffAddress(addr);
+                setSearchQuery(addr);
+              });
+            } else {
+              setDropoffCoords(pos);
+              dropoffPlacemark.geometry.setCoordinates(pos);
+              reverseGeocode(pos, (addr) => {
+                setDropoffAddress(addr);
+                recalculateYangoRoute(pickupCoords, pos);
+              });
+            }
           });
 
-          // 4. Setup SuggestView Autocomplete for Inputs
-          setupYangoSuggest(pickupInputId, (coords: [number, number], addr: string) => {
-            setPickupCoords(coords);
-            setPickupAddress(addr);
-            pickupPlacemark.geometry.setCoordinates(coords);
-            map.setCenter(coords);
-            recalculateYangoRoute(coords, dropoffCoords);
-          });
+          if (activeMode === 'route') {
+            recalculateYangoRoute(pickupCoords, dropoffCoords);
+          }
 
-          setupYangoSuggest(dropoffInputId, (coords: [number, number], addr: string) => {
-            setDropoffCoords(coords);
-            setDropoffAddress(addr);
-            dropoffPlacemark.geometry.setCoordinates(coords);
-            map.setCenter(coords);
-            recalculateYangoRoute(pickupCoords, coords);
-          });
-
-          // 5. Initial Route Calculation
-          recalculateYangoRoute(pickupCoords, dropoffCoords);
-
-        } catch (err: any) {
-          console.error("Yango Map Init Error:", err);
-          setLoadError(err.message || "Authentication error with Yango Maps API Key");
+        } catch (initErr) {
+          console.error("Yango Map mounting error:", initErr);
         }
       });
     };
 
-    loadYangoScript();
+    if (window.ymaps && window.ymaps.ready) {
+      startMap();
+    } else {
+      const script = document.getElementById('yango-maps-api-script') || document.querySelector('script[src*="api-maps"]');
+      if (script) {
+        script.addEventListener('load', startMap);
+      }
+    }
 
     return () => {
       isMounted = false;
@@ -226,39 +284,10 @@ export default function YangoMapView({
           mapInstanceRef.current.destroy();
         } catch (e) {}
       }
-      if (simulationIntervalRef.current) {
-        clearInterval(simulationIntervalRef.current);
-      }
     };
-  }, [apiKey, language, mapContainerId]);
+  }, [activeMode, mapContainerId, reverseGeocode]);
 
-  // Connect Yango Suggest API to HTML Input
-  const setupYangoSuggest = (elementId: string, callback: (coords: [number, number], addr: string) => void) => {
-    try {
-      if (!window.ymaps || !window.ymaps.SuggestView) return;
-
-      const suggestView = new window.ymaps.SuggestView(elementId, {
-        provider: {
-          suggest: (request: string) => window.ymaps.suggest(request, { boundedBy: [[24.7, 54.9], [25.5, 55.6]] }) // GCC Bounding Box
-        }
-      });
-
-      suggestView.events.add('select', (e: any) => {
-        const selectedAddress = e.get('item').value;
-        window.ymaps.geocode(selectedAddress, { results: 1 }).then((res: any) => {
-          const firstGeoObject = res.geoObjects.get(0);
-          if (firstGeoObject) {
-            const coords = firstGeoObject.geometry.getCoordinates();
-            callback([coords[0], coords[1]], selectedAddress);
-          }
-        });
-      });
-    } catch (e) {
-      console.warn("SuggestView setup skipped:", e);
-    }
-  };
-
-  // Calculate Dynamic Road Route & Traffic Profile
+  // Route calculation
   const recalculateYangoRoute = (p1: [number, number], p2: [number, number]) => {
     if (!window.ymaps || !mapInstanceRef.current) return;
 
@@ -268,352 +297,226 @@ export default function YangoMapView({
 
     window.ymaps.route([p1, p2], {
       mapStateAutoApply: true,
-      routingMode: 'auto' // Driving mode
+      routingMode: 'auto'
     }).then((route: any) => {
       currentRouteRef.current = route;
-
-      // Style active polyline path with Yango Brand Red
       route.getPaths().options.set({
         strokeColor: '#FF2B42',
         strokeWidth: 6,
         opacity: 0.95
       });
-
       mapInstanceRef.current.geoObjects.add(route);
-
-      // Extract Telemetry Metrics
-      const distanceKm = parseFloat((route.getLength() / 1000).toFixed(1));
-      const timeMins = Math.ceil(route.getTime() / 60);
-      const estimatedFare = parseFloat((12 + (distanceKm * 2.8)).toFixed(2));
-
-      const metrics = { distanceKm, durationMins: timeMins, estimatedFare };
-      setRouteMetrics(metrics);
-      if (onRouteCalculated) onRouteCalculated(metrics);
-    }).catch((routeErr: any) => {
-      console.warn("Yango routing notice:", routeErr);
+      const km = parseFloat((route.getLength() / 1000).toFixed(1));
+      setCalculatedDistanceKm(km);
+    }).catch(() => {
+      const d = haversineDistance(p1, p2);
+      setCalculatedDistanceKm(d);
     });
   };
 
-  // -------------------------------------------------------------
-  // Real-Time Live Driver Tracking Subsystem (LERP Engine)
-  // -------------------------------------------------------------
-  const startLiveTrackingSimulation = () => {
-    if (!currentRouteRef.current || !mapInstanceRef.current || !window.ymaps) return;
-
-    try {
-      const pathCoordinates = currentRouteRef.current.getPaths().get(0).getCoordinates();
-      if (!pathCoordinates || pathCoordinates.length < 2) return;
-
-      setIsSimulatingDriver(true);
-      setActiveStep('dispatched');
-
-      if (driverPlacemarkRef.current) {
-        mapInstanceRef.current.geoObjects.remove(driverPlacemarkRef.current);
-      }
-
-      // Initialize Driver Marker
-      const driverPlacemark = new window.ymaps.Placemark(pathCoordinates[0], {
-        hintContent: 'USend Courier On-Demand',
-        balloonContent: 'Live Driver Telemetry Stream'
-      }, {
-        iconLayout: 'default#image',
-        iconImageHref: 'https://cdn-icons-png.flaticon.com/512/3202/3202926.png',
-        iconImageSize: [40, 40],
-        iconImageOffset: [-20, -20]
-      });
-
-      mapInstanceRef.current.geoObjects.add(driverPlacemark);
-      driverPlacemarkRef.current = driverPlacemark;
-
-      let stepIndex = 0;
-      let progress = 0;
-
-      if (simulationIntervalRef.current) clearInterval(simulationIntervalRef.current);
-
-      simulationIntervalRef.current = setInterval(() => {
-        if (stepIndex >= pathCoordinates.length - 1) {
-          clearInterval(simulationIntervalRef.current);
-          setIsSimulatingDriver(false);
-          setActiveStep('arrived');
-          return;
-        }
-
-        const startNode = pathCoordinates[stepIndex];
-        const endNode = pathCoordinates[stepIndex + 1];
-
-        // Linear interpolation between coordinate nodes
-        progress += 0.04;
-        const currentLat = startNode[0] + (endNode[0] - startNode[0]) * progress;
-        const currentLng = startNode[1] + (endNode[1] - startNode[1]) * progress;
-
-        driverPlacemark.geometry.setCoordinates([currentLat, currentLng]);
-
-        if (progress >= 1.0) {
-          progress = 0;
-          stepIndex++;
-        }
-      }, 50); // 20 updates per second for fluid 60 FPS visual animation
-    } catch (simErr) {
-      console.warn("Simulation notice:", simErr);
-    }
+  const haversineDistance = (c1: [number, number], c2: [number, number]) => {
+    const R = 6371;
+    const dLat = ((c2[0] - c1[0]) * Math.PI) / 180;
+    const dLon = ((c2[1] - c1[1]) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((c1[0] * Math.PI) / 180) * Math.cos((c2[0] * Math.PI) / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return parseFloat((R * c).toFixed(1));
   };
 
-  const handleSaveApiKey = () => {
-    if (tempKeyInput.trim()) {
-      localStorage.setItem('yango_maps_api_key', tempKeyInput.trim());
-      setApiKey(tempKeyInput.trim());
-      setShowKeyModal(false);
+  // Browser Geolocation / GPS
+  const handleUseCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
+      return;
     }
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setIsLocating(false);
+        const coords: [number, number] = [pos.coords.latitude, pos.coords.longitude];
+        reverseGeocode(coords, (addr) => {
+          if (activeMode === 'pickup') {
+            setPickupCoords(coords);
+            setPickupAddress(addr);
+            setSearchQuery(addr);
+            if (pickupPlacemarkRef.current) pickupPlacemarkRef.current.geometry.setCoordinates(coords);
+          } else {
+            setDropoffCoords(coords);
+            setDropoffAddress(addr);
+            setSearchQuery(addr);
+            if (dropoffPlacemarkRef.current) dropoffPlacemarkRef.current.geometry.setCoordinates(coords);
+          }
+          if (mapInstanceRef.current) mapInstanceRef.current.setCenter(coords, 15);
+        });
+      },
+      () => {
+        setIsLocating(false);
+        alert("Could not fetch GPS position. You can tap directly on the map to set location.");
+      },
+      { timeout: 10000, enableHighAccuracy: true }
+    );
   };
+
+  // Confirm Selection and return back to parent form
+  const handleConfirmLocation = () => {
+    if (activeMode === 'pickup') {
+      if (onSelectLocation) onSelectLocation(pickupAddress, pickupCoords);
+      if (onConfirm) onConfirm({ address: pickupAddress, coords: pickupCoords }, { address: dropoffAddress, coords: dropoffCoords }, calculatedDistanceKm);
+    } else if (activeMode === 'dropoff') {
+      if (onSelectLocation) onSelectLocation(dropoffAddress, dropoffCoords);
+      if (onConfirm) onConfirm({ address: pickupAddress, coords: pickupCoords }, { address: dropoffAddress, coords: dropoffCoords }, calculatedDistanceKm);
+    } else {
+      if (onConfirm) onConfirm({ address: pickupAddress, coords: pickupCoords }, { address: dropoffAddress, coords: dropoffCoords }, calculatedDistanceKm);
+      if (onSelectLocation) onSelectLocation(pickupAddress, pickupCoords, calculatedDistanceKm);
+    }
+    if (onClose) onClose();
+  };
+
+  const currentAddress = activeMode === 'dropoff' ? dropoffAddress : pickupAddress;
+  const currentCoords = activeMode === 'dropoff' ? dropoffCoords : pickupCoords;
 
   return (
-    <div className={`relative w-full h-full min-h-[520px] bg-[#121214] text-white overflow-hidden ${isModal ? 'rounded-2xl' : ''}`}>
-      {/* 1. NATIVE YANGO MAP CANVAS (EDGE-TO-EDGE) */}
-      <div
-        id={mapContainerId}
-        className="absolute inset-0 w-full h-full z-0"
-        style={{ width: '100%', height: '100%', minHeight: '520px', backgroundColor: '#121214' }}
-      />
-
-      {/* Loading Indicator */}
-      {!isMapReady && !loadError && (
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#121214]/90 backdrop-blur-sm">
-          <div className="w-10 h-10 border-4 border-[#FF2B42] border-t-transparent rounded-full animate-spin mb-4" />
-          <p className="text-xs font-black uppercase tracking-widest text-zinc-300">
-            Initializing Yango Maps Engine...
-          </p>
-        </div>
-      )}
-
-      {/* Error / Missing Key Banner */}
-      {loadError && (
-        <div className="absolute top-4 inset-x-4 sm:inset-x-auto sm:left-4 z-[600] max-w-md bg-amber-500/10 border border-amber-500/40 rounded-2xl p-4 backdrop-blur-xl shadow-2xl flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-          <div className="flex-1 text-xs">
-            <p className="font-bold text-amber-300">Yango Maps Key Notice</p>
-            <p className="text-zinc-400 text-[11px] mt-0.5">{loadError}</p>
-            <button
-              onClick={() => {
-                setTempKeyInput(apiKey);
-                setShowKeyModal(true);
-              }}
-              className="mt-2.5 px-3 py-1.5 bg-[#FF2B42] hover:bg-[#e02439] text-white font-bold rounded-xl text-[10px] uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shadow-sm"
-            >
-              <Key className="w-3 h-3" /> Enter Registered API Key
-            </button>
+    <div className={`relative w-full h-[70vh] min-h-[480px] max-h-[680px] bg-[#f8fafc] text-zinc-900 overflow-hidden flex flex-col ${isModal ? 'rounded-2xl' : ''}`}>
+      
+      {/* 1. TOP FLOATING SEARCH & CONTROLS */}
+      <div className="absolute top-4 inset-x-4 z-[500] flex flex-col items-center gap-1 max-w-xl mx-auto pointer-events-auto">
+        <div className="relative w-full bg-white/95 backdrop-blur-xl border border-zinc-200/80 rounded-2xl shadow-xl flex items-center px-3.5 py-2.5 transition-all focus-within:ring-2 focus-within:ring-[#FF2B42]/30 focus-within:border-[#FF2B42]">
+          <div className="flex items-center gap-2 mr-2">
+            {activeMode === 'pickup' ? (
+              <span className="w-3 h-3 rounded-full bg-emerald-500 shadow-sm shrink-0" />
+            ) : (
+              <span className="w-3 h-3 rounded-full bg-[#FF2B42] shadow-sm shrink-0" />
+            )}
           </div>
-        </div>
-      )}
+          
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => handleSearchInput(e.target.value)}
+            onFocus={() => {
+              if (searchResults.length > 0) setShowSearchResults(true);
+            }}
+            placeholder={
+              activeMode === 'pickup' 
+                ? (isRTL ? "ابحث أو اضغط على الخريطة لتحديد الاستلام..." : "Search or click map for pickup...")
+                : (isRTL ? "ابحث أو اضغط على الخريطة لتحديد التسليم..." : "Search or click map for dropoff...")
+            }
+            className="w-full bg-transparent text-xs font-semibold text-zinc-800 placeholder:text-zinc-400 outline-none"
+          />
 
-      {/* 2. FLOATING YANGO DISPATCH CARD OVERLAY */}
-      <div className={`absolute top-4 ${isRTL ? 'right-4' : 'left-4'} z-[500] w-[calc(100%-2rem)] sm:w-96 max-w-[420px] bg-[#1E1E24]/95 backdrop-blur-2xl border border-[#2C2C35] rounded-3xl p-5 shadow-2xl transition-all duration-300 max-h-[calc(100%-2rem)] overflow-y-auto`}>
-        {/* Card Header */}
-        <div className="flex items-center justify-between pb-3.5 border-b border-[#2C2C35]">
-          <div className="flex items-center gap-2.5">
-            <h2 className="text-base font-bold text-white tracking-tight">Order Mobility</h2>
-            <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-[#FF2B42]/15 text-[#FF2B42] border border-[#FF2B42]/30">
-              Yango Engine
-            </span>
-          </div>
+          {isSearching && (
+            <Loader2 className="w-3.5 h-3.5 text-zinc-400 animate-spin mr-1" />
+          )}
 
-          <div className="flex items-center gap-1.5">
-            <button
+          {searchQuery && !isSearching && (
+            <button 
               onClick={() => {
-                setTempKeyInput(apiKey);
-                setShowKeyModal(true);
+                setSearchQuery('');
+                setSearchResults([]);
+                setShowSearchResults(false);
               }}
-              className="p-1.5 rounded-xl bg-[#121214] hover:bg-zinc-800 text-zinc-400 hover:text-white cursor-pointer transition-colors"
-              title="Configure Yango API Key"
+              className="p-1 rounded-full text-zinc-400 hover:text-zinc-600 transition-colors"
             >
-              <Key className="w-3.5 h-3.5" />
+              <X className="w-3.5 h-3.5" />
             </button>
-            <button
-              onClick={() => setIsPanelCollapsed(!isPanelCollapsed)}
-              className="p-1.5 rounded-xl bg-[#121214] hover:bg-zinc-800 text-zinc-400 cursor-pointer transition-colors"
-              title={isPanelCollapsed ? "Expand" : "Collapse"}
-            >
-              {isPanelCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
-            </button>
-            {isModal && onClose && (
+          )}
+
+          <div className="h-4 w-px bg-zinc-200 mx-2" />
+
+          {/* GPS Locate Button */}
+          <button
+            onClick={handleUseCurrentLocation}
+            disabled={isLocating}
+            title={isRTL ? "استخدام موقعي الحالي" : "Use current GPS location"}
+            className="p-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 transition-colors flex items-center gap-1 text-[11px] font-bold shrink-0 cursor-pointer"
+          >
+            <Crosshair className={`w-3.5 h-3.5 text-[#FF2B42] ${isLocating ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">{isRTL ? "موقعي" : "GPS"}</span>
+          </button>
+        </div>
+
+        {/* Search Results Dropdown */}
+        {showSearchResults && searchResults.length > 0 && (
+          <div className="w-full bg-white border border-zinc-200 rounded-2xl shadow-2xl overflow-hidden mt-1 max-h-56 overflow-y-auto">
+            {searchResults.map((res, idx) => (
               <button
-                onClick={onClose}
-                className="p-1.5 rounded-xl bg-[#121214] hover:bg-zinc-800 text-zinc-400 cursor-pointer transition-colors"
+                key={idx}
+                onClick={() => handleSelectSearchResult(res)}
+                className="w-full text-left px-4 py-3 hover:bg-zinc-50 border-b border-zinc-100 last:border-0 flex items-start gap-2.5 transition-colors cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <MapPin className="w-4 h-4 text-[#FF2B42] shrink-0 mt-0.5" />
+                <span className="text-xs text-zinc-800 font-medium line-clamp-2 leading-relaxed">{res.title}</span>
               </button>
-            )}
-          </div>
-        </div>
-
-        {!isPanelCollapsed && (
-          <div className="space-y-4 pt-3.5">
-            <p className="text-[11px] text-[#8E8E93] font-medium">
-              {isRTL ? 'حدد نقطة الاستلام والوجهة أو اضغط مباشرة على الخريطة' : 'Set pickup & destination or tap directly on the map'}
-            </p>
-
-            {/* Inputs */}
-            <div className="space-y-3.5">
-              {/* Pickup Point A */}
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-[#8E8E93] flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
-                  {isRTL ? 'نقطة الاستلام (أ)' : 'Pickup Location (Point A)'}
-                </label>
-                <input
-                  id={pickupInputId}
-                  type="text"
-                  value={pickupAddress}
-                  onChange={(e) => setPickupAddress(e.target.value)}
-                  placeholder="Search pickup or drag green pin"
-                  className="w-full bg-[#121214] border border-[#2C2C35] focus:border-[#FF2B42] rounded-xl px-3.5 py-2.5 text-xs text-white outline-none transition-all placeholder:text-zinc-500 font-medium"
-                />
-              </div>
-
-              {/* Destination Point B */}
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-[#8E8E93] flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-[#FF2B42] shadow-[0_0_8px_rgba(255,43,66,0.8)]" />
-                  {isRTL ? 'وجهة التسليم (ب)' : 'Destination (Point B)'}
-                </label>
-                <input
-                  id={dropoffInputId}
-                  type="text"
-                  value={dropoffAddress}
-                  onChange={(e) => setDropoffAddress(e.target.value)}
-                  placeholder="Search destination or drag red pin"
-                  className="w-full bg-[#121214] border border-[#2C2C35] focus:border-[#FF2B42] rounded-xl px-3.5 py-2.5 text-xs text-white outline-none transition-all placeholder:text-zinc-500 font-medium"
-                />
-              </div>
-            </div>
-
-            {/* Trip Telemetry Summary */}
-            {routeMetrics && (
-              <div className="bg-[#121214] border border-[#2C2C35] rounded-2xl p-3.5 space-y-2.5">
-                <div className="flex items-center justify-between text-xs pb-2 border-b border-[#2C2C35]">
-                  <span className="text-[#8E8E93] flex items-center gap-1.5">
-                    <Route className="w-3.5 h-3.5 text-zinc-400" />
-                    {isRTL ? 'المسافة المقدرة:' : 'Estimated Distance:'}
-                  </span>
-                  <span className="font-bold text-white font-mono">{routeMetrics.distanceKm} km</span>
-                </div>
-
-                <div className="flex items-center justify-between text-xs pb-2 border-b border-[#2C2C35]">
-                  <span className="text-[#8E8E93] flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-amber-500" />
-                    {isRTL ? 'الوقت مع المرور:' : 'Travel Time (Traffic):'}
-                  </span>
-                  <span className="font-bold text-amber-400 font-mono">{routeMetrics.durationMins} mins</span>
-                </div>
-
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-[#8E8E93] flex items-center gap-1.5">
-                    <DollarSign className="w-3.5 h-3.5 text-emerald-500" />
-                    {isRTL ? 'التكلفة المقدرة:' : 'Estimated Fare:'}
-                  </span>
-                  <span className="font-black text-[#FF2B42] text-sm font-mono">AED {routeMetrics.estimatedFare}</span>
-                </div>
-              </div>
-            )}
-
-            {/* Status Banners */}
-            {activeStep === 'dispatched' && (
-              <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-xl text-[11px] text-blue-400 flex items-center gap-2 animate-pulse">
-                <Car className="w-4 h-4 shrink-0" />
-                <span>{isRTL ? 'السائق في الطريق عبر مسار يانجو المباشر...' : 'Driver en-route via Yango Live Telemetry...'}</span>
-              </div>
-            )}
-
-            {activeStep === 'arrived' && (
-              <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-[11px] text-emerald-400 flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 shrink-0" />
-                <span>{isRTL ? 'وصل السائق إلى الوجهة المحددة بنجاح!' : 'Driver arrived at destination successfully!'}</span>
-              </div>
-            )}
-
-            {/* Action Buttons */}
-            <div className="space-y-2.5 pt-1">
-              {activeStep === 'plan' ? (
-                <button
-                  onClick={startLiveTrackingSimulation}
-                  className="w-full py-3.5 bg-[#FF2B42] hover:bg-[#e02439] text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-[#FF2B42]/25 cursor-pointer transition-all active:scale-[0.98]"
-                >
-                  <Play className="w-3.5 h-3.5 fill-current" />
-                  {isRTL ? 'محاكاة تتبع السائق المباشر' : 'Simulate Live Driver Telemetry'}
-                </button>
-              ) : (
-                <button
-                  onClick={() => {
-                    setActiveStep('plan');
-                    if (simulationIntervalRef.current) clearInterval(simulationIntervalRef.current);
-                    if (driverPlacemarkRef.current && mapInstanceRef.current) {
-                      mapInstanceRef.current.geoObjects.remove(driverPlacemarkRef.current);
-                    }
-                  }}
-                  className="w-full py-2.5 bg-[#121214] hover:bg-zinc-800 text-white border border-[#2C2C35] rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition-all"
-                >
-                  <RefreshCw className="w-3 h-3" />
-                  {isRTL ? 'إعادة تعيين المسار' : 'Reset Route'}
-                </button>
-              )}
-
-              {onConfirm && (
-                <button
-                  onClick={() => onConfirm(
-                    { address: pickupAddress, coords: pickupCoords },
-                    { address: dropoffAddress, coords: dropoffCoords },
-                    routeMetrics.estimatedFare
-                  )}
-                  className="w-full py-3.5 bg-white hover:bg-zinc-100 text-black font-black rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-md transition-all"
-                >
-                  <Check className="w-4 h-4 text-black" />
-                  {isRTL ? 'تأكيد المسار والنقاط' : 'Confirm Location & Route'}
-                </button>
-              )}
-            </div>
+            ))}
           </div>
         )}
       </div>
 
-      {/* 3. YANGO API KEY CONFIG MODAL */}
-      {showKeyModal && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="w-full max-w-md bg-[#1E1E24] border border-[#2C2C35] rounded-3xl p-6 shadow-2xl text-white space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Key className="w-4 h-4 text-[#FF2B42]" />
-                <h3 className="font-bold text-sm">Yango Maps API Configuration</h3>
-              </div>
-              <button onClick={() => setShowKeyModal(false)} className="p-1 rounded-full text-zinc-400 hover:text-white">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <p className="text-xs text-[#8E8E93]">
-              Enter your registered developer or partner API key from Yango Developer Console or Yandex Developer Dashboard (developer.tech.yandex.com).
-            </p>
-            <input
-              type="text"
-              value={tempKeyInput}
-              onChange={(e) => setTempKeyInput(e.target.value)}
-              placeholder="Paste Yango API Key here..."
-              className="w-full bg-[#121214] border border-[#2C2C35] focus:border-[#FF2B42] rounded-xl px-4 py-3 text-xs text-white outline-none font-mono"
-            />
-            <div className="flex gap-2">
-              <button
-                onClick={() => setShowKeyModal(false)}
-                className="flex-1 py-2.5 bg-[#121214] hover:bg-zinc-800 text-zinc-400 rounded-xl text-xs font-bold uppercase tracking-wider"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveApiKey}
-                className="flex-1 py-2.5 bg-[#FF2B42] hover:bg-[#e02439] text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg shadow-[#FF2B42]/25"
-              >
-                Save & Initialize
-              </button>
-            </div>
-          </div>
+      {/* 2. FULL CANVAS NATIVE YANGO MAP */}
+      <div
+        id={mapContainerId}
+        className="w-full flex-1 z-0 cursor-crosshair"
+        style={{ width: '100%', height: '100%', minHeight: '380px' }}
+      />
+
+      {/* Loading Overlay */}
+      {!isMapReady && (
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm">
+          <div className="w-8 h-8 border-3 border-[#FF2B42] border-t-transparent rounded-full animate-spin mb-3" />
+          <p className="text-xs font-black uppercase tracking-widest text-zinc-600">
+            Loading Yango Maps...
+          </p>
         </div>
       )}
+
+      {/* 3. CLEAN BOTTOM CONFIRMATION BAR */}
+      <div className="absolute bottom-4 inset-x-4 z-[500] max-w-xl mx-auto pointer-events-auto">
+        <div className="bg-white/95 backdrop-blur-2xl border border-zinc-200/80 rounded-3xl p-4 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-3.5">
+          {/* Address Information */}
+          <div className="flex items-start gap-3 w-full sm:w-auto flex-1 min-w-0">
+            <div className={`p-2.5 rounded-2xl shrink-0 mt-0.5 ${
+              activeMode === 'pickup' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-[#FF2B42]'
+            }`}>
+              <MapPin className="w-5 h-5" />
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <span className={`text-[10px] font-black uppercase tracking-wider ${
+                activeMode === 'pickup' ? 'text-emerald-600' : 'text-[#FF2B42]'
+              }`}>
+                {activeMode === 'pickup' ? (isRTL ? 'موقع الاستلام المحدد' : 'Selected Pickup Point') : (isRTL ? 'وجهة التسليم المحددة' : 'Selected Dropoff Point')}
+              </span>
+              <p className="text-xs font-bold text-zinc-900 truncate mt-0.5" title={currentAddress}>
+                {currentAddress}
+              </p>
+              <p className="text-[10px] text-zinc-400 font-mono mt-0.5">
+                {currentCoords[0].toFixed(5)}, {currentCoords[1].toFixed(5)}
+              </p>
+            </div>
+          </div>
+
+          {/* Direct Confirm Action Button */}
+          <button
+            onClick={handleConfirmLocation}
+            className={`w-full sm:w-auto px-7 py-3.5 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer shrink-0 ${
+              activeMode === 'pickup'
+                ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/25'
+                : 'bg-[#FF2B42] hover:bg-[#e02439] shadow-[#FF2B42]/25'
+            }`}
+          >
+            <Check className="w-4 h-4 stroke-[3]" />
+            <span>
+              {activeMode === 'pickup' 
+                ? (isRTL ? 'تأكيد موقع الاستلام' : 'Confirm Pickup Location')
+                : (isRTL ? 'تأكيد وجهة التسليم' : 'Confirm Dropoff Location')
+              }
+            </span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

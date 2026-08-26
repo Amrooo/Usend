@@ -1660,6 +1660,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
         maxWidth="max-w-5xl"
       >
         <MapPicker 
+          targetType={isMapOpenQuoteTarget === 'pickup' || isMapOpenQuoteTarget === 'manual_pickup' ? 'pickup' : 'dropoff'}
           initialAddress={
             isMapOpenQuoteTarget === 'pickup' ? quoteData.pickupAddress : 
             isMapOpenQuoteTarget === 'dropoff' ? quoteData.dropoffAddress : 
