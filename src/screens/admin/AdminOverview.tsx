@@ -79,7 +79,7 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
     return [
       { name: 'Aramex Express', count: aramex || 14, fill: '#D92D20' },
       { name: 'Noon RoD', count: noon || 10, fill: '#EAAA08' },
-      { name: 'USend Fleet', count: fleet || 28, fill: '#113F36' }
+      { name: 'Fetchr Express', count: fleet || 28, fill: '#113F36' }
     ];
   }, [ordersList]);
 

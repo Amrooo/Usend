@@ -21,7 +21,7 @@ export default function Footer({ onNavigate, setLoginRole, setLoginEmail, setLog
           {/* Large transparent watermark background logo */}
           <div className="absolute inset-x-0 bottom-4 text-center select-none pointer-events-none z-0">
             <span className="text-[15vw] font-black tracking-widest text-slate-900/[0.03] uppercase leading-none block font-sans">
-              {isRTL ? 'يوسند' : 'USEND'}
+              {isRTL ? 'تي آر إس إتش' : 'TRSH'}
             </span>
           </div>
 
@@ -33,7 +33,7 @@ export default function Footer({ onNavigate, setLoginRole, setLoginEmail, setLog
                 <div className="flex items-center gap-3">
                   <LogoIcon className="h-12 w-auto" />
                   <div className="flex flex-col text-start">
-                    <span className="text-sm font-black tracking-widest text-slate-900 uppercase leading-none">{isRTL ? 'يو سند' : 'USend'}</span>
+                    <span className="text-sm font-black tracking-widest text-slate-900 uppercase leading-none">{isRTL ? 'تي آر إس إتش' : 'TRSH'}</span>
                     <span className="text-[12px] font-bold uppercase text-slate-700 tracking-wider leading-none mt-1">{isRTL ? 'الشحن الذكي' : 'Smart Shipping'}</span>
                   </div>
                 </div>

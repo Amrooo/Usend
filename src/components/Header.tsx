@@ -47,7 +47,7 @@ export default function Header({ onNavigate, setLoginRole, setLoginModalOpen, co
       id: '3',
       type: 'api',
       titleEn: 'Welcome Message', titleAr: 'رسالة ترحيبية',
-      descEn: 'Welcome to USEND logistics platform.', descAr: 'مرحبا بك في منصة يوسند اللوجستية.',
+      descEn: 'Welcome to TRSH logistics platform.', descAr: 'مرحبا بك في منصة تي آر إس إتش اللوجستية.',
       timeEn: '1d ago', timeAr: 'قبل يوم',
       read: true
     }
@@ -118,7 +118,7 @@ export default function Header({ onNavigate, setLoginRole, setLoginModalOpen, co
           >
             <LogoIcon className={`h-10 md:h-13 w-auto transition-all duration-300 ${!isSolid ? 'brightness-0 invert' : ''}`} />
             <div className="hidden md:flex flex-col text-start">
-              <span className={`text-lg md:text-xl font-black tracking-tight leading-none transition-colors duration-300 ${isSolid ? 'text-slate-900' : 'text-white'}`}>{isRTL ? 'يو سند' : 'USend'}</span>
+              <span className={`text-lg md:text-xl font-black tracking-tight leading-none transition-colors duration-300 ${isSolid ? 'text-slate-900' : 'text-white'}`}>{isRTL ? 'تي آر إس إتش' : 'TRSH'}</span>
               <span className={`text-[9px] md:text-[10px] font-bold uppercase tracking-wider leading-none mt-1 md:mt-1.5 transition-colors duration-300 ${isSolid ? 'text-[#113f36]' : 'text-[#cca073]'}`}>{isRTL ? 'الشحن الذكي' : 'Smart Shipping'}</span>
             </div>
           </div>

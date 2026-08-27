@@ -748,7 +748,7 @@ function RequestsHub() {
                <option value="aramex">Aramex Express</option>
                <option value="noon">Noon Delivery (RoD)</option>
                <option value="dhl_express">DHL Express</option>
-               <option value="usend">USend Dedicated Fleet</option>
+               <option value="fetchr">Fetchr Express Logistics</option>
              </select>
 
              <select 
@@ -3734,7 +3734,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                 <LogoIcon className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-sm font-extrabold uppercase tracking-wider text-[#113F36] leading-none">USend Portal</h1>
+                <h1 className="text-sm font-extrabold uppercase tracking-wider text-[#113F36] leading-none">TRSH Portal</h1>
                 <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 block">Platform Admin</span>
               </div>
             </div>
