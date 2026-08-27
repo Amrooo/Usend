@@ -1,8 +1,4 @@
-const { Client } = require('ssh2');
 
-const conn = new Client();
-conn.on('ready', () => {
-  const nodeScript = `
     async function fetchRequests() {
       console.log("=== FETCHING FIRESTORE REST API (usend-staging-9182) ===");
       try {
@@ -25,24 +21,4 @@ conn.on('ready', () => {
       }
     }
     fetchRequests();
-  `;
-
-  fs = require('fs');
-  fs.writeFileSync(__dirname + '/remote_search.cjs', nodeScript);
-
-  conn.sftp((err, sftp) => {
-    sftp.fastPut(__dirname + '/remote_search.cjs', 'applications/mksqztfeks/public_html/remote_search.cjs', () => {
-      conn.exec('cd /home/1150801.cloudwaysapps.com/mksqztfeks/public_html && node remote_search.cjs', (err2, stream) => {
-        if (err2) throw err2;
-        stream.on('close', () => conn.end());
-        stream.on('data', d => process.stdout.write(d.toString()));
-        stream.stderr.on('data', d => process.stderr.write(d.toString()));
-      });
-    });
-  });
-}).connect({
-  host: '134.209.28.27',
-  port: 22,
-  username: 'master_awqbxuyqcq',
-  password: 'rW9MJAfvXn4n'
-});
+  

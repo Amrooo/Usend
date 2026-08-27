@@ -39,8 +39,7 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
     try {
       const googleUser = await signInWithGoogle();
       if (googleUser) {
-        const isApprovedException = googleUser.email?.toLowerCase() === 'octman.sam@gmail.com';
-        let targetRole = (selectedRole === 'merchant' || isApprovedException) ? 'merchant' : 'user';
+        let targetRole = selectedRole === 'merchant' ? 'merchant' : 'user';
 
         try {
           const userDocRef = doc(db, 'users', googleUser.uid);
@@ -62,9 +61,7 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
           name: googleUser.displayName || googleUser.email || 'Google User',
         });
 
-        let redirectScreen: Screen = 'merchant_dashboard';
-        if (selectedRole === 'user' && !isApprovedException) redirectScreen = 'user_dashboard';
-        else redirectScreen = 'merchant_dashboard';
+        const redirectScreen: Screen = targetRole === 'merchant' ? 'merchant_dashboard' : 'user_dashboard';
 
         onClose();
         onNavigate(redirectScreen);

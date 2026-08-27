@@ -47,8 +47,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, isAdminApp }) => {
     try {
       const googleUser = await signInWithGoogle();
       if (googleUser) {
-        const isApprovedException = googleUser.email?.toLowerCase() === 'octman.sam@gmail.com';
-        let targetRole = (loginType === 'business' || isApprovedException) ? 'merchant' : 'user';
+        let targetRole = loginType === 'business' ? 'merchant' : 'user';
 
         try {
           const userDocRef = doc(db, 'users', googleUser.uid);
@@ -70,9 +69,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, isAdminApp }) => {
           name: googleUser.displayName || googleUser.email || 'Google User',
         });
 
-        let redirectScreen: Screen = 'merchant_dashboard';
-        if (loginType === 'individual' && !isApprovedException) redirectScreen = 'user_dashboard';
-        else redirectScreen = 'merchant_dashboard';
+        const redirectScreen: Screen = targetRole === 'merchant' ? 'merchant_dashboard' : 'user_dashboard';
 
         onNavigate(redirectScreen);
       }
