@@ -1184,6 +1184,9 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
 
                           {/* Aramex Capability Chips */}
                           <div className="flex flex-wrap gap-1.5 pt-1 border-t border-zinc-200/60">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200/60">
+                              📅 Next-Day SLA (24-48 Hours)
+                            </span>
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700">
                               🌍 All 7 UAE Emirates
                             </span>
@@ -1191,12 +1194,32 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                               ⚖️ Up to 50 kg
                             </span>
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700">
-                              📏 Max 150 cm
-                            </span>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700">
                               💵 COD up to AED 10K
                             </span>
                           </div>
+
+                          {/* Aramex Same-Day SLA Warning Banner */}
+                          {formData.carrier === 'aramex' && (
+                            <div className="p-3 bg-amber-50/90 border border-amber-200/90 rounded-xl space-y-1.5 text-xs text-left" onClick={(e) => e.stopPropagation()}>
+                              <div className="flex items-center gap-1.5 text-amber-900 font-bold">
+                                <AlertCircle className="w-4 h-4 shrink-0 text-amber-600" />
+                                <span>Aramex Express SLA Notice:</span>
+                              </div>
+                              <p className="text-[11px] text-amber-800 leading-relaxed">
+                                Aramex operates on Next-Day / 24-48 Hours SLA across UAE. If you require <strong>Instant Same-Day / 2-Hour Delivery</strong>, use Noon RoD.
+                              </p>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setFormData(prev => ({ ...prev, carrier: 'noon' }));
+                                }}
+                                className="mt-1 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-[10px] uppercase tracking-wider transition-all cursor-pointer shadow-xs"
+                              >
+                                ⚡ Switch to Noon RoD (Same-Day Delivery)
+                              </button>
+                            </div>
+                          )}
 
                           {/* Aramex Violations Alert (if any) */}
                           {formData.carrier === 'aramex' && !courierCompliance.isCompliant && (
@@ -1336,14 +1359,14 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
 
                           {/* Noon Capability Chips */}
                           <div className="flex flex-wrap gap-1.5 pt-1 border-t border-zinc-200/60">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200/60">
+                              ⚡ Same-Day / On-Demand
+                            </span>
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700">
-                              ⚡ Intra-City Only (≤ 65 km)
+                              🌍 Dubai, Abu Dhabi, Sharjah & UAE
                             </span>
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700">
                               ⚖️ Max 15 kg
-                            </span>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700">
-                              📏 Max 50×40×40 cm
                             </span>
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700">
                               💵 COD up to AED 2,500
