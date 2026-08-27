@@ -67,16 +67,16 @@ async function deploy() {
           cp -r usendadmin2026/assets/* assets/ 2>/dev/null || true &&
           cp usendadmin2026/index.html admin.html 2>/dev/null || true &&
           touch index.html admin.html &&
-          echo "Restarting Node service..." &&
-          pkill -f "node functions/server.cjs" || true &&
-          sleep 1 &&
-          (setsid node functions/server.cjs > server.log 2>&1 &)
-          sleep 2 &&
-          echo "=== Process status ===" &&
-          ps aux | grep "node functions/server.cjs" | grep -v grep &&
-          echo "" &&
+          echo "Restarting Node service via PM2..." &&
+          npx pm2 delete all 2>/dev/null || true &&
+          pkill -f "node functions/server.cjs" 2>/dev/null || true &&
+          npx pm2 start functions/server.cjs --name "usend-api" &&
+          npx pm2 save &&
+          sleep 3 &&
           echo "=== Health check ===" &&
-          curl -s http://localhost:3005/api/health || true
+          curl -s http://localhost:3005/api/health || true &&
+          echo "" &&
+          curl -s http://localhost:3005/api/payments/config || true
         `;
 
         conn.exec(remoteCmd, (execErr, stream) => {

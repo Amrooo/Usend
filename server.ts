@@ -133,7 +133,7 @@ const fetchWithTimeout = async (url: string, options: any, timeoutMs: number = 3
 };
 
 const app = express();
-const PORT = Number(process.env.PORT) || 3005;
+const PORT = Number(process.env.BACKEND_PORT || process.env.API_PORT) || 3005;
 
 // Trust proxy if behind a reverse proxy (like NGINX on Cloudways)
 app.set('trust proxy', 1);
