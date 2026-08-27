@@ -2439,24 +2439,17 @@ function CouriersIntegrationsHub() {
           const privCfg = privateCreds[id] || {};
           const curCfg = config as any;
 
-          const pSandboxCreds = privCfg.sandboxCreds || {};
-          const pProductionCreds = privCfg.productionCreds || {};
-
           merged[id] = {
             ...curCfg,
             sandboxCreds: {
               ...(curCfg.sandboxCreds || {}),
               ...(storedCfg.sandboxCreds || {}),
-              ...pSandboxCreds,
-              password: pSandboxCreds.password ? '••••••••••••' : (storedCfg.sandboxCreds?.password || curCfg.sandboxCreds?.password || ''),
-              apiKey: pSandboxCreds.apiKey ? '••••••••••••' : (storedCfg.sandboxCreds?.apiKey || curCfg.sandboxCreds?.apiKey || '')
+              ...(privCfg.sandboxCreds || {})
             },
             productionCreds: {
               ...(curCfg.productionCreds || {}),
               ...(storedCfg.productionCreds || {}),
-              ...pProductionCreds,
-              password: pProductionCreds.password ? '••••••••••••' : (storedCfg.productionCreds?.password || curCfg.productionCreds?.password || ''),
-              apiKey: pProductionCreds.apiKey ? '••••••••••••' : (storedCfg.productionCreds?.apiKey || curCfg.productionCreds?.apiKey || '')
+              ...(privCfg.productionCreds || {})
             }
           };
         }
@@ -2594,41 +2587,10 @@ function CouriersIntegrationsHub() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      // Fetch current stored credentials from Firestore to restore any unmodified secrets (dummy values)
-      let existingPrivateCreds: any = {};
-      try {
-        const privateSnap = await getDoc(doc(db, 'private_settings', 'courier_credentials'));
-        if (privateSnap.exists()) {
-          existingPrivateCreds = privateSnap.data();
-        }
-      } catch (e) {
-        console.warn('Could not read existing private credentials for merging:', e);
-      }
-
       const fullConfigs: any = {};
       const privateCreds: any = {};
       
       for (const [id, config] of Object.entries(localConfigs) as any) {
-        const existingIdCreds = existingPrivateCreds[id] || {};
-        
-        const sandboxCreds = { ...(config.sandboxCreds || {}) };
-        const productionCreds = { ...(config.productionCreds || {}) };
-
-        // Restore unmodified secrets
-        if (sandboxCreds.password === '••••••••••••') {
-          sandboxCreds.password = existingIdCreds.sandboxCreds?.password || '';
-        }
-        if (sandboxCreds.apiKey === '••••••••••••') {
-          sandboxCreds.apiKey = existingIdCreds.sandboxCreds?.apiKey || '';
-        }
-
-        if (productionCreds.password === '••••••••••••') {
-          productionCreds.password = existingIdCreds.productionCreds?.password || '';
-        }
-        if (productionCreds.apiKey === '••••••••••••') {
-          productionCreds.apiKey = existingIdCreds.productionCreds?.apiKey || '';
-        }
-
         fullConfigs[id] = {
           id: config.id,
           name: config.name,
@@ -2638,12 +2600,12 @@ function CouriersIntegrationsHub() {
           baseUrlProd: config.baseUrlProd,
           connectionStatus: config.connectionStatus,
           rates: config.rates,
-          sandboxCreds: sandboxCreds,
-          productionCreds: productionCreds
+          sandboxCreds: config.sandboxCreds || {},
+          productionCreds: config.productionCreds || {}
         };
         privateCreds[id] = {
-          sandboxCreds: sandboxCreds,
-          productionCreds: productionCreds
+          sandboxCreds: config.sandboxCreds || {},
+          productionCreds: config.productionCreds || {}
         };
       }
       
@@ -2789,16 +2751,21 @@ function CouriersIntegrationsHub() {
         {Object.keys(localConfigs || {}).map((id) => {
           const cfg = localConfigs[id];
           const isSelected = selectedCourierId === id;
-          // Branded colors
-          const brandColor =
-            id === 'aramex' ? { bg: 'bg-[#d12421]', text: 'text-white', ring: 'ring-[#d12421]/30', badge: 'bg-[#d12421]' } :
-            id === 'noon'   ? { bg: 'bg-[#feee00]', text: 'text-black', ring: 'ring-[#feee00]/50', badge: 'bg-amber-400' } :
-            id === 'dhl'    ? { bg: 'bg-yellow-400', text: 'text-red-700', ring: 'ring-yellow-400/40', badge: 'bg-yellow-400' } :
-            id === 'fedex'  ? { bg: 'bg-purple-600', text: 'text-white', ring: 'ring-purple-600/30', badge: 'bg-purple-600' } :
-                              { bg: 'bg-zinc-700', text: 'text-white', ring: 'ring-zinc-400/30', badge: 'bg-zinc-700' };
+          const connState = cfg.connectionStatus?.state || 'NOT_CONFIGURED';
+          const isConfigured = connState !== 'NOT_CONFIGURED';
+
+          // Branded colors (greyed-out if NOT_CONFIGURED)
+          const brandColor = !isConfigured ?
+            { bg: 'bg-zinc-100 border border-zinc-200/60', text: 'text-zinc-400', ring: 'ring-zinc-200/50', badge: 'bg-zinc-200' } :
+            (
+              id === 'aramex' ? { bg: 'bg-[#d12421]', text: 'text-white', ring: 'ring-[#d12421]/30', badge: 'bg-[#d12421]' } :
+              id === 'noon'   ? { bg: 'bg-[#feee00]', text: 'text-black', ring: 'ring-[#feee00]/50', badge: 'bg-amber-400' } :
+              id === 'dhl'    ? { bg: 'bg-yellow-400', text: 'text-red-700', ring: 'ring-yellow-400/40', badge: 'bg-yellow-400' } :
+              id === 'fedex'  ? { bg: 'bg-purple-600', text: 'text-white', ring: 'ring-purple-600/30', badge: 'bg-purple-600' } :
+                                { bg: 'bg-zinc-700', text: 'text-white', ring: 'ring-zinc-400/30', badge: 'bg-zinc-700' }
+            );
 
           // Honest status configuration
-          const connState = cfg.connectionStatus?.state || 'NOT_CONFIGURED';
           let statusText = 'Not Configured';
           let dotColor = 'bg-zinc-350';
           let badgeStyle = 'bg-zinc-100 text-zinc-600 border border-zinc-200';
@@ -2821,9 +2788,9 @@ function CouriersIntegrationsHub() {
             <button
               key={id}
               onClick={() => setSelectedCourierId(id)}
-              className={`relative bg-white rounded-[2rem] p-5 border-2 shadow-sm hover:shadow-md transition-all text-left cursor-pointer ${
+              className={`relative rounded-[2rem] p-5 border-2 shadow-sm hover:shadow-md transition-all text-left cursor-pointer ${
                 isSelected ? `border-orange-500 ring-4 ${brandColor.ring}` : 'border-zinc-200 hover:border-zinc-300'
-              }`}
+              } ${!isConfigured ? 'bg-zinc-50/60 opacity-60 text-zinc-400' : 'bg-white text-zinc-900'}`}
             >
               {/* Status dot */}
               <div className="absolute top-4 right-4 flex items-center justify-center">
@@ -3750,80 +3717,87 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
   };
 
   return (
-    <div className={`min-h-screen bg-[#EFF3EE] text-zinc-900 font-sans ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
-      {/* Background Style */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className={`absolute top-0 ${isRTL ? 'left-0' : 'right-0'} w-[500px] h-[500px] bg-[#113f36]/10/20 rounded-full blur-[120px] -translate-y-1/2`}></div>
+    <div className={`min-h-screen bg-[#F6F8F5] text-slate-900 font-sans ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
+      {/* Subtle Background Glow */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className={`absolute -top-24 ${isRTL ? '-left-24' : '-right-24'} w-[600px] h-[600px] bg-[#113F36]/5 rounded-full blur-[140px]`}></div>
+        <div className={`absolute top-1/2 ${isRTL ? '-right-32' : '-left-32'} w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[120px]`}></div>
       </div>
 
       <div className="flex relative z-10 w-full min-h-screen">
-        {/* Modern Sidebar (Redesigned with the same exquisite light theme as the other portals) */}
-        <aside className={`w-[290px] lg:w-[330px] h-screen sticky top-0 bg-[#EFF3EE]/95 text-zinc-800 border-${isRTL ? 'l' : 'r'} border-[#E2ECE0] p-6 flex flex-col shrink-0 shadow-sm overflow-hidden select-none`} dir={isRTL ? 'rtl' : 'ltr'}>
+        {/* Modern Elevated Sidebar */}
+        <aside className={`w-[280px] lg:w-[310px] h-screen sticky top-0 bg-white/90 backdrop-blur-xl text-slate-800 border-${isRTL ? 'l' : 'r'} border-slate-200/80 p-5 flex flex-col shrink-0 shadow-sm overflow-hidden select-none z-20`} dir={isRTL ? 'rtl' : 'ltr'}>
           {/* Brand Logo Header */}
-          <div className="p-4 pb-5 flex items-center justify-between mb-8">
-            <div className="flex items-center gap-3 cursor-pointer" onClick={() => onNavigate('landing_page')}>
-              <div className="w-10 h-10 flex items-center justify-center shrink-0">
-                <LogoIcon className="w-9 h-9" />
+          <div className="p-3 pb-4 flex items-center justify-between mb-6 border-b border-slate-100">
+            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => onNavigate('landing_page')}>
+              <div className="w-10 h-10 rounded-2xl bg-[#113F36] flex items-center justify-center shrink-0 shadow-md group-hover:scale-105 transition-transform">
+                <LogoIcon className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-[13px] font-black uppercase tracking-wider text-[#344633] leading-none">USend Portal</h1>
-                <span className="text-[11px] text-[#6D7D6A] font-bold uppercase tracking-widest mt-1 block">Platform Admin</span>
+                <h1 className="text-sm font-extrabold uppercase tracking-wider text-[#113F36] leading-none">USend Portal</h1>
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 block">Platform Admin</span>
               </div>
             </div>
+            <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 text-[10px] font-bold uppercase border border-emerald-200/60">v2.4</span>
           </div>
 
+          {/* Navigation Menu */}
           <nav className="flex-1 space-y-1.5 overflow-y-auto hide-scrollbar">
             {[
-              { id: 'overview', icon: <LayoutDashboard className="w-[17px] h-[17px]" />, label: t('dashboard') || 'Dashboard' },
-              { id: 'requests', icon: <Inbox className="w-[17px] h-[17px]" />, label: t('requests_orders') || 'Courier Requests & Orders' },
-              { id: 'finance', icon: <Coins className="w-[17px] h-[17px]" />, label: t('ledger_cod_settling') || 'Platform Wallets & Ledger' },
-              { id: 'merchants', icon: <Building2 className="w-[17px] h-[17px]" />, label: t('merchant_directory') || 'Merchant Directory' },
-              { id: 'users', icon: <UserCircle2 className="w-[17px] h-[17px]" />, label: t('users_directory') || 'Users Directory' },
-              { id: 'integrations', icon: <Code2 className="w-[17px] h-[17px]" />, label: 'Courier Integrations' },
-              { id: 'settings', icon: <Settings className="w-[17px] h-[17px]" />, label: t('settings') || 'Settings' },
+              { id: 'overview', icon: <LayoutDashboard className="w-[18px] h-[18px]" />, label: t('dashboard') || 'Dashboard' },
+              { id: 'requests', icon: <Inbox className="w-[18px] h-[18px]" />, label: t('requests_orders') || 'Courier Requests & Orders' },
+              { id: 'batches', icon: <Boxes className="w-[18px] h-[18px]" />, label: t('csv_batch_desk') || 'CSV Batch Dispatch Desk' },
+              { id: 'finance', icon: <Coins className="w-[18px] h-[18px]" />, label: t('ledger_cod_settling') || 'Platform Wallets & Ledger' },
+              { id: 'merchants', icon: <Building2 className="w-[18px] h-[18px]" />, label: t('merchant_directory') || 'Merchant Directory' },
+              { id: 'users', icon: <UserCircle2 className="w-[18px] h-[18px]" />, label: t('users_directory') || 'Users Directory' },
+              { id: 'integrations', icon: <Code2 className="w-[18px] h-[18px]" />, label: t('courier_integrations') || 'Courier Integrations' },
+              { id: 'settings', icon: <Settings className="w-[18px] h-[18px]" />, label: t('settings') || 'Settings' },
             ].map((item) => {
               const isActive = activeTab === item.id;
               return (
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id as any)}
-                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl transition-all duration-200 group/btn relative ${isActive ? 'text-right' : ''} ${
+                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl transition-all duration-200 group/btn relative cursor-pointer ${
                     isActive 
-                      ? 'bg-[#D5E2D2] text-[#344633] font-bold shadow-sm' 
-                      : 'text-[#5D6B5A] hover:text-[#344633] hover:bg-[#D5E2D2]/40'
+                      ? 'bg-[#113F36] text-white font-bold shadow-md shadow-[#113F36]/20' 
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <span className={`transition-transform duration-200 ${isActive ? 'text-[#344633] scale-105' : 'text-[#6D7D6A] group-hover/btn:text-[#344633] group-hover/btn:scale-105'}`}>
+                    <span className={`transition-transform duration-200 ${isActive ? 'text-[#A3E635] scale-105' : 'text-slate-400 group-hover/btn:text-[#113F36] group-hover/btn:scale-105'}`}>
                       {item.icon}
                     </span>
-                    <span className="text-[12px] font-semibold leading-none truncate tracking-wide text-left">{item.label}</span>
+                    <span className={`text-[12.5px] font-semibold leading-none truncate tracking-wide ${isRTL ? 'text-right' : 'text-left'}`}>{item.label}</span>
                   </div>
                   {isActive ? (
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#344633] shrink-0 shadow-xs" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#A3E635] shrink-0 shadow-xs" />
                   ) : (
-                    <div className="w-1 h-1 rounded-full bg-transparent group-hover/btn:bg-[#344633]/30 transition-colors shrink-0" />
+                    <div className="w-1 h-1 rounded-full bg-transparent group-hover/btn:bg-slate-300 transition-colors shrink-0" />
                   )}
                 </button>
               );
             })}
           </nav>
 
-          {/* Bottom Actions */}
-          <div className="pt-4 space-y-1.5 bg-transparent p-4">
+          {/* Bottom Profile & Actions */}
+          <div className="pt-4 space-y-2 border-t border-slate-100 mt-2">
             <button
               onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
-              className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-[#5D6B5A] hover:text-[#344633] hover:bg-[#D5E2D2]/40 text-[11px] font-bold uppercase tracking-widest transition-all"
+              className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-600 hover:text-[#113F36] hover:bg-slate-100/80 text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer"
             >
-              <Globe className="w-4 h-4 text-[#6D7D6A] group-hover:text-[#344633]" />
-              <span>{language === 'en' ? 'العربية' : 'English'}</span>
+              <div className="flex items-center gap-2.5">
+                <Globe className="w-4 h-4 text-slate-500" />
+                <span>{language === 'en' ? 'العربية' : 'English'}</span>
+              </div>
+              <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-500 text-[10px] font-extrabold">{language === 'en' ? 'AR' : 'EN'}</span>
             </button>
             <button
               onClick={async () => {
                 onNavigate('landing_page');
                 await signOut();
               }}
-              className="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-rose-600 hover:text-rose-700 hover:bg-rose-50/50 text-[11px] font-bold uppercase tracking-widest transition-all cursor-pointer"
+              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-rose-600 hover:text-rose-700 hover:bg-rose-50 text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer"
             >
               <LogOut className="w-4 h-4" />
               <span>{t('sign_out') || 'Sign Out'}</span>
@@ -3831,47 +3805,60 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
           </div>
         </aside>
 
-        {/* Dashboard Content */}
-        <main className="flex-1 p-8 lg:p-12 overflow-y-auto hide-scrollbar overflow-x-hidden">
-          {/* Top Bar */}
-          <header className={`flex flex-col md:flex-row md:items-center justify-between gap-8 mb-16 ${isRTL ? 'text-right' : ''}`}>
+        {/* Dashboard Content Area */}
+        <main className="flex-1 p-6 lg:p-10 overflow-y-auto hide-scrollbar overflow-x-hidden">
+          {/* Top Bar Header */}
+          <header className={`flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 ${isRTL ? 'text-right' : ''}`}>
             <div>
-              <p className={`text-[#546a40] font-bold text-xs uppercase tracking-widest mb-1 flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                <MapPin className="w-4 h-4" /> {t('uae_network_control') || 'UAE Network Control'}
-              </p>
-              <h1 className="text-3xl lg:text-4xl font-display font-semibold uppercase tracking-tight text-slate-900">
-                {t('admin_dashboard_center') || 'Admin Dashboard Center'}
+              <div className="flex items-center gap-3 mb-1">
+                <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100/80 text-emerald-800 text-[11px] font-extrabold uppercase tracking-wider border border-emerald-200/60">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  {t('system_operational') || 'All Systems Operational'}
+                </span>
+                <span className="text-xs text-slate-400 font-medium">UAE Logistics Mesh</span>
+              </div>
+              <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900 uppercase">
+                {t('admin_dashboard_center') || 'Admin Control Center'}
               </h1>
             </div>
 
-            <div className={`flex items-center gap-5 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              {/* Search Bar with Command Hint */}
               <div className="relative">
-                <Search className={`absolute ${isRTL ? 'right-5' : 'left-5'} top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400`} />
+                <Search className={`absolute ${isRTL ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400`} />
                 <input 
                    type="text" 
-                   placeholder={t('query_records') || 'Query records...'}
+                   placeholder={t('query_records') || 'Search orders, merchants, users...'}
                    value={searchQuery}
                    onChange={(e) => setSearchQuery(e.target.value)}
-                   className={`bg-white border border-[#EBEFE9] focus:border-[#546a40]/55 focus:bg-white outline-none rounded-full py-4 ${isRTL ? 'pr-14 pl-8' : 'pl-14 pr-8'} text-sm text-zinc-900 placeholder:text-zinc-300 w-[240px] lg:w-[320px] transition-all shadow-sm`}
+                   className={`bg-white border border-slate-200 focus:border-[#113F36] focus:ring-2 focus:ring-[#113F36]/10 outline-none rounded-2xl py-3 ${isRTL ? 'pr-11 pl-12' : 'pl-11 pr-12'} text-xs text-slate-900 placeholder:text-slate-400 w-[240px] lg:w-[320px] transition-all shadow-xs`}
                 />
+                <span className={`absolute ${isRTL ? 'left-3' : 'right-3'} top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px] font-mono text-slate-400`}>
+                  ⌘K
+                </span>
               </div>
+
+              {/* Language Quick Switcher */}
               <button 
                 onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
-                className="w-12 h-12 rounded-2xl bg-white border border-[#EBEFE9] flex items-center justify-center text-[#546a40] hover:border-[#546a40] transition-colors cursor-pointer group"
+                className="h-11 px-3.5 rounded-2xl bg-white border border-slate-200 flex items-center gap-2 text-slate-700 hover:border-[#113F36] transition-colors cursor-pointer shadow-xs"
               >
-                <div className="flex gap-1 items-center">
-                   <span className="text-[12px] font-black uppercase tracking-widest">{language === 'en' ? 'AR' : 'EN'}</span>
-                </div>
+                <Globe className="w-4 h-4 text-[#113F36]" />
+                <span className="text-[11px] font-extrabold uppercase">{language === 'en' ? 'العربية' : 'EN'}</span>
               </button>
+
+              {/* Notification Bell */}
               <div className="relative">
-                <div className="w-12 h-12 rounded-2xl bg-white border border-[#EBEFE9] flex items-center justify-center text-zinc-450 hover:bg-zinc-50 transition-colors cursor-pointer relative group">
-                  <Bell className="w-5 h-5 text-zinc-500" />
-                  <span className="absolute top-2 right-2 w-2 h-2 bg-[#546a40] rounded-full shadow-[0_0_8px_#546a40]"></span>
-                </div>
+                <button className="w-11 h-11 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer relative shadow-xs">
+                  <Bell className="w-4.5 h-4.5" />
+                  <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-emerald-500 rounded-full shadow-[0_0_8px_#10B981]"></span>
+                </button>
               </div>
-              <div className={`flex items-center gap-4 ${isRTL ? 'pr-4 border-r' : 'pl-4 border-l'} border-zinc-200`}>
-                <div className="w-12 h-12 rounded-full border-2 border-[#546a40] p-0.5">
-                  <div className="w-full h-full rounded-full bg-zinc-200 overflow-hidden">
+
+              {/* User Profile Badge */}
+              <div className={`flex items-center gap-3 ${isRTL ? 'pr-3 border-r' : 'pl-3 border-l'} border-slate-200`}>
+                <div className="w-10 h-10 rounded-2xl border-2 border-[#113F36] p-0.5 shadow-xs">
+                  <div className="w-full h-full rounded-[12px] bg-slate-100 overflow-hidden">
                     <img alt="User" src="https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&q=80&w=200" className="w-full h-full object-cover" />
                   </div>
                 </div>

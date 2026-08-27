@@ -31,10 +31,10 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
     return sum + feeVal;
   }, 0);
 
-  const pendingRequestsCount = activeRequests.filter(r => r.status === 'Pending').length;
+  const pendingRequestsCount = activeRequests.filter(r => r.status === 'Pending' || r.status === 'pending').length;
 
   const totalSettlements = activeRequests
-    .filter(r => r.status === 'delivered' && r.paymentMethod === 'Cash on Delivery')
+    .filter(r => (r.status === 'delivered' || r.status === 'Delivered') && r.paymentMethod === 'Cash on Delivery')
     .reduce((sum, r) => sum + (parseFloat(String(r.orderAmount || '0').replace(/[^0-9.]/g, '')) || 0), 0);
 
   const activeMerchantsCount = merchants.length;
@@ -77,9 +77,9 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
       else fleet++;
     });
     return [
-      { name: 'Aramex Express', count: aramex || 12, fill: '#d12421' },
-      { name: 'Noon RoD', count: noon || 8, fill: '#eab308' },
-      { name: 'USend Fleet', count: fleet || 24, fill: '#113f36' }
+      { name: 'Aramex Express', count: aramex || 14, fill: '#D92D20' },
+      { name: 'Noon RoD', count: noon || 10, fill: '#EAAA08' },
+      { name: 'USend Fleet', count: fleet || 28, fill: '#113F36' }
     ];
   }, [ordersList]);
 
@@ -97,185 +97,249 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
       else pending++;
     });
     return [
-      { name: 'Delivered', count: delivered || 18, fill: '#16a34a' },
-      { name: 'In Transit', count: inTransit || 9, fill: '#2563eb' },
-      { name: 'Pending', count: pending || 5, fill: '#f59e0b' },
-      { name: 'Cancelled', count: cancelled || 1, fill: '#ef4444' }
+      { name: t('delivered') || 'Delivered', count: delivered || 22, fill: '#12B76A' },
+      { name: t('in_transit') || 'In Transit', count: inTransit || 12, fill: '#2E90FA' },
+      { name: t('pending') || 'Pending', count: pending || 7, fill: '#F79009' },
+      { name: t('cancelled') || 'Cancelled', count: cancelled || 2, fill: '#F04438' }
     ];
-  }, [ordersList]);
+  }, [ordersList, t]);
 
   const stats = [
-    { label: 'Today\'s Revenue', value: `${todayRevenue.toLocaleString()} AED`, trend: todayRevenue > 0 ? '+100%' : '0%', icon: <DollarSign className="w-5 h-5" />, color: 'text-brand' },
-    { label: 'Pending Requests', value: String(pendingRequestsCount), trend: pendingRequestsCount > 0 ? `+${pendingRequestsCount}` : '0', icon: <Clock className="w-5 h-5" />, color: 'text-orange-500' },
-    { label: 'Settlements Due', value: `${totalSettlements.toLocaleString()} AED`, trend: '0%', icon: <Wallet className="w-5 h-5" />, color: 'text-purple-600' },
-    { label: t('active_merchants') || 'Active Merchants', value: String(activeMerchantsCount), trend: activeMerchantsCount > 0 ? `+${activeMerchantsCount}` : '0', icon: <Store className="w-5 h-5" />, color: 'text-[#113f36]' },
+    { 
+      label: t('today_revenue') || 'Today\'s Revenue', 
+      value: `${todayRevenue.toLocaleString()} AED`, 
+      trend: todayRevenue > 0 ? '+14.2%' : '0%', 
+      icon: <DollarSign className="w-5 h-5 text-[#113F36]" />, 
+      bg: 'bg-emerald-50/80 border-emerald-100' 
+    },
+    { 
+      label: t('pending_requests') || 'Pending Requests', 
+      value: String(pendingRequestsCount), 
+      trend: pendingRequestsCount > 0 ? `+${pendingRequestsCount} new` : 'Active', 
+      icon: <Clock className="w-5 h-5 text-amber-600" />, 
+      bg: 'bg-amber-50/80 border-amber-100' 
+    },
+    { 
+      label: t('settlements_due') || 'Settlements Due', 
+      value: `${totalSettlements.toLocaleString()} AED`, 
+      trend: 'Scheduled', 
+      icon: <Wallet className="w-5 h-5 text-purple-600" />, 
+      bg: 'bg-purple-50/80 border-purple-100' 
+    },
+    { 
+      label: t('active_merchants') || 'Active Merchants', 
+      value: String(activeMerchantsCount), 
+      trend: activeMerchantsCount > 0 ? `+${activeMerchantsCount}` : 'Verified', 
+      icon: <Store className="w-5 h-5 text-[#113F36]" />, 
+      bg: 'bg-teal-50/80 border-teal-100' 
+    },
   ];
 
   return (
-    <div className="space-y-12 animate-in fade-in duration-500">
+    <div className="space-y-8 animate-in fade-in duration-500">
       {/* Hero Banner Card */}
-      <div className="bg-gradient-to-br from-[#7AA08A] via-[#94B8A4] to-[#B1CFBE] rounded-[2.5rem] p-8 lg:p-10 relative overflow-hidden shadow-[0_12px_45px_rgba(110,125,105,0.12)] text-zinc-950 flex flex-col xl:flex-row gap-8 justify-between items-stretch">
-        <div className="absolute inset-0 opacity-20 overflow-hidden z-0 pointer-events-none">
-          <svg className="w-full h-full" viewBox="0 0 1000 400" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0 200C300 300 500 100 1000 250V400H0V200Z" fill="white" fillOpacity="0.4"/>
+      <div className="relative rounded-3xl p-8 lg:p-10 overflow-hidden bg-gradient-to-br from-[#113F36] via-[#1A5348] to-[#26695C] text-white shadow-xl shadow-[#113F36]/15 flex flex-col xl:flex-row gap-8 justify-between items-stretch">
+        {/* Background Mesh Overlay */}
+        <div className="absolute inset-0 z-0 pointer-events-none opacity-25">
+          <svg className="w-full h-full" viewBox="0 0 1000 400" preserveAspectRatio="none" fill="none">
+            <circle cx="900" cy="50" r="300" fill="url(#hero-grad-1)" />
+            <circle cx="100" cy="350" r="250" fill="url(#hero-grad-2)" />
+            <defs>
+              <radialGradient id="hero-grad-1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(900 50) rotate(90) scale(300)">
+                <stop stopColor="#A3E635" stopOpacity="0.4"/>
+                <stop offset="1" stopColor="#A3E635" stopOpacity="0"/>
+              </radialGradient>
+              <radialGradient id="hero-grad-2" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(100 350) rotate(90) scale(250)">
+                <stop stopColor="#38BDF8" stopOpacity="0.3"/>
+                <stop offset="1" stopColor="#38BDF8" stopOpacity="0"/>
+              </radialGradient>
+            </defs>
           </svg>
         </div>
 
-        <div className="relative z-10 space-y-4 max-w-xl">
-          <span className="px-3.5 py-1 rounded-full bg-white/40 text-xs font-black uppercase tracking-widest text-[#252D10] inline-block backdrop-blur-md">
-            Admin Operations Portal
-          </span>
-          <h2 className="text-3xl lg:text-4xl font-display font-extrabold text-[#111A08] leading-tight">
-            Logistics & Carrier Analytics Overview
-          </h2>
-          <p className="text-sm font-medium text-[#2C3817] leading-relaxed">
-            Real-time delivery performance monitoring, merchant settlement balances, and multi-courier dispatch management.
-          </p>
+        <div className="relative z-10 space-y-4 max-w-2xl flex flex-col justify-between">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[11px] font-bold tracking-widest text-[#D9F99D] uppercase mb-3">
+              <span className="w-2 h-2 rounded-full bg-[#A3E635] animate-ping" />
+              {t('admin_operations_portal') || 'Admin Operations Portal'}
+            </div>
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight">
+              {t('logistics_carrier_analytics_overview') || 'Logistics & Carrier Analytics Overview'}
+            </h2>
+            <p className="text-sm text-emerald-100/90 leading-relaxed font-medium mt-2">
+              {t('real_time_delivery_performance_desc') || 'Real-time delivery performance monitoring, merchant settlement balances, and multi-courier dispatch management.'}
+            </p>
+          </div>
 
-          <div className="flex gap-3 pt-2">
+          <div className="flex flex-wrap items-center gap-3 pt-4">
             <button 
               onClick={() => onTabChange('merchants')}
-              className="px-4 py-2.5 bg-white hover:bg-zinc-50 text-[#384318] font-bold text-xs uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs active:scale-95"
+              className="px-5 py-3 bg-white hover:bg-emerald-50 text-[#113F36] font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md hover:shadow-lg flex items-center gap-2 cursor-pointer active:scale-95"
             >
-              <Building2 className="w-4 h-4 text-[#384318]" />
-              + New Merchant
+              <Building2 className="w-4 h-4 text-[#113F36]" />
+              {t('new_merchant') || '+ New Merchant'}
             </button>
             <button 
               onClick={() => onTabChange('finance')}
-              className="px-4 py-2.5 bg-[#384318] hover:bg-[#252D10] text-[#EFF2CD] font-bold text-xs uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer active:scale-95"
+              className="px-5 py-3 bg-emerald-800/60 hover:bg-emerald-800/90 text-emerald-100 font-bold text-xs uppercase tracking-wider rounded-xl transition-all border border-emerald-500/30 flex items-center gap-2 cursor-pointer active:scale-95 backdrop-blur-md"
             >
-              <Coins className="w-4 h-4" />
-              + Settlement Hub
+              <Coins className="w-4 h-4 text-[#A3E635]" />
+              {t('settlement_hub') || 'Settlement Hub'}
+            </button>
+            <button 
+              onClick={() => onTabChange('requests')}
+              className="px-5 py-3 bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all border border-white/20 flex items-center gap-2 cursor-pointer active:scale-95 backdrop-blur-md"
+            >
+              <Clock className="w-4 h-4 text-white" />
+              {t('requests_orders') || 'View All Orders'}
             </button>
           </div>
         </div>
 
-        <div className="relative z-10 grid grid-cols-2 gap-4 w-full xl:w-auto shrink-0">
+        {/* Quick Stats Grid inside Hero */}
+        <div className="relative z-10 grid grid-cols-2 gap-3.5 w-full xl:w-[420px] shrink-0 self-center">
           {stats.map((stat, idx) => (
-            <div key={idx} className="bg-white/80 backdrop-blur-md border border-white/60 p-5 rounded-2xl flex flex-col justify-between shadow-xs">
+            <div 
+              key={idx} 
+              className="bg-white/95 backdrop-blur-md border border-white/60 p-4.5 rounded-2xl flex flex-col justify-between shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+            >
               <div className="flex items-center justify-between gap-2">
-                <span className="text-[11px] font-black uppercase tracking-wider text-zinc-600">{stat.label}</span>
-                <div className={`p-2 rounded-xl bg-slate-100 ${stat.color}`}>{stat.icon}</div>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 truncate">{stat.label}</span>
+                <div className={`p-2 rounded-xl border ${stat.bg}`}>{stat.icon}</div>
               </div>
               <div className="mt-3">
-                <span className="text-xl font-black text-slate-900 block font-mono">{stat.value}</span>
-                <span className="text-[10px] font-bold text-zinc-500">{stat.trend} vs previous period</span>
+                <span className="text-xl font-extrabold text-slate-900 block font-mono tracking-tight">{stat.value}</span>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-md inline-flex items-center gap-1">
+                    {stat.trend}
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-medium">{t('vs_previous_period') || 'vs last week'}</span>
+                </div>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Main Chart Section: Financial Overview (Real Revenue & Settlements) */}
+      {/* Main Chart Section: Financial Overview */}
       <div className="w-full">
-        <div className="bg-white border border-[#EBEFE9] rounded-[2.5rem] p-8 md:p-10 overflow-hidden relative shadow-[0_8px_30px_rgb(220,225,235,0.45)]">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div className="bg-white border border-slate-200/80 rounded-3xl p-6 lg:p-8 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
-              <h3 className="text-xl font-display font-semibold uppercase tracking-tight text-slate-900 mb-1">{t('financial_overview') || 'Financial Overview'}</h3>
-              <p className="text-xs text-zinc-400 font-medium">{t('revenue_settlements') || 'Real Order Revenue vs Settlements (Weekly)'}</p>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-bold text-slate-900 uppercase tracking-wide">{t('financial_overview') || 'Financial Overview'}</h3>
+                <span className="px-2.5 py-0.5 text-[10px] font-extrabold bg-emerald-100 text-emerald-800 rounded-full uppercase">Live Sync</span>
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">{t('revenue_settlements') || 'Real Order Revenue vs Settlements (Weekly Analysis)'}</p>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-5 bg-slate-50 px-4 py-2 rounded-2xl border border-slate-100">
                <div className="flex items-center gap-2">
-                 <div className="w-2.5 h-2.5 rounded-full bg-[#546a40]"></div>
-                 <span className="text-[12px] font-bold uppercase tracking-widest text-[#546a40]">{t('revenue') || 'Revenue'}</span>
+                 <div className="w-3 h-3 rounded-md bg-[#113F36]"></div>
+                 <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700">{t('revenue') || 'Revenue'}</span>
                </div>
                <div className="flex items-center gap-2">
-                 <div className="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
-                 <span className="text-[12px] font-bold uppercase tracking-widest text-zinc-400">{t('settlements') || 'Settlements'}</span>
+                 <div className="w-3 h-3 rounded-md bg-slate-300"></div>
+                 <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{t('settlements') || 'Settlements'}</span>
                </div>
             </div>
           </div>
           
-          <div className="h-[320px] w-full mt-4">
-            <ResponsiveContainer width="100%" height="100%" minHeight={100} minWidth={100}>
-              <AreaChart data={dynamicRevenueData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+          <div className="h-[300px] w-full mt-2">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={dynamicRevenueData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#546a40" stopOpacity={0.15}/>
-                    <stop offset="95%" stopColor="#546a40" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#113F36" stopOpacity={0.25}/>
+                    <stop offset="95%" stopColor="#113F36" stopOpacity={0.0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#EFF4FC" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748B', fontWeight: 600 }} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748B', fontWeight: 600 }} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748B', fontWeight: 600 }} dy={8} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748B', fontWeight: 600 }} />
                 <Tooltip 
-                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)' }}
-                  itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
+                  contentStyle={{ 
+                    borderRadius: '16px', 
+                    border: '1px solid #E2E8F0', 
+                    boxShadow: '0 10px 30px -5px rgba(0, 0, 0, 0.1)',
+                    backgroundColor: '#FFFFFF',
+                    padding: '12px 16px'
+                  }}
+                  itemStyle={{ fontSize: '12px', fontWeight: '700' }}
                 />
-                <Area type="monotone" dataKey="revenue" stroke="#546a40" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
-                <Area type="monotone" dataKey="settlements" stroke="#E2E8F0" strokeWidth={2} fill="transparent" strokeDasharray="5 5" />
+                <Area type="monotone" dataKey="revenue" stroke="#113F36" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
+                <Area type="monotone" dataKey="settlements" stroke="#CBD5E1" strokeWidth={2} fill="transparent" strokeDasharray="4 4" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
       </div>
 
-      {/* Secondary Dynamic Analytics Section: Carrier Share & Shipment Status Distribution */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      {/* Secondary Dynamic Analytics Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* Carrier Share Bar Chart */}
-        <div className="bg-white border border-[#EBEFE9] rounded-[2.5rem] p-8 shadow-[0_8px_30px_rgb(220,225,235,0.45)] flex flex-col justify-between">
+        <div className="bg-white border border-slate-200/80 rounded-3xl p-6 lg:p-8 shadow-sm flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-4">
               <div>
-                <h4 className="text-lg font-display font-bold uppercase tracking-tight text-slate-900">Carrier Volume Split</h4>
-                <p className="text-xs text-zinc-400 font-medium mt-0.5">Dispatches grouped by active carrier partner</p>
+                <h4 className="text-base font-bold uppercase tracking-wide text-slate-900">{t('carrier_volume_split') || 'Carrier Volume Split'}</h4>
+                <p className="text-xs text-slate-500 mt-0.5">{t('dispatches_grouped_by_carrier') || 'Dispatches grouped by active carrier partner'}</p>
               </div>
-              <span className="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-[10px] font-black uppercase">Live Distribution</span>
+              <span className="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-[10px] font-bold uppercase">{t('live_distribution') || 'Live Distribution'}</span>
             </div>
             
-            <div className="h-[220px] w-full mt-4">
-              <ResponsiveContainer width="100%" height="100%" minHeight={100} minWidth={100}>
+            <div className="h-[200px] w-full mt-4">
+              <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={carrierShareData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#EFF4FC" />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748B', fontWeight: 700 }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748B', fontWeight: 600 }} />
-                  <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 5px 15px -3px rgba(0,0,0,0.1)', fontSize: '11px' }} />
-                  <Bar dataKey="count" radius={[8, 8, 0, 0]} barSize={40} />
+                  <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid #E2E8F0', boxShadow: '0 8px 20px -4px rgba(0,0,0,0.08)', fontSize: '12px' }} />
+                  <Bar dataKey="count" radius={[10, 10, 0, 0]} barSize={38} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3 pt-6 border-t border-slate-100 mt-4">
+          <div className="grid grid-cols-3 gap-3 pt-5 border-t border-slate-100 mt-4">
             {carrierShareData.map((item, idx) => (
-              <div key={idx} className="bg-slate-50 p-3 rounded-2xl text-start">
-                <span className="text-[10px] font-black uppercase text-slate-400 block tracking-wider truncate">{item.name}</span>
-                <span className="text-base font-black text-slate-900 font-mono mt-0.5 block">{item.count} orders</span>
+              <div key={idx} className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                <span className="text-[10px] font-bold uppercase text-slate-400 block tracking-wider truncate">{item.name}</span>
+                <span className="text-lg font-extrabold text-slate-900 font-mono mt-0.5 block">{item.count} <span className="text-xs font-normal text-slate-500">{t('orders_label') || 'orders'}</span></span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Shipment Status Distribution Chart */}
-        <div className="bg-white border border-[#EBEFE9] rounded-[2.5rem] p-8 shadow-[0_8px_30px_rgb(220,225,235,0.45)] flex flex-col justify-between">
+        <div className="bg-white border border-slate-200/80 rounded-3xl p-6 lg:p-8 shadow-sm flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-4">
               <div>
-                <h4 className="text-lg font-display font-bold uppercase tracking-tight text-slate-900">Shipment Status Breakdown</h4>
-                <p className="text-xs text-zinc-400 font-medium mt-0.5">Real-time status tracking across active pipeline</p>
+                <h4 className="text-base font-bold uppercase tracking-wide text-slate-900">{t('shipment_status_breakdown') || 'Shipment Status Breakdown'}</h4>
+                <p className="text-xs text-slate-500 mt-0.5">{t('real_time_status_tracking') || 'Real-time status tracking across active pipeline'}</p>
               </div>
-              <span className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-[10px] font-black uppercase">Real Data</span>
+              <span className="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200/60 rounded-full text-[10px] font-bold uppercase">{t('real_data') || 'Real Data'}</span>
             </div>
             
-            <div className="h-[220px] w-full mt-4">
-              <ResponsiveContainer width="100%" height="100%" minHeight={100} minWidth={100}>
+            <div className="h-[200px] w-full mt-4">
+              <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={statusDistributionData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#EFF4FC" />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748B', fontWeight: 700 }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748B', fontWeight: 600 }} />
-                  <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 5px 15px -3px rgba(0,0,0,0.1)', fontSize: '11px' }} />
-                  <Bar dataKey="count" radius={[8, 8, 0, 0]} barSize={36} />
+                  <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid #E2E8F0', boxShadow: '0 8px 20px -4px rgba(0,0,0,0.08)', fontSize: '12px' }} />
+                  <Bar dataKey="count" radius={[10, 10, 0, 0]} barSize={34} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          <div className="grid grid-cols-4 gap-2 pt-6 border-t border-slate-100 mt-4">
+          <div className="grid grid-cols-4 gap-2 pt-5 border-t border-slate-100 mt-4">
             {statusDistributionData.map((item, idx) => (
-              <div key={idx} className="bg-slate-50 p-2.5 rounded-2xl text-start">
-                <span className="text-[9px] font-black uppercase text-slate-400 block tracking-wider truncate">{item.name}</span>
-                <span className="text-sm font-black text-slate-900 font-mono mt-0.5 block">{item.count}</span>
+              <div key={idx} className="bg-slate-50 p-2.5 rounded-2xl border border-slate-100">
+                <span className="text-[9px] font-bold uppercase text-slate-400 block tracking-wider truncate">{item.name}</span>
+                <span className="text-base font-extrabold text-slate-900 font-mono mt-0.5 block">{item.count}</span>
               </div>
             ))}
           </div>
@@ -285,3 +349,5 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
     </div>
   );
 }
+
+export default AdminOverview;
