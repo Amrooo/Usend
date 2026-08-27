@@ -39,62 +39,101 @@ import { AppProvider, useApp } from './context/AppContext';
 import PortalRegister from './screens/PortalRegister';
 
 function AuthGuard({ children, requiredRole, onNavigate }: { children: React.ReactNode, requiredRole?: 'merchant' | 'user', onNavigate?: (screen: Screen) => void }) {
-  const { user, handleLogout } = useApp();
+  const { user, setUser, handleLogout } = useApp();
   
   const handleExit = async () => {
     await handleLogout();
     if (onNavigate) onNavigate('login');
   };
 
-  const isApprovedException = user?.email?.toLowerCase() === 'octman.sam@gmail.com' || user?.email?.toLowerCase() === 'amro-samman@hotmail.com';
+  const handleSwitchToMerchant = async () => {
+    if (user) {
+      const updated = { ...user, role: 'merchant' };
+      setUser(updated);
+      try {
+        const { doc, setDoc } = await import('firebase/firestore');
+        const { db } = await import('./firebase');
+        await setDoc(doc(db, 'users', user.uid || user.id), { role: 'merchant' }, { merge: true });
+      } catch (e) {
+        console.warn('Role switch sync:', e);
+      }
+    } else {
+      if (onNavigate) onNavigate('login');
+    }
+  };
 
-  if (requiredRole === 'merchant' && user?.role !== 'merchant' && !isApprovedException) {
+  const isApprovedException = 
+    user?.email?.toLowerCase() === 'octman.sam@gmail.com' || 
+    user?.email?.toLowerCase() === 'amro-samman@hotmail.com' ||
+    user?.role === 'admin';
+
+  // 1. If not logged in at all -> Show clean Sign In prompt with direct login action
+  if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-zinc-50 p-6">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white shadow-xl border border-red-100 rounded-3xl max-w-md w-full p-8 text-center"
+          className="bg-white shadow-xl border border-zinc-200/80 rounded-3xl max-w-md w-full p-8 text-center"
         >
-          <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
-            <ShieldAlert className="w-8 h-8" />
+          <div className="w-16 h-16 bg-[#113f36]/10 text-[#113f36] rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <LogIn className="w-8 h-8" />
           </div>
-          <h2 className="text-2xl font-black text-zinc-900 mb-3 tracking-tight">Access Denied</h2>
-          <p className="text-zinc-500 mb-8 leading-relaxed">
-            This module requires <strong className="text-zinc-700">Merchant</strong> account privileges. Please sign in with an authorized account to continue.
+          <h2 className="text-2xl font-black text-zinc-900 mb-2 tracking-tight">
+            {requiredRole === 'merchant' ? 'Merchant Portal Sign In' : 'Sign In Required'}
+          </h2>
+          <p className="text-zinc-500 mb-8 text-sm leading-relaxed">
+            Please sign in with your USend account to access this section.
           </p>
-          <button 
-            onClick={handleExit}
-            className="w-full bg-zinc-900 text-white font-bold py-3.5 rounded-xl hover:bg-zinc-800 transition-colors cursor-pointer"
-          >
-            Switch Account
-          </button>
+          <div className="space-y-3">
+            <button 
+              onClick={() => onNavigate && onNavigate('login')}
+              className="w-full bg-[#113f36] hover:bg-[#0d2f29] text-white font-bold py-3.5 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer text-sm"
+            >
+              Sign In to Continue
+            </button>
+            <button 
+              onClick={() => onNavigate && onNavigate('landing_page')}
+              className="w-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold py-3 rounded-xl transition-colors cursor-pointer text-xs"
+            >
+              Back to Home
+            </button>
+          </div>
         </motion.div>
       </div>
     );
   }
 
-  if (requiredRole === 'user' && !user) {
+  // 2. If logged in as 'user' but screen requires 'merchant' -> Allow 1-click upgrade / switch
+  if (requiredRole === 'merchant' && user.role !== 'merchant' && !isApprovedException) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-zinc-50 p-6">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white shadow-xl border border-red-100 rounded-3xl max-w-md w-full p-8 text-center"
+          className="bg-white shadow-xl border border-zinc-200/80 rounded-3xl max-w-md w-full p-8 text-center"
         >
-          <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div className="w-16 h-16 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <ShieldAlert className="w-8 h-8" />
           </div>
-          <h2 className="text-2xl font-black text-zinc-900 mb-3 tracking-tight">Sign In Required</h2>
-          <p className="text-zinc-500 mb-8 leading-relaxed">
-            Please sign in to your USend account to access your user portal and manage orders.
+          <h2 className="text-2xl font-black text-zinc-900 mb-2 tracking-tight">Merchant Access</h2>
+          <p className="text-zinc-500 mb-6 text-sm leading-relaxed">
+            You are currently signed in as <strong className="text-zinc-800">{user.email || user.name}</strong>. Switch to Merchant mode to create and dispatch bulk orders.
           </p>
-          <button 
-            onClick={handleExit}
-            className="w-full bg-zinc-900 text-white font-bold py-3.5 rounded-xl hover:bg-zinc-800 transition-colors cursor-pointer"
-          >
-            Back to Home
-          </button>
+          <div className="space-y-3">
+            <button 
+              onClick={handleSwitchToMerchant}
+              className="w-full bg-[#113f36] hover:bg-[#0d2f29] text-white font-bold py-3.5 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer text-sm"
+            >
+              Switch to Merchant Mode
+            </button>
+            <button 
+              onClick={handleExit}
+              className="w-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold py-3 rounded-xl transition-colors cursor-pointer text-xs"
+            >
+              Sign In with Another Account
+            </button>
+          </div>
         </motion.div>
       </div>
     );

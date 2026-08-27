@@ -4,6 +4,16 @@ import App from './App.tsx';
 import './index.css';
 import './lib/leaflet-init';
 
+// Suppress noisy browser extension background stream logs (e.g., MetaMask/Web3 contentscript ObjectMultiplex)
+const originalWarn = console.warn;
+console.warn = function (...args: any[]) {
+  const msg = args.map(a => (typeof a === 'string' ? a : '')).join(' ');
+  if (msg.includes('ObjectMultiplex') || msg.includes('liveness') || msg.includes('MaxListenersExceededWarning')) {
+    return;
+  }
+  originalWarn.apply(console, args);
+};
+
 // Patch fetch to bypass Nginx strict static routing on Cloudways
 const originalFetch = window.fetch;
 window.fetch = async function () {

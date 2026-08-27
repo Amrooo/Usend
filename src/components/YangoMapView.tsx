@@ -81,43 +81,110 @@ export default function YangoMapView({
     }
   }, []);
 
-  // Safe search query handler using ymaps.geocode
+  // Comprehensive UAE Districts and Landmarks for instant search
+  const UAE_LANDMARKS = [
+    { title: 'Jumeirah Village Circle (JVC), Dubai', coords: [25.0600, 55.2050] as [number, number], keywords: ['jvc', 'jumeirah village circle', 'circle mall'] },
+    { title: 'JVC District 12, Jumeirah Village Circle, Dubai', coords: [25.0560, 55.2110] as [number, number], keywords: ['jvc district 12', 'jvc 12', 'district 12'] },
+    { title: 'JVC District 10, Jumeirah Village Circle, Dubai', coords: [25.0620, 55.2080] as [number, number], keywords: ['jvc district 10', 'jvc 10'] },
+    { title: 'Jumeirah Village Triangle (JVT), Dubai', coords: [25.0450, 55.1950] as [number, number], keywords: ['jvt', 'jumeirah village triangle'] },
+    { title: 'Jumeirah Beach Residence (JBR), Dubai', coords: [25.0780, 55.1320] as [number, number], keywords: ['jbr', 'jumeirah beach residence', 'the walk'] },
+    { title: 'Dubai Marina & Marina Walk, Dubai', coords: [25.0785, 55.1390] as [number, number], keywords: ['marina', 'dubai marina', 'marina mall'] },
+    { title: 'Downtown Dubai & Burj Khalifa, Dubai', coords: [25.1972, 55.2744] as [number, number], keywords: ['downtown', 'burj khalifa', 'dubai mall'] },
+    { title: 'Business Bay & Bay Avenue, Dubai', coords: [25.1850, 55.2700] as [number, number], keywords: ['business bay', 'bay square', 'bay avenue'] },
+    { title: 'Dubai Hills Estate, Dubai', coords: [25.1150, 55.2450] as [number, number], keywords: ['dubai hills', 'hills estate', 'hills mall'] },
+    { title: 'Al Barsha 1 & Mall of the Emirates, Dubai', coords: [25.1180, 55.2000] as [number, number], keywords: ['al barsha', 'barsha', 'mall of the emirates', 'mote'] },
+    { title: 'Dubai Silicon Oasis (DSO), Dubai', coords: [25.1220, 55.3780] as [number, number], keywords: ['silicon oasis', 'dso', 'silicon central'] },
+    { title: 'Motor City & Dubai Autodrome, Dubai', coords: [25.0480, 55.2380] as [number, number], keywords: ['motor city', 'autodrome'] },
+    { title: 'Palm Jumeirah & Atlantis, Dubai', coords: [25.1120, 55.1390] as [number, number], keywords: ['palm', 'palm jumeirah', 'atlantis', 'nakheel mall'] },
+    { title: 'DIFC (Dubai Financial Centre), Dubai', coords: [25.2100, 55.2800] as [number, number], keywords: ['difc', 'gate avenue', 'financial centre'] },
+    { title: 'Deira City Centre & Al Rigga, Dubai', coords: [25.2530, 55.3330] as [number, number], keywords: ['deira', 'city centre deira', 'rigga', 'muraqqabat'] },
+    { title: 'Bur Dubai & Al Fahidi Historic, Dubai', coords: [25.2500, 55.2950] as [number, number], keywords: ['bur dubai', 'fahidi', 'meena bazaar'] },
+    { title: 'Al Quoz Industrial Area, Dubai', coords: [25.1450, 55.2350] as [number, number], keywords: ['al quoz', 'quoz', 'alserkal'] },
+    { title: 'Mirdif & City Centre Mirdif, Dubai', coords: [25.2200, 55.4200] as [number, number], keywords: ['mirdif', 'city centre mirdif'] },
+    { title: 'Jebel Ali Free Zone (JAFZA), Dubai', coords: [24.9850, 55.0850] as [number, number], keywords: ['jebel ali', 'jafza', 'jebel ali port'] },
+    { title: 'Dubai South & Expo City, Dubai', coords: [24.8900, 55.1600] as [number, number], keywords: ['dubai south', 'expo city', 'al maktoum airport', 'dwc'] },
+    { title: 'Sharjah Al Majaz Waterfront, Sharjah', coords: [25.3300, 55.3850] as [number, number], keywords: ['sharjah', 'al majaz', 'majaz', 'corniche sharjah'] },
+    { title: 'Sharjah University City, Sharjah', coords: [25.2950, 55.4750] as [number, number], keywords: ['university city sharjah', 'muwaileh'] },
+    { title: 'Al Reem Island, Abu Dhabi', coords: [24.4980, 54.4050] as [number, number], keywords: ['reem island', 'al reem', 'shams abu dhabi'] },
+    { title: 'Yas Island & Yas Mall, Abu Dhabi', coords: [24.4950, 54.6050] as [number, number], keywords: ['yas island', 'yas mall', 'ferrari world'] },
+    { title: 'Saadiyat Island, Abu Dhabi', coords: [24.5350, 54.4350] as [number, number], keywords: ['saadiyat', 'louvre abu dhabi'] },
+    { title: 'Abu Dhabi Corniche & Downtown, Abu Dhabi', coords: [24.4750, 54.3400] as [number, number], keywords: ['abu dhabi corniche', 'abu dhabi downtown', 'khalidiyah'] },
+    { title: 'Musaffah Industrial, Abu Dhabi', coords: [24.3600, 54.5100] as [number, number], keywords: ['musaffah', 'mussafah', 'icad'] },
+    { title: 'Ajman Corniche & City Centre, Ajman', coords: [25.4150, 55.4400] as [number, number], keywords: ['ajman', 'ajman corniche', 'city centre ajman'] },
+    { title: 'Al Marjan Island, Ras Al Khaimah', coords: [25.6800, 55.7400] as [number, number], keywords: ['rak', 'marjan island', 'ras al khaimah'] }
+  ];
+
+
+  // Multi-source Search handler: Local matching + Nominatim + Yandex
   const handleSearchInput = (val: string) => {
     setSearchQuery(val);
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
 
-    if (!val.trim() || val.trim().length < 3) {
+    const cleanQuery = val.trim().toLowerCase();
+
+    if (!cleanQuery || cleanQuery.length < 2) {
       setSearchResults([]);
       setShowSearchResults(false);
+      setIsSearching(false);
       return;
     }
 
-    searchTimeoutRef.current = setTimeout(() => {
-      setIsSearching(true);
-      if (window.ymaps && window.ymaps.geocode) {
-        window.ymaps.geocode(`${val.trim()}, UAE`, {
-          results: 5,
-          boundedBy: [[24.0, 54.0], [26.2, 56.5]],
-          strictBounds: false
-        }).then((res: any) => {
-          setIsSearching(false);
-          const results: Array<{ title: string; coords: [number, number] }> = [];
-          res.geoObjects.each((geoObject: any) => {
-            const coords = geoObject.geometry.getCoordinates();
-            const text = geoObject.getAddressLine() || geoObject.properties.get('name');
-            if (coords && text) {
-              results.push({ title: text, coords: [coords[0], coords[1]] });
+    // 1. Instant match from UAE local database
+    const localMatches = UAE_LANDMARKS.filter(item => {
+      const titleMatch = item.title.toLowerCase().includes(cleanQuery);
+      const keywordMatch = item.keywords.some(k => cleanQuery.includes(k) || k.includes(cleanQuery));
+      return titleMatch || keywordMatch;
+    }).map(item => ({ title: item.title, coords: item.coords }));
+
+    if (localMatches.length > 0) {
+      setSearchResults(localMatches);
+      setShowSearchResults(true);
+    }
+
+    // 2. Query Geocoder APIs with debounce
+    setIsSearching(true);
+    searchTimeoutRef.current = setTimeout(async () => {
+      const combinedResults: Array<{ title: string; coords: [number, number] }> = [...localMatches];
+
+      // Query OpenStreetMap Nominatim for UAE addresses
+      try {
+        const osmUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val.trim())}&countrycodes=ae&limit=5&addressdetails=1`;
+        const res = await fetch(osmUrl, { headers: { 'Accept-Language': 'en' } });
+        if (res.ok) {
+          const data = await res.json();
+          data.forEach((item: any) => {
+            const lat = parseFloat(item.lat);
+            const lon = parseFloat(item.lon);
+            const title = item.display_name;
+            if (lat && lon && !combinedResults.some(r => Math.abs(r.coords[0] - lat) < 0.001 && Math.abs(r.coords[1] - lon) < 0.001)) {
+              combinedResults.push({ title, coords: [lat, lon] });
             }
           });
-          setSearchResults(results);
-          setShowSearchResults(results.length > 0);
-        }).catch(() => {
-          setIsSearching(false);
-        });
-      } else {
-        setIsSearching(false);
+        }
+      } catch (e) {
+        // Continue
       }
-    }, 350);
+
+      // Query Yandex Geocoder API if available
+      if (window.ymaps && window.ymaps.geocode) {
+        try {
+          const yRes = await window.ymaps.geocode(`${val.trim()}, United Arab Emirates`, { results: 5 });
+          yRes.geoObjects.each((geoObject: any) => {
+            const coords = geoObject.geometry.getCoordinates();
+            const text = geoObject.getAddressLine() || geoObject.properties.get('name');
+            if (coords && text && !combinedResults.some(r => r.title === text)) {
+              combinedResults.push({ title: text, coords: [coords[0], coords[1]] });
+            }
+          });
+        } catch (e) {
+          // Continue
+        }
+      }
+
+      setSearchResults(combinedResults);
+      setShowSearchResults(combinedResults.length > 0);
+      setIsSearching(false);
+    }, 250);
   };
 
   const handleSelectSearchResult = (result: { title: string; coords: [number, number] }) => {
@@ -129,9 +196,12 @@ export default function YangoMapView({
       setPickupAddress(result.title);
       if (pickupPlacemarkRef.current) {
         pickupPlacemarkRef.current.geometry.setCoordinates(result.coords);
+        if (mapInstanceRef.current && mapInstanceRef.current.geoObjects.indexOf(pickupPlacemarkRef.current) === -1) {
+          mapInstanceRef.current.geoObjects.add(pickupPlacemarkRef.current);
+        }
       }
       if (mapInstanceRef.current) {
-        mapInstanceRef.current.setCenter(result.coords, 15);
+        mapInstanceRef.current.setCenter(result.coords, 15, { duration: 400 });
       }
       if (activeMode === 'route') recalculateYangoRoute(result.coords, dropoffCoords);
     } else {
@@ -139,9 +209,12 @@ export default function YangoMapView({
       setDropoffAddress(result.title);
       if (dropoffPlacemarkRef.current) {
         dropoffPlacemarkRef.current.geometry.setCoordinates(result.coords);
+        if (mapInstanceRef.current && mapInstanceRef.current.geoObjects.indexOf(dropoffPlacemarkRef.current) === -1) {
+          mapInstanceRef.current.geoObjects.add(dropoffPlacemarkRef.current);
+        }
       }
       if (mapInstanceRef.current) {
-        mapInstanceRef.current.setCenter(result.coords, 15);
+        mapInstanceRef.current.setCenter(result.coords, 15, { duration: 400 });
       }
       if (activeMode === 'route') recalculateYangoRoute(pickupCoords, result.coords);
     }
@@ -415,16 +488,24 @@ export default function YangoMapView({
             onFocus={() => {
               if (searchResults.length > 0) setShowSearchResults(true);
             }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                if (searchResults.length > 0) {
+                  handleSelectSearchResult(searchResults[0]);
+                }
+              }
+            }}
             placeholder={
               activeMode === 'pickup' 
-                ? (isRTL ? "ابحث أو اضغط على أي معلم بالخريطة لتحديد الاستلام..." : "Search or tap any landmark/spot for pickup...")
-                : (isRTL ? "ابحث أو اضغط على أي معلم بالخريطة لتحديد التسليم..." : "Search or tap any landmark/spot for dropoff...")
+                ? (isRTL ? "ابحث بالاسم (مثال: JVC, Downtown) أو اضغط بالخريطة..." : "Search address (e.g. JVC, Marina, Downtown) or tap map...")
+                : (isRTL ? "ابحث بالاسم (مثال: JVC, Downtown) أو اضغط بالخريطة..." : "Search address (e.g. JVC, Marina, Downtown) or tap map...")
             }
             className="w-full bg-transparent text-xs font-semibold text-zinc-800 placeholder:text-zinc-400 outline-none"
           />
 
           {isSearching && (
-            <Loader2 className="w-3.5 h-3.5 text-zinc-400 animate-spin mr-1" />
+            <Loader2 className="w-3.5 h-3.5 text-zinc-400 animate-spin mr-1 shrink-0" />
           )}
 
           {searchQuery && !isSearching && (
@@ -455,18 +536,53 @@ export default function YangoMapView({
         </div>
 
         {/* Search Results Dropdown */}
-        {showSearchResults && searchResults.length > 0 && (
-          <div className="w-full bg-white border border-zinc-200 rounded-2xl shadow-2xl overflow-hidden mt-1 max-h-56 overflow-y-auto">
-            {searchResults.map((res, idx) => (
-              <button
-                key={idx}
-                onClick={() => handleSelectSearchResult(res)}
-                className="w-full text-left px-4 py-3 hover:bg-zinc-50 border-b border-zinc-100 last:border-0 flex items-start gap-2.5 transition-colors cursor-pointer"
-              >
-                <MapPin className="w-4 h-4 text-[#FF2B42] shrink-0 mt-0.5" />
-                <span className="text-xs text-zinc-800 font-medium line-clamp-2 leading-relaxed">{res.title}</span>
-              </button>
-            ))}
+        {showSearchResults && (
+          <div className="w-full bg-white border border-zinc-200 rounded-2xl shadow-2xl overflow-hidden mt-1 max-h-64 overflow-y-auto divide-y divide-zinc-100 animate-in fade-in slide-in-from-top-1 z-[600]">
+            {searchResults.length > 0 ? (
+              searchResults.map((res, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handleSelectSearchResult(res)}
+                  className="w-full text-left px-4 py-3 hover:bg-red-50/50 flex items-start gap-3 transition-colors cursor-pointer group"
+                >
+                  <div className="w-7 h-7 rounded-lg bg-red-100/70 text-[#FF2B42] flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-[#FF2B42] group-hover:text-white transition-colors">
+                    <MapPin className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-xs text-zinc-800 font-bold block truncate">{res.title}</span>
+                    <span className="text-[10px] text-zinc-400 font-mono">
+                      {res.coords[0].toFixed(4)}, {res.coords[1].toFixed(4)}
+                    </span>
+                  </div>
+                </button>
+              ))
+            ) : (
+              !isSearching && (
+                <div className="p-4 text-center">
+                  <p className="text-xs text-zinc-500 mb-2">No direct match. Pick a popular area below or tap anywhere on the map:</p>
+                  <div className="flex flex-wrap gap-1.5 justify-center">
+                    {[
+                      { name: 'JVC', coords: [25.0600, 55.2050] as [number, number] },
+                      { name: 'Downtown', coords: [25.1972, 55.2744] as [number, number] },
+                      { name: 'Dubai Marina', coords: [25.0785, 55.1390] as [number, number] },
+                      { name: 'Business Bay', coords: [25.1850, 55.2700] as [number, number] },
+                      { name: 'Al Barsha', coords: [25.1180, 55.2000] as [number, number] },
+                      { name: 'Abu Dhabi', coords: [24.4750, 54.3400] as [number, number] }
+                    ].map(p => (
+                      <button
+                        key={p.name}
+                        type="button"
+                        onClick={() => handleSelectSearchResult({ title: `${p.name}, UAE`, coords: p.coords })}
+                        className="px-2.5 py-1 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-[11px] font-bold rounded-lg cursor-pointer"
+                      >
+                        {p.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )
+            )}
           </div>
         )}
       </div>

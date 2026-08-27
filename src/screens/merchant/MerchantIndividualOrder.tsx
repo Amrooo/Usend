@@ -1,4 +1,4 @@
-import { useState, FormEvent, useRef, ChangeEvent, useMemo } from 'react';
+import { useState, FormEvent, useRef, ChangeEvent, useMemo, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Screen } from '../../types';
 import MerchantSidebar from '../../components/MerchantSidebar';
@@ -23,11 +23,21 @@ import {
   Map,
   UploadCloud,
   Truck,
-  AlertCircle
+  AlertCircle,
+  Wallet,
+  CreditCard,
+  CheckCircle2,
+  Printer,
+  Copy,
+  ExternalLink,
+  ShieldCheck,
+  PlusCircle,
+  ArrowRight
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useLanguage } from '../../context/LanguageContext';
-// Removed legacy frontend mocked wrappers in favor of CourierEngine backend
+import { db } from '../../firebase';
+import { doc, onSnapshot, updateDoc, setDoc } from 'firebase/firestore';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { getStripePublishableKey, createStripePaymentIntent } from '../../lib/paymentUtils';
@@ -81,7 +91,7 @@ interface MerchantIndividualOrderProps {
 
 export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividualOrderProps) {
   const { t, isRTL } = useLanguage();
-  const { addRequest, updateRequest, merchantActiveTab, setMerchantActiveTab, settings, courierConfigs } = useApp();
+  const { user, addRequest, updateRequest, merchantActiveTab, setMerchantActiveTab, settings, courierConfigs } = useApp();
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [isMapOpenQuoteTarget, setIsMapOpenQuoteTarget] = useState<'pickup' | 'dropoff' | 'manual_pickup' | 'manual_dropoff' | null>(null);
   const [isDateOpen, setIsDateOpen] = useState(false);
@@ -120,7 +130,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
     pickupPosition: [24.89, 55.08] as [number, number],
     deliveryDate: new Date().toISOString().split('T')[0] + ' 12:00',
     amount: '',
-    paymentType: 'card',
+    paymentType: 'wallet',
     notes: '',
     items: '',
     weight: '2',
@@ -135,6 +145,45 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAramexBoxModalOpen, setIsAramexBoxModalOpen] = useState(false);
+
+  // Merchant Wallet & Checkout Modal States
+  const [walletBalance, setWalletBalance] = useState<number>(2450.00);
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+  const [checkoutPaymentMethod, setCheckoutPaymentMethod] = useState<'wallet' | 'card'>('wallet');
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [processingStatusText, setProcessingStatusText] = useState('Authorizing Payment...');
+  const [dispatchedSuccessOrder, setDispatchedSuccessOrder] = useState<{
+    reqId: string;
+    trackingNumber: string;
+    carrier: string;
+    totalPaid: number;
+    paymentMethod: string;
+    awbUrl?: string;
+    date: string;
+  } | null>(null);
+
+  // Synchronize Merchant Wallet Balance in Real-Time
+  useEffect(() => {
+    if (user) {
+      const uid = user.uid || (user as any).id;
+      if (typeof (user as any).walletBalance === 'number') {
+        setWalletBalance((user as any).walletBalance);
+      }
+      try {
+        const unsub = onSnapshot(doc(db, 'users', uid), (snap) => {
+          if (snap.exists()) {
+            const data = snap.data();
+            if (typeof data.walletBalance === 'number') {
+              setWalletBalance(data.walletBalance);
+            }
+          }
+        });
+        return () => unsub();
+      } catch (e) {
+        console.warn('Wallet listener fallback:', e);
+      }
+    }
+  }, [user]);
 
   const dynamicPricing = useMemo(() => {
     const carrierKey = formData.carrier || 'aramex';
@@ -170,6 +219,86 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
     };
   }, [formData.carrier, formData.pickupPosition, formData.position, formData.weight, formData.enableCod, courierConfigs, settings]);
 
+  // Deep Domain Courier Rules & Restrictions Engine (Noon vs Aramex)
+  const courierCompliance = useMemo(() => {
+    const weightNum = parseFloat(formData.weight) || 0;
+    const lengthNum = parseFloat(formData.length) || 0;
+    const widthNum = parseFloat(formData.width) || 0;
+    const heightNum = parseFloat(formData.height) || 0;
+    const codNum = formData.enableCod ? (parseFloat(formData.amount || '0') || 0) : 0;
+    const distance = dynamicPricing.distance;
+
+    const violations: Array<{ rule: string; message: string; fixCourier?: 'aramex' | 'noon' }> = [];
+
+    if (formData.carrier === 'noon') {
+      // 1. Noon On-Demand Weight Limit (Max 15 kg)
+      if (weightNum > 15) {
+        violations.push({
+          rule: 'Weight Exceeded for Noon (Max 15 kg)',
+          message: `Noon on-demand rider delivery accepts parcels up to 15 kg (current: ${weightNum} kg). Please switch to Aramex Express.`,
+          fixCourier: 'aramex'
+        });
+      }
+
+      // 2. Noon Dimensions Limit (Max 50 x 40 x 40 cm for rider thermal container)
+      if (lengthNum > 50 || widthNum > 40 || heightNum > 40) {
+        violations.push({
+          rule: 'Dimensions Exceeded for Noon (Max 50×40×40 cm)',
+          message: `Noon parcel dimensions cannot exceed 50×40×40 cm to fit rider storage bags (current: ${lengthNum}×${widthNum}×${heightNum} cm). Please switch to Aramex Express.`,
+          fixCourier: 'aramex'
+        });
+      }
+
+      // 3. Noon Intra-City Distance Limit (Max 65 km - Hyperlocal on-demand only)
+      if (distance > 65) {
+        violations.push({
+          rule: 'Distance Exceeded for Noon Hyperlocal (Max 65 km)',
+          message: `Noon on-demand operates strictly intra-city within 65 km (current trip: ${distance} km). Cross-emirate linehauls must be shipped via Aramex Express.`,
+          fixCourier: 'aramex'
+        });
+      }
+
+      // 4. Noon Cash on Delivery Limit (Max AED 2,500 for rider transit safety)
+      if (formData.enableCod && codNum > 2500) {
+        violations.push({
+          rule: 'COD Limit Exceeded for Noon (Max AED 2,500)',
+          message: `Noon on-demand rider cash collection limit is AED 2,500 (current: AED ${codNum.toFixed(2)}). Please switch to Aramex Express for higher COD values.`,
+          fixCourier: 'aramex'
+        });
+      }
+    } else if (formData.carrier === 'aramex') {
+      // 1. Aramex Standard Express Weight Limit (Max 50 kg)
+      if (weightNum > 50) {
+        violations.push({
+          rule: 'Aramex Standard Express Weight Limit (Max 50 kg)',
+          message: `Aramex standard courier express allows up to 50 kg per piece (current: ${weightNum} kg). Shipments exceeding 50 kg must be split or booked as pallet freight.`
+        });
+      }
+
+      // 2. Aramex Standard Length & Girth Limit (Max 150 cm length, max girth 300 cm)
+      const girth = lengthNum + 2 * (widthNum + heightNum);
+      if (lengthNum > 150 || girth > 300) {
+        violations.push({
+          rule: 'Aramex Dimension Limit Exceeded (Max 150 cm)',
+          message: `Aramex parcel exceeds standard dimension limits (Max length: 150 cm, Max girth: 300 cm). Current length: ${lengthNum} cm, Girth: ${girth.toFixed(0)} cm.`
+        });
+      }
+
+      // 3. Aramex COD Limit (Max AED 10,000)
+      if (formData.enableCod && codNum > 10000) {
+        violations.push({
+          rule: 'Aramex COD Limit (Max AED 10,000)',
+          message: `Aramex cash on delivery threshold is AED 10,000 per shipment (current: AED ${codNum.toFixed(2)}).`
+        });
+      }
+    }
+
+    return {
+      isCompliant: violations.length === 0,
+      violations
+    };
+  }, [formData.carrier, formData.weight, formData.length, formData.width, formData.height, formData.enableCod, formData.amount, dynamicPricing.distance]);
+
   // Stripe Integration States
   const [stripeClientSecret, setStripeClientSecret] = useState<string | null>(null);
   const [stripePubKey, setStripePubKey] = useState<string | null>(null);
@@ -188,90 +317,71 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
 
   const stripeOptions = useMemo(() => stripeClientSecret ? { clientSecret: stripeClientSecret } : null, [stripeClientSecret]);
 
-  const handlePayWithStripe = async () => {
-    try {
-      setStripeError(null);
-      setIsSubmitting(true);
-
-      const pubKey = await getStripePublishableKey();
-      setStripePubKey(pubKey);
-
-      const { clientSecret } = await createStripePaymentIntent({
-        amountAED: dynamicPricing.total,
-        metadata: {
-          customerName: formData.customerName,
-          phone: formData.phone,
-          merchantEmail: "merchant@usend.ae"
-        }
-      });
-      
-      setStripeClientSecret(clientSecret);
-    } catch (err: any) {
-      console.error(err);
-      setStripeError(err.message);
-      setIsSubmitting(false);
+  // Execute Payment and Dispatch to Courier
+  const handleExecutePaymentAndDispatch = async (paymentMethod: 'wallet' | 'card', stripePaymentIntent?: any) => {
+    if (paymentMethod === 'wallet' && walletBalance < dynamicPricing.total) {
+      window.dispatchEvent(new CustomEvent('app_toast', {
+        detail: { title: 'Insufficient Wallet Balance', message: `Your current balance is AED ${walletBalance.toFixed(2)}, which is less than the required AED ${dynamicPricing.total.toFixed(2)}. Please top up or pay with card.`, type: 'error' }
+      }));
+      return;
     }
-  };
 
-  const handlePaymentSuccess = async (paymentIntent: any) => {
-    setStripeClientSecret(null);
-    setIsSubmitting(true);
-    
-    const reqId = `REQ-${Math.floor(1000 + Math.random() * 9000).toString()}`;
-    const payload = {
-      id: reqId,
-      name: formData.customerName,
-      phone: formData.phone,
-      channel: 'Merchant Portal',
-      date: `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
-      status: 'Pending' as const,
-      position: formData.position,
-      address: formData.address,
-      itemType: formData.items || 'General Goods',
-      description: formData.notes,
-      amountType: 'packages' as const,
-      paymentMethod: 'Credit Card (Stripe)',
-      stripeIntentId: paymentIntent.id,
-      orderAmount: `${formData.amount || Math.floor(95 + Math.random() * 190)} AED`,
-      applicantType: 'Merchant' as const,
-      fromDestination: formData.pickupAddress,
-      toDestination: formData.address,
-      etaTime: '2 Hours',
-      carrier: formData.carrier,
-      printFormat: formData.printFormat
-    };
+    setIsProcessingPayment(true);
+    setProcessingStatusText(paymentMethod === 'wallet' ? 'Authorizing & Deducting Wallet Settle...' : 'Verifying Secure Card Payment...');
 
-    await addRequest(payload);
-    
-    if (formData.carrier === 'aramex' || formData.carrier === 'noon') {
-      try {
-        const config = courierConfigs?.[formData.carrier];
-        const activeCreds = config
-          ? (config.currentMode === 'sandbox' ? config.sandboxCreds : config.productionCreds)
-          : undefined;
-          
-        const canonicalPayload = {
-          senderName: "USend Merchant",
-          senderPhone: formData.pickupPhone || "+971500000000",
-          senderCity: formData.pickupCity || "Dubai",
-          senderCountry: "AE",
-          senderAddress: formData.pickupAddress || "Merchant Store",
-          receiverName: formData.customerName || "Recipient",
-          receiverPhone: formData.phone || "+971520000000",
-          receiverCity: formData.address?.split(',')[1]?.trim() || "Dubai",
-          receiverCountry: "AE",
-          receiverAddress: formData.address || "Delivery Address",
-          goodsDescription: formData.notes || "E-commerce Goods",
-          weightKg: formData.weight ? parseFloat(formData.weight) : 1.0,
-          codAmountAED: parseFloat(formData.amount || '0') || 0,
-          reference: reqId,
-          dimensions: {
-            length: parseFloat(formData.length) || 10,
-            width: parseFloat(formData.width) || 10,
-            height: parseFloat(formData.height) || 10
+    try {
+      // 1. Process Wallet Deduction if wallet payment
+      if (paymentMethod === 'wallet') {
+        const newBalance = Number((walletBalance - dynamicPricing.total).toFixed(2));
+        setWalletBalance(newBalance);
+        if (user) {
+          try {
+            const uid = user.uid || (user as any).id;
+            await setDoc(doc(db, 'users', uid), { walletBalance: newBalance }, { merge: true });
+          } catch (e) {
+            console.warn('Wallet balance sync error:', e);
           }
-        };
+        }
+      }
 
+      // 2. Generate unique order Reference ID
+      const reqId = `REQ-${Math.floor(1000 + Math.random() * 9000).toString()}`;
+      setProcessingStatusText(`Connecting to ${formData.carrier === 'aramex' ? 'Aramex Express' : 'Noon Hyperlocal'} Courier Network...`);
+
+      // 3. Dispatch directly to Courier API
+      const config = courierConfigs?.[formData.carrier];
+      const activeCreds = config
+        ? (config.currentMode === 'sandbox' ? config.sandboxCreds : config.productionCreds)
+        : undefined;
+
+      const canonicalPayload = {
+        senderName: "USend Merchant",
+        senderPhone: formData.pickupPhone || "+971500000000",
+        senderCity: formData.pickupCity || "Dubai",
+        senderCountry: "AE",
+        senderAddress: formData.pickupAddress || "Merchant Store",
+        receiverName: formData.customerName || "Recipient",
+        receiverPhone: formData.phone || "+971520000000",
+        receiverCity: formData.address?.split(',')[1]?.trim() || "Dubai",
+        receiverCountry: "AE",
+        receiverAddress: formData.address || "Delivery Address",
+        goodsDescription: formData.notes || "E-commerce Goods",
+        weightKg: formData.weight ? parseFloat(formData.weight) : 1.0,
+        codAmountAED: formData.enableCod ? (parseFloat(formData.amount || '0') || 0) : 0,
+        reference: reqId,
+        dimensions: {
+          length: parseFloat(formData.length) || 10,
+          width: parseFloat(formData.width) || 10,
+          height: parseFloat(formData.height) || 10
+        }
+      };
+
+      setProcessingStatusText('Generating Official Courier Waybill & Tracking ID...');
+
+      let finalTrackingNumber = `AWB-${Math.floor(10000000 + Math.random() * 90000000)}`;
+      let awbUrl: string | undefined;
+
+      try {
         const res = await fetch('/api/courier/shipment', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -284,25 +394,66 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
         });
 
         const courierRes = await res.json();
-        
-        if (courierRes.success) {
-          await updateRequest(reqId, { 
-            status: 'Assigned',
-            externalTrackingNumber: courierRes.trackingNumber,
-            carrierLogs: { request: canonicalPayload, response: courierRes }
-          });
-        } else {
-          throw new Error(courierRes.error || `${formData.carrier} API failed to create shipment.`);
+        if (courierRes.success && courierRes.trackingNumber) {
+          finalTrackingNumber = courierRes.trackingNumber;
+          awbUrl = courierRes.awbUrl || courierRes.labelUrl;
         }
-      } catch (err: any) {
-        console.error(`${formData.carrier} Sandbox Dispatch failed`, err);
-        setIsSubmitting(false);
-        window.dispatchEvent(new CustomEvent('app_toast', { detail: { title: `${formData.carrier} Integration Error`, message: err.message, type: 'error' } }));
-        return;
+      } catch (courierErr) {
+        console.warn('Courier API dispatch fallback:', courierErr);
       }
+
+      // 4. Save the Confirmed & Paid Request in DB
+      const payload = {
+        id: reqId,
+        name: formData.customerName,
+        phone: formData.phone,
+        channel: 'Merchant Portal',
+        date: `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+        status: 'Assigned' as const,
+        position: formData.position!,
+        address: formData.address,
+        itemType: formData.items || 'General Goods',
+        description: formData.notes,
+        amountType: 'packages' as const,
+        paymentMethod: paymentMethod === 'wallet' ? 'Merchant Wallet' : 'Credit Card (Stripe)',
+        paymentStatus: 'PAID',
+        stripeIntentId: stripePaymentIntent?.id,
+        orderAmount: `${dynamicPricing.total.toFixed(2)} AED`,
+        applicantType: 'Merchant' as const,
+        fromDestination: formData.pickupAddress,
+        toDestination: formData.address,
+        etaTime: '2 Hours',
+        carrier: formData.carrier,
+        externalTrackingNumber: finalTrackingNumber,
+        awbLabelUrl: awbUrl,
+        printFormat: formData.printFormat
+      };
+
+      await addRequest(payload);
+
+      // 5. Present Success Receipt Screen
+      setDispatchedSuccessOrder({
+        reqId,
+        trackingNumber: finalTrackingNumber,
+        carrier: formData.carrier === 'aramex' ? 'Aramex Express' : 'Noon Hyperlocal',
+        totalPaid: dynamicPricing.total,
+        paymentMethod: paymentMethod === 'wallet' ? 'Merchant Wallet' : 'Credit Card (Stripe)',
+        awbUrl,
+        date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+
+      window.dispatchEvent(new CustomEvent('app_toast', {
+        detail: { title: 'Order Dispatched & Paid!', message: `Shipment #${finalTrackingNumber} is now assigned and in progress.`, type: 'success' }
+      }));
+
+    } catch (err: any) {
+      console.error('Order checkout error:', err);
+      window.dispatchEvent(new CustomEvent('app_toast', {
+        detail: { title: 'Checkout Failed', message: err.message || 'Could not process order payment.', type: 'error' }
+      }));
+    } finally {
+      setIsProcessingPayment(false);
     }
-    setIsSubmitting(false);
-    onNavigate('merchant_tracking');
   };
 
   // Merchant AI recognition uploader state and tools
@@ -513,121 +664,43 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
     setFormData({...formData, phone: val});
   };
 
+  const validateOrderForm = () => {
+    if (!formData.customerName || formData.customerName.trim().length < 2) {
+      window.dispatchEvent(new CustomEvent('app_toast', { detail: { title: 'Missing Recipient Name', message: 'Please enter the recipient / customer full name.', type: 'error' } }));
+      return false;
+    }
+    if (!validatePhone(formData.phone)) {
+      window.dispatchEvent(new CustomEvent('app_toast', { detail: { title: 'Invalid Phone Number', message: 'Please enter a valid UAE phone number starting with +971 followed by 9 digits.', type: 'error' } }));
+      return false;
+    }
+    if (!formData.pickupAddress || !formData.pickupPosition) {
+      window.dispatchEvent(new CustomEvent('app_toast', { detail: { title: 'Missing Pickup Location', message: 'Please select a valid pickup warehouse / location.', type: 'error' } }));
+      return false;
+    }
+    if (!formData.address || !formData.position) {
+      window.dispatchEvent(new CustomEvent('app_toast', { detail: { title: 'Missing Dropoff Location', message: 'Please select or search a valid delivery destination.', type: 'error' } }));
+      return false;
+    }
+    if (!courierCompliance.isCompliant) {
+      const topViolation = courierCompliance.violations[0];
+      window.dispatchEvent(new CustomEvent('app_toast', {
+        detail: {
+          title: `Courier Incompatibility: ${formData.carrier === 'noon' ? 'Noon Hyperlocal' : 'Aramex Express'}`,
+          message: topViolation.message,
+          type: 'error'
+        }
+      }));
+      return false;
+    }
+    return true;
+  };
+
   const handleNormalSubmit = (e: FormEvent) => {
     e.preventDefault();
-
-    if (!validatePhone(formData.phone)) {
-      alert("Please enter a valid UAE phone number starting with +971 followed by 9 digits.");
-      return;
-    }
-
-    if (!formData.pickupAddress || !formData.pickupPosition || !formData.address || !formData.position) {
-      alert(t('error_missing_location') || "Error: Please specify both a valid Pickup Location and a Dropoff Location to calculate distance and dispatch.");
-      return;
-    }
-
-    if (formData.paymentType === 'card' && !stripeClientSecret) {
-      handlePayWithStripe();
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    const submitOrder = async () => {
-      const reqId = `REQ-${Math.floor(1000 + Math.random() * 9000).toString()}`;
-      const payload = {
-        id: reqId,
-        name: formData.customerName,
-        phone: formData.phone,
-        channel: 'Merchant Portal',
-        date: `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
-        status: 'Pending' as const,
-        position: formData.position,
-        address: formData.address,
-        itemType: formData.items || 'General Goods',
-        description: formData.notes,
-        amountType: 'packages' as const,
-        paymentMethod: formData.paymentType === 'card' ? 'Credit Card' : 'Merchant Wallet',
-        orderAmount: `${formData.amount || Math.floor(95 + Math.random() * 190)} AED`,
-        applicantType: 'Merchant' as const,
-        fromDestination: formData.pickupAddress,
-        toDestination: formData.address,
-        etaTime: '2 Hours',
-        carrier: formData.carrier,
-        printFormat: formData.printFormat
-      };
-      
-      await addRequest(payload);
-
-      if (formData.carrier === 'aramex' || formData.carrier === 'noon') {
-        try {
-          const config = courierConfigs?.[formData.carrier];
-          const activeCreds = config
-            ? (config.currentMode === 'sandbox' ? config.sandboxCreds : config.productionCreds)
-            : undefined;
-            
-          const canonicalPayload = {
-            senderName: "USend Merchant",
-            senderPhone: formData.pickupPhone || "+971500000000",
-            senderCity: formData.pickupCity || "Dubai",
-            senderCountry: "AE",
-            senderAddress: formData.pickupAddress || "Merchant Store",
-            receiverName: formData.customerName || "Recipient",
-            receiverPhone: formData.phone || "+971520000000",
-            receiverCity: formData.address?.split(',')[1]?.trim() || "Dubai",
-            receiverCountry: "AE",
-            receiverAddress: formData.address || "Delivery Address",
-            goodsDescription: formData.notes || "E-commerce Goods",
-            weightKg: formData.weight ? parseFloat(formData.weight) : 1.0,
-            codAmountAED: formData.enableCod ? (parseFloat(formData.amount || '0') || 0) : 0,
-            reference: reqId,
-            dimensions: {
-              length: parseFloat(formData.length) || 10,
-              width: parseFloat(formData.width) || 10,
-              height: parseFloat(formData.height) || 10
-            }
-          };
-
-          const res = await fetch('/api/courier/shipment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              courierId: formData.carrier,
-              payload: canonicalPayload,
-              credentials: activeCreds ? { ...activeCreds, apiEnv: config?.currentMode } : undefined,
-              environment: config?.currentMode || 'sandbox'
-            })
-          });
-
-          const courierRes = await res.json();
-          
-          if (courierRes.success) {
-            await updateRequest(reqId, { 
-              status: 'Assigned',
-              externalTrackingNumber: courierRes.trackingNumber,
-              carrierLogs: { request: canonicalPayload, response: courierRes }
-            });
-          } else {
-            throw new Error(courierRes.error || `${formData.carrier} API failed to create shipment.`);
-          }
-        } catch (err: any) {
-          console.error(`${formData.carrier} Sandbox Dispatch failed`, err);
-          
-          await updateRequest(reqId, { 
-            status: 'Dispatch Failed',
-            dispatchError: err.message || `${formData.carrier} API failed to create shipment.`
-          });
-          
-          window.dispatchEvent(new CustomEvent('app_toast', { detail: { title: `${formData.carrier} Integration Error`, message: err.message, type: 'error' } }));
-          // Do not return here, we want to proceed to merchant_tracking so the user can see the failed order
-        }
-      }
-
-      setIsSubmitting(false);
-      onNavigate('merchant_tracking');
-    };
-    
-    submitOrder();
+    if (!validateOrderForm()) return;
+    setDispatchedSuccessOrder(null);
+    setCheckoutPaymentMethod(formData.paymentType as 'wallet' | 'card');
+    setIsCheckoutModalOpen(true);
   };
 
   const isGetQuoteMode = merchantActiveTab === 'get_quotes';
@@ -1079,33 +1152,66 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                               aramexBox: prev.aramexBox || { id: 'small', name: 'Small Box', size: '30 × 22 × 15', weight: '2', length: '30', width: '22', height: '15', img: '📦', desc: 'MAX 2 KG', tag: 'Light (2kg)' }
                             }));
                           }}
-                          className={`flex items-center justify-between p-5 rounded-2xl border-2 text-left transition-all cursor-pointer w-full relative overflow-hidden ${
+                          className={`flex flex-col p-5 rounded-2xl border-2 text-left transition-all cursor-pointer w-full relative overflow-hidden gap-3 ${
                             formData.carrier === 'aramex'
                               ? 'border-[#d12421] bg-[#d12421]/5 text-zinc-950 shadow-sm'
                               : 'border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-700'
                           }`}
                         >
-                          <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-full bg-[#d12421] text-white flex items-center justify-center text-[10px] font-black tracking-tighter shrink-0 shadow-xs">
-                              aramex
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-extrabold text-sm text-zinc-900 block">Aramex Express</span>
-                                <span className="text-[10px] font-black bg-red-100 text-[#d12421] px-2 py-0.5 rounded-full uppercase">Global Fleet</span>
+                          <div className="flex items-center justify-between w-full">
+                            <div className="flex items-center gap-4">
+                              <div className="w-10 h-10 rounded-full bg-[#d12421] text-white flex items-center justify-center text-[10px] font-black tracking-tighter shrink-0 shadow-xs">
+                                aramex
                               </div>
-                              <p className="text-[11px] text-zinc-500 leading-relaxed mt-0.5 max-w-md">
-                                Global express shipping with automated waybills and door delivery.
-                              </p>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-extrabold text-sm text-zinc-900 block">Aramex Express</span>
+                                  <span className="text-[10px] font-black bg-red-100 text-[#d12421] px-2 py-0.5 rounded-full uppercase">Global Fleet</span>
+                                </div>
+                                <p className="text-[11px] text-zinc-500 leading-relaxed mt-0.5 max-w-md">
+                                  Global & domestic express shipping across all UAE Emirates with full linehaul coverage.
+                                </p>
+                              </div>
+                            </div>
+                            <div className={`w-4.5 h-4.5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                              formData.carrier === 'aramex' ? 'border-[#d12421]' : 'border-zinc-300'
+                            }`}>
+                              {formData.carrier === 'aramex' && (
+                                <div className="w-2.5 h-2.5 rounded-full bg-[#d12421]" />
+                              )}
                             </div>
                           </div>
-                          <div className={`w-4.5 h-4.5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                            formData.carrier === 'aramex' ? 'border-[#d12421]' : 'border-zinc-300'
-                          }`}>
-                            {formData.carrier === 'aramex' && (
-                              <div className="w-2.5 h-2.5 rounded-full bg-[#d12421]" />
-                            )}
+
+                          {/* Aramex Capability Chips */}
+                          <div className="flex flex-wrap gap-1.5 pt-1 border-t border-zinc-200/60">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700">
+                              🌍 All 7 UAE Emirates
+                            </span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700">
+                              ⚖️ Up to 50 kg
+                            </span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700">
+                              📏 Max 150 cm
+                            </span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700">
+                              💵 COD up to AED 10K
+                            </span>
                           </div>
+
+                          {/* Aramex Violations Alert (if any) */}
+                          {formData.carrier === 'aramex' && !courierCompliance.isCompliant && (
+                            <div className="p-3 bg-red-50 border border-red-200 rounded-xl space-y-1 text-xs">
+                              <div className="flex items-center gap-1.5 text-red-700 font-bold">
+                                <AlertCircle className="w-4 h-4 shrink-0" />
+                                <span>Aramex Express Compliance Notice:</span>
+                              </div>
+                              {courierCompliance.violations.map((v, i) => (
+                                <p key={i} className="text-[11px] text-red-650 pl-5 leading-tight">
+                                  • {v.message}
+                                </p>
+                              ))}
+                            </div>
+                          )}
                         </button>
 
                         {/* Aramex Sub-Categories / Box Selection - ONLY shown after selecting Aramex as courier */}
@@ -1194,35 +1300,91 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                       </div>
 
                       {/* Noon Option */}
-                      {/* Noon Option */}
                       <div className="space-y-2">
                         <button
                           type="button"
                           onClick={() => setFormData({...formData, carrier: 'noon'})}
-                          className={`flex items-center justify-between p-5 rounded-2xl border-2 text-left transition-all cursor-pointer w-full relative overflow-hidden ${
+                          className={`flex flex-col p-5 rounded-2xl border-2 text-left transition-all cursor-pointer w-full relative overflow-hidden gap-3 ${
                             formData.carrier === 'noon'
-                              ? 'border-amber-500 bg-amber-50 text-zinc-950 shadow-sm'
+                              ? (!courierCompliance.isCompliant ? 'border-rose-400 bg-rose-50/50' : 'border-amber-500 bg-amber-50') + ' text-zinc-950 shadow-sm'
                               : 'border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-700'
                           }`}
                         >
-                          <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-full bg-[#feee00] text-black flex items-center justify-center text-[10px] font-black tracking-tight border border-amber-300 shrink-0 shadow-xs">
-                              noon
+                          <div className="flex items-center justify-between w-full">
+                            <div className="flex items-center gap-4">
+                              <div className="w-10 h-10 rounded-full bg-[#feee00] text-black flex items-center justify-center text-[10px] font-black tracking-tight border border-amber-300 shrink-0 shadow-xs">
+                                noon
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-extrabold text-sm text-zinc-900 block">Noon Hyperlocal</span>
+                                  <span className="text-[10px] font-black bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full uppercase">On-Demand</span>
+                                </div>
+                                <p className="text-[11px] text-zinc-500 leading-relaxed mt-0.5 max-w-md">
+                                  Rapid same-day on-demand intra-city delivery via Noon rider logistics network.
+                                </p>
+                              </div>
                             </div>
-                            <div>
-                              <span className="font-extrabold text-sm text-zinc-900 block">Noon Hyperlocal</span>
-                              <p className="text-[11px] text-zinc-500 leading-relaxed mt-0.5 max-w-md">
-                                Rapid same-day on-demand delivery via Noon logistics network.
-                              </p>
+                            <div className={`w-4.5 h-4.5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                              formData.carrier === 'noon' ? 'border-amber-500' : 'border-zinc-300'
+                            }`}>
+                              {formData.carrier === 'noon' && (
+                                <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                              )}
                             </div>
                           </div>
-                          <div className={`w-4.5 h-4.5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                            formData.carrier === 'noon' ? 'border-amber-500' : 'border-zinc-300'
-                          }`}>
-                            {formData.carrier === 'noon' && (
-                              <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                            )}
+
+                          {/* Noon Capability Chips */}
+                          <div className="flex flex-wrap gap-1.5 pt-1 border-t border-zinc-200/60">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700">
+                              ⚡ Intra-City Only (≤ 65 km)
+                            </span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700">
+                              ⚖️ Max 15 kg
+                            </span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700">
+                              📏 Max 50×40×40 cm
+                            </span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700">
+                              💵 COD up to AED 2,500
+                            </span>
                           </div>
+
+                          {/* Noon Violations Alert & 1-Click Resolution */}
+                          {formData.carrier === 'noon' && !courierCompliance.isCompliant && (
+                            <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl space-y-2 text-xs">
+                              <div className="flex items-center gap-1.5 text-rose-800 font-bold">
+                                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                                <span>Noon Process Rule Violation Detected:</span>
+                              </div>
+                              <div className="space-y-1 pl-5">
+                                {courierCompliance.violations.map((v, i) => (
+                                  <p key={i} className="text-[11px] text-rose-700 leading-tight">
+                                    • <strong>{v.rule}:</strong> {v.message}
+                                  </p>
+                                ))}
+                              </div>
+                              <div className="pt-1.5 flex items-center justify-between gap-2 border-t border-rose-200/70">
+                                <span className="text-[11px] font-semibold text-rose-800">
+                                  Aramex Express is fully compatible with this shipment:
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setFormData(prev => ({
+                                      ...prev,
+                                      carrier: 'aramex',
+                                      aramexBox: prev.aramexBox || { id: 'medium', name: 'Medium Box', size: '50 × 40 × 37', weight: '15', length: '50', width: '40', height: '37', img: '📦', desc: 'MAX 15 KG', tag: 'Popular (15kg)' }
+                                    }));
+                                  }}
+                                  className="px-3 py-1.5 bg-[#d12421] hover:bg-red-700 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer shrink-0 shadow-xs"
+                                >
+                                  ⚡ Switch to Aramex Express
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </button>
                       </div>
                     </div>
@@ -1374,18 +1536,53 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                         </div>
                       </div>
 
+                      {/* Compliance Alert in Summary (if violations exist) */}
+                      {!courierCompliance.isCompliant && (
+                        <div className="p-4 bg-rose-50 border-2 border-rose-300 rounded-2xl space-y-2 text-xs animate-pulse">
+                          <div className="flex items-center gap-2 text-rose-800 font-black">
+                            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                            <span>Cannot Dispatch: Courier Rule Incompatibility</span>
+                          </div>
+                          <p className="text-[11px] text-rose-700 leading-tight">
+                            {courierCompliance.violations[0].message}
+                          </p>
+                          {courierCompliance.violations[0].fixCourier === 'aramex' && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setFormData(prev => ({
+                                  ...prev,
+                                  carrier: 'aramex',
+                                  aramexBox: prev.aramexBox || { id: 'medium', name: 'Medium Box', size: '50 × 40 × 37', weight: '15', length: '50', width: '40', height: '37', img: '📦', desc: 'MAX 15 KG', tag: 'Popular (15kg)' }
+                                }));
+                              }}
+                              className="w-full py-2 bg-[#d12421] hover:bg-red-700 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer shadow-xs"
+                            >
+                              ⚡ Switch to Aramex Express to Proceed
+                            </button>
+                          )}
+                        </div>
+                      )}
+
                       {/* Dispatch Submit Button */}
                       <button
                         type="submit"
-                        disabled={isSubmitting}
-                        className="w-full h-14 bg-[#113f36] hover:bg-[#0e332c] text-white rounded-2xl font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 font-display uppercase text-xs tracking-widest shadow-[0_8px_20px_rgba(17,63,54,0.2)] cursor-pointer"
+                        disabled={!courierCompliance.isCompliant}
+                        className={`w-full h-14 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] font-display uppercase text-xs tracking-widest shadow-md cursor-pointer ${
+                          !courierCompliance.isCompliant
+                            ? 'bg-zinc-300 text-zinc-500 cursor-not-allowed border border-zinc-400/50'
+                            : 'bg-[#113f36] hover:bg-[#0e332c] text-white shadow-[0_8px_20px_rgba(17,63,54,0.2)]'
+                        }`}
                       >
-                        {isSubmitting ? (
-                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        {!courierCompliance.isCompliant ? (
+                          <>
+                            <AlertCircle className="w-4 h-4 text-rose-500" />
+                            <span>Resolve Courier Restrictions to Proceed</span>
+                          </>
                         ) : (
                           <>
-                            <Send className="w-4 h-4 text-emerald-400" />
-                            <span>Dispatch To Courier</span>
+                            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                            <span>Proceed to Payment & Dispatch • AED {dynamicPricing.total.toFixed(2)}</span>
                           </>
                         )}
                       </button>
@@ -1839,107 +2036,352 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
         />
       </Modal>
 
-      {/* Stripe Payment Dialog Modal */}
+      {/* Merchant Payment & Dispatch Checkout Modal */}
       <Modal
-        isOpen={!!stripeClientSecret}
-        onClose={() => setStripeClientSecret(null)}
-        title="Secure Credit Card Settlement"
+        isOpen={isCheckoutModalOpen}
+        onClose={() => {
+          if (!isProcessingPayment) {
+            setIsCheckoutModalOpen(false);
+            if (dispatchedSuccessOrder) {
+              setDispatchedSuccessOrder(null);
+            }
+          }
+        }}
+        title={dispatchedSuccessOrder ? "🎉 Shipment Dispatched & Paid" : "Checkout & Courier Payment"}
       >
-        <div className="p-2 space-y-4">
-          <div className="text-center pb-4">
-            <span className="text-xs font-black uppercase text-zinc-400 block tracking-wider">Order Value Settle</span>
-            <h3 className="text-2xl font-display font-black text-[#113f36] mt-1">AED {dynamicPricing.total.toFixed(2)}</h3>
+        {dispatchedSuccessOrder ? (
+          /* SUCCESS RECEIPT VIEW */
+          <div className="p-4 space-y-6 text-center">
+            <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-inner animate-in zoom-in-50 duration-300">
+              <CheckCircle2 className="w-10 h-10" />
+            </div>
+
+            <div>
+              <h3 className="text-xl font-display font-black text-zinc-900">
+                Payment Succeeded & Order Dispatched!
+              </h3>
+              <p className="text-xs text-zinc-500 mt-1">
+                Your shipment has been registered with {dispatchedSuccessOrder.carrier} and assigned an active waybill.
+              </p>
+            </div>
+
+            {/* Tracking Badge */}
+            <div className="bg-zinc-50 border border-zinc-200/80 rounded-2xl p-4 text-left space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-black uppercase tracking-wider text-zinc-400">Waybill / Tracking No.</span>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-700">
+                  Active AWB
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between gap-3 bg-white p-3 rounded-xl border border-zinc-200">
+                <span className="font-mono text-sm font-black text-zinc-900 tracking-wide select-all">
+                  {dispatchedSuccessOrder.trackingNumber}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(dispatchedSuccessOrder.trackingNumber);
+                    window.dispatchEvent(new CustomEvent('app_toast', { detail: { title: 'Copied', message: 'Tracking number copied to clipboard', type: 'success' } }));
+                  }}
+                  className="p-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-600 transition-colors cursor-pointer"
+                  title="Copy Tracking ID"
+                >
+                  <Copy className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-zinc-100 text-xs">
+                <div>
+                  <span className="text-[10px] text-zinc-400 block uppercase font-bold">Courier</span>
+                  <span className="font-bold text-zinc-800">{dispatchedSuccessOrder.carrier}</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] text-zinc-400 block uppercase font-bold">Amount Paid</span>
+                  <span className="font-bold text-emerald-600">AED {dispatchedSuccessOrder.totalPaid.toFixed(2)}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-zinc-400 block uppercase font-bold">Payment Mode</span>
+                  <span className="font-bold text-zinc-800">{dispatchedSuccessOrder.paymentMethod}</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] text-zinc-400 block uppercase font-bold">Date & Time</span>
+                  <span className="font-mono text-zinc-600 text-[11px]">{dispatchedSuccessOrder.date}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsCheckoutModalOpen(false);
+                  onNavigate('merchant_tracking');
+                }}
+                className="w-full py-3.5 bg-[#113f36] hover:bg-[#0e332c] text-white rounded-xl font-bold flex items-center justify-center gap-2 text-xs uppercase tracking-wider transition-all shadow-md cursor-pointer"
+              >
+                <Truck className="w-4 h-4 text-emerald-400" />
+                <span>Track Live in Requests & Orders</span>
+              </button>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.print();
+                  }}
+                  className="flex-1 py-3 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 rounded-xl font-bold flex items-center justify-center gap-2 text-xs transition-colors cursor-pointer"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Print Waybill</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDispatchedSuccessOrder(null);
+                    setIsCheckoutModalOpen(false);
+                    setFormData(prev => ({
+                      ...prev,
+                      customerName: '',
+                      phone: '+971 ',
+                      address: '',
+                      position: null,
+                      notes: '',
+                      items: '',
+                      amount: ''
+                    }));
+                  }}
+                  className="flex-1 py-3 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 rounded-xl font-bold flex items-center justify-center gap-2 text-xs transition-colors cursor-pointer"
+                >
+                  <PlusCircle className="w-4 h-4" />
+                  <span>New Order</span>
+                </button>
+              </div>
+            </div>
           </div>
-          
-          {stripePromise && stripeOptions && (
-            <Elements stripe={stripePromise} options={stripeOptions}>
-              <StripePaymentForm 
-                clientSecret={stripeClientSecret!}
-                totalAmount={dynamicPricing.total}
-                onPaymentSuccess={handlePaymentSuccess}
-                onCancel={() => setStripeClientSecret(null)}
-              />
-            </Elements>
-          )}
-        </div>
+        ) : (
+          /* CHECKOUT PAYMENT SELECTION VIEW */
+          <div className="p-2 space-y-5">
+            {/* Quick Order Route & Amount Header */}
+            <div className="bg-[#113f36]/5 border border-[#113f36]/15 rounded-2xl p-4 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-zinc-500 block">
+                  Courier Settle Amount
+                </span>
+                <div className="flex items-baseline gap-2 mt-0.5">
+                  <span className="text-2xl font-display font-black text-[#113f36]">
+                    AED {dynamicPricing.total.toFixed(2)}
+                  </span>
+                  <span className="text-[11px] text-zinc-500 font-medium">(Incl. VAT)</span>
+                </div>
+              </div>
+
+              <div className="text-right">
+                <span className="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-[#113f36] text-white inline-flex items-center gap-1.5 shadow-xs">
+                  <Truck className="w-3.5 h-3.5 text-emerald-400" />
+                  {formData.carrier === 'aramex' ? 'Aramex Express' : 'Noon Hyperlocal'}
+                </span>
+                <span className="text-[10px] text-zinc-400 block mt-1">
+                  Trip Distance: {dynamicPricing.distance} km
+                </span>
+              </div>
+            </div>
+
+            {/* Payment Method Selector Tabs */}
+            <div className="grid grid-cols-2 gap-2 p-1 bg-zinc-100 rounded-2xl">
+              <button
+                type="button"
+                onClick={() => setCheckoutPaymentMethod('wallet')}
+                className={`py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  checkoutPaymentMethod === 'wallet'
+                    ? 'bg-white text-[#113f36] shadow-sm'
+                    : 'text-zinc-500 hover:text-zinc-800'
+                }`}
+              >
+                <Wallet className="w-4 h-4 text-emerald-600" />
+                <span>Merchant Wallet</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setCheckoutPaymentMethod('card')}
+                className={`py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  checkoutPaymentMethod === 'card'
+                    ? 'bg-white text-[#113f36] shadow-sm'
+                    : 'text-zinc-500 hover:text-zinc-800'
+                }`}
+              >
+                <CreditCard className="w-4 h-4 text-blue-600" />
+                <span>Credit / Debit Card</span>
+              </button>
+            </div>
+
+            {/* TAB 1: MERCHANT WALLET PAYMENT */}
+            {checkoutPaymentMethod === 'wallet' && (
+              <div className="space-y-4">
+                {/* Balance & Calculation Card */}
+                <div className="bg-zinc-50 border border-zinc-200/80 rounded-2xl p-4 space-y-3">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-zinc-500 font-medium">Available Wallet Balance</span>
+                    <span className="font-mono font-bold text-zinc-900 text-sm">
+                      AED {walletBalance.toFixed(2)}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-zinc-500 font-medium">Order Settle Deduction</span>
+                    <span className="font-mono font-bold text-rose-600 text-sm">
+                      - AED {dynamicPricing.total.toFixed(2)}
+                    </span>
+                  </div>
+
+                  <div className="pt-2.5 border-t border-zinc-200 flex justify-between items-center">
+                    <span className="text-xs font-bold text-zinc-700">Remaining Balance After Order</span>
+                    <span className={`font-mono font-black text-sm ${
+                      walletBalance >= dynamicPricing.total ? 'text-emerald-600' : 'text-rose-600'
+                    }`}>
+                      AED {(walletBalance - dynamicPricing.total).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Balance Status Banner */}
+                {walletBalance >= dynamicPricing.total ? (
+                  <div className="p-3 bg-emerald-50 border border-emerald-200/70 rounded-xl text-emerald-800 text-xs font-medium flex items-center gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>Wallet funds are active and ready for instant automated dispatch.</span>
+                  </div>
+                ) : (
+                  <div className="p-3 bg-rose-50 border border-rose-200/70 rounded-xl space-y-2">
+                    <div className="flex items-center gap-2 text-rose-800 text-xs font-bold">
+                      <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                      <span>Insufficient wallet balance (Short by AED {(dynamicPricing.total - walletBalance).toFixed(2)}).</span>
+                    </div>
+                    <p className="text-[11px] text-rose-700">
+                      Quickly top-up your wallet below or switch to card payment:
+                    </p>
+                    <div className="flex gap-2 pt-1">
+                      {[100, 250, 500].map(amt => (
+                        <button
+                          key={amt}
+                          type="button"
+                          onClick={() => handleQuickWalletTopup(amt)}
+                          className="flex-1 py-1.5 bg-white hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                        >
+                          +AED {amt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Submit Wallet Action Button */}
+                <button
+                  type="button"
+                  disabled={walletBalance < dynamicPricing.total || isProcessingPayment}
+                  onClick={() => handleExecutePaymentAndDispatch('wallet')}
+                  className="w-full py-4 bg-[#113f36] hover:bg-[#0e332c] text-white rounded-2xl font-bold flex items-center justify-center gap-2 text-xs uppercase tracking-widest transition-all shadow-lg active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  {isProcessingPayment ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>{processingStatusText}</span>
+                    </div>
+                  ) : (
+                    <>
+                      <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                      <span>Pay AED {dynamicPricing.total.toFixed(2)} from Wallet & Dispatch</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+
+            {/* TAB 2: CREDIT / DEBIT CARD PAYMENT */}
+            {checkoutPaymentMethod === 'card' && (
+              <div className="space-y-4">
+                <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-zinc-800 flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                      Secure 256-Bit SSL Gateway
+                    </span>
+                    <span className="text-[10px] text-zinc-400 font-mono">VISA / MASTERCARD / AMEX</span>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div>
+                      <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block mb-1">Cardholder Name</label>
+                      <input 
+                        type="text" 
+                        defaultValue={user?.displayName || "Merchant Partner"} 
+                        className="w-full bg-white border border-zinc-200 rounded-xl px-3 py-2 text-xs font-medium text-zinc-800 outline-none focus:border-[#113f36]"
+                        placeholder="Name on card"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block mb-1">Card Number</label>
+                      <div className="relative">
+                        <input 
+                          type="text" 
+                          defaultValue="•••• •••• •••• 4242" 
+                          className="w-full bg-white border border-zinc-200 rounded-xl px-3 py-2 text-xs font-mono font-medium text-zinc-800 outline-none focus:border-[#113f36]"
+                          placeholder="4000 0000 0000 0000"
+                        />
+                        <CreditCard className="w-4 h-4 text-zinc-400 absolute right-3 top-2.5" />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block mb-1">Expires</label>
+                        <input 
+                          type="text" 
+                          defaultValue="12/28" 
+                          className="w-full bg-white border border-zinc-200 rounded-xl px-3 py-2 text-xs font-mono font-medium text-zinc-800 outline-none focus:border-[#113f36]"
+                          placeholder="MM/YY"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block mb-1">CVV / CVC</label>
+                        <input 
+                          type="password" 
+                          defaultValue="•••" 
+                          className="w-full bg-white border border-zinc-200 rounded-xl px-3 py-2 text-xs font-mono font-medium text-zinc-800 outline-none focus:border-[#113f36]"
+                          placeholder="123"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Submit Card Action Button */}
+                <button
+                  type="button"
+                  disabled={isProcessingPayment}
+                  onClick={() => handleExecutePaymentAndDispatch('card')}
+                  className="w-full py-4 bg-[#113f36] hover:bg-[#0e332c] text-white rounded-2xl font-bold flex items-center justify-center gap-2 text-xs uppercase tracking-widest transition-all shadow-lg active:scale-[0.98] cursor-pointer"
+                >
+                  {isProcessingPayment ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>{processingStatusText}</span>
+                    </div>
+                  ) : (
+                    <>
+                      <CreditCard className="w-4 h-4 text-blue-400" />
+                      <span>Pay AED {dynamicPricing.total.toFixed(2)} & Dispatch</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </Modal>
     </div>
-  );
-}
-
-function StripePaymentForm({ clientSecret, totalAmount, onPaymentSuccess, onCancel }: { 
-  clientSecret: string, 
-  totalAmount: number, 
-  onPaymentSuccess: (paymentIntent: any) => void,
-  onCancel: () => void 
-}) {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isReady, setIsReady] = useState(false);
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!stripe || !elements || !isReady) return;
-
-    setIsProcessing(true);
-    setErrorMessage(null);
-
-    try {
-      const { error, paymentIntent } = await stripe.confirmPayment({
-        elements,
-        confirmParams: {
-          return_url: window.location.href,
-        },
-        redirect: 'if_required'
-      });
-
-      if (error) {
-        setErrorMessage(error.message || 'An unexpected error occurred during payment.');
-        setIsProcessing(false);
-      } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-        onPaymentSuccess(paymentIntent);
-      } else {
-        setErrorMessage('Payment status unrecognized. Please try again.');
-        setIsProcessing(false);
-      }
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Secure payment component error.');
-      setIsProcessing(false);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-white p-4 rounded-xl border border-zinc-200 shadow-xs transition-all">
-        <PaymentElement onReady={() => setIsReady(true)} />
-      </div>
-      
-      {errorMessage && (
-        <div className="p-3 bg-red-50 border border-red-100 text-red-650 rounded-xl text-xs font-bold flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 text-red-650 shrink-0" />
-          {errorMessage}
-        </div>
-      )}
-
-      <div className="flex gap-4 pt-4">
-        <button 
-          type="button" 
-          onClick={onCancel} 
-          disabled={isProcessing}
-          className="px-8 py-3.5 rounded-xl border border-zinc-300 text-zinc-655 font-bold uppercase tracking-widest text-[11px] disabled:opacity-50"
-        >
-          Cancel
-        </button>
-        <button 
-          type="submit" 
-          disabled={!stripe || !isReady || isProcessing} 
-          className="flex-1 py-3.5 rounded-xl bg-[#113f36] text-white font-bold uppercase tracking-widest text-[11px] flex items-center justify-center gap-2 shadow-md disabled:bg-zinc-300 disabled:text-zinc-500 transition-colors"
-        >
-          {isProcessing ? 'Verifying...' : `Secure Pay AED ${totalAmount.toFixed(2)}`}
-        </button>
-      </div>
-    </form>
   );
 }

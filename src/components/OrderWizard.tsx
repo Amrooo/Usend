@@ -305,6 +305,67 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
       }
     }
 
+    if (wizardStep === 3) {
+      const weightNum = parseFloat(shipmentData.weight) || 1;
+      const lengthNum = parseFloat(shipmentData.length) || 10;
+      const widthNum = parseFloat(shipmentData.width) || 10;
+      const heightNum = parseFloat(shipmentData.height) || 10;
+      const codVal = shipmentData.collectCashFromCustomer ? (parseFloat(shipmentData.collectAmount || '0') || 0) : 0;
+
+      if (shipmentData.courier === 'noon') {
+        if (weightNum > 15) {
+          alert(isRTL 
+            ? `وزن الشحنة (${weightNum} كجم) يتجاوز الحد الأقصى لنون (15 كجم). يرجى اختيار أرامكس إكسبريس للشحنات الثقيلة.`
+            : `Noon on-demand delivery accepts packages up to 15 kg (current: ${weightNum} kg). Please select Aramex Express for heavy shipments.`
+          );
+          return;
+        }
+        if (lengthNum > 50 || widthNum > 40 || heightNum > 40) {
+          alert(isRTL
+            ? `أبعاد الطرد تتجاوز الحد الأقصى لنون (50×40×40 سم). يرجى اختيار أرامكس إكسبريس للطرود الكبيرة.`
+            : `Noon package dimensions cannot exceed 50×40×40 cm (current: ${lengthNum}×${widthNum}×${heightNum} cm). Please select Aramex Express.`
+          );
+          return;
+        }
+        if (distanceKm > 65) {
+          alert(isRTL
+            ? `توصيل نون الفوري مخصص للمدن الداخلية فقط لمسافات حتى 65 كم (المسافة الحالية: ${distanceKm} كم). يرجى اختيار أرامكس إكسبريس للتوصيل بين الإمارات.`
+            : `Noon on-demand is restricted to intra-city routes up to 65 km (current: ${distanceKm} km). Please select Aramex Express for cross-emirate delivery.`
+          );
+          return;
+        }
+        if (codVal > 2500) {
+          alert(isRTL
+            ? `الحد الأقصى للتحصيل النقدي عبر نون هو 2,500 درهم (المبلغ الحالي: ${codVal} درهم). يرجى اختيار أرامكس إكسبريس.`
+            : `Noon Cash on Delivery limit is AED 2,500 (current: AED ${codVal.toFixed(2)}). Please select Aramex Express.`
+          );
+          return;
+        }
+      } else if (shipmentData.courier === 'aramex') {
+        if (weightNum > 50) {
+          alert(isRTL
+            ? `الحد الأقصى للشحن السريع عبر أرامكس هو 50 كجم للقطعة الواحدة.`
+            : `Aramex standard express delivery limit is 50 kg per piece (current: ${weightNum} kg).`
+          );
+          return;
+        }
+        if (lengthNum > 150) {
+          alert(isRTL
+            ? `الحد الأقصى لطول الطرد عبر أرامكس هو 150 سم.`
+            : `Aramex maximum package length is 150 cm (current: ${lengthNum} cm).`
+          );
+          return;
+        }
+        if (codVal > 10000) {
+          alert(isRTL
+            ? `الحد الأقصى للتحصيل النقدي عبر أرامكس هو 10,000 درهم للشحنة الواحدة.`
+            : `Aramex Cash on Delivery limit is AED 10,000 per shipment.`
+          );
+          return;
+        }
+      }
+    }
+
     if (wizardStep === 4 && paymentMethod === 'card' && !stripeClientSecret) {
       setLoading(true);
       const startPayment = async () => {
