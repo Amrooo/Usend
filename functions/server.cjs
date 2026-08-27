@@ -1178,7 +1178,7 @@ var fetchWithTimeout = async (url, options, timeoutMs = 3e4) => {
   }
 };
 var app = (0, import_express.default)();
-var PORT = Number(process.env.PORT) || 3005;
+var PORT = Number(process.env.BACKEND_PORT || process.env.API_PORT) || 3005;
 app.set("trust proxy", 1);
 var apiLimiter = (0, import_express_rate_limit.default)({
   windowMs: 15 * 60 * 1e3,
