@@ -372,10 +372,17 @@ export default function YangoMapView({
     if (window.ymaps && window.ymaps.ready) {
       startMap();
     } else {
-      const script = document.getElementById('yango-maps-api-script') || document.querySelector('script[src*="api-maps"]');
-      if (script) {
-        script.addEventListener('load', startMap);
+      let script: any = document.getElementById('yango-maps-api-script') || document.querySelector('script[src*="api-maps"]');
+      if (!script) {
+        const apikey = (import.meta as any).env.VITE_YANDEX_MAPS_API_KEY || '';
+        script = document.createElement('script');
+        script.id = 'yango-maps-api-script';
+        script.src = `https://api-maps.yandex.ru/2.1/?lang=en_US&coordorder=latlong${apikey ? `&apikey=${apikey}` : ''}`;
+        script.type = 'text/javascript';
+        script.async = true;
+        document.head.appendChild(script);
       }
+      script.addEventListener('load', startMap);
     }
 
     return () => {
