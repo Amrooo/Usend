@@ -1,8 +1,4 @@
-const { Client } = require('ssh2');
 
-const conn = new Client();
-conn.on('ready', () => {
-  const nodeScript = `
     const dotenv = require('dotenv');
     dotenv.config({ path: '/home/1150801.cloudwaysapps.com/mksqztfeks/public_html/.env' });
     const admin = require('firebase-admin');
@@ -34,24 +30,4 @@ conn.on('ready', () => {
       process.exit(0);
     }
     doUpdate().catch(e => { console.error("Update Error:", e); process.exit(1); });
-  `;
-
-  fs = require('fs');
-  fs.writeFileSync(__dirname + '/remote_update.cjs', nodeScript);
-
-  conn.sftp((err, sftp) => {
-    sftp.fastPut(__dirname + '/remote_update.cjs', 'applications/mksqztfeks/public_html/remote_update.cjs', () => {
-      conn.exec('cd /home/1150801.cloudwaysapps.com/mksqztfeks/public_html && node remote_update.cjs', (err2, stream) => {
-        if (err2) throw err2;
-        stream.on('close', () => conn.end());
-        stream.on('data', d => process.stdout.write(d.toString()));
-        stream.stderr.on('data', d => process.stderr.write(d.toString()));
-      });
-    });
-  });
-}).connect({
-  host: '134.209.28.27',
-  port: 22,
-  username: 'master_awqbxuyqcq',
-  password: 'rW9MJAfvXn4n'
-});
+  
