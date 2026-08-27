@@ -42,6 +42,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { getStripePublishableKey, createStripePaymentIntent } from '../../lib/paymentUtils';
 import StripeCheckoutForm from '../../components/merchant/StripeCheckoutForm';
+import { detectEmirate } from '../../services/courierIntegration';
 
 const UAE_ADDRESS_SUGGESTIONS = [
   { name: "Dubai Mall, Financial Center Road, Downtown Dubai", position: [25.1972, 55.2797] },
@@ -249,11 +250,19 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
         });
       }
 
-      // 3. Noon Intra-City Distance Limit (Max 65 km - Hyperlocal on-demand only)
-      if (distance > 65) {
+      // 3. Noon Intra-Emirate Policy Enforcement (Pickup and Delivery must be in the SAME Emirate)
+      const originEmirate = detectEmirate(formData.pickupAddress, formData.pickupPosition);
+      const destEmirate = detectEmirate(formData.address, formData.position);
+      if (originEmirate !== destEmirate) {
+        violations.push({
+          rule: 'Noon Intra-Emirate Restriction',
+          message: `Noon Rider-on-Demand strictly delivers intra-emirate (inside ${originEmirate} only). Inter-emirate shipments (${originEmirate} ➔ ${destEmirate}) are not supported by Noon. Please switch to Aramex Express.`,
+          fixCourier: 'aramex'
+        });
+      } else if (distance > 65) {
         violations.push({
           rule: 'Distance Exceeded for Noon Hyperlocal (Max 65 km)',
-          message: `Noon on-demand operates strictly intra-city within 65 km (current trip: ${distance} km). Cross-emirate linehauls must be shipped via Aramex Express.`,
+          message: `Noon on-demand operates strictly within 65 km (current trip: ${distance} km). Long-distance linehauls must be shipped via Aramex Express.`,
           fixCourier: 'aramex'
         });
       }
@@ -1344,7 +1353,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                                   <span className="text-[10px] font-black bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full uppercase">On-Demand</span>
                                 </div>
                                 <p className="text-[11px] text-zinc-500 leading-relaxed mt-0.5 max-w-md">
-                                  Rapid same-day on-demand intra-city delivery via Noon rider logistics network.
+                                  Rapid same-day on-demand intra-emirate parcel delivery via Noon rider network (e.g. Dubai to Dubai, Abu Dhabi to Abu Dhabi).
                                 </p>
                               </div>
                             </div>
@@ -1362,8 +1371,8 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200/60">
                               ⚡ Same-Day / On-Demand
                             </span>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700">
-                              🌍 Dubai, Abu Dhabi, Sharjah & UAE
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200/60">
+                              🏠 Intra-Emirate Only (Same Emirate)
                             </span>
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700">
                               ⚖️ Max 15 kg

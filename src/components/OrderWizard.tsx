@@ -11,6 +11,7 @@ import Modal from './Modal';
 import { countriesAndCities } from '../data';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { detectEmirate } from '../services/courierIntegration';
 
 // Separate component for the actual payment form to use Stripe hooks
 function StripePaymentForm({ clientSecret, totalAmount, onPaymentSuccess, onCancel }: { 
@@ -327,10 +328,19 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
           );
           return;
         }
+        const originEmirate = detectEmirate(shipperData.street || shipperData.city, shipperData.position);
+        const destEmirate = detectEmirate(receiverData.street || receiverData.city, receiverData.position);
+        if (originEmirate !== destEmirate) {
+          alert(isRTL
+            ? `خدمة نون الفورية تقتصر على الشحن داخل نفس الإمارة فقط (مثال: داخل دبي أو داخل أبوظبي). للشحن بين الإمارات (${originEmirate} إلى ${destEmirate}) يرجى اختيار أرامكس إكسبريس.`
+            : `Noon RoD is restricted strictly to intra-emirate deliveries (e.g. inside ${originEmirate} only). For inter-emirate delivery (${originEmirate} to ${destEmirate}), please select Aramex Express.`
+          );
+          return;
+        }
         if (distanceKm > 65) {
           alert(isRTL
-            ? `توصيل نون الفوري مخصص للمدن الداخلية فقط لمسافات حتى 65 كم (المسافة الحالية: ${distanceKm} كم). يرجى اختيار أرامكس إكسبريس للتوصيل بين الإمارات.`
-            : `Noon on-demand is restricted to intra-city routes up to 65 km (current: ${distanceKm} km). Please select Aramex Express for cross-emirate delivery.`
+            ? `توصيل نون الفوري مخصص لمسافات داخلية حتى 65 كم (المسافة الحالية: ${distanceKm} كم). يرجى اختيار أرامكس إكسبريس للتوصيل بين الإمارات.`
+            : `Noon on-demand is restricted to local routes up to 65 km (current: ${distanceKm} km). Please select Aramex Express for long distance delivery.`
           );
           return;
         }

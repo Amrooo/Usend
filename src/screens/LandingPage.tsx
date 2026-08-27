@@ -1227,8 +1227,8 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                   
                   const results = [];
                   
-                  // Noon (Standard E-commerce)
-                  let noonBase = isInterEmirate ? 18 : 14;
+                  // Noon (Intra-Emirate Only)
+                  let noonBase = 14;
                   let noonSurcharge = chargeableWeight > 5 ? (chargeableWeight - 5) * 1.0 : 0;
                   results.push({
                     courier: 'Noon',
@@ -1236,8 +1236,10 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                     weightSurcharge: noonSurcharge,
                     volumeSurcharge: 0,
                     totalPrice: noonBase + noonSurcharge,
-                    duration: 'Same-day / Next-day',
-                    routeType: isInterEmirate ? 'Express Road' : 'Local E-commerce'
+                    duration: isInterEmirate ? 'Intra-Emirate Only' : 'Same-Day On-Demand',
+                    routeType: isInterEmirate ? 'Local Only' : 'Local Hyperlocal',
+                    isAvailable: !isInterEmirate,
+                    restrictionMsg: isInterEmirate ? 'Intra-emirate only (e.g. Dubai to Dubai)' : null
                   });
 
                   // Aramex (Express)
@@ -1315,28 +1317,37 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                       if (result.courier === 'FedEx') tagColor = 'bg-purple-500/10 text-purple-400 border-purple-500/20';
                       
                       return (
-                        <div key={idx} className={`bg-white/5 border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-colors flex flex-col justify-between shadow-xl ${idx === 0 ? 'ring-1 ring-[#6d8c55] shadow-[#113f36]/40 shadow-lg' : ''}`}>
+                        <div key={idx} className={`bg-white/5 border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-colors flex flex-col justify-between shadow-xl ${idx === 0 && result.isAvailable !== false ? 'ring-1 ring-[#6d8c55] shadow-[#113f36]/40 shadow-lg' : ''} ${result.isAvailable === false ? 'opacity-60 border-amber-500/20' : ''}`}>
                           <div>
                             <div className="flex items-center justify-between mb-4">
                               <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-md border ${tagColor}`}>
                                 {result.courier}
                               </span>
-                              {idx === 0 && <span className="text-[9px] uppercase font-black tracking-widest text-[#6d8c55] bg-[#113f36]/40 px-2 py-1 rounded-full">Best Value</span>}
+                              {idx === 0 && result.isAvailable !== false && <span className="text-[9px] uppercase font-black tracking-widest text-[#6d8c55] bg-[#113f36]/40 px-2 py-1 rounded-full">Best Value</span>}
+                              {result.isAvailable === false && <span className="text-[9px] uppercase font-black tracking-wider text-amber-400 bg-amber-500/20 px-2 py-0.5 rounded-md">Intra-Emirate Only</span>}
                             </div>
-                            <h4 className="text-2xl font-black text-white">{result.totalPrice.toFixed(2)} AED</h4>
-                            <p className="text-[11px] font-bold text-slate-450 mt-1">{result.duration}</p>
+                            <h4 className="text-2xl font-black text-white">{result.isAvailable === false ? 'N/A' : `${result.totalPrice.toFixed(2)} AED`}</h4>
+                            <p className={`text-[11px] font-bold mt-1 ${result.isAvailable === false ? 'text-amber-400' : 'text-slate-450'}`}>{result.duration}</p>
                           </div>
                           
                           <div className="mt-4 pt-4 border-t border-white/10 space-y-1">
-                            <div className="flex justify-between text-[10px] font-semibold text-slate-350">
-                              <span>Base Rate</span>
-                              <span>{result.basePrice.toFixed(2)}</span>
-                            </div>
-                            {result.weightSurcharge > 0 && (
-                              <div className="flex justify-between text-[10px] font-semibold text-slate-350">
-                                <span>Vol/Wt Surcharge</span>
-                                <span>+{result.weightSurcharge.toFixed(2)}</span>
-                              </div>
+                            {result.isAvailable === false ? (
+                              <p className="text-[10px] text-amber-300/80 font-medium leading-tight">
+                                {result.restrictionMsg}
+                              </p>
+                            ) : (
+                              <>
+                                <div className="flex justify-between text-[10px] font-semibold text-slate-350">
+                                  <span>Base Rate</span>
+                                  <span>{result.basePrice.toFixed(2)}</span>
+                                </div>
+                                {result.weightSurcharge > 0 && (
+                                  <div className="flex justify-between text-[10px] font-semibold text-slate-350">
+                                    <span>Vol/Wt Surcharge</span>
+                                    <span>+{result.weightSurcharge.toFixed(2)}</span>
+                                  </div>
+                                )}
+                              </>
                             )}
                           </div>
                         </div>

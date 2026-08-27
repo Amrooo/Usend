@@ -27,6 +27,28 @@ export interface RateParams {
 }
 
 // ─── Noon Coordinate & Monetary Utilities ───────────────────────────────────
+/** Helper to detect UAE Emirate from address text or lat/lng position */
+export function detectEmirate(addressStr: string = '', position?: [number, number] | null): string {
+  const lowerStr = (addressStr || '').toLowerCase();
+  if (lowerStr.includes('abu dhabi') || lowerStr.includes('abudhabi') || lowerStr.includes('al ain')) return 'Abu Dhabi';
+  if (lowerStr.includes('sharjah') || lowerStr.includes('shj')) return 'Sharjah';
+  if (lowerStr.includes('ajman')) return 'Ajman';
+  if (lowerStr.includes('ras al khaimah') || lowerStr.includes('rak')) return 'Ras Al Khaimah';
+  if (lowerStr.includes('fujairah')) return 'Fujairah';
+  if (lowerStr.includes('umm al quwain') || lowerStr.includes('uaq')) return 'Umm Al Quwain';
+  if (lowerStr.includes('dubai') || lowerStr.includes('dxb') || lowerStr.includes('jebel ali') || lowerStr.includes('marina') || lowerStr.includes('downtown') || lowerStr.includes('barsha') || lowerStr.includes('deira') || lowerStr.includes('business bay')) return 'Dubai';
+
+  // Coordinate check fallback
+  if (position && Array.isArray(position) && position.length === 2) {
+    const [lat, lng] = position;
+    if (lat < 24.7 || (lat < 24.95 && lng < 54.85)) return 'Abu Dhabi';
+    if (lat >= 25.33 && lat <= 25.48 && lng >= 55.42 && lng <= 55.70) return 'Sharjah';
+    if (lat >= 24.85 && lat <= 25.32 && lng >= 55.05 && lng <= 55.45) return 'Dubai';
+  }
+
+  return 'Dubai'; // Default UAE Emirate fallback
+}
+
 /** Convert decimal degrees to Noon integer microdegrees (x 10^7) */
 export function toNoonCoordinate(coord: number): number {
   return Math.round(coord * 10_000_000);
