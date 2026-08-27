@@ -1,11 +1,11 @@
 #!/usr/bin/expect -f
 set timeout -1
-spawn scp -o StrictHostKeyChecking=no run_test.js master_awqbxuyqcq@134.209.28.27:/home/1150801.cloudwaysapps.com/mksqztfeks/public_html/
+spawn scp -o StrictHostKeyChecking=no run_test.js master_awqbxuyqcq@134.209.28.27:applications/mksqztfeks/public_html/
 expect "password:"
 send "rW9MJAfvXn4n\r"
 expect eof
 
-spawn ssh -o StrictHostKeyChecking=no master_awqbxuyqcq@134.209.28.27 "node /home/1150801.cloudwaysapps.com/mksqztfeks/public_html/run_test.js"
+spawn ssh -o StrictHostKeyChecking=no master_awqbxuyqcq@134.209.28.27 "node applications/mksqztfeks/public_html/run_test.js"
 expect "password:"
 send "rW9MJAfvXn4n\r"
 expect eof

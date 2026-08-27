@@ -2439,17 +2439,24 @@ function CouriersIntegrationsHub() {
           const privCfg = privateCreds[id] || {};
           const curCfg = config as any;
 
+          const pSandboxCreds = privCfg.sandboxCreds || {};
+          const pProductionCreds = privCfg.productionCreds || {};
+
           merged[id] = {
             ...curCfg,
             sandboxCreds: {
               ...(curCfg.sandboxCreds || {}),
               ...(storedCfg.sandboxCreds || {}),
-              ...(privCfg.sandboxCreds || {})
+              ...pSandboxCreds,
+              password: pSandboxCreds.password ? '••••••••••••' : (storedCfg.sandboxCreds?.password || curCfg.sandboxCreds?.password || ''),
+              apiKey: pSandboxCreds.apiKey ? '••••••••••••' : (storedCfg.sandboxCreds?.apiKey || curCfg.sandboxCreds?.apiKey || '')
             },
             productionCreds: {
               ...(curCfg.productionCreds || {}),
               ...(storedCfg.productionCreds || {}),
-              ...(privCfg.productionCreds || {})
+              ...pProductionCreds,
+              password: pProductionCreds.password ? '••••••••••••' : (storedCfg.productionCreds?.password || curCfg.productionCreds?.password || ''),
+              apiKey: pProductionCreds.apiKey ? '••••••••••••' : (storedCfg.productionCreds?.apiKey || curCfg.productionCreds?.apiKey || '')
             }
           };
         }
@@ -2587,10 +2594,41 @@ function CouriersIntegrationsHub() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      // Fetch current stored credentials from Firestore to restore any unmodified secrets (dummy values)
+      let existingPrivateCreds: any = {};
+      try {
+        const privateSnap = await getDoc(doc(db, 'private_settings', 'courier_credentials'));
+        if (privateSnap.exists()) {
+          existingPrivateCreds = privateSnap.data();
+        }
+      } catch (e) {
+        console.warn('Could not read existing private credentials for merging:', e);
+      }
+
       const fullConfigs: any = {};
       const privateCreds: any = {};
       
       for (const [id, config] of Object.entries(localConfigs) as any) {
+        const existingIdCreds = existingPrivateCreds[id] || {};
+        
+        const sandboxCreds = { ...(config.sandboxCreds || {}) };
+        const productionCreds = { ...(config.productionCreds || {}) };
+
+        // Restore unmodified secrets
+        if (sandboxCreds.password === '••••••••••••') {
+          sandboxCreds.password = existingIdCreds.sandboxCreds?.password || '';
+        }
+        if (sandboxCreds.apiKey === '••••••••••••') {
+          sandboxCreds.apiKey = existingIdCreds.sandboxCreds?.apiKey || '';
+        }
+
+        if (productionCreds.password === '••••••••••••') {
+          productionCreds.password = existingIdCreds.productionCreds?.password || '';
+        }
+        if (productionCreds.apiKey === '••••••••••••') {
+          productionCreds.apiKey = existingIdCreds.productionCreds?.apiKey || '';
+        }
+
         fullConfigs[id] = {
           id: config.id,
           name: config.name,
@@ -2600,12 +2638,12 @@ function CouriersIntegrationsHub() {
           baseUrlProd: config.baseUrlProd,
           connectionStatus: config.connectionStatus,
           rates: config.rates,
-          sandboxCreds: config.sandboxCreds || {},
-          productionCreds: config.productionCreds || {}
+          sandboxCreds: sandboxCreds,
+          productionCreds: productionCreds
         };
         privateCreds[id] = {
-          sandboxCreds: config.sandboxCreds || {},
-          productionCreds: config.productionCreds || {}
+          sandboxCreds: sandboxCreds,
+          productionCreds: productionCreds
         };
       }
       
