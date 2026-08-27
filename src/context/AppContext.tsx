@@ -415,17 +415,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
               status: 'Active',
               createdAt: new Date().toISOString()
             });
-          } else {
-            const data = userDoc.data();
-            if (data.role) {
-              finalRole = data.role;
-            }
+          }
+
+          const profileData = userDoc.exists() ? userDoc.data() : null;
+          if (profileData && profileData.role) {
+            finalRole = profileData.role;
           }
           
           if (u.email?.toLowerCase() === 'amro-samman@hotmail.com') {
             finalRole = 'admin';
           } else if (u.email?.toLowerCase() === 'octman.sam@gmail.com') {
-            finalRole = data && data.role ? data.role : 'merchant';
+            finalRole = profileData && profileData.role ? profileData.role : 'merchant';
           }
           
           const currentDoc = await getDoc(userDocRef);

@@ -1152,14 +1152,24 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                     <div className="flex flex-col gap-3.5">
                       {/* Aramex Option */}
                       <div className="space-y-3">
-                        <button
-                          type="button"
+                        <div
+                          role="button"
+                          tabIndex={0}
                           onClick={() => { 
                             setFormData(prev => ({
                               ...prev,
                               carrier: 'aramex',
                               aramexBox: prev.aramexBox || { id: 'small', name: 'Small Box', size: '30 × 22 × 15', weight: '2', length: '30', width: '22', height: '15', img: '📦', desc: 'MAX 2 KG', tag: 'Light (2kg)' }
                             }));
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              setFormData(prev => ({
+                                ...prev,
+                                carrier: 'aramex',
+                                aramexBox: prev.aramexBox || { id: 'small', name: 'Small Box', size: '30 × 22 × 15', weight: '2', length: '30', width: '22', height: '15', img: '📦', desc: 'MAX 2 KG', tag: 'Light (2kg)' }
+                              }));
+                            }
                           }}
                           className={`flex flex-col p-5 rounded-2xl border-2 text-left transition-all cursor-pointer w-full relative overflow-hidden gap-3 ${
                             formData.carrier === 'aramex'
@@ -1244,7 +1254,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                               ))}
                             </div>
                           )}
-                        </button>
+                        </div>
 
                         {/* Aramex Sub-Categories / Box Selection - ONLY shown after selecting Aramex as courier */}
                         {formData.carrier === 'aramex' && (
@@ -1254,7 +1264,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                                 <span className="text-xs font-black uppercase tracking-wider text-zinc-900">
                                   Package Type:
                                 </span>
-                                <span className="text-xs font-bold text-[#d12421]">
+                                <span className="text-[11px] font-bold text-[#d12421] bg-white px-2.5 py-0.5 rounded-full border border-red-200">
                                   {formData.aramexBox?.name || 'Standard Box'}
                                 </span>
                               </div>
@@ -1333,9 +1343,15 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
 
                       {/* Noon Option */}
                       <div className="space-y-2">
-                        <button
-                          type="button"
+                        <div
+                          role="button"
+                          tabIndex={0}
                           onClick={() => setFormData({...formData, carrier: 'noon'})}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              setFormData({...formData, carrier: 'noon'});
+                            }
+                          }}
                           className={`flex flex-col p-5 rounded-2xl border-2 text-left transition-all cursor-pointer w-full relative overflow-hidden gap-3 ${
                             formData.carrier === 'noon'
                               ? (!courierCompliance.isCompliant ? 'border-rose-400 bg-rose-50/50' : 'border-amber-500 bg-amber-50') + ' text-zinc-950 shadow-sm'
@@ -1417,7 +1433,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                               </div>
                             </div>
                           )}
-                        </button>
+                        </div>
                       </div>
                     </div>
                   </div>
