@@ -5,10 +5,8 @@ import { Search, MapPin, Package, Clock, X, Phone, FileText, CheckCircle2, Alert
 import { useState, useEffect, ReactNode, FC } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useApp, USendRequest } from '../../context/AppContext';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import * as L from 'leaflet';
-import Barcode from 'react-barcode';
+import Barcode from "react-barcode";
+import YandexMapDisplay from '../../components/YandexMapDisplay';
 import YangoMapView from '../../components/YangoMapView';
 
 interface UserTrackingProps {
@@ -514,26 +512,37 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                       </div>
                     </div>
 
-                    {/* Locations */}
+                    {/* Map & Locations */}
                     <div className="space-y-4">
-                      <div>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Pickup Location</span>
-                        <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-100 flex items-start gap-2">
-                          <MapPin className="w-3.5 h-3.5 text-zinc-400 mt-0.5 shrink-0" />
-                          <div className="flex flex-col overflow-hidden">
-                            <span className="text-xs font-semibold text-zinc-700 truncate">{selectedOrder.fromDestination || selectedOrder.pickupAddress || 'Dubai'}</span>
-                            <span className="text-[10px] text-zinc-500 font-medium truncate">{selectedOrder.merchantName || 'Store'}</span>
+                      <div className="h-[200px] w-full rounded-2xl overflow-hidden relative border border-zinc-200 z-0 bg-zinc-50">
+                        <YandexMapDisplay 
+                           center={selectedOrder.position || [25.2048, 55.2708]} 
+                           zoom={11} 
+                           markers={[
+                             { position: selectedOrder.position || [25.2048, 55.2708], color: '#113f36', hint: 'Order Location' }
+                           ]} 
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 gap-3">
+                        <div>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Pickup Location</span>
+                          <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-100 flex items-start gap-2">
+                            <MapPin className="w-3.5 h-3.5 text-zinc-400 mt-0.5 shrink-0" />
+                            <div className="flex flex-col overflow-hidden">
+                              <span className="text-xs font-semibold text-zinc-700 truncate">{selectedOrder.fromDestination || selectedOrder.pickupAddress || 'Dubai'}</span>
+                              <span className="text-[10px] text-zinc-500 font-medium truncate">{selectedOrder.merchantName || 'Store'}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      
-                      <div>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Dropoff Location</span>
-                        <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-100 flex items-start gap-2">
-                          <MapPin className="w-3.5 h-3.5 text-zinc-400 mt-0.5 shrink-0" />
-                          <div className="flex flex-col overflow-hidden">
-                            <span className="text-xs font-semibold text-zinc-700 truncate">{selectedOrder.toDestination || selectedOrder.address || 'Dubai'}</span>
-                            <span className="text-[10px] text-zinc-500 font-medium truncate">{selectedOrder.name || user?.displayName || 'Customer'}</span>
+                        
+                        <div>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Dropoff Location</span>
+                          <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-100 flex items-start gap-2">
+                            <MapPin className="w-3.5 h-3.5 text-zinc-400 mt-0.5 shrink-0" />
+                            <div className="flex flex-col overflow-hidden">
+                              <span className="text-xs font-semibold text-zinc-700 truncate">{selectedOrder.toDestination || selectedOrder.address || 'Dubai'}</span>
+                              <span className="text-[10px] text-zinc-500 font-medium truncate">{selectedOrder.name || user?.displayName || 'Customer'}</span>
+                            </div>
                           </div>
                         </div>
                       </div>

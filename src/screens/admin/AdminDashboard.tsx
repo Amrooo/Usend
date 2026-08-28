@@ -1,31 +1,7 @@
+import LogoIcon from "../../components/LogoIcon";
 import { motion } from 'motion/react';
 import { Screen } from '../../types';
-import { MapContainer, TileLayer, Marker } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import LogoIcon from '../../components/LogoIcon';
-
-const createCustomMarker = (colorClass: string, shadowColor: string, delay: string = '0s') => {
-  return L.divIcon({
-    className: 'custom-leaflet-marker',
-    html: `<div class="w-2.5 h-2.5 ${colorClass} rounded-full animate-pulse border-2 border-white shadow-[0_0_15px_${shadowColor}]" style="animation-delay: ${delay}"></div>`,
-    iconSize: [10, 10],
-    iconAnchor: [5, 5]
-  });
-};
-const createInteractiveMarker = (colorClass: string, shadowColor: string, label: string) => {
-  return L.divIcon({
-    className: 'custom-interactive-marker',
-    html: `<div class="relative group w-full h-full cursor-pointer">
-        <div class="w-5 h-5 ${colorClass} rounded-full border-2 border-white shadow-[0_0_15px_${shadowColor}] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 group-hover:scale-110 transition-transform"></div>
-        <div class="absolute top-full left-1/2 -translate-x-1/2 mt-3 bg-white text-zinc-900 text-[12px] font-bold px-3 py-1.5 rounded-lg shadow-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-          ${label}
-        </div>
-      </div>`,
-    iconSize: [20, 20],
-    iconAnchor: [10, 10]
-  });
-};
+import YandexMapDisplay from '../../components/YandexMapDisplay';
 
 import { 
   BarChart3, Users, Store, Truck, Activity, 
@@ -145,7 +121,7 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
   }, [ordersList]);
 
   const stats = [
-    { label: 'Today\'s Revenue', value: `${todayRevenue.toLocaleString()} AED`, trend: todayRevenue > 0 ? '+100%' : '0%', icon: <DollarSign className="w-5 h-5" />, color: 'text-brand' },
+    { label: 'Today\'s Revenue', value: `${todayRevenue.toLocaleString()} AED`, trend: todayRevenue > 0 ? '+100%' : '0%', icon: <Banknote className="w-5 h-5" />, color: 'text-brand' },
     { label: 'Pending Requests', value: String(pendingRequestsCount), trend: pendingRequestsCount > 0 ? `+${pendingRequestsCount}` : '0', icon: <Clock className="w-5 h-5" />, color: 'text-orange-500' },
     { label: 'Settlements Due', value: `${totalSettlements.toLocaleString()} AED`, trend: '0%', icon: <Wallet className="w-5 h-5" />, color: 'text-purple-600' },
     { label: t('active_merchants') || 'Active Merchants', value: String(activeMerchantsCount), trend: activeMerchantsCount > 0 ? `+${activeMerchantsCount}` : '0', icon: <Store className="w-5 h-5" />, color: 'text-[#113f36]' },
@@ -558,7 +534,6 @@ function RequestsHub() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Pending': return 'text-orange-650 bg-orange-50';
-      case 'Reviewing': return 'text-indigo-600 bg-indigo-50';
       case 'Approved': return 'text-[#113f36] bg-[#113f36]/5';
       case 'Rejected': return 'text-red-600 bg-red-50';
       case 'assigning': return 'text-[#113f36] bg-[#113f36]/5';
@@ -622,14 +597,14 @@ function RequestsHub() {
         <div>
           <div className="flex items-center gap-3 flex-wrap">
             <h2 className="text-2xl lg:text-3xl font-display font-black text-zinc-900 tracking-tight">
-              Requests and Orders
+              <span className="text-zinc-400 font-normal">Admin Dashboard <span className="mx-2">&rsaquo;</span></span> Requests and Orders
             </h2>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              {filteredRequests.length} Active Orders
+              {t('live_sync') || 'Live Sync'}
             </span>
           </div>
-          <p className="text-xs text-zinc-500 font-medium mt-1.5">
+          <p className="text-[11px] text-zinc-500 font-medium mt-1.5">
             Manage parcel shipping orders, assign courier carriers, and track delivery statuses across all channels.
           </p>
         </div>
@@ -654,7 +629,6 @@ function RequestsHub() {
             {[
               { id: 'All Requests', label: 'All', count: activeRequests.length, dot: 'bg-zinc-400' },
               { id: 'Pending', label: 'Pending', count: activeRequests.filter(r => r.status === 'Pending').length, dot: 'bg-amber-500' },
-              { id: 'Reviewing', label: 'Reviewing', count: activeRequests.filter(r => r.status === 'Reviewing').length, dot: 'bg-indigo-500' },
               { id: 'Approved', label: 'Approved', count: activeRequests.filter(r => r.status === 'Approved').length, dot: 'bg-emerald-500' },
               { id: 'assigning', label: 'Assigning', count: activeRequests.filter(r => r.status === 'assigning' || r.status === 'Assigning').length, dot: 'bg-teal-500' },
               { id: 'in_transit', label: 'In Transit', count: activeRequests.filter(r => r.status === 'in_transit' || r.status === 'In Transit' || r.status === 'En-route').length, dot: 'bg-purple-500' },
@@ -777,23 +751,15 @@ function RequestsHub() {
       {/* UAE Requests Map (Full Area) */}
       <div className="rounded-[3rem] overflow-hidden relative shadow-sm h-[400px] border border-zinc-200/80 z-0 bg-zinc-100 shadow-[0_20px_40px_-20px_rgba(0,0,0,0.1)] animate-in fade-in">
          <div className="absolute inset-0">
-            <MapContainer center={[25.0, 55.0]} zoom={8} scrollWheelZoom={false} style={{ height: '100%', width: '100%', backgroundColor: '#e4e4e7' }} zoomControl={false}>
-               <TileLayer
-                 url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-               />
-               {filteredRequests.map(req => (
-                 <Marker 
-                   key={req.id} 
-                   position={req.position || [25.0, 55.0]} 
-                   icon={createInteractiveMarker(
-                     req.status === 'Pending' ? 'bg-orange-400' : req.status === 'Approved' ? 'bg-[#6d8c55]' : req.status === 'Rejected' ? 'bg-red-500' : req.status === 'assigning' ? 'bg-[#6d8c55]' : 'bg-brand',
-                     req.status === 'Pending' ? '#fb923c' : req.status === 'Approved' ? '#34d399' : req.status === 'Rejected' ? '#ef4444' : req.status === 'assigning' ? '#60a5fa' : '#113f36',
-                     req.id
-                   )}
-                   eventHandlers={{ click: () => setSelectedRequest(req) }}
-                 />
-               ))}
-            </MapContainer>
+            <YandexMapDisplay 
+               center={[25.0, 55.0]} 
+               zoom={8} 
+               markers={filteredRequests.map(req => ({
+                 position: req.position || [25.0, 55.0],
+                 hint: req.name || 'Request',
+                 color: req.status === 'Pending' ? '#fb923c' : req.status === 'Approved' ? '#34d399' : req.status === 'Rejected' ? '#ef4444' : req.status === 'assigning' ? '#60a5fa' : '#113f36'
+               }))} 
+            />
             <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-white/30 to-transparent pointer-events-none z-[400]"></div>
          </div>
       </div>
@@ -1204,20 +1170,11 @@ function RequestsHub() {
                <div>
                  <p className="text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-3">{t('location_map') || 'Location on Map'}</p>
                  <div className="h-[200px] w-full rounded-2xl overflow-hidden relative border border-zinc-200 z-0">
-                    <MapContainer key={selectedRequest.id} center={selectedRequest.position} zoom={11} scrollWheelZoom={false} style={{ height: '100%', width: '100%', backgroundColor: '#f4f4f5' }} zoomControl={false} dragging={false}>
-                       <TileLayer
-                         url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-                       />
-                       <Marker
-                         position={selectedRequest.position}
-                         icon={L.divIcon({
-                           className: 'custom-interactive-marker',
-                           html: `<div class="relative"><div class="w-4 h-4 bg-brand rounded-full border-2 border-white shadow-[0_0_15px_#113f36] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-ping"></div><div class="w-4 h-4 bg-brand rounded-full border-2 border-white shadow-[0_0_15px_#113f36] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div></div>`,
-                           iconSize: [16, 16],
-                           iconAnchor: [8, 8]
-                         })}
-                       />
-                    </MapContainer>
+                    <YandexMapDisplay 
+                       center={selectedRequest.position} 
+                       zoom={11} 
+                       markers={[{ position: selectedRequest.position, color: '#113f36' }]} 
+                    />
                  </div>
                </div>
              </div>
@@ -2080,7 +2037,7 @@ function AdminSettings() {
                 <div>
                   <label className="block text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-3">Base Delivery Fee (AED)</label>
                   <div className="relative">
-                    <DollarSign className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                    <Banknote className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                     <input 
                       type="number" 
                       value={localSettings.baseDeliveryFee}
@@ -2092,7 +2049,7 @@ function AdminSettings() {
                 <div>
                   <label className="block text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-3">Per KM Rate (AED)</label>
                   <div className="relative">
-                    <DollarSign className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                    <Banknote className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                     <input 
                       type="number" 
                       value={localSettings.perKmRate}
@@ -2663,7 +2620,7 @@ function CouriersIntegrationsHub() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-display font-semibold uppercase tracking-tight text-zinc-900">Courier Integration Hub</h2>
+          <h2 className="text-2xl font-display font-semibold uppercase tracking-tight text-zinc-900"><span className="text-zinc-400 font-normal normal-case">Admin Dashboard <span className="mx-2">&rsaquo;</span></span> Courier Integration Hub</h2>
           <p className="text-sm text-zinc-500 mt-1">Manage API credentials, environment modes, and rate matrices for each active courier partner.</p>
         </div>
         <div className="flex gap-3">
@@ -2990,7 +2947,7 @@ function CouriersIntegrationsHub() {
               <div className="space-y-6">
                 <div className="flex items-center justify-between pb-3 border-b border-zinc-100 flex-wrap gap-2">
                   <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-orange-500" />
+                    <Banknote className="w-4 h-4 text-orange-500" />
                     <h4 className="font-black text-sm text-zinc-900 uppercase tracking-widest">
                       {isAramex ? 'Dynamic API Pricing & Retail Markup' : isNoon ? 'Noon RoD Fleet Rate Card' : 'Tiered Rate Matrix (AED)'}
                     </h4>
@@ -3292,7 +3249,7 @@ function WalletManagementDesk() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h3 className="text-2xl font-display font-black text-zinc-900 tracking-tight flex items-center gap-3">
-            Platform Wallets & Ledger
+            <span className="text-zinc-400 font-normal">Admin Dashboard <span className="mx-2">&rsaquo;</span></span> Platform Wallets & Ledger
           </h3>
           <p className="text-zinc-500 font-medium mt-1">Reconcile Accounts Payable, COD Receivables, and Platform Revenue seamlessly.</p>
         </div>
@@ -3566,16 +3523,16 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
 
       <div className="flex relative z-10 w-full min-h-screen">
         {/* Modern Elevated Sidebar */}
-        <aside className={`w-[280px] lg:w-[310px] h-screen sticky top-0 bg-white/90 backdrop-blur-xl text-slate-800 border-${isRTL ? 'l' : 'r'} border-slate-200/80 p-5 flex flex-col shrink-0 shadow-sm overflow-hidden select-none z-20`} dir={isRTL ? 'rtl' : 'ltr'}>
+        <aside className={`w-[280px] lg:w-[310px] h-screen sticky top-0 bg-[#113F36] text-white border-${isRTL ? 'l' : 'r'} border-slate-200/20 p-5 flex flex-col shrink-0 shadow-sm overflow-hidden select-none z-20`} dir={isRTL ? 'rtl' : 'ltr'}>
           {/* Brand Logo Header */}
-          <div className="p-3 pb-4 flex items-center justify-between mb-6 border-b border-slate-100">
+          <div className="p-3 pb-4 flex items-center justify-between mb-6 border-b border-white/10">
             <div className="flex items-center gap-3 cursor-pointer group" onClick={() => onNavigate('landing_page')}>
-              <div className="w-14 h-14 rounded-2xl bg-[#113F36] flex items-center justify-center shrink-0 shadow-md group-hover:scale-105 transition-transform">
-                <LogoIcon className="w-8 h-8 text-white" />
+              <div className="w-14 h-14 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <LogoIcon className="w-12 h-12 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-extrabold uppercase tracking-wider text-[#113F36] leading-none">Usend Portal</h1>
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 block">Platform Admin</span>
+                <h1 className="text-xl font-extrabold uppercase tracking-wider text-white leading-none">Usend Portal</h1>
+                <span className="text-[9px] text-emerald-400/80 font-bold uppercase tracking-widest mt-1 block">Platform Admin</span>
               </div>
             </div>
             <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 text-[10px] font-bold uppercase border border-emerald-200/60">v2.4</span>
@@ -3599,12 +3556,12 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                   onClick={() => setActiveTab(item.id as any)}
                   className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl transition-all duration-200 group/btn relative cursor-pointer ${
                     isActive 
-                      ? 'bg-[#113F36] text-white font-bold shadow-md shadow-[#113F36]/20' 
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
+                      ? 'bg-emerald-500/20 text-white font-bold shadow-md shadow-emerald-900/20' 
+                      : 'text-white/70 hover:text-white hover:bg-white/5'
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <span className={`transition-transform duration-200 ${isActive ? 'text-[#A3E635] scale-105' : 'text-slate-400 group-hover/btn:text-[#113F36] group-hover/btn:scale-105'}`}>
+                    <span className={`transition-transform duration-200 ${isActive ? 'text-emerald-400 scale-105' : 'text-white/50 group-hover/btn:text-white group-hover/btn:scale-105'}`}>
                       {item.icon}
                     </span>
                     <span className={`text-[15px] font-semibold leading-none truncate tracking-wide ${isRTL ? 'text-right' : 'text-left'}`}>{item.label}</span>
@@ -3620,23 +3577,23 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
           </nav>
 
           {/* Bottom Profile & Actions */}
-          <div className="pt-4 space-y-2 border-t border-slate-100 mt-2">
+          <div className="pt-4 space-y-2 border-t border-white/10 mt-2">
             <button
               onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
-              className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-600 hover:text-[#113F36] hover:bg-slate-100/80 text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer"
+              className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-white/70 hover:text-white hover:bg-white/5 text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer"
             >
               <div className="flex items-center gap-2.5">
                 <Globe className="w-4 h-4 text-slate-500" />
                 <span>{language === 'en' ? 'العربية' : 'English'}</span>
               </div>
-              <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-500 text-[10px] font-extrabold">{language === 'en' ? 'AR' : 'EN'}</span>
+              <span className="px-2 py-0.5 rounded bg-white/10 text-white/70 text-[10px] font-extrabold">{language === 'en' ? 'AR' : 'EN'}</span>
             </button>
             <button
               onClick={async () => {
                 onNavigate('landing_page');
                 await signOut();
               }}
-              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-rose-600 hover:text-rose-700 hover:bg-rose-50 text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer"
+              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer"
             >
               <LogOut className="w-4 h-4" />
               <span>{t('sign_out') || 'Sign Out'}</span>
@@ -3688,7 +3645,15 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
 
               {/* Notification Bell */}
               <div className="relative">
-                <button className="w-11 h-11 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer relative shadow-xs">
+                <button 
+                  onClick={() => {
+                    if (typeof Notification !== 'undefined') {
+                      Notification.requestPermission().then(perm => {
+                        if (perm === 'granted') triggerToast('Notifications activated successfully!');
+                      });
+                    }
+                  }}
+                  className="w-11 h-11 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer relative shadow-xs">
                   <Bell className="w-4.5 h-4.5" />
                   <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-emerald-500 rounded-full shadow-[0_0_8px_#10B981]"></span>
                 </button>
@@ -3696,10 +3661,8 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
 
               {/* User Profile Badge */}
               <div className={`flex items-center gap-3 ${isRTL ? 'pr-3 border-r' : 'pl-3 border-l'} border-slate-200`}>
-                <div className="w-10 h-10 rounded-2xl border-2 border-[#113F36] p-0.5 shadow-xs">
-                  <div className="w-full h-full rounded-[12px] bg-slate-100 overflow-hidden">
-                    <img alt="User" src="https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&q=80&w=200" className="w-full h-full object-cover" />
-                  </div>
+                <div className="w-10 h-10 rounded-2xl border-2 border-[#113F36] p-0.5 shadow-xs bg-slate-100 flex items-center justify-center">
+                  <UserCircle2 className="w-6 h-6 text-[#113f36]" />
                 </div>
               </div>
             </div>

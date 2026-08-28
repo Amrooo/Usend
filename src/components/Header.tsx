@@ -160,7 +160,7 @@ export default function Header({ onNavigate, setLoginRole, setLoginModalOpen, co
           {user && (
           <div className="relative">
             <button
-              onClick={() => setNotifDropdownOpen(!notifDropdownOpen)}
+              onClick={() => { setNotifDropdownOpen(!notifDropdownOpen); if (typeof Notification !== "undefined") { Notification.requestPermission(); } }}
               className={`p-2 rounded-lg transition-all relative cursor-pointer border flex items-center justify-center ${
                 isSolid 
                   ? 'border-zinc-200 text-zinc-500 hover:text-[#113f36] hover:bg-zinc-50' 
