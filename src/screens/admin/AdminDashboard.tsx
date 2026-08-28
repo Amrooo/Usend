@@ -34,7 +34,7 @@ import {
   ArrowUpRight, ArrowDownRight, MoreVertical,
   LogOut, LayoutDashboard, Database, MessageSquare, DollarSign, Wallet, Percent, CreditCard, ChevronDown, CheckCircle2, XCircle, Clock,
   Inbox, UserCircle2, Building2, MapPin, Code2, Repeat, X,
-  Boxes, ClipboardList, FileText, Coins, TrendingUp, Anchor, Plus, Check, Calendar
+  Boxes, ClipboardList, FileText, Coins, TrendingUp, Anchor, Plus, Check, Calendar, Banknote
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
