@@ -1,0 +1,10 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn scp -o StrictHostKeyChecking=no .env master_awqbxuyqcq@134.209.28.27:/home/1150801.cloudwaysapps.com/mksqztfeks/public_html/.env
+expect {
+    -nocase "password:" {
+        send "rW9MJAfvXn4n\r"
+        exp_continue
+    }
+    eof
+}

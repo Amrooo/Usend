@@ -1050,8 +1050,13 @@ async function startServer() {
   // Run whenever Firebase Admin is initialized (not just when service account key is present).
   // In production on Cloudways, Firebase may be initialized via GOOGLE_APPLICATION_CREDENTIALS
   // or application default credentials without FIREBASE_SERVICE_ACCOUNT_KEY being set explicitly.
+  const hasFirebaseCreds = !!(
+    process.env.FIREBASE_SERVICE_ACCOUNT_KEY ||
+    process.env.GOOGLE_APPLICATION_CREDENTIALS ||
+    process.env.FIRESTORE_EMULATOR_HOST
+  );
   const firebaseInitialized = admin.apps.length > 0;
-  if (firebaseInitialized) {
+  if (firebaseInitialized && hasFirebaseCreds) {
     try {
       // 1. Eagerly load credentials once on startup (non-blocking)
       dbAdmin.collection('private_settings').doc('courier_credentials').get()

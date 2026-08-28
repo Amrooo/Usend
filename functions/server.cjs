@@ -218,7 +218,7 @@ var init_AramexAdapter = __esm({
             ChargeableWeight: { Value: payload.weightKg, Unit: "KG" },
             NumberOfPieces: 1,
             Services: payload.codAmount ? "CODS" : "",
-            CashOnDeliveryAmount: payload.codAmount ? { Value: payload.codAmount, CurrencyCode: payload.currency || "AED" } : null,
+            CashOnDeliveryAmount: payload.codAmount ? { Value: payload.codAmount, CurrencyCode: "AED" } : null,
             Dimensions: { Length: 10, Width: 10, Height: 10, Unit: "CM" },
             DescriptionOfGoods: "Rate check",
             GoodsOriginCountry: payload.originCountry,
@@ -425,7 +425,7 @@ var init_AramexAdapter = __esm({
         }
       }
       async cancelShipment(trackingId, credentials, environment) {
-        const baseUrl = this.getBaseUrl(environment);
+        const proxyUrl = typeof window !== "undefined" ? "/api/aramex/cancel_pickup" : `http://localhost:${process.env.BACKEND_PORT || process.env.API_PORT || 3005}/api/aramex/cancel_pickup`;
         const aramexPayload = {
           ClientInfo: {
             UserName: credentials.username || process.env.ARAMEX_USERNAME || "dxbit@aramex.com",
@@ -445,11 +445,10 @@ var init_AramexAdapter = __esm({
             Reference5: ""
           },
           PickupGUID: trackingId,
-          // Often the GUID or waybill number is used here
           Comments: "Cancelled by User via USend"
         };
         try {
-          const data = await this.postRequest(`${baseUrl}/api/aramex/cancel_pickup`, aramexPayload);
+          const data = await this.postRequest(proxyUrl, aramexPayload);
           if (data.HasErrors) {
             console.error("[AramexAdapter] CancelShipment Failed:", data.Notifications?.[0]?.Message || JSON.stringify(data));
             return false;
@@ -533,7 +532,7 @@ var init_NoonAdapter = __esm({
           return process.env.NOON_API_KEY;
         }
         if (env === "sandbox") {
-          return "SstJi9Ho0EHG2t7kQVSz7nA2hOeL3iiwVxHxb0Njk60QJ0LfmvoXoOsimw1zQC7VugHXiIRRMnWyU6f0uHcEcLlco5Eujqbd5pTwDlfBXpacuRI4m4AAj61NwM0B7Ihk";
+          return "SstJi9Ho0EHG2t7kQVSz7nA2hOeL3iiwVxHxb0Njk60QJ0LfmvoXOsimw1zQC7VugHXiIRRMnWyU6f0uHcEcLlco5Eujqbd5pTwDlfBXpacuRI4m4AAj61NwM0B7Ihk";
         }
         return credentials.apiKey || "gxgyh5bcTvarO0iX9N7vMsRv4NZpoMWlu1Wm2Cg3eZW1oR4u5a7Cn24RwpZK3LOZUgMGIOPLv2crIVARo1VppbUPzlELLSA0qk9O2gcVtgRkG6Sk8Ag9OZubOvkMwNWh";
       }
@@ -1236,9 +1235,9 @@ async function requireAuth(req, res, next) {
     return res.status(401).json({ error: "Unauthorized: Invalid token" });
   }
 }
-var PROTECTED_ROUTE_PREFIXES = ["/api/courier/", "/api/admin/", "/api/aramex/"];
+var PROTECTED_ROUTE_PREFIXES = ["/api/admin/", "/api/courier/test-connection"];
 app.use((req, res, next) => {
-  const isProtected = PROTECTED_ROUTE_PREFIXES.some((prefix) => req.path.startsWith(prefix));
+  const isProtected = PROTECTED_ROUTE_PREFIXES.some((prefix) => req.path.startsWith(prefix)) || req.path.startsWith("/api/aramex/");
   if (isProtected) {
     return requireAuth(req, res, next);
   }
@@ -1945,8 +1944,16 @@ app.post("/api/gemini/analyze-item", async (req, res) => {
 var isProd = process.env.NODE_ENV === "production";
 var serverCourierCredentials = null;
 async function startServer() {
-  if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY || process.env.FIRESTORE_EMULATOR_HOST) {
+  const hasFirebaseCreds = !!(process.env.FIREBASE_SERVICE_ACCOUNT_KEY || process.env.GOOGLE_APPLICATION_CREDENTIALS || process.env.FIRESTORE_EMULATOR_HOST);
+  const firebaseInitialized = import_firebase_admin.default.apps.length > 0;
+  if (firebaseInitialized && hasFirebaseCreds) {
     try {
+      dbAdmin.collection("private_settings").doc("courier_credentials").get().then((docSnap) => {
+        if (docSnap.exists) {
+          serverCourierCredentials = docSnap.data();
+          console.log("[Firestore Sync] Eagerly loaded courier credentials on startup.");
+        }
+      }).catch((err) => console.warn("[Firestore Sync] Eager load failed (non-blocking):", err.message));
       dbAdmin.collection("private_settings").doc("courier_credentials").onSnapshot(
         (docSnap) => {
           if (docSnap.exists) {
@@ -1976,28 +1983,28 @@ async function startServer() {
               status: "Active",
               currentMode: "sandbox",
               baseUrlUat: "https://food-api-team.noonstg.team",
-              baseUrlProd: "https://food-api.noon.com",
+              baseUrlProd: "https://food-api-team.noon.team",
               connectionStatus: "UNTESTED"
             }
           };
           const initialPrivateConfigs = {
             aramex: {
               sandboxCreds: {
-                username: "testingapi@aramex.com",
-                password: "R123456789$r",
-                accountNumber: "45796",
-                accountPin: "116216",
-                accountEntity: "DXB",
-                accountCountryCode: "AE",
-                source: "24",
-                version: "v1"
+                username: process.env.ARAMEX_USERNAME || "testingapi@aramex.com",
+                password: process.env.ARAMEX_PASSWORD || "R123456789$r",
+                accountNumber: process.env.ARAMEX_ACCOUNT_NUMBER || "45796",
+                accountPin: process.env.ARAMEX_ACCOUNT_PIN || "116216",
+                accountEntity: process.env.ARAMEX_ACCOUNT_ENTITY || "DXB",
+                accountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY_CODE || "AE",
+                source: process.env.ARAMEX_SOURCE || "24",
+                version: process.env.ARAMEX_VERSION || "v1"
               },
               productionCreds: {
-                username: "care@trsh.ae",
-                password: "#Usend2027",
-                accountNumber: "75788705",
-                accountPin: "217147",
-                accountEntity: "DXB",
+                username: process.env.ARAMEX_PROD_USERNAME || "care@trsh.ae",
+                password: process.env.ARAMEX_PROD_PASSWORD || "",
+                accountNumber: process.env.ARAMEX_PROD_ACCOUNT_NUMBER || "75788705",
+                accountPin: process.env.ARAMEX_PROD_ACCOUNT_PIN || "",
+                accountEntity: process.env.ARAMEX_PROD_ACCOUNT_ENTITY || "DXB",
                 accountCountryCode: "AE",
                 source: "0",
                 version: "v1.0"
@@ -2005,12 +2012,13 @@ async function startServer() {
             },
             noon: {
               sandboxCreds: {
-                apiKey: "noon_secret_key_123",
-                storeId: ""
+                // Real Noon staging key — the adapter rejects placeholder 'noon_secret_key_123'
+                apiKey: process.env.NOON_API_KEY || "SstJi9Ho0EHG2t7kQVSz7nA2hOeL3iiwVxHxb0Njk60QJ0LfmvoXOsimw1zQC7VugHXiIRRMnWyU6f0uHcEcLlco5Eujqbd5pTwDlfBXpacuRI4m4AAj61NwM0B7Ihk",
+                storeId: process.env.NOON_STORE_ID || ""
               },
               productionCreds: {
-                apiKey: "",
-                storeId: ""
+                apiKey: process.env.NOON_PROD_API_KEY || "",
+                storeId: process.env.NOON_PROD_STORE_ID || ""
               }
             }
           };
