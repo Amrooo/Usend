@@ -219,7 +219,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, isAdminApp }) => {
                   className="space-y-4 relative z-10"
                 >
                   <div className={`text-center mb-6 ${isRTL ? 'text-right' : ''}`}>
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#113f36]/10 border border-[#113f36]/20 rounded-full text-[#113f36] text-[13px] font-black uppercase tracking-widest leading-none mb-3">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#113f36]/10 border border-[#113f36]/20 rounded-full text-[#113f36] text-[15px] font-black uppercase tracking-widest leading-none mb-3">
                       Secure Gateway
                     </div>
                     <h1 className="text-3xl font-extrabold tracking-tight uppercase leading-tight text-zinc-950">
@@ -300,7 +300,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, isAdminApp }) => {
                   className="space-y-5 relative z-10"
                 >
                   <div className={`mb-6 ${isRTL ? 'text-right' : 'text-center'}`}>
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#113f36]/10 text-[13px] font-black uppercase tracking-widest text-[#113f36] mb-3">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#113f36]/10 text-[15px] font-black uppercase tracking-widest text-[#113f36] mb-3">
                       {loginType === 'business' ? (isRTL ? 'بوابة الأعمال' : 'Business Portal') : loginType === 'admin' ? 'Admin Portal' : (isRTL ? 'بوابة الأفراد' : 'Individual Portal')}
                     </div>
                     <h2 className="text-2xl font-extrabold uppercase tracking-tight text-zinc-950 leading-tight">Access Terminal</h2>
@@ -335,7 +335,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, isAdminApp }) => {
 
                   <form onSubmit={handleLogin} className="space-y-4">
                     <div className="space-y-1">
-                      <label className={`text-[13px] font-extrabold uppercase tracking-wider text-zinc-400 block ${isRTL ? 'text-right pr-2' : 'pl-2'}`}>
+                      <label className={`text-[15px] font-extrabold uppercase tracking-wider text-zinc-400 block ${isRTL ? 'text-right pr-2' : 'pl-2'}`}>
                         {isRTL ? 'البريد الإلكتروني' : 'Security Identifier'}
                       </label>
                       <div className="relative">
@@ -352,7 +352,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, isAdminApp }) => {
                     </div>
 
                     <div className="space-y-1">
-                      <label className={`text-[13px] font-extrabold uppercase tracking-wider text-zinc-400 block ${isRTL ? 'text-right pr-2' : 'pl-2'}`}>
+                      <label className={`text-[15px] font-extrabold uppercase tracking-wider text-zinc-400 block ${isRTL ? 'text-right pr-2' : 'pl-2'}`}>
                         {isRTL ? 'كلمة المرور' : 'Cipher Key'}
                       </label>
                       <div className="relative">

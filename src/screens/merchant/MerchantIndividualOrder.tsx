@@ -949,7 +949,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                       </div>
                       <h2 className="font-bold text-lg text-zinc-800">Package Parameters & Details</h2>
                     </div>
-                    <span className="text-[13px] font-bold text-[#113f36] bg-[#113f36]/10 px-2 py-1 rounded-md">
+                    <span className="text-[15px] font-bold text-[#113f36] bg-[#113f36]/10 px-2 py-1 rounded-md">
                       AI Auto-recognition Enabled
                     </span>
                   </div>
@@ -985,7 +985,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <label className="text-[12px] font-black uppercase tracking-wider text-zinc-400">Cargo Photo (Optional)</label>
-                      <span className="text-[13px] text-zinc-400">Skip photo, type manually, or snap anytime!</span>
+                      <span className="text-[15px] text-zinc-400">Skip photo, type manually, or snap anytime!</span>
                     </div>
                     <div 
                       onClick={() => fileInputRef.current?.click()}
@@ -1041,7 +1041,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                         <button 
                           type="button" 
                           onClick={() => setMerchantAIResult(null)}
-                          className="text-[13px] font-bold text-zinc-400 hover:text-zinc-650"
+                          className="text-[15px] font-bold text-zinc-400 hover:text-zinc-650"
                         >
                           Reset Parameters
                         </button>
@@ -1673,7 +1673,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                             setIsMapOpenQuoteTarget('pickup');
                             setIsMapOpen(true);
                           }}
-                          className="text-[13px] font-bold text-[#113f36] bg-zinc-100 hover:bg-zinc-200 px-2 py-1 flex items-center gap-1 rounded-md transition-colors"
+                          className="text-[15px] font-bold text-[#113f36] bg-zinc-100 hover:bg-zinc-200 px-2 py-1 flex items-center gap-1 rounded-md transition-colors"
                         >
                           <Map className="w-3 h-3" /> Select Map
                         </button>
@@ -1737,7 +1737,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                             setIsMapOpenQuoteTarget('dropoff');
                             setIsMapOpen(true);
                           }}
-                          className="text-[13px] font-bold text-rose-500 bg-zinc-100 hover:bg-zinc-200 px-2 py-1 flex items-center gap-1 rounded-md transition-colors"
+                          className="text-[15px] font-bold text-rose-500 bg-zinc-100 hover:bg-zinc-200 px-2 py-1 flex items-center gap-1 rounded-md transition-colors"
                         >
                           <Map className="w-3 h-3" /> Select Map
                         </button>
@@ -1796,7 +1796,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                   {/* Cargo dimension inputs */}
                   <div className="grid grid-cols-4 gap-3">
                     <div className="space-y-2 col-span-1">
-                      <label className="text-[13px] font-black uppercase tracking-wider text-zinc-400">Weight (kg)</label>
+                      <label className="text-[15px] font-black uppercase tracking-wider text-zinc-400">Weight (kg)</label>
                       <input 
                         type="number"
                         value={quoteData.weightKg}
@@ -1805,7 +1805,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                       />
                     </div>
                     <div className="space-y-2 col-span-1">
-                      <label className="text-[13px] font-black uppercase tracking-wider text-zinc-400">Length (cm)</label>
+                      <label className="text-[15px] font-black uppercase tracking-wider text-zinc-400">Length (cm)</label>
                       <input 
                         type="number"
                         value={quoteData.lengthCm}
@@ -1814,7 +1814,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                       />
                     </div>
                     <div className="space-y-2 col-span-1">
-                      <label className="text-[13px] font-black uppercase tracking-wider text-zinc-400">Width (cm)</label>
+                      <label className="text-[15px] font-black uppercase tracking-wider text-zinc-400">Width (cm)</label>
                       <input 
                         type="number"
                         value={quoteData.widthCm}
@@ -1823,7 +1823,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                       />
                     </div>
                     <div className="space-y-2 col-span-1">
-                      <label className="text-[13px] font-black uppercase tracking-wider text-zinc-400">Height (cm)</label>
+                      <label className="text-[15px] font-black uppercase tracking-wider text-zinc-400">Height (cm)</label>
                       <input 
                         type="number"
                         value={quoteData.heightCm}
@@ -1865,7 +1865,7 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                               <div className="w-1.5 h-1.5 rounded-full bg-[#113f36]" />
                             )}
                           </div>
-                          <span className="text-[13px] text-zinc-500 mt-1 block">{tier.delay}</span>
+                          <span className="text-[15px] text-zinc-500 mt-1 block">{tier.delay}</span>
                         </div>
                         <span className="text-[12px] font-black uppercase tracking-wider text-[#113f36] bg-[#113f36]/5/70 px-2 py-1 rounded-md self-start">
                           {tier.fee}

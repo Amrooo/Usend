@@ -110,9 +110,9 @@ var init_AramexAdapter = __esm({
             UserName: username,
             Password: password,
             Version: credentials.version || "v1.0",
-            AccountNumber: credentials.accountNumber,
-            AccountPin: credentials.accountPin,
-            AccountEntity: credentials.accountEntity,
+            AccountNumber: credentials.accountNumber || process.env.ARAMEX_ACCOUNT_NUMBER || "",
+            AccountPin: credentials.accountPin || process.env.ARAMEX_ACCOUNT_PIN || "",
+            AccountEntity: credentials.accountEntity || process.env.ARAMEX_ACCOUNT_ENTITY || "DXB",
             AccountCountryCode: countryCode,
             Source: parseInt(credentials.source || "0", 10) || 0
           },
@@ -179,10 +179,10 @@ var init_AramexAdapter = __esm({
             UserName: credentials.username || process.env.ARAMEX_USERNAME || "dxbit@aramex.com",
             Password: credentials.password || process.env.ARAMEX_PASSWORD || "Ar@m3x$h1pp1ng",
             Version: credentials.version || "v1.0",
-            AccountNumber: credentials.accountNumber,
-            AccountPin: credentials.accountPin,
-            AccountEntity: credentials.accountEntity,
-            AccountCountryCode: credentials.accountCountryCode || "AE",
+            AccountNumber: credentials.accountNumber || process.env.ARAMEX_ACCOUNT_NUMBER || "",
+            AccountPin: credentials.accountPin || process.env.ARAMEX_ACCOUNT_PIN || "",
+            AccountEntity: credentials.accountEntity || process.env.ARAMEX_ACCOUNT_ENTITY || "DXB",
+            AccountCountryCode: credentials.accountCountryCode || process.env.ARAMEX_ACCOUNT_COUNTRY_CODE || "AE",
             Source: parseInt(credentials.source || "0", 10) || 0
           },
           Transaction: {
@@ -214,8 +214,8 @@ var init_AramexAdapter = __esm({
             PaymentType: "P",
             ProductGroup: isDomestic ? "DOM" : "EXP",
             ProductType: isDomestic ? "OND" : payload.isExpress ? "PPX" : "EPX",
-            ActualWeight: { Value: payload.weightKg, Unit: "KG" },
-            ChargeableWeight: { Value: payload.weightKg, Unit: "KG" },
+            ActualWeight: { Value: payload.weightKg || payload.weightKb || 1, Unit: "KG" },
+            ChargeableWeight: { Value: payload.weightKg || payload.weightKb || 1, Unit: "KG" },
             NumberOfPieces: 1,
             Services: payload.codAmount ? "CODS" : "",
             CashOnDeliveryAmount: payload.codAmount ? { Value: payload.codAmount, CurrencyCode: "AED" } : null,
@@ -251,10 +251,10 @@ var init_AramexAdapter = __esm({
             UserName: credentials.username || process.env.ARAMEX_USERNAME || "dxbit@aramex.com",
             Password: credentials.password || process.env.ARAMEX_PASSWORD || "Ar@m3x$h1pp1ng",
             Version: credentials.version || "v1.0",
-            AccountNumber: credentials.accountNumber,
-            AccountPin: credentials.accountPin,
-            AccountEntity: credentials.accountEntity,
-            AccountCountryCode: credentials.accountCountryCode || "AE",
+            AccountNumber: credentials.accountNumber || process.env.ARAMEX_ACCOUNT_NUMBER || "",
+            AccountPin: credentials.accountPin || process.env.ARAMEX_ACCOUNT_PIN || "",
+            AccountEntity: credentials.accountEntity || process.env.ARAMEX_ACCOUNT_ENTITY || "DXB",
+            AccountCountryCode: credentials.accountCountryCode || process.env.ARAMEX_ACCOUNT_COUNTRY_CODE || "AE",
             Source: parseInt(credentials.source || "0", 10) || 0
           },
           Transaction: {
@@ -272,7 +272,7 @@ var init_AramexAdapter = __esm({
               Shipper: {
                 Reference1: "USend Central Depot",
                 Reference2: "",
-                AccountNumber: credentials.accountNumber,
+                AccountNumber: credentials.accountNumber || process.env.ARAMEX_ACCOUNT_NUMBER || "",
                 PartyAddress: {
                   Line1: payload.senderAddress || "Dubai Warehouse",
                   Line2: "",
@@ -339,8 +339,8 @@ var init_AramexAdapter = __esm({
                   Height: payload.dimensions.height,
                   Unit: "CM"
                 } : { Length: 10, Width: 10, Height: 10, Unit: "CM" },
-                ActualWeight: { Value: payload.weightKg, Unit: "KG" },
-                ChargeableWeight: { Value: payload.weightKg, Unit: "KG" },
+                ActualWeight: { Value: payload.weightKg || payload.weightKb || 1, Unit: "KG" },
+                ChargeableWeight: { Value: payload.weightKg || payload.weightKb || 1, Unit: "KG" },
                 DescriptionOfGoods: payload.goodsDescription || "Goods",
                 GoodsOriginCountry: payload.senderCountry,
                 NumberOfPieces: 1,
@@ -390,10 +390,10 @@ var init_AramexAdapter = __esm({
             UserName: credentials.username || process.env.ARAMEX_USERNAME || "dxbit@aramex.com",
             Password: credentials.password || process.env.ARAMEX_PASSWORD || "Ar@m3x$h1pp1ng",
             Version: credentials.version || "v1.0",
-            AccountNumber: credentials.accountNumber,
-            AccountPin: credentials.accountPin,
-            AccountEntity: credentials.accountEntity,
-            AccountCountryCode: credentials.accountCountryCode || "AE",
+            AccountNumber: credentials.accountNumber || process.env.ARAMEX_ACCOUNT_NUMBER || "",
+            AccountPin: credentials.accountPin || process.env.ARAMEX_ACCOUNT_PIN || "",
+            AccountEntity: credentials.accountEntity || process.env.ARAMEX_ACCOUNT_ENTITY || "DXB",
+            AccountCountryCode: credentials.accountCountryCode || process.env.ARAMEX_ACCOUNT_COUNTRY_CODE || "AE",
             Source: parseInt(credentials.source || "0", 10) || 0
           },
           Transaction: { Reference1: "", Reference2: "", Reference3: "", Reference4: "", Reference5: "" },
@@ -431,10 +431,10 @@ var init_AramexAdapter = __esm({
             UserName: credentials.username || process.env.ARAMEX_USERNAME || "dxbit@aramex.com",
             Password: credentials.password || process.env.ARAMEX_PASSWORD || "Ar@m3x$h1pp1ng",
             Version: credentials.version || "v1.0",
-            AccountNumber: credentials.accountNumber,
-            AccountPin: credentials.accountPin,
-            AccountEntity: credentials.accountEntity,
-            AccountCountryCode: credentials.accountCountryCode || "AE",
+            AccountNumber: credentials.accountNumber || process.env.ARAMEX_ACCOUNT_NUMBER || "",
+            AccountPin: credentials.accountPin || process.env.ARAMEX_ACCOUNT_PIN || "",
+            AccountEntity: credentials.accountEntity || process.env.ARAMEX_ACCOUNT_ENTITY || "DXB",
+            AccountCountryCode: credentials.accountCountryCode || process.env.ARAMEX_ACCOUNT_COUNTRY_CODE || "AE",
             Source: parseInt(credentials.source || "0", 10) || 0
           },
           Transaction: {
@@ -1635,7 +1635,11 @@ app.post("/api/courier/test-connection", import_express.default.json(), async (r
 });
 app.post("/api/courier/rate", import_express.default.json(), async (req, res) => {
   try {
-    const { courierId, payload, credentials, environment } = req.body;
+    const { courierId, payload, environment } = req.body;
+    let { credentials } = req.body;
+    if (!credentials || Object.keys(credentials).length === 0) {
+      credentials = serverCourierCredentials?.[courierId]?.[environment === "production" ? "productionCreds" : "sandboxCreds"] || {};
+    }
     const engine = await getCourierEngine();
     const adapter = engine.getAdapter(courierId);
     const result = await adapter.calculateRate(payload, credentials, environment);
@@ -1646,7 +1650,11 @@ app.post("/api/courier/rate", import_express.default.json(), async (req, res) =>
 });
 app.post("/api/courier/shipment", import_express.default.json(), async (req, res) => {
   try {
-    const { courierId, payload, credentials, environment } = req.body;
+    const { courierId, payload, environment } = req.body;
+    let { credentials } = req.body;
+    if (!credentials || Object.keys(credentials).length === 0) {
+      credentials = serverCourierCredentials?.[courierId]?.[environment === "production" ? "productionCreds" : "sandboxCreds"] || {};
+    }
     const engine = await getCourierEngine();
     const adapter = engine.getAdapter(courierId);
     const result = await adapter.createShipment(payload, credentials, environment);
@@ -1657,7 +1665,11 @@ app.post("/api/courier/shipment", import_express.default.json(), async (req, res
 });
 app.post("/api/courier/track", import_express.default.json(), async (req, res) => {
   try {
-    const { courierId, trackingId, credentials, environment } = req.body;
+    const { courierId, trackingId, environment } = req.body;
+    let { credentials } = req.body;
+    if (!credentials || Object.keys(credentials).length === 0) {
+      credentials = serverCourierCredentials?.[courierId]?.[environment === "production" ? "productionCreds" : "sandboxCreds"] || {};
+    }
     const engine = await getCourierEngine();
     const adapter = engine.getAdapter(courierId);
     const result = await adapter.trackShipment(trackingId, credentials, environment);
@@ -1668,7 +1680,11 @@ app.post("/api/courier/track", import_express.default.json(), async (req, res) =
 });
 app.post("/api/courier/cancel", import_express.default.json(), async (req, res) => {
   try {
-    const { courierId, trackingId, credentials, environment } = req.body;
+    const { courierId, trackingId, environment } = req.body;
+    let { credentials } = req.body;
+    if (!credentials || Object.keys(credentials).length === 0) {
+      credentials = serverCourierCredentials?.[courierId]?.[environment === "production" ? "productionCreds" : "sandboxCreds"] || {};
+    }
     const engine = await getCourierEngine();
     const adapter = engine.getAdapter(courierId);
     const result = await adapter.cancelShipment(trackingId, credentials, environment);

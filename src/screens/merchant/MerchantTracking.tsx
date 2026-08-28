@@ -882,7 +882,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                         >
                           <div className="flex items-center justify-between">
                             <span className="text-base font-extrabold tracking-tight text-amber-600 lowercase font-sans select-none">noon <span className="font-light text-zinc-400">RoD</span></span>
-                            <span className="text-[13px] bg-amber-500/15 text-amber-700 px-2 py-0.5 rounded font-black uppercase tracking-wider">Staging API Ready</span>
+                            <span className="text-[15px] bg-amber-500/15 text-amber-700 px-2 py-0.5 rounded font-black uppercase tracking-wider">Staging API Ready</span>
                           </div>
                           <p className="text-[12px] text-zinc-500 leading-normal">
                             This order hasn&apos;t been connected to an active Noon Rider on Demand task yet. Send dispatch signal to verify Noon Staging Hyperlocal API integrations.
@@ -909,7 +909,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                         >
                           <div className="flex items-center justify-between">
                             <span className="text-base font-extrabold tracking-tight text-[#d12421] lowercase font-sans select-none">aramex</span>
-                            <span className="text-[13px] bg-[#d12421]/15 text-[#d12421] px-2 py-0.5 rounded font-black uppercase tracking-wider">Sandbox API Ready</span>
+                            <span className="text-[15px] bg-[#d12421]/15 text-[#d12421] px-2 py-0.5 rounded font-black uppercase tracking-wider">Sandbox API Ready</span>
                           </div>
                           <p className="text-[12px] text-zinc-500 leading-normal">
                             This order hasn&apos;t been connected to an active delivery agent carrier yet. Send dispatch signal to verify Aramex SOAP Web Service integrations.

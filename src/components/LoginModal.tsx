@@ -243,7 +243,7 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
-                  className="p-3.5 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl text-[13px] font-semibold flex items-start gap-2.5"
+                  className="p-3.5 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl text-[15px] font-semibold flex items-start gap-2.5"
                 >
                   <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5 text-rose-500" />
                   <p className="leading-relaxed">{error}</p>
@@ -254,7 +254,7 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-13 mt-6 bg-[#113f36] hover:bg-slate-900 disabled:bg-slate-300 text-white transition-all duration-300 font-extrabold uppercase tracking-widest text-[13px] rounded-xl flex items-center justify-center gap-2 shadow-md hover:shadow-[#113f36]/20 active:scale-98 cursor-pointer"
+                className="w-full h-13 mt-6 bg-[#113f36] hover:bg-slate-900 disabled:bg-slate-300 text-white transition-all duration-300 font-extrabold uppercase tracking-widest text-[15px] rounded-xl flex items-center justify-center gap-2 shadow-md hover:shadow-[#113f36]/20 active:scale-98 cursor-pointer"
               >
                 {loading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -268,7 +268,7 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
             </form>
 
             <div className="mt-6 pt-5 border-t border-slate-100 flex justify-between items-center text-[12px] font-bold text-slate-400 tracking-widest">
-              <span className="uppercase text-[13px]">Secure Session</span>
+              <span className="uppercase text-[15px]">Secure Session</span>
               <button 
                 onClick={() => {
                   onClose();

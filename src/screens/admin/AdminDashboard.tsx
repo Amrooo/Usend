@@ -578,24 +578,32 @@ function RequestsHub() {
     return () => { document.body.style.overflow = 'unset'; };
   }, [selectedRequest]);
 
-  // Handle active status stepper changes manually in admin console (Simulated IoT loops)
-  const handleSimulateDispatch = (req: any) => {
-    if (req.status === 'Approved') {
-      if (!assigningDriverId) {
-        triggerToast("Please select a courier before assigning");
-        return;
-      }
-      updateRequestStatus(req.id, 'assigning');
-      setSelectedRequest(prev => prev ? { ...prev, status: 'assigning' } : null);
-      triggerToast(`Courier assigned successfully to order ${req.id}!`);
-    } else if (req.status === 'assigning') {
-      updateRequestStatus(req.id, 'in_transit');
-      setSelectedRequest(prev => prev ? { ...prev, status: 'in_transit' } : null);
-      triggerToast(`Carrier dispatched! Order ${req.id} is now in_transit.`);
-    } else if (req.status === 'in_transit') {
-      updateRequestStatus(req.id, 'delivered');
-      setSelectedRequest(null);
-      triggerToast(`Order ${req.id} marked as fully delivered!`);
+  // Cancel shipment through backend proxy
+  const handleCancelShipment = async (req: any) => {
+    if (!window.confirm("Are you sure you want to cancel this shipment with the courier?")) return;
+    try {
+       const trackingId = req.externalTrackingNumber || req.noonTaskId;
+       if (req.carrier && trackingId) {
+         const res = await fetch('/api/courier/cancel', {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify({
+              courierId: req.carrier,
+              trackingId,
+              environment: 'production'
+           })
+         });
+         const data = await res.json();
+         if (!data.success) {
+            triggerToast(`Failed to cancel with courier: ${data.error}`);
+            return;
+         }
+       }
+       updateRequestStatus(req.id, 'Cancelled');
+       setSelectedRequest(null);
+       triggerToast("Shipment cancelled successfully.");
+    } catch (e: any) {
+       triggerToast("Error cancelling shipment: " + e.message);
     }
   };
 
@@ -684,7 +692,7 @@ function RequestsHub() {
                   type="date" 
                   value={dateRange.start} 
                   onChange={(e) => setDateRange(p => ({...p, start: e.target.value}))}
-                  className="bg-white border border-zinc-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-zinc-700 outline-none focus:border-[#113f36] transition-colors"
+                  className="bg-white border border-zinc-200 rounded-xl px-3 py-1.5 text-[15px] font-semibold text-zinc-700 outline-none focus:border-[#113f36] transition-colors"
                />
              </div>
              <span className="text-zinc-400 font-bold text-xs">-</span>
@@ -693,7 +701,7 @@ function RequestsHub() {
                   type="date" 
                   value={dateRange.end} 
                   onChange={(e) => setDateRange(p => ({...p, end: e.target.value}))}
-                  className="bg-white border border-zinc-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-zinc-700 outline-none focus:border-[#113f36] transition-colors"
+                  className="bg-white border border-zinc-200 rounded-xl px-3 py-1.5 text-[15px] font-semibold text-zinc-700 outline-none focus:border-[#113f36] transition-colors"
                />
                {(dateRange.start || dateRange.end) && (
                  <button
@@ -717,7 +725,7 @@ function RequestsHub() {
                placeholder="Search by order ID, customer name, phone, or courier..."
                value={expressSearch}
                onChange={(e) => setExpressSearch(e.target.value)}
-               className="w-full bg-zinc-50 border border-zinc-200/80 focus:bg-white rounded-2xl py-3 pl-11 pr-10 text-xs font-semibold text-zinc-800 placeholder-zinc-400 outline-none focus:border-[#113f36] focus:ring-4 focus:ring-[#113f36]/10 transition-all"
+               className="w-full bg-zinc-50 border border-zinc-200/80 focus:bg-white rounded-2xl py-3 pl-11 pr-10 text-[15px] font-semibold text-zinc-800 placeholder-zinc-400 outline-none focus:border-[#113f36] focus:ring-4 focus:ring-[#113f36]/10 transition-all"
              />
              {expressSearch && (
                <button
@@ -825,7 +833,7 @@ function RequestsHub() {
                         <td className="p-6 text-zinc-900 font-black font-mono text-xs">{req.id}</td>
                         <td className="p-6">
                           <p className="font-bold text-zinc-800">{req.name}</p>
-                          <span className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block mt-0.5">{req.channel}</span>
+                          <span className="text-[15px] font-black uppercase tracking-widest text-zinc-400 block mt-0.5">{req.channel}</span>
                         </td>
                         <td className="p-6">
                           <p className="text-zinc-700 font-semibold">{req.itemType}</p>
@@ -836,7 +844,7 @@ function RequestsHub() {
                         </td>
                         <td className="p-6 text-brand font-black font-mono">{req.orderAmount || 'N/A'}</td>
                         <td className="p-6">
-                          <span className={`px-3 py-1.5 rounded-full text-[13px] font-black uppercase tracking-widest ${getStatusColor(req.status)}`}>
+                          <span className={`px-3 py-1.5 rounded-full text-[15px] font-black uppercase tracking-widest ${getStatusColor(req.status)}`}>
                              {req.status}
                           </span>
                         </td>
@@ -854,19 +862,19 @@ function RequestsHub() {
                               )}
 
                               {req.status === 'Approved' && (
-                                <button onClick={() => setSelectedRequest(req)} className="bg-[#1a5c4e] hover:bg-[#113f36] text-white font-black text-[13px] uppercase tracking-widest px-3 py-1.5 rounded-xl transition-all">
+                                <button onClick={() => setSelectedRequest(req)} className="bg-[#1a5c4e] hover:bg-[#113f36] text-white font-black text-[15px] uppercase tracking-widest px-3 py-1.5 rounded-xl transition-all">
                                   Assign Driver
                                 </button>
                               )}
 
                               {req.status === 'assigning' && (
-                                <button onClick={() => { updateRequestStatus(req.id, 'in_transit'); triggerToast(`Dispatched driver for ${req.id}`); }} className="bg-purple-600 hover:bg-purple-700 text-white font-black text-[13px] uppercase tracking-widest px-3 py-1.5 rounded-xl transition-all">
+                                <button onClick={() => { updateRequestStatus(req.id, 'in_transit'); triggerToast(`Dispatched driver for ${req.id}`); }} className="bg-purple-600 hover:bg-purple-700 text-white font-black text-[15px] uppercase tracking-widest px-3 py-1.5 rounded-xl transition-all">
                                   Pickup Dispatch
                                 </button>
                               )}
 
                               {req.status === 'in_transit' && (
-                                <button onClick={() => { updateRequestStatus(req.id, 'delivered'); triggerToast(`Order ${req.id} deliver success!`); }} className="bg-[#1a5c4e] hover:bg-[#113f36] text-white font-black text-[13px] uppercase tracking-widest px-3 py-1.5 rounded-xl transition-all">
+                                <button onClick={() => { updateRequestStatus(req.id, 'delivered'); triggerToast(`Order ${req.id} deliver success!`); }} className="bg-[#1a5c4e] hover:bg-[#113f36] text-white font-black text-[15px] uppercase tracking-widest px-3 py-1.5 rounded-xl transition-all">
                                   Sign Deliver
                                 </button>
                               )}
@@ -941,7 +949,7 @@ function RequestsHub() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block mb-1.5">Merchant Booking</label>
+                <label className="text-[15px] font-black uppercase tracking-widest text-zinc-400 block mb-1.5">Merchant Booking</label>
                 <input 
                   type="text" 
                   value={newOrder.merchantName} 
@@ -951,7 +959,7 @@ function RequestsHub() {
               </div>
 
               <div>
-                <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block mb-1.5">Cargo Spec Category</label>
+                <label className="text-[15px] font-black uppercase tracking-widest text-zinc-400 block mb-1.5">Cargo Spec Category</label>
                 <input 
                   type="text" 
                   value={newOrder.itemType} 
@@ -961,7 +969,7 @@ function RequestsHub() {
               </div>
 
               <div>
-                <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block mb-1.5">Transit Channel</label>
+                <label className="text-[15px] font-black uppercase tracking-widest text-zinc-400 block mb-1.5">Transit Channel</label>
                 <select 
                   value={newOrder.channel} 
                   onChange={e => setNewOrder({...newOrder, channel: e.target.value})}
@@ -974,7 +982,7 @@ function RequestsHub() {
               </div>
 
               <div>
-                <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block mb-1.5">Amount Quote (AED)</label>
+                <label className="text-[15px] font-black uppercase tracking-widest text-zinc-400 block mb-1.5">Amount Quote (AED)</label>
                 <input 
                   type="text" 
                   value={newOrder.orderAmount} 
@@ -984,7 +992,7 @@ function RequestsHub() {
               </div>
 
               <div>
-                <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block mb-1.5">Destination State Node</label>
+                <label className="text-[15px] font-black uppercase tracking-widest text-zinc-400 block mb-1.5">Destination State Node</label>
                 <select
                   value={newOrder.region}
                   onChange={e => setNewOrder({...newOrder, region: e.target.value})}
@@ -999,7 +1007,7 @@ function RequestsHub() {
               </div>
 
               <div>
-                <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block mb-1.5">Dispatch Origin</label>
+                <label className="text-[15px] font-black uppercase tracking-widest text-zinc-400 block mb-1.5">Dispatch Origin</label>
                 <input 
                   type="text" 
                   value={newOrder.fromDest} 
@@ -1009,7 +1017,7 @@ function RequestsHub() {
               </div>
 
               <div className="md:col-span-2">
-                <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block mb-1.5">Instruction Specifications</label>
+                <label className="text-[15px] font-black uppercase tracking-widest text-zinc-400 block mb-1.5">Instruction Specifications</label>
                 <textarea 
                   value={newOrder.description} 
                   onChange={e => setNewOrder({...newOrder, description: e.target.value})}
@@ -1051,75 +1059,6 @@ function RequestsHub() {
                   <p className="text-sm text-zinc-500 flex items-center gap-2 mt-1"><MapPin className="w-4 h-4" /> {selectedRequest.address}</p>
                </div>
 
-               {/* STEPPER STATUS TRACKING PROCESSOR */}
-               <div className="bg-zinc-50 border border-zinc-150 rounded-3xl p-5 space-y-4">
-                 <p className="text-[13px] font-black uppercase tracking-widest text-[#4f95cc] mb-1">State Transition Stepper</p>
-                 <div className="flex justify-between items-center text-xs font-bold text-zinc-550">
-                    <span className={selectedRequest.status === 'Pending' ? 'text-orange-600 font-extrabold' : 'text-zinc-400'}>1. Pending</span>
-                    <span className="text-zinc-300">➔</span>
-                    <span className={selectedRequest.status === 'Approved' ? 'text-[#113f36] font-extrabold' : 'text-zinc-400'}>2. Approved</span>
-                    <span className="text-zinc-300">➔</span>
-                    <span className={selectedRequest.status === 'assigning' ? 'text-[#113f36] font-extrabold' : 'text-zinc-400'}>3. Assigning</span>
-                    <span className="text-zinc-300">➔</span>
-                    <span className={(selectedRequest.status === 'in_transit' || selectedRequest.status === 'delivered') ? 'text-purple-600 font-extrabold' : 'text-zinc-400'}>4. Dispatched</span>
-                 </div>
-
-                 {/* LIVE CONTROLLER BAR */}
-                 {(selectedRequest.status === 'Approved' || selectedRequest.status === 'assigning' || selectedRequest.status === 'in_transit') && (
-                   <div className="border-t border-zinc-200 pt-4 space-y-4">
-                     {selectedRequest.status === 'Approved' && (
-                       <div className="space-y-2">
-                         <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block">Select Available Courier</label>
-                         <div className="flex gap-2">
-                           <select 
-                             value={assigningDriverId} 
-                             onChange={e => setAssigningDriverId(e.target.value)}
-                             className="flex-1 bg-white border border-zinc-250 rounded-xl p-2.5 text-xs font-semibold text-zinc-805 outline-none"
-                           >
-                             <option value="">-- Choose Courier --</option>
-                             <option value="USR-001">Ahmad Yasin (4.8 ★, Near Jebel Ali)</option>
-                             <option value="USR-003">Mohammed Ali (4.5 ★, Near Al Barsha)</option>
-                             <option value="USR-009">Noora Al Mansoori (4.9 ★, Near SZR)</option>
-                           </select>
-                           <button 
-                             type="button" 
-                             onClick={() => handleSimulateDispatch(selectedRequest)}
-                             className="px-4 py-2.5 bg-[#1a5c4e] text-white font-black text-[13px] uppercase tracking-widest rounded-xl hover:bg-[#113f36] hover:scale-102 transition-all shadow-md shadow-[#113f36]/10"
-                           >
-                             Assign
-                           </button>
-                         </div>
-                       </div>
-                     )}
-
-                     {selectedRequest.status === 'assigning' && (
-                       <div className="space-y-2">
-                         <p className="text-[12px] text-zinc-500 font-medium">Courier is ready at dispatch terminal. Authorize vehicle exit to set order in_transit.</p>
-                         <button 
-                           type="button" 
-                           onClick={() => handleSimulateDispatch(selectedRequest)}
-                           className="w-full py-3 bg-purple-600 text-white font-black text-[13px] uppercase tracking-widest rounded-xl hover:bg-purple-700 transition-colors"
-                         >
-                           Authorize Dispatched Vehicle Exit
-                         </button>
-                       </div>
-                     )}
-
-                     {selectedRequest.status === 'in_transit' && (
-                       <div className="space-y-2">
-                         <p className="text-[12px] text-zinc-500 font-medium">Vehicle is moving. Click below to signoff on proof of physical handoff.</p>
-                         <button 
-                           type="button" 
-                           onClick={() => handleSimulateDispatch(selectedRequest)}
-                           className="w-full py-3 bg-[#1a5c4e] text-white font-black text-[13px] uppercase tracking-widest rounded-xl hover:bg-[#113f36] transition-colors"
-                         >
-                           Confirm Physical Delivery Signature
-                         </button>
-                       </div>
-                     )}
-                   </div>
-                 )}
-               </div>
                
                <div className="grid grid-cols-2 gap-4">
                  <div className="bg-zinc-50 p-4 rounded-2xl">
@@ -1284,12 +1223,11 @@ function RequestsHub() {
              </div>
 
              <div className="p-8 border-t border-zinc-100 bg-zinc-50 grid grid-cols-2 gap-4">
-               <button onClick={() => { updateRequestStatus(selectedRequest.id, 'Rejected'); setSelectedRequest(null); }} className="py-4 rounded-2xl text-red-600 bg-red-100 font-bold text-[12px] uppercase tracking-widest hover:bg-red-200 transition-colors">
-                 {t('reject') || 'Reject'}
-               </button>
-               <button onClick={() => { updateRequestStatus(selectedRequest.id, 'Approved'); setSelectedRequest(null); }} className="py-4 rounded-2xl text-white bg-brand font-bold text-[12px] uppercase tracking-widest hover:bg-brand/90 shadow-xl shadow-brand/20 transition-all">
-                 {t('approve') || 'Approve'}
-               </button>
+               {selectedRequest.status !== 'Cancelled' && (
+                 <button onClick={() => handleCancelShipment(selectedRequest)} className="py-4 col-span-2 rounded-2xl text-red-600 bg-red-100 font-bold text-[12px] uppercase tracking-widest hover:bg-red-200 transition-colors">
+                   Cancel Shipment
+                 </button>
+               )}
              </div>
           </motion.div>
         </div>
@@ -1389,7 +1327,7 @@ function UsersDirectory() {
             placeholder="Search name, phone, email, USR-ID..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white border border-zinc-200 rounded-2xl py-3 pl-11 pr-4 text-xs font-semibold placeholder-zinc-400 text-zinc-800 outline-none focus:border-brand"
+            className="w-full bg-white border border-zinc-200 rounded-2xl py-3 pl-11 pr-4 text-[15px] font-semibold placeholder-zinc-400 text-zinc-800 outline-none focus:border-brand"
           />
         </div>
 
@@ -1397,7 +1335,7 @@ function UsersDirectory() {
           <select 
             value={roleFilter} 
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="w-full bg-white border border-zinc-200 rounded-2xl py-3 px-4 text-xs font-semibold text-zinc-700 outline-none cursor-pointer"
+            className="w-full bg-white border border-zinc-200 rounded-2xl py-3 px-4 text-[15px] font-semibold text-zinc-700 outline-none cursor-pointer"
           >
             <option value="All">All Roles / Types</option>
             <option value="Customer">Class: Customer Only</option>
@@ -1409,7 +1347,7 @@ function UsersDirectory() {
           <select 
             value={statusFilter} 
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full bg-white border border-zinc-200 rounded-2xl py-3 px-4 text-xs font-semibold text-zinc-700 outline-none cursor-pointer"
+            className="w-full bg-white border border-zinc-200 rounded-2xl py-3 px-4 text-[15px] font-semibold text-zinc-700 outline-none cursor-pointer"
           >
             <option value="All">All Statuses</option>
             <option value="Active">Status: Active</option>
@@ -1421,7 +1359,7 @@ function UsersDirectory() {
           <select 
             value={pageSize} 
             onChange={(e) => setPageSize(Number(e.target.value))}
-            className="w-full bg-white border border-zinc-200 rounded-2xl py-3 px-4 text-xs font-semibold text-zinc-700 outline-none cursor-pointer"
+            className="w-full bg-white border border-zinc-200 rounded-2xl py-3 px-4 text-[15px] font-semibold text-zinc-700 outline-none cursor-pointer"
           >
             <option value="12">12 Items / Page</option>
             <option value="24">24 Items / Page</option>
@@ -1515,7 +1453,7 @@ function UsersDirectory() {
                     </div>
                   </div>
 
-                  <span className={`px-2.5 py-1.5 rounded-full text-[13px] font-black uppercase tracking-widest shrink-0 flex items-center gap-1 ${
+                  <span className={`px-2.5 py-1.5 rounded-full text-[15px] font-black uppercase tracking-widest shrink-0 flex items-center gap-1 ${
                     user.status === 'Active' ? 'bg-[#113f36]/5 text-[#113f36]' : 'bg-red-50 text-red-600'
                   }`}>
                     <span className={`w-1.5 h-1.5 rounded-full ${user.status === 'Active' ? 'bg-[#113f36]' : 'bg-red-500'}`}></span>
@@ -1544,12 +1482,12 @@ function UsersDirectory() {
                 {/* Contact Card Details */}
                 <div className="space-y-1.5 text-xs text-zinc-500 border-t border-zinc-100 pt-4 font-medium">
                   <div className="flex justify-between items-center bg-zinc-50/50 p-2.5 rounded-xl border border-zinc-100">
-                    <span className="text-[13px] font-black uppercase tracking-widest text-zinc-400">Class Type</span>
+                    <span className="text-[15px] font-black uppercase tracking-widest text-zinc-400">Class Type</span>
                     <span className="font-bold text-zinc-805 tracking-wide text-[12px] uppercase">{user.type || 'Customer'}</span>
                   </div>
                   <div className="flex justify-between items-center bg-zinc-50/50 p-2.5 rounded-xl border border-zinc-100">
-                    <span className="text-[13px] font-black uppercase tracking-widest text-zinc-400">Contact Node</span>
-                    <span className="font-mono text-[13px] font-bold text-zinc-800">{user.phone || 'N/A'}</span>
+                    <span className="text-[15px] font-black uppercase tracking-widest text-zinc-400">Contact Node</span>
+                    <span className="font-mono text-[15px] font-bold text-zinc-800">{user.phone || 'N/A'}</span>
                   </div>
                 </div>
               </div>
@@ -1557,13 +1495,13 @@ function UsersDirectory() {
               <div className="flex gap-2 mt-6">
                 <button 
                   onClick={() => triggerToast(`Keys and roles rebuilt for Node ID: ${user.id}`)}
-                  className="flex-1 py-3 border border-zinc-200 rounded-xl text-[13px] font-bold uppercase tracking-wider text-zinc-600 hover:border-brand hover:text-brand hover:bg-zinc-50 transition-all"
+                  className="flex-1 py-3 border border-zinc-200 rounded-xl text-[15px] font-bold uppercase tracking-wider text-zinc-600 hover:border-brand hover:text-brand hover:bg-zinc-50 transition-all"
                 >
                   Regen Keys
                 </button>
                 <button 
                   onClick={() => triggerToast(`Reset temporary credentials for ${user.name}`)}
-                  className="flex-1 py-3 bg-zinc-900 rounded-xl text-[13px] font-bold uppercase tracking-wider text-white hover:bg-zinc-850 transition-all text-center"
+                  className="flex-1 py-3 bg-zinc-900 rounded-xl text-[15px] font-bold uppercase tracking-wider text-white hover:bg-zinc-850 transition-all text-center"
                 >
                   Credentials
                 </button>
@@ -1731,7 +1669,7 @@ function MerchantDirectory() {
             placeholder="Search brand, industry, contact node ID..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white border border-zinc-200 rounded-2xl py-3 pl-11 pr-4 text-xs font-semibold placeholder-zinc-400 text-zinc-800 outline-none focus:border-brand"
+            className="w-full bg-white border border-zinc-200 rounded-2xl py-3 pl-11 pr-4 text-[15px] font-semibold placeholder-zinc-400 text-zinc-800 outline-none focus:border-brand"
           />
         </div>
 
@@ -1739,7 +1677,7 @@ function MerchantDirectory() {
           <select 
             value={sectorFilter} 
             onChange={(e) => setSectorFilter(e.target.value)}
-            className="w-full bg-white border border-zinc-200 rounded-2xl py-3 px-3 text-xs font-semibold text-zinc-750 outline-none cursor-pointer"
+            className="w-full bg-white border border-zinc-200 rounded-2xl py-3 px-3 text-[15px] font-semibold text-zinc-750 outline-none cursor-pointer"
           >
             <option value="All">All Industries</option>
             <option value="E-commerce">E-commerce Only</option>
@@ -1755,7 +1693,7 @@ function MerchantDirectory() {
           <select 
             value={statusFilter} 
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full bg-white border border-zinc-200 rounded-2xl py-3 px-3 text-xs font-semibold text-zinc-750 outline-none cursor-pointer"
+            className="w-full bg-white border border-zinc-200 rounded-2xl py-3 px-3 text-[15px] font-semibold text-zinc-750 outline-none cursor-pointer"
           >
             <option value="All">All Verification</option>
             <option value="Verified">Verified Only</option>
@@ -1767,7 +1705,7 @@ function MerchantDirectory() {
           <select 
             value={integrationFilter} 
             onChange={(e) => setIntegrationFilter(e.target.value)}
-            className="w-full bg-white border border-zinc-200 rounded-2xl py-3 px-3 text-xs font-semibold text-zinc-750 outline-none cursor-pointer"
+            className="w-full bg-white border border-zinc-200 rounded-2xl py-3 px-3 text-[15px] font-semibold text-zinc-750 outline-none cursor-pointer"
           >
             <option value="All">All Integrations</option>
             <option value="API">API Gateway</option>
@@ -1801,11 +1739,11 @@ function MerchantDirectory() {
                       <div className="flex items-center gap-2 mt-1 truncate">
                         <p className="text-[12px] font-bold uppercase tracking-widest text-zinc-400 shrink-0">{merchant.id}</p>
                         <span className="w-1 h-1 bg-zinc-300 rounded-full shrink-0"></span>
-                        <p className="text-xs font-semibold text-zinc-500 truncate">{merchant.sector}</p>
+                        <p className="text-[15px] font-semibold text-zinc-500 truncate">{merchant.sector}</p>
                       </div>
                     </div>
                   </div>
-                  <span className={`px-3 py-1.5 rounded-full text-[13px] font-black uppercase tracking-widest shrink-0 flex items-center gap-1.5 ${merchant.status === 'Verified' ? 'bg-[#113f36]/5 text-[#113f36]' : 'bg-orange-50 text-orange-600'}`}>
+                  <span className={`px-3 py-1.5 rounded-full text-[15px] font-black uppercase tracking-widest shrink-0 flex items-center gap-1.5 ${merchant.status === 'Verified' ? 'bg-[#113f36]/5 text-[#113f36]' : 'bg-orange-50 text-orange-600'}`}>
                     {merchant.status === 'Verified' ? <div className="w-1.5 h-1.5 rounded-full bg-[#113f36]"></div> : <div className="w-1.5 h-1.5 rounded-full bg-orange-55 animate-pulse"></div>}
                     {merchant.status}
                   </span>
@@ -1814,11 +1752,11 @@ function MerchantDirectory() {
                 <div className="grid grid-cols-3 gap-3 mb-6">
                   <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-100">
                     <p className="text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-0.5">Interface</p>
-                    <p className="font-bold text-zinc-800 text-[13px] truncate">{merchant.integration}</p>
+                    <p className="font-bold text-zinc-800 text-[15px] truncate">{merchant.integration}</p>
                   </div>
                   <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-100">
                     <p className="text-[12px] font-black uppercase tracking-widest text-[#4f95cc] mb-0.5">Total Runs</p>
-                    <p className="font-black text-brand text-[13px]">{merchant.orders.toLocaleString()}</p>
+                    <p className="font-black text-brand text-[15px]">{merchant.orders.toLocaleString()}</p>
                   </div>
                   <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-100 overflow-hidden">
                     <p className="text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-0.5">Contact Root</p>
@@ -1830,13 +1768,13 @@ function MerchantDirectory() {
               <div className="flex gap-3">
                 <button 
                   onClick={() => handleOpenApiKeys(merchant)}
-                  className="flex-1 py-3.5 rounded-xl border border-zinc-200 text-zinc-650 font-bold text-[13px] uppercase tracking-widest hover:border-brand hover:text-brand bg-white hover:bg-zinc-50 transition-all shadow-sm"
+                  className="flex-1 py-3.5 rounded-xl border border-zinc-200 text-zinc-650 font-bold text-[15px] uppercase tracking-widest hover:border-brand hover:text-brand bg-white hover:bg-zinc-50 transition-all shadow-sm"
                 >
                   Manage API Keys
                 </button>
                 <button 
                   onClick={() => setSelectedProfileMerchant(merchant)}
-                  className="flex-1 py-3.5 rounded-xl bg-zinc-900 text-white font-bold text-[13px] uppercase tracking-widest hover:bg-zinc-800 transition-all shadow-sm text-center"
+                  className="flex-1 py-3.5 rounded-xl bg-zinc-900 text-white font-bold text-[15px] uppercase tracking-widest hover:bg-zinc-800 transition-all shadow-sm text-center"
                 >
                   Company Profile
                 </button>
@@ -1918,7 +1856,7 @@ function MerchantDirectory() {
 
             <div className="space-y-4">
               <div className="bg-zinc-50 p-4.5 rounded-2xl border border-zinc-150 space-y-2">
-                <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400 block">Live Production Token</label>
+                <label className="text-[15px] font-black uppercase tracking-widest text-zinc-400 block">Live Production Token</label>
                 <div className="flex items-center gap-2 select-all bg-white p-3 rounded-lg border border-zinc-200 font-mono text-xs font-bold text-zinc-800 break-all">
                   <Code2 className="w-4 h-4 text-brand shrink-0" />
                   {simulatedToken}
@@ -1929,7 +1867,7 @@ function MerchantDirectory() {
                 <div className="flex items-center gap-2 text-[#113f36] text-xs font-black uppercase tracking-widest">
                   <ShieldCheck className="w-4 h-4" /> Credentials Health: Optimal
                 </div>
-                <p className="text-[13px] font-medium leading-relaxed text-zinc-600">This secret client signature provides end-point authorization for heavy bulk freight quotes and live dispatch coordinates mapping.</p>
+                <p className="text-[15px] font-medium leading-relaxed text-zinc-600">This secret client signature provides end-point authorization for heavy bulk freight quotes and live dispatch coordinates mapping.</p>
               </div>
             </div>
 
@@ -2955,7 +2893,7 @@ function CouriersIntegrationsHub() {
                       <div className="space-y-1.5 col-span-2">
                         <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">API Key</label>
                         <input type="password" value={creds?.apiKey || ''} onChange={(e) => handleCredChange(cfg.currentMode, 'apiKey', e.target.value)}
-                          placeholder="Noon API Key" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800" />
+                          placeholder="Noon API Key" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-[15px] font-semibold outline-none focus:border-orange-500 text-zinc-800" />
                       </div>
                       <div className="space-y-1.5 col-span-2">
                         <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Outlet Code <span className="text-emerald-500 font-bold lowercase">(Optional - Dynamically resolved via Pickup Points API)</span></label>
@@ -2963,7 +2901,7 @@ function CouriersIntegrationsHub() {
                           handleCredChange(cfg.currentMode, 'outletCode', e.target.value);
                           handleCredChange(cfg.currentMode, 'accountNumber', e.target.value); // fallback
                         }}
-                          placeholder="e.g. 77T4HCOD4G (Leave empty to auto-resolve)" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800" />
+                          placeholder="e.g. 77T4HCOD4G (Leave empty to auto-resolve)" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-[15px] font-semibold outline-none focus:border-orange-500 text-zinc-800" />
                       </div>
                     </>
                   ) : (
@@ -2971,44 +2909,44 @@ function CouriersIntegrationsHub() {
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Username / Email</label>
                         <input type="text" value={creds?.username || ''} onChange={(e) => handleCredChange(cfg.currentMode, 'username', e.target.value)}
-                          placeholder="API username" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800" />
+                          placeholder="API username" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-[15px] font-semibold outline-none focus:border-orange-500 text-zinc-800" />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Password / Secret</label>
                         <input type="password" value={creds?.password || ''} onChange={(e) => handleCredChange(cfg.currentMode, 'password', e.target.value)}
-                          placeholder="••••••••••••" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800" />
+                          placeholder="••••••••••••" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-[15px] font-semibold outline-none focus:border-orange-500 text-zinc-800" />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Account Number</label>
                         <input type="text" value={creds?.accountNumber || ''} onChange={(e) => handleCredChange(cfg.currentMode, 'accountNumber', e.target.value)}
-                          placeholder="e.g. 154454" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800" />
+                          placeholder="e.g. 154454" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-[15px] font-semibold outline-none focus:border-orange-500 text-zinc-800" />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Account PIN</label>
                         <input type="text" value={creds?.accountPin || ''} onChange={(e) => handleCredChange(cfg.currentMode, 'accountPin', e.target.value)}
-                          placeholder="e.g. 115216" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800" />
+                          placeholder="e.g. 115216" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-[15px] font-semibold outline-none focus:border-orange-500 text-zinc-800" />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Entity / Node</label>
                         <input type="text" value={creds?.accountEntity || ''} onChange={(e) => handleCredChange(cfg.currentMode, 'accountEntity', e.target.value)}
-                          placeholder="e.g. DXB" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800" />
+                          placeholder="e.g. DXB" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-[15px] font-semibold outline-none focus:border-orange-500 text-zinc-800" />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Country Code</label>
                         <input type="text" value={creds?.accountCountryCode || ''} onChange={(e) => handleCredChange(cfg.currentMode, 'accountCountryCode', e.target.value)}
-                          placeholder="e.g. AE" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800" />
+                          placeholder="e.g. AE" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-[15px] font-semibold outline-none focus:border-orange-500 text-zinc-800" />
                       </div>
                     </>
                   )}
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Source ID</label>
                     <input type="text" value={creds?.source || ''} onChange={(e) => handleCredChange(cfg.currentMode, 'source', e.target.value)}
-                      placeholder="e.g. 0" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800" />
+                      placeholder="e.g. 0" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-[15px] font-semibold outline-none focus:border-orange-500 text-zinc-800" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">API Key / Bearer Token</label>
                     <input type="text" value={creds?.apiKey || ''} onChange={(e) => handleCredChange(cfg.currentMode, 'apiKey', e.target.value)}
-                      placeholder="Optional JWT or API token" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 text-zinc-800" />
+                      placeholder="Optional JWT or API token" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-[15px] font-semibold outline-none focus:border-orange-500 text-zinc-800" />
                   </div>
                 </div>
 
@@ -3036,12 +2974,12 @@ function CouriersIntegrationsHub() {
                     </div>
                   )}
                   {testResult === 'success' && (
-                    <div className="bg-[#6d8c55]/10 border border-[#6d8c55]/30 text-[#344633] px-4 py-3 rounded-xl text-xs font-semibold flex items-center gap-2">
+                    <div className="bg-[#6d8c55]/10 border border-[#6d8c55]/30 text-[#344633] px-4 py-3 rounded-xl text-[15px] font-semibold flex items-center gap-2">
                       <CheckCircle2 className="w-4 h-4 text-[#6d8c55] shrink-0" /> Integration verified and operational!
                     </div>
                   )}
                   {testResult === 'error' && (
-                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-xs font-semibold flex items-center gap-2">
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-[15px] font-semibold flex items-center gap-2">
                       <X className="w-4 h-4 text-red-500 shrink-0" /> Handshake failed. Check credentials & environment.
                     </div>
                   )}
@@ -3099,7 +3037,7 @@ function CouriersIntegrationsHub() {
                         <th className="p-4 text-center">Merchant</th>
                       </tr>
                     </thead>
-                    <tbody className="text-xs font-semibold text-zinc-700">
+                    <tbody className="text-[15px] font-semibold text-zinc-700">
                       {[
                         { 
                           field: 'baseFee', 
@@ -3209,11 +3147,11 @@ function CouriersIntegrationsHub() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">UAT Base URL</label>
-                    <input type="text" placeholder="ws.uat.example.com" value={newUsername} onChange={e => setNewUsername(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-xs font-semibold text-zinc-800 outline-none focus:border-orange-500" />
+                    <input type="text" placeholder="ws.uat.example.com" value={newUsername} onChange={e => setNewUsername(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-[15px] font-semibold text-zinc-800 outline-none focus:border-orange-500" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500">Production Base URL</label>
-                    <input type="text" placeholder="ws.example.com" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-xs font-semibold text-zinc-800 outline-none focus:border-orange-500" />
+                    <input type="text" placeholder="ws.example.com" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-[15px] font-semibold text-zinc-800 outline-none focus:border-orange-500" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -3283,110 +3221,6 @@ function CouriersIntegrationsHub() {
 
 
 
-function CSVBatchControlDesk() {
-  const [batchRecords, setBatchRecords] = useState([
-    { id: "BATCH-88220", merchant: "Noon E-commerce", fileName: "noon_dxb_deliveries_may22.csv", date: "May 22, 2026", ordersCount: 142, successRate: "99.3%", status: "Completed", manifestNum: "M-AE-9210-C" },
-    { id: "BATCH-88219", merchant: "IKEA UAE", fileName: "ikea_heavy_freight_q2.csv", date: "May 21, 2026", ordersCount: 22, successRate: "100%", status: "Processing", manifestNum: "M-AE-1122-C" },
-    { id: "BATCH-88218", merchant: "Spinneys Supermarket", fileName: "spinneys_express_transit.csv", date: "May 20, 2026", ordersCount: 88, successRate: "94.5%", status: "Flagged Errors", manifestNum: "M-AE-0531-A" },
-    { id: "BATCH-88217", merchant: "Al Futtaim Logistics", fileName: "futtaim_bulk_dispatch.csv", date: "May 19, 2026", ordersCount: 310, successRate: "100%", status: "Completed", manifestNum: "M-AE-3942-B" }
-  ]);
-
-  const [notif, setNotif] = useState("");
-
-  const triggerApproveManifest = (id: string) => {
-    setBatchRecords(prev => prev.map(rec => {
-      if (rec.id === id) {
-        return { ...rec, status: "Completed" };
-      }
-      return rec;
-    }));
-    setNotif(`CSV Batch ${id} cleared and synced! Waybills synchronized and sent to active driver portals.`);
-    setTimeout(() => setNotif(""), 4000);
-  };
-
-  return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-xl font-display font-medium text-zinc-900 mb-1 uppercase tracking-tight">CSV Batch Dispatches Control</h3>
-          <p className="text-sm text-zinc-500">Audit bulk-uploaded dispatch manifests, correct validation errors, and clear logistics queues.</p>
-        </div>
-      </div>
-
-      {notif && (
-        <div className="bg-brand/5 border border-brand/20 text-brand p-4 rounded-2xl text-xs font-semibold flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-brand animate-ping"></div>
-          {notif}
-        </div>
-      )}
-
-      <div className="bg-white border border-zinc-200 rounded-[3rem] p-10 overflow-hidden relative shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[900px]">
-            <thead>
-              <tr className="bg-zinc-50 text-zinc-400 text-[12px] font-black uppercase tracking-widest border-b border-zinc-100">
-                <th className="p-6">Batch ID</th>
-                <th className="p-6">Uploader</th>
-                <th className="p-6 font-mono">Manifest File</th>
-                <th className="p-6">Import Details</th>
-                <th className="p-6">Validation Health</th>
-                <th className="p-6 text-center">Manifest Num / Run</th>
-              </tr>
-            </thead>
-            <tbody className="text-sm font-medium">
-              {batchRecords.map((rec, idx) => (
-                <tr key={idx} className="border-b border-zinc-50 hover:bg-zinc-50/50 transition-colors">
-                  <td className="p-6 font-mono text-zinc-900 font-bold text-xs">{rec.id}</td>
-                  <td className="p-6 font-bold text-zinc-800">{rec.merchant}</td>
-                  <td className="p-6 text-zinc-500 font-mono text-xs max-w-[200px] truncate">{rec.fileName}</td>
-                  <td className="p-6">
-                    <span className="font-bold text-zinc-900 block">{rec.ordersCount} consignments</span>
-                    <span className="text-[12px] text-zinc-400 mt-0.5 block">{rec.date}</span>
-                  </td>
-                  <td className="p-6">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-zinc-801">{rec.successRate}</span>
-                      <span className={`px-2.5 py-1 rounded-full text-[13px] font-black uppercase tracking-widest leading-none ${
-                        rec.status === 'Completed' ? 'bg-[#113f36]/5 text-[#113f36]' :
-                        rec.status === 'Processing' ? 'bg-indigo-50 text-indigo-650 animate-pulse' :
-                        'bg-red-50 text-red-650'
-                      }`}>
-                        {rec.status}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="p-6 text-center">
-                    {rec.status === "Processing" ? (
-                      <button 
-                        onClick={() => triggerApproveManifest(rec.id)}
-                        className="text-[12px] bg-brand text-white font-black uppercase tracking-widest px-4 py-2.5 rounded-xl hover:bg-brand/90 hover:scale-105 transition-all shadow-md shadow-brand/10"
-                      >
-                        Approve & Sync Dispatch
-                      </button>
-                    ) : rec.status === "Flagged Errors" ? (
-                      <div className="flex items-center justify-center gap-2 font-mono">
-                        <span className="text-[12px] text-red-500 font-bold">Address mismatch</span>
-                        <button 
-                          onClick={() => triggerApproveManifest(rec.id)}
-                          className="text-[13px] bg-zinc-900 text-white font-black uppercase tracking-widest px-3 py-1.5 rounded-lg hover:bg-black"
-                        >
-                          Manual Force
-                        </button>
-                      </div>
-                    ) : (
-                      <span className="text-zinc-500 font-mono text-xs">{rec.manifestNum}</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function WalletManagementDesk() {
   const { t } = useLanguage();
   const [financialTab, setFinancialTab] = useState<'ap_merchants' | 'ap_couriers' | 'ar_cod' | 'revenue'>('ap_merchants');
@@ -3408,16 +3242,16 @@ function WalletManagementDesk() {
 
   // Accounts Receivable: COD Collection (Cash on Hand)
   const [arCod, setArCod] = useState([
-    { id: "AR-COD-110", entity: "Aramex Express", type: "3PL Partner", outstandingCash: 24500, lastDeposit: "May 21, 2023", status: "Pending Deposit" },
-    { id: "AR-COD-111", entity: "Saeed Al Remeithi", type: "In-House Driver", outstandingCash: 1250, lastDeposit: "May 22, 2023", status: "Overdue" },
-    { id: "AR-COD-112", entity: "Noon Hyperlocal", type: "3PL Partner", outstandingCash: 0, lastDeposit: "May 23, 2023", status: "Reconciled" }
+    { id: "AR-COD-110", entity: "Aramex Express", type: "3PL Partner", outstandingCash: 24500, lastDeposit: "May 21, 2026", status: "Pending Deposit" },
+    { id: "AR-COD-111", entity: "Saeed Al Remeithi", type: "In-House Driver", outstandingCash: 1250, lastDeposit: "May 22, 2026", status: "Overdue" },
+    { id: "AR-COD-112", entity: "Noon Hyperlocal", type: "3PL Partner", outstandingCash: 0, lastDeposit: "May 23, 2026", status: "Reconciled" }
   ]);
 
   // Platform Revenue Ledger
   const [revenueLedger] = useState([
-    { id: "REV-9921", type: "Commission", source: "Noon E-commerce (SET-M-8812)", amount: 482, date: "2023-05-23" },
-    { id: "REV-9920", type: "Delivery Margin", source: "Order ORD-1192", amount: 5, date: "2023-05-23" },
-    { id: "REV-9919", type: "Delivery Margin", source: "Order ORD-1193", amount: 12, date: "2023-05-22" }
+    { id: "REV-9921", type: "Commission", source: "Noon E-commerce (SET-M-8812)", amount: 482, date: "2026-05-23" },
+    { id: "REV-9920", type: "Delivery Margin", source: "Order ORD-1192", amount: 5, date: "2026-05-23" },
+    { id: "REV-9919", type: "Delivery Margin", source: "Order ORD-1193", amount: 12, date: "2026-05-22" }
   ]);
 
   const triggerAction = (message: string) => {
@@ -3440,125 +3274,135 @@ function WalletManagementDesk() {
     triggerAction(`COD cash collection reconciled for ${id}.`);
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Remitted': case 'Approved': case 'Paid': case 'Reconciled':
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'Pending Approval': case 'Pending Deposit': case 'Under Review':
+        return 'bg-amber-50 text-amber-700 border-amber-200';
+      case 'Audit Discrepancy': case 'Overdue':
+        return 'bg-rose-50 text-rose-700 border-rose-200';
+      default:
+        return 'bg-zinc-100 text-zinc-700 border-zinc-200';
+    }
+  };
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 text-left">
-      <div className="flex items-center justify-between">
+    <div className="space-y-8 animate-in fade-in duration-500 text-left pb-20">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h3 className="text-xl font-display font-medium text-zinc-900 mb-1 uppercase tracking-tight">Platform Financial Controller</h3>
-          <p className="text-sm text-zinc-500">Reconcile Accounts Payable (Merchants & Couriers), Accounts Receivable (COD), and Platform Revenue.</p>
+          <h3 className="text-2xl font-display font-black text-zinc-900 tracking-tight flex items-center gap-3">
+            Platform Wallets & Ledger
+          </h3>
+          <p className="text-zinc-500 font-medium mt-1">Reconcile Accounts Payable, COD Receivables, and Platform Revenue seamlessly.</p>
         </div>
       </div>
 
       {notif && (
-        <div className="bg-[#113f36]/5 border border-[#113f36]/20 text-[#113f36] p-4 rounded-2xl text-xs font-semibold flex items-center gap-2">
-          <div className="w-1.5 h-1.5 bg-[#113f36] rounded-full animate-ping"></div>
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-2xl text-sm font-semibold flex items-center gap-3 shadow-lg shadow-emerald-500/10">
+          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></div>
           {notif}
-        </div>
+        </motion.div>
       )}
 
-      {/* KPI Cards */}
+      {/* KPI Cards with Premium UI */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white border border-zinc-200 p-6 rounded-[2rem] shadow-sm">
-          <span className="text-[11px] font-black uppercase tracking-widest text-[#4f95cc] block mb-1">AP: Merchants (COD)</span>
-          <p className="text-2xl font-bold text-[#4f95cc]">60,073 AED</p>
-          <span className="text-[12px] text-zinc-400 mt-2 block">Pending remittance to merchants</span>
+        <div className="bg-gradient-to-br from-white to-zinc-50 border border-zinc-200/60 p-6 rounded-[2rem] shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+            <Wallet className="w-16 h-16 text-[#4f95cc]" />
+          </div>
+          <span className="text-[11px] font-black uppercase tracking-widest text-[#4f95cc] block mb-2 relative z-10">AP: Merchants (COD)</span>
+          <span className="text-3xl font-display font-black text-zinc-900 relative z-10 block">182,689 <span className="text-base text-zinc-400 font-bold">AED</span></span>
+          <span className="text-xs text-zinc-500 font-semibold mt-2 block relative z-10">Pending Remittance</span>
         </div>
-        <div className="bg-white border border-zinc-200 p-6 rounded-[2rem] shadow-sm">
-          <span className="text-[11px] font-black uppercase tracking-widest text-orange-600 block mb-1">AP: Couriers (Fees)</span>
-          <p className="text-2xl font-bold text-orange-600">11,800 AED</p>
-          <span className="text-[12px] text-zinc-400 mt-2 block">Pending payout to 3PL partners</span>
+        <div className="bg-gradient-to-br from-white to-zinc-50 border border-zinc-200/60 p-6 rounded-[2rem] shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+            <Truck className="w-16 h-16 text-[#d12421]" />
+          </div>
+          <span className="text-[11px] font-black uppercase tracking-widest text-[#d12421] block mb-2 relative z-10">AP: Couriers (Fees)</span>
+          <span className="text-3xl font-display font-black text-zinc-900 relative z-10 block">26,340 <span className="text-base text-zinc-400 font-bold">AED</span></span>
+          <span className="text-xs text-zinc-500 font-semibold mt-2 block relative z-10">Pending Approval</span>
         </div>
-        <div className="bg-white border border-zinc-200 p-6 rounded-[2rem] shadow-sm">
-          <span className="text-[11px] font-black uppercase tracking-widest text-red-600 block mb-1">AR: Outstanding COD</span>
-          <p className="text-2xl font-bold text-red-600 font-sans">25,750 AED</p>
-          <span className="text-[12px] text-zinc-400 mt-2 block">Cash with couriers pending deposit</span>
+        <div className="bg-gradient-to-br from-white to-zinc-50 border border-zinc-200/60 p-6 rounded-[2rem] shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+            <Banknote className="w-16 h-16 text-emerald-600" />
+          </div>
+          <span className="text-[11px] font-black uppercase tracking-widest text-emerald-600 block mb-2 relative z-10">AR: COD Cash (Fleet)</span>
+          <span className="text-3xl font-display font-black text-zinc-900 relative z-10 block">25,750 <span className="text-base text-zinc-400 font-bold">AED</span></span>
+          <span className="text-xs text-zinc-500 font-semibold mt-2 block relative z-10">Outstanding Collection</span>
         </div>
-        <div className="bg-[#113f36]/5 border border-[#113f36]/10 p-6 rounded-[2rem] shadow-sm col-span-1">
-          <span className="text-[11px] font-black uppercase tracking-widest text-[#113f36] block mb-1">Net Revenue (MTD)</span>
-          <p className="text-2xl font-bold text-[#113f36]">18,405 AED</p>
-          <span className="text-[12px] text-[#113f36]/70 mt-2 block">USend Commissions & Margins</span>
+        <div className="bg-gradient-to-br from-[#113f36] to-[#0c2a24] text-white p-6 rounded-[2rem] shadow-xl shadow-[#113f36]/20 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+            <TrendingUp className="w-16 h-16 text-white" />
+          </div>
+          <span className="text-[11px] font-black uppercase tracking-widest text-emerald-200 block mb-2 relative z-10">Platform Revenue YTD</span>
+          <span className="text-3xl font-display font-black relative z-10 block">1,842,900 <span className="text-base text-emerald-300 font-bold">AED</span></span>
+          <span className="text-xs text-emerald-100/70 font-semibold mt-2 block relative z-10">+12% vs last quarter</span>
         </div>
       </div>
 
-      {/* Financial Segment Tabs */}
-      <div className="flex border-b border-zinc-200 gap-6">
-        <button
-          onClick={() => setFinancialTab('ap_merchants')}
-          className={`pb-4 text-xs font-black uppercase tracking-widest border-b-2 transition-all cursor-pointer ${
-            financialTab === 'ap_merchants' ? 'border-[#4f95cc] text-[#4f95cc] font-bold' : 'border-transparent text-zinc-400 hover:text-zinc-700'
-          }`}
-        >
-          AP: Merchants
-        </button>
-        <button
-          onClick={() => setFinancialTab('ap_couriers')}
-          className={`pb-4 text-xs font-black uppercase tracking-widest border-b-2 transition-all cursor-pointer ${
-            financialTab === 'ap_couriers' ? 'border-orange-500 text-orange-600 font-bold' : 'border-transparent text-zinc-400 hover:text-zinc-700'
-          }`}
-        >
-          AP: Couriers
-        </button>
-        <button
-          onClick={() => setFinancialTab('ar_cod')}
-          className={`pb-4 text-xs font-black uppercase tracking-widest border-b-2 transition-all cursor-pointer ${
-            financialTab === 'ar_cod' ? 'border-red-500 text-red-600 font-bold' : 'border-transparent text-zinc-400 hover:text-zinc-700'
-          }`}
-        >
-          AR: COD Collections
-        </button>
-        <button
-          onClick={() => setFinancialTab('revenue')}
-          className={`pb-4 text-xs font-black uppercase tracking-widest border-b-2 transition-all cursor-pointer ${
-            financialTab === 'revenue' ? 'border-[#113f36] text-[#113f36] font-bold' : 'border-transparent text-zinc-400 hover:text-zinc-700'
-          }`}
-        >
-          Revenue Ledger
-        </button>
-      </div>
+      <div className="bg-white border border-zinc-200 rounded-[2rem] shadow-sm overflow-hidden flex flex-col">
+        <div className="flex flex-wrap border-b border-zinc-100">
+          {[
+            { id: 'ap_merchants', label: 'Merchants COD Remittance', count: apMerchants.length },
+            { id: 'ap_couriers', label: 'Courier Payouts', count: apCouriers.length },
+            { id: 'ar_cod', label: 'Fleet COD Collection', count: arCod.length },
+            { id: 'revenue', label: 'Platform Revenue Ledger', count: revenueLedger.length }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setFinancialTab(tab.id as any)}
+              className={`flex-1 py-5 px-6 text-[11px] font-black uppercase tracking-widest transition-all relative ${financialTab === tab.id ? 'text-[#113f36] bg-zinc-50/50' : 'text-zinc-400 hover:text-zinc-600 hover:bg-zinc-50/30'}`}
+            >
+              {tab.label}
+              <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-zinc-100 text-zinc-500 text-[10px]">{tab.count}</span>
+              {financialTab === tab.id && (
+                <motion.div layoutId="finTabIndicator" className="absolute bottom-0 left-0 right-0 h-1 bg-[#113f36]" />
+              )}
+            </button>
+          ))}
+        </div>
 
-      {/* Tab Contents */}
-      <div className="bg-white border border-zinc-200 rounded-[3rem] p-8 overflow-hidden relative shadow-sm">
+        {/* --- Merchants Table --- */}
         {financialTab === 'ap_merchants' && (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[900px]">
               <thead>
-                <tr className="bg-zinc-50 text-zinc-400 text-[11px] font-black uppercase tracking-widest border-b border-zinc-100">
+                <tr className="bg-zinc-50/50 text-zinc-400 text-[10px] font-black uppercase tracking-widest border-b border-zinc-100">
                   <th className="p-5">Settlement ID</th>
                   <th className="p-5">Merchant Name</th>
-                  <th className="p-5">Billing Cycle</th>
+                  <th className="p-5">Cycle / Period</th>
                   <th className="p-5 font-mono text-right">Gross COD</th>
-                  <th className="p-5 font-mono text-right">- Delivery Fees</th>
-                  <th className="p-5 font-mono text-right">- Commission</th>
-                  <th className="p-5 font-mono text-right text-[#4f95cc]">Net Payable (AED)</th>
-                  <th className="p-5 text-center">Status</th>
+                  <th className="p-5 font-mono text-right">Fees & Comm.</th>
+                  <th className="p-5 font-mono text-right text-emerald-600">Net Payable</th>
+                  <th className="p-5">Status</th>
+                  <th className="p-5 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="text-xs font-semibold text-zinc-700">
-                {apMerchants.map((item, idx) => (
-                  <tr key={idx} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
+              <tbody className="text-[15px] font-semibold text-zinc-700">
+                {apMerchants.map((item) => (
+                  <tr key={item.id} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors group">
                     <td className="p-5 font-mono text-zinc-900 font-bold">{item.id}</td>
-                    <td className="p-5 font-bold text-zinc-800">{item.merchant}</td>
-                    <td className="p-5 text-zinc-500 font-medium">{item.cycle}</td>
-                    <td className="p-5 text-zinc-650 font-mono text-right">{item.grossCod.toLocaleString()}</td>
-                    <td className="p-5 text-red-650 font-mono text-right">{item.deliveryFees.toLocaleString()}</td>
-                    <td className="p-5 text-red-650 font-mono text-right">{item.commission.toLocaleString()}</td>
-                    <td className="p-5 text-[#4f95cc] font-bold text-sm tracking-tight text-right">{item.netPayable.toLocaleString()}</td>
-                    <td className="p-5 text-center">
-                      {item.status === 'Pending Approval' ? (
-                        <button
-                          onClick={() => handleRemitMerchant(item.id)}
-                          className="bg-[#4f95cc] text-white font-black uppercase tracking-widest px-4 py-2 rounded-xl hover:bg-[#3b7cb3] transition-all cursor-pointer text-[10px]"
-                        >
-                          Approve
+                    <td className="p-5 font-bold text-zinc-800 flex items-center gap-2">
+                       <div className="w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center uppercase">{item.merchant.charAt(0)}</div>
+                       {item.merchant}
+                    </td>
+                    <td className="p-5 text-zinc-500">{item.cycle}</td>
+                    <td className="p-5 font-mono text-right">{item.grossCod.toLocaleString()}</td>
+                    <td className="p-5 font-mono text-right text-rose-500">{(item.deliveryFees + item.commission).toLocaleString()}</td>
+                    <td className="p-5 text-emerald-600 font-bold font-mono text-sm text-right">{item.netPayable.toLocaleString()}</td>
+                    <td className="p-5">
+                      <span className={`px-3 py-1.5 rounded-full text-[10px] uppercase font-bold tracking-wider border ${getStatusColor(item.status)}`}>
+                        {item.status}
+                      </span>
+                    </td>
+                    <td className="p-5 text-right">
+                      {item.status !== 'Remitted' ? (
+                        <button onClick={() => handleRemitMerchant(item.id)} className="px-4 py-2 bg-[#113f36] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#0c2a24] shadow-md shadow-[#113f36]/10 transition-all opacity-0 group-hover:opacity-100">
+                          Authorize WPS
                         </button>
-                      ) : item.status === 'Under Review' ? (
-                        <span className="px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-amber-50 text-amber-700 inline-block font-mono border border-amber-100">
-                          Review
-                        </span>
                       ) : (
-                        <span className="px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-zinc-100 text-zinc-500 inline-block font-mono">
-                          ✓ Remitted
-                        </span>
+                        <CheckCircle2 className="w-5 h-5 text-emerald-500 inline-block" />
                       )}
                     </td>
                   </tr>
@@ -3568,47 +3412,43 @@ function WalletManagementDesk() {
           </div>
         )}
 
+        {/* --- Couriers Table --- */}
         {financialTab === 'ap_couriers' && (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[900px]">
               <thead>
-                <tr className="bg-zinc-50 text-zinc-400 text-[11px] font-black uppercase tracking-widest border-b border-zinc-100">
+                <tr className="bg-zinc-50/50 text-zinc-400 text-[10px] font-black uppercase tracking-widest border-b border-zinc-100">
                   <th className="p-5">Invoice ID</th>
                   <th className="p-5">Courier Partner</th>
-                  <th className="p-5">Billing Cycle</th>
-                  <th className="p-5 text-center">Deliveries</th>
+                  <th className="p-5">Deliveries</th>
                   <th className="p-5 font-mono text-right">Gross Fees</th>
-                  <th className="p-5 font-mono text-right">- Penalties</th>
-                  <th className="p-5 font-mono text-right text-orange-600">Net Payable (AED)</th>
-                  <th className="p-5 text-center">Status</th>
+                  <th className="p-5 font-mono text-right">Penalties</th>
+                  <th className="p-5 font-mono text-right text-emerald-600">Net Payable</th>
+                  <th className="p-5">Status</th>
+                  <th className="p-5 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="text-xs font-semibold text-zinc-700">
-                {apCouriers.map((item, idx) => (
-                  <tr key={idx} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
+              <tbody className="text-[15px] font-semibold text-zinc-700">
+                {apCouriers.map((item) => (
+                  <tr key={item.id} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors group">
                     <td className="p-5 font-mono text-zinc-900 font-bold">{item.id}</td>
                     <td className="p-5 font-bold text-zinc-800">{item.courier}</td>
-                    <td className="p-5 text-zinc-500 font-medium">{item.cycle}</td>
-                    <td className="p-5 text-center text-zinc-650">{item.deliveries}</td>
-                    <td className="p-5 text-zinc-650 font-mono text-right">{item.grossFees.toLocaleString()}</td>
-                    <td className="p-5 text-red-650 font-mono text-right">{item.penalties.toLocaleString()}</td>
-                    <td className="p-5 text-orange-600 font-bold font-mono text-sm text-right">{item.netPayable.toLocaleString()}</td>
-                    <td className="p-5 text-center">
-                      {item.status === 'Audit Discrepancy' ? (
-                        <button
-                          onClick={() => handleApproveCourier(item.id)}
-                          className="bg-orange-500 text-white font-black uppercase tracking-widest px-3 py-1.5 rounded-lg hover:bg-orange-600 transition-all cursor-pointer text-[10px]"
-                        >
-                          Override & Approve
+                    <td className="p-5 text-zinc-500 font-mono">{item.deliveries}</td>
+                    <td className="p-5 font-mono text-right">{item.grossFees.toLocaleString()}</td>
+                    <td className="p-5 font-mono text-right text-rose-500">{item.penalties.toLocaleString()}</td>
+                    <td className="p-5 text-emerald-600 font-bold font-mono text-sm text-right">{item.netPayable.toLocaleString()}</td>
+                    <td className="p-5">
+                      <span className={`px-3 py-1.5 rounded-full text-[10px] uppercase font-bold tracking-wider border ${getStatusColor(item.status)}`}>
+                        {item.status}
+                      </span>
+                    </td>
+                    <td className="p-5 text-right">
+                      {item.status !== 'Approved' && item.status !== 'Paid' ? (
+                        <button onClick={() => handleApproveCourier(item.id)} className="px-4 py-2 bg-[#d12421] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#a01c19] shadow-md shadow-[#d12421]/10 transition-all opacity-0 group-hover:opacity-100">
+                          Approve Payout
                         </button>
-                      ) : item.status === 'Approved' ? (
-                        <span className="px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-blue-50 text-blue-700 inline-block font-mono border border-blue-100">
-                          In Queue
-                        </span>
                       ) : (
-                        <span className="px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-zinc-100 text-zinc-500 inline-block font-mono">
-                          ✓ Paid
-                        </span>
+                        <CheckCircle2 className="w-5 h-5 text-emerald-500 inline-block" />
                       )}
                     </td>
                   </tr>
@@ -3618,39 +3458,41 @@ function WalletManagementDesk() {
           </div>
         )}
 
+        {/* --- COD Table --- */}
         {financialTab === 'ar_cod' && (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[900px]">
               <thead>
-                <tr className="bg-zinc-50 text-zinc-400 text-[11px] font-black uppercase tracking-widest border-b border-zinc-100">
-                  <th className="p-5">AR Reference</th>
-                  <th className="p-5">Entity Name</th>
+                <tr className="bg-zinc-50/50 text-zinc-400 text-[10px] font-black uppercase tracking-widest border-b border-zinc-100">
+                  <th className="p-5">Collection ID</th>
+                  <th className="p-5">Driver / Entity</th>
                   <th className="p-5">Entity Type</th>
-                  <th className="p-5">Last Deposit Date</th>
-                  <th className="p-5 font-mono text-right text-red-600">Outstanding Cash (AED)</th>
-                  <th className="p-5 text-center">Reconciliation Status</th>
+                  <th className="p-5">Last Deposit</th>
+                  <th className="p-5 font-mono text-right text-emerald-600">Outstanding Cash</th>
+                  <th className="p-5">Status</th>
+                  <th className="p-5 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="text-xs font-semibold text-zinc-700">
-                {arCod.map((item, idx) => (
-                  <tr key={idx} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
+              <tbody className="text-[15px] font-semibold text-zinc-700">
+                {arCod.map((item) => (
+                  <tr key={item.id} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors group">
                     <td className="p-5 font-mono text-zinc-900 font-bold">{item.id}</td>
                     <td className="p-5 font-bold text-zinc-800">{item.entity}</td>
-                    <td className="p-5 text-zinc-500 font-medium">{item.type}</td>
-                    <td className="p-5 text-zinc-650">{item.lastDeposit}</td>
-                    <td className="p-5 text-red-650 font-bold font-mono text-sm text-right">{item.outstandingCash.toLocaleString()}</td>
-                    <td className="p-5 text-center">
-                      {item.status === 'Pending Deposit' || item.status === 'Overdue' ? (
-                        <button
-                          onClick={() => handleReconcileCOD(item.id)}
-                          className={`text-white font-black uppercase tracking-widest px-3 py-1.5 rounded-lg transition-all cursor-pointer text-[10px] ${item.status === 'Overdue' ? 'bg-red-600 hover:bg-red-700' : 'bg-zinc-800 hover:bg-zinc-900'}`}
-                        >
-                          Mark Deposited
+                    <td className="p-5 text-zinc-500"><span className="bg-zinc-100 px-2 py-1 rounded text-[10px] uppercase font-black">{item.type}</span></td>
+                    <td className="p-5 text-zinc-500">{item.lastDeposit}</td>
+                    <td className="p-5 text-emerald-600 font-bold font-mono text-sm text-right">{item.outstandingCash.toLocaleString()}</td>
+                    <td className="p-5">
+                      <span className={`px-3 py-1.5 rounded-full text-[10px] uppercase font-bold tracking-wider border ${getStatusColor(item.status)}`}>
+                        {item.status}
+                      </span>
+                    </td>
+                    <td className="p-5 text-right">
+                      {item.status !== 'Reconciled' ? (
+                        <button onClick={() => handleReconcileCOD(item.id)} className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 shadow-md shadow-emerald-600/10 transition-all opacity-0 group-hover:opacity-100">
+                          Mark Received
                         </button>
                       ) : (
-                        <span className="px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-zinc-100 text-zinc-500 inline-block font-mono">
-                          ✓ Reconciled
-                        </span>
+                        <CheckCircle2 className="w-5 h-5 text-emerald-500 inline-block" />
                       )}
                     </td>
                   </tr>
@@ -3660,11 +3502,12 @@ function WalletManagementDesk() {
           </div>
         )}
 
+        {/* --- Revenue Table --- */}
         {financialTab === 'revenue' && (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[900px]">
               <thead>
-                <tr className="bg-zinc-50 text-zinc-400 text-[11px] font-black uppercase tracking-widest border-b border-zinc-100">
+                <tr className="bg-zinc-50/50 text-zinc-400 text-[10px] font-black uppercase tracking-widest border-b border-zinc-100">
                   <th className="p-5">Transaction ID</th>
                   <th className="p-5">Revenue Type</th>
                   <th className="p-5">Source Reference</th>
@@ -3672,12 +3515,12 @@ function WalletManagementDesk() {
                   <th className="p-5 font-mono text-right text-[#113f36]">Amount (AED)</th>
                 </tr>
               </thead>
-              <tbody className="text-xs font-semibold text-zinc-700">
-                {revenueLedger.map((item, idx) => (
-                  <tr key={idx} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
+              <tbody className="text-[15px] font-semibold text-zinc-700">
+                {revenueLedger.map((item) => (
+                  <tr key={item.id} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/50 transition-colors">
                     <td className="p-5 font-mono text-zinc-900 font-bold">{item.id}</td>
                     <td className="p-5 font-bold text-zinc-800">
-                      <span className={`px-2 py-1 rounded text-[10px] uppercase font-black tracking-wider ${item.type === 'Commission' ? 'bg-[#4f95cc]/10 text-[#4f95cc]' : 'bg-[#113f36]/10 text-[#113f36]'}`}>
+                      <span className={`px-3 py-1.5 rounded-full text-[10px] uppercase font-black tracking-wider border ${item.type === 'Commission' ? 'bg-[#4f95cc]/10 text-[#4f95cc] border-[#4f95cc]/20' : 'bg-[#113f36]/10 text-[#113f36] border-[#113f36]/20'}`}>
                         {item.type}
                       </span>
                     </td>
@@ -3694,8 +3537,6 @@ function WalletManagementDesk() {
     </div>
   );
 }
-
-
 export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
   const { t, isRTL, language, setLanguage } = useLanguage();
   const { signOut } = useApp();
@@ -3706,7 +3547,6 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
     switch (activeTab) {
       case 'overview': return <AdminOverview onTabChange={setActiveTab} />;
       case 'requests': return <RequestsHub />;
-      case 'batches': return <CSVBatchControlDesk />;
       case 'finance': return <WalletManagementDesk />;
       case 'users': return <UsersDirectory />;
       case 'merchants': return <MerchantDirectory />;
@@ -3730,11 +3570,11 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
           {/* Brand Logo Header */}
           <div className="p-3 pb-4 flex items-center justify-between mb-6 border-b border-slate-100">
             <div className="flex items-center gap-3 cursor-pointer group" onClick={() => onNavigate('landing_page')}>
-              <div className="w-10 h-10 rounded-2xl bg-[#113F36] flex items-center justify-center shrink-0 shadow-md group-hover:scale-105 transition-transform">
-                <LogoIcon className="w-6 h-6 text-white" />
+              <div className="w-14 h-14 rounded-2xl bg-[#113F36] flex items-center justify-center shrink-0 shadow-md group-hover:scale-105 transition-transform">
+                <LogoIcon className="w-8 h-8 text-white" />
               </div>
               <div>
-                <h1 className="text-sm font-extrabold uppercase tracking-wider text-[#113F36] leading-none">TRSH Portal</h1>
+                <h1 className="text-xl font-extrabold uppercase tracking-wider text-[#113F36] leading-none">Usend Portal</h1>
                 <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 block">Platform Admin</span>
               </div>
             </div>
@@ -3746,7 +3586,6 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
             {[
               { id: 'overview', icon: <LayoutDashboard className="w-[18px] h-[18px]" />, label: t('dashboard') || 'Dashboard' },
               { id: 'requests', icon: <Inbox className="w-[18px] h-[18px]" />, label: t('requests_orders') || 'Courier Requests & Orders' },
-              { id: 'batches', icon: <Boxes className="w-[18px] h-[18px]" />, label: t('csv_batch_desk') || 'CSV Batch Dispatch Desk' },
               { id: 'finance', icon: <Coins className="w-[18px] h-[18px]" />, label: t('ledger_cod_settling') || 'Platform Wallets & Ledger' },
               { id: 'merchants', icon: <Building2 className="w-[18px] h-[18px]" />, label: t('merchant_directory') || 'Merchant Directory' },
               { id: 'users', icon: <UserCircle2 className="w-[18px] h-[18px]" />, label: t('users_directory') || 'Users Directory' },
@@ -3768,7 +3607,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                     <span className={`transition-transform duration-200 ${isActive ? 'text-[#A3E635] scale-105' : 'text-slate-400 group-hover/btn:text-[#113F36] group-hover/btn:scale-105'}`}>
                       {item.icon}
                     </span>
-                    <span className={`text-[12.5px] font-semibold leading-none truncate tracking-wide ${isRTL ? 'text-right' : 'text-left'}`}>{item.label}</span>
+                    <span className={`text-[15px] font-semibold leading-none truncate tracking-wide ${isRTL ? 'text-right' : 'text-left'}`}>{item.label}</span>
                   </div>
                   {isActive ? (
                     <div className="w-1.5 h-1.5 rounded-full bg-[#A3E635] shrink-0 shadow-xs" />

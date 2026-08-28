@@ -120,7 +120,7 @@ export default function SmartChatbot({ isRTL }: SmartChatbotProps) {
                    className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                  >
                    <div 
-                     className={`p-3.5 rounded-2xl max-w-[85%] text-[13px] font-medium leading-relaxed ${
+                     className={`p-3.5 rounded-2xl max-w-[85%] text-[15px] font-medium leading-relaxed ${
                        msg.sender === 'user' 
                          ? 'bg-gradient-to-br from-[#113f36] to-[#0a2620] text-white rounded-br-sm shadow-md' 
                          : 'bg-white border border-slate-200/60 text-slate-700 rounded-bl-sm shadow-sm'
@@ -150,7 +150,7 @@ export default function SmartChatbot({ isRTL }: SmartChatbotProps) {
                   value={botInput}
                   onChange={(e) => setBotInput(e.target.value)}
                   placeholder={isRTL ? "اكتب رسالتك هنا..." : "Type your message here..."}
-                  className="flex-1 outline-none text-[13px] bg-slate-50/80 border border-slate-200 rounded-2xl px-4 py-3 focus:bg-white focus:border-[#113f36]/50 focus:ring-2 focus:ring-[#113f36]/10 transition-all font-medium text-slate-800 placeholder:text-slate-400"
+                  className="flex-1 outline-none text-[15px] bg-slate-50/80 border border-slate-200 rounded-2xl px-4 py-3 focus:bg-white focus:border-[#113f36]/50 focus:ring-2 focus:ring-[#113f36]/10 transition-all font-medium text-slate-800 placeholder:text-slate-400"
                   disabled={isLoading}
                 />
                 <button 

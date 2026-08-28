@@ -575,7 +575,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                       />
                       <div className="text-left">
                         <span className="text-xs font-extrabold text-zinc-805 dark:text-white block font-sans">Visa / Mastercard / Amex Protocol</span>
-                        <span className="text-[13px] text-zinc-455 block font-mono">Accept regional card products in UAE, Egypt, KSA & Gulf</span>
+                        <span className="text-[15px] text-zinc-455 block font-mono">Accept regional card products in UAE, Egypt, KSA & Gulf</span>
                       </div>
                     </label>
 
@@ -588,7 +588,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                       />
                       <div className="text-left">
                         <span className="text-xs font-extrabold text-zinc-800 dark:text-white block font-sans">Apple Pay Integration</span>
-                        <span className="text-[13px] text-zinc-455 block font-mono">Instant biometric checkout on mobile devices & Safari</span>
+                        <span className="text-[15px] text-zinc-455 block font-mono">Instant biometric checkout on mobile devices & Safari</span>
                       </div>
                     </label>
 
@@ -601,7 +601,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                       />
                       <div className="text-left">
                         <span className="text-xs font-extrabold text-zinc-850 dark:text-white block font-sans">Samsung Pay</span>
-                        <span className="text-[13px] text-zinc-455 block font-mono">Enable quick digital wallets on Android OS terminals</span>
+                        <span className="text-[15px] text-zinc-455 block font-mono">Enable quick digital wallets on Android OS terminals</span>
                       </div>
                     </label>
 
@@ -614,7 +614,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                       />
                       <div className="text-left">
                         <span className="text-xs font-extrabold text-zinc-850 dark:text-white block font-sans">Tabby - Buy Now Pay Later</span>
-                        <span className="text-[13px] text-zinc-455 block font-mono font-medium">Split payments into 4 interest-free installments</span>
+                        <span className="text-[15px] text-zinc-455 block font-mono font-medium">Split payments into 4 interest-free installments</span>
                       </div>
                     </label>
                   </div>
@@ -639,7 +639,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                   </div>
 
                   <div className="space-y-4 text-xs font-sans text-zinc-600 dark:text-zinc-400">
-                    <p className="font-medium text-[13px] leading-relaxed">
+                    <p className="font-medium text-[15px] leading-relaxed">
                       {stripeIsConnected 
                         ? 'Your Stripe account is successfully integrated! Standard credit cards and local wallets are active for secure processing.'
                         : 'To finalize this Stripe integration, ensure your system secrets or local environment have a valid STRIPE_SECRET_KEY, then reload the page.'}
@@ -647,7 +647,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
 
                     <div className="bg-zinc-50 dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-800 p-5 rounded-2xl space-y-3">
                       <div className="flex justify-between items-center text-xs">
-                        <span className="font-bold text-zinc-500 uppercase tracking-widest text-[13px]">API Status</span>
+                        <span className="font-bold text-zinc-500 uppercase tracking-widest text-[15px]">API Status</span>
                         <span className={`font-mono font-bold ${
                           stripeIsChecking 
                             ? 'text-zinc-400'
@@ -663,7 +663,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                         </span>
                       </div>
                       <div className="flex justify-between items-center text-xs">
-                        <span className="font-bold text-zinc-500 uppercase tracking-widest text-[13px]">Environment</span>
+                        <span className="font-bold text-zinc-500 uppercase tracking-widest text-[15px]">Environment</span>
                         <span className="font-mono text-zinc-700 dark:text-zinc-300 font-bold">
                           {stripeIsConnected 
                             ? (stripeSandboxMode ? 'Sandbox Testing (Test Mode)' : 'Production Active (Live Mode)') 
@@ -872,9 +872,9 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                         <label className="text-[12px] font-black uppercase text-zinc-455 block">Bearer Access Key (USend Secret Key)</label>
                         <div className="font-mono text-[12px] bg-zinc-950 text-[#6d8c55] rounded-2xl px-4 py-3 border border-zinc-850 flex items-center justify-between select-all leading-relaxed">
                           <span>sk_live_usend_6d3f2g1h0a7b6c5</span>
-                          <span className="text-[13px] font-bold text-zinc-500 uppercase tracking-wider bg-zinc-900 px-2 py-0.5 rounded leading-none">Bearer Token</span>
+                          <span className="text-[15px] font-bold text-zinc-500 uppercase tracking-wider bg-zinc-900 px-2 py-0.5 rounded leading-none">Bearer Token</span>
                         </div>
-                        <p className="text-[13px] text-zinc-450 leading-relaxed font-medium">Use this token inside your platform settings script to authorize background payloads secure dispatching.</p>
+                        <p className="text-[15px] text-zinc-450 leading-relaxed font-medium">Use this token inside your platform settings script to authorize background payloads secure dispatching.</p>
                       </div>
 
                       <div className="space-y-1.5 font-sans">
@@ -933,7 +933,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                       </div>
                       <div className="bg-zinc-900/60 p-3.5 rounded-2xl block border border-zinc-805 text-left font-sans text-xs">
                         <span className="text-[12px] font-bold text-zinc-500 uppercase tracking-wider block">Developer Grounding Ready:</span>
-                        <p className="text-zinc-350 mt-1 text-[13px] font-medium leading-relaxed">Integrated SDK hooks compliant with: WooCommerce REST endpoints, Salla GCC Standard App credentials, Shopify Storefront webhook APIs, and Zid retail formats.</p>
+                        <p className="text-zinc-350 mt-1 text-[15px] font-medium leading-relaxed">Integrated SDK hooks compliant with: WooCommerce REST endpoints, Salla GCC Standard App credentials, Shopify Storefront webhook APIs, and Zid retail formats.</p>
                       </div>
                     </div>
                   </div>
@@ -967,7 +967,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                             )}
                           </div>
                           <div>
-                            <span className="text-[13px] font-black uppercase text-zinc-400 tracking-widest block">{platform.tagline}</span>
+                            <span className="text-[15px] font-black uppercase text-zinc-400 tracking-widest block">{platform.tagline}</span>
                             <h3 className="font-bold text-xl text-zinc-905 dark:text-white mt-1">{platform.name} Integration</h3>
                             <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed mt-2.5">
                               {platform.desc}
@@ -1175,7 +1175,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                           Active Sandbox
                         </span>
                       </div>
-                      <p className="text-[13px] text-zinc-400 mt-0.5">
+                      <p className="text-[15px] text-zinc-400 mt-0.5">
                         Test Rate calculator, direct label waybills, and tracking checkpoints for {selectedCourierForConfig.toUpperCase()}.
                       </p>
                     </div>
@@ -1226,7 +1226,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                         <Lock className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                         <div>
                           <p className="text-xs font-bold text-amber-800 dark:text-amber-400">Environment & Credentials Managed by Admin</p>
-                          <p className="text-[13px] text-amber-700/90 dark:text-amber-500/90 mt-1 leading-relaxed">
+                          <p className="text-[15px] text-amber-700/90 dark:text-amber-500/90 mt-1 leading-relaxed">
                             🔒 API Credentials and Environment Mode are managed exclusively by the Portal Administrator. Merchant users operate under the globally assigned environment (Sandbox/Testing or Production/Live) and have read-only access to verify integrated behaviors.
                           </p>
                         </div>
@@ -1234,7 +1234,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 opacity-75">
                         <div className="space-y-1.5">
-                          <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400">Account Number</label>
+                          <label className="text-[15px] font-black uppercase tracking-widest text-zinc-400">Account Number</label>
                           <input 
                             type="text"
                             disabled
@@ -1243,7 +1243,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                           />
                         </div>
                         <div className="space-y-1.5">
-                          <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400">Account PIN / Security Token</label>
+                          <label className="text-[15px] font-black uppercase tracking-widest text-zinc-400">Account PIN / Security Token</label>
                           <input 
                             type="text"
                             disabled
@@ -1252,7 +1252,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                           />
                         </div>
                         <div className="space-y-1.5">
-                          <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400">Account Entity</label>
+                          <label className="text-[15px] font-black uppercase tracking-widest text-zinc-400">Account Entity</label>
                           <input 
                             type="text"
                             disabled
@@ -1261,7 +1261,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                           />
                         </div>
                         <div className="space-y-1.5">
-                          <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400">Country Code</label>
+                          <label className="text-[15px] font-black uppercase tracking-widest text-zinc-400">Country Code</label>
                           <input 
                             type="text"
                             disabled
@@ -1270,7 +1270,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                           />
                         </div>
                         <div className="space-y-1.5">
-                          <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400">Developer Username</label>
+                          <label className="text-[15px] font-black uppercase tracking-widest text-zinc-400">Developer Username</label>
                           <input 
                             type="text"
                             disabled
@@ -1279,7 +1279,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                           />
                         </div>
                         <div className="space-y-1.5">
-                          <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400">Developer Password</label>
+                          <label className="text-[15px] font-black uppercase tracking-widest text-zinc-400">Developer Password</label>
                           <input 
                             type="password"
                             disabled
@@ -1288,7 +1288,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                           />
                         </div>
                         <div className="space-y-1.5">
-                          <label className="text-[13px] font-black uppercase tracking-widest text-zinc-400">API Environment Mode</label>
+                          <label className="text-[15px] font-black uppercase tracking-widest text-zinc-400">API Environment Mode</label>
                           <select 
                             disabled
                             value={getActiveCreds(selectedCourierForConfig).apiEnv || 'sandbox'}
@@ -1347,7 +1347,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                           </h4>
                           
                           <div className="space-y-1.5">
-                            <label className="text-[13px] font-black uppercase text-zinc-400">Origin Route</label>
+                            <label className="text-[15px] font-black uppercase text-zinc-400">Origin Route</label>
                             <input 
                               type="text"
                               value={`${rateOriginCity}, ${rateOriginCountry}`}
@@ -1361,7 +1361,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                           </div>
 
                           <div className="space-y-1.5">
-                            <label className="text-[13px] font-black uppercase text-zinc-400">Destination Route</label>
+                            <label className="text-[15px] font-black uppercase text-zinc-400">Destination Route</label>
                             <select 
                               value={`${rateDestCity},${rateDestCountry}`}
                               onChange={(e) => {
@@ -1381,7 +1381,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
 
                           <div className="space-y-1.5">
                             <div className="flex justify-between items-center">
-                              <label className="text-[13px] font-black uppercase text-zinc-400">Weight (KG)</label>
+                              <label className="text-[15px] font-black uppercase text-zinc-400">Weight (KG)</label>
                               <span className="text-[12px] font-bold text-zinc-500 font-mono">{rateWeight} Kg</span>
                             </div>
                             <input 
@@ -1402,7 +1402,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                               onChange={(e) => setRateExpress(e.target.checked)}
                               className="w-4 h-4 accent-[#113f36] rounded"
                             />
-                            <span className="text-[13px] font-bold text-zinc-700 dark:text-zinc-300">Express Priority Parcel Rate</span>
+                            <span className="text-[15px] font-bold text-zinc-700 dark:text-zinc-300">Express Priority Parcel Rate</span>
                           </label>
 
                           <button
@@ -1429,8 +1429,8 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
 
                         {/* Interactive IDE JSON Logs */}
                         <div className="md:col-span-2 space-y-4">
-                          <div className="bg-[#113f36]/5 text-zinc-800 border border-[#113f36]/15 rounded-3xl p-6 font-mono text-[13px] h-[340px] flex flex-col justify-between overflow-hidden shadow-xs relative">
-                            <div className="absolute top-4 right-4 text-[13px] font-black uppercase text-[#113f36]/60">Live API Terminal</div>
+                          <div className="bg-[#113f36]/5 text-zinc-800 border border-[#113f36]/15 rounded-3xl p-6 font-mono text-[15px] h-[340px] flex flex-col justify-between overflow-hidden shadow-xs relative">
+                            <div className="absolute top-4 right-4 text-[15px] font-black uppercase text-[#113f36]/60">Live API Terminal</div>
                             
                             {!rateResult && !rateLoading ? (
                               <div className="h-full flex flex-col items-center justify-center text-zinc-400 text-center space-y-2">
@@ -1453,21 +1453,21 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                                 <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto pr-1 select-all h-full max-h-[190px]">
                                   {/* Request */}
                                   <div className="text-left bg-white border border-zinc-200 rounded-xl p-3 flex flex-col">
-                                    <div className="text-[13px] font-black text-[#113f36] uppercase mb-1 flex items-center justify-between">
+                                    <div className="text-[15px] font-black text-[#113f36] uppercase mb-1 flex items-center justify-between">
                                       <span>Request Payload (RPC)</span>
                                       <button onClick={() => navigator.clipboard.writeText(JSON.stringify(rateResult.requestPayload, null, 2))} className="hover:text-[#113f36]/75"><Copy className="w-3 h-3" /></button>
                                     </div>
-                                    <pre className="text-[13px] overflow-x-auto text-zinc-600 font-mono leading-relaxed select-all">
+                                    <pre className="text-[15px] overflow-x-auto text-zinc-600 font-mono leading-relaxed select-all">
                                       {JSON.stringify(rateResult.requestPayload, null, 2)}
                                     </pre>
                                   </div>
                                   {/* Response */}
                                   <div className="text-left bg-white border border-zinc-200 rounded-xl p-3 flex flex-col">
-                                    <div className="text-[13px] font-black text-[#113f36] uppercase mb-1 flex items-center justify-between">
+                                    <div className="text-[15px] font-black text-[#113f36] uppercase mb-1 flex items-center justify-between">
                                       <span>Response Body</span>
                                       <button onClick={() => navigator.clipboard.writeText(JSON.stringify(rateResult.responsePayload, null, 2))} className="hover:text-[#113f36]/75"><Copy className="w-3 h-3" /></button>
                                     </div>
-                                    <pre className="text-[13px] overflow-x-auto text-zinc-650 font-mono leading-relaxed select-all">
+                                    <pre className="text-[15px] overflow-x-auto text-zinc-650 font-mono leading-relaxed select-all">
                                       {JSON.stringify(rateResult.responsePayload, null, 2)}
                                     </pre>
                                   </div>
@@ -1497,7 +1497,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
 
                           <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
                             <div className="space-y-1">
-                              <label className="text-[13px] font-black uppercase text-zinc-400">Consignee Title</label>
+                              <label className="text-[15px] font-black uppercase text-zinc-400">Consignee Title</label>
                               <input 
                                 type="text"
                                 value={shipReceiverName}
@@ -1506,7 +1506,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                               />
                             </div>
                             <div className="space-y-1">
-                              <label className="text-[13px] font-black uppercase text-zinc-400">Consignee Phone</label>
+                              <label className="text-[15px] font-black uppercase text-zinc-400">Consignee Phone</label>
                               <input 
                                 type="text"
                                 value={shipReceiverPhone}
@@ -1515,7 +1515,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                               />
                             </div>
                             <div className="space-y-1">
-                              <label className="text-[13px] font-black uppercase text-zinc-400">Consignee Address</label>
+                              <label className="text-[15px] font-black uppercase text-zinc-400">Consignee Address</label>
                               <input 
                                 type="text"
                                 value={shipReceiverAddress}
@@ -1525,7 +1525,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                             </div>
                             <div className="grid grid-cols-2 gap-2">
                               <div className="space-y-1">
-                                <label className="text-[13px] font-black uppercase text-zinc-400">City</label>
+                                <label className="text-[15px] font-black uppercase text-zinc-400">City</label>
                                 <input 
                                   type="text"
                                   value={shipReceiverCity}
@@ -1534,7 +1534,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                                 />
                               </div>
                               <div className="space-y-1">
-                                <label className="text-[13px] font-black uppercase text-zinc-400">Country Code</label>
+                                <label className="text-[15px] font-black uppercase text-zinc-400">Country Code</label>
                                 <input 
                                   type="text"
                                   value={shipReceiverCountry}
@@ -1544,7 +1544,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                               </div>
                             </div>
                             <div className="space-y-1">
-                              <label className="text-[13px] font-black uppercase text-zinc-400">Description of Goods</label>
+                              <label className="text-[15px] font-black uppercase text-zinc-400">Description of Goods</label>
                               <input 
                                 type="text"
                                 value={shipGoodsDescription}
@@ -1554,7 +1554,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                             </div>
                             <div className="grid grid-cols-2 gap-2">
                               <div className="space-y-1">
-                                <label className="text-[13px] font-black uppercase text-zinc-400">Weight (KG)</label>
+                                <label className="text-[15px] font-black uppercase text-zinc-400">Weight (KG)</label>
                                 <input 
                                   type="number"
                                   value={shipWeight}
@@ -1563,7 +1563,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                                 />
                               </div>
                               <div className="space-y-1">
-                                <label className="text-[13px] font-black uppercase text-zinc-400">COD (AED)</label>
+                                <label className="text-[15px] font-black uppercase text-zinc-400">COD (AED)</label>
                                 <input 
                                   type="number"
                                   value={shipCodAmount}
@@ -1609,7 +1609,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                             <div className="bg-[#113f36]/5 border border-[#113f36]/15 text-zinc-550 rounded-3xl p-10 h-[430px] flex flex-col items-center justify-center text-center space-y-3">
                               <Terminal className="w-12 h-12 text-[#113f36]/30 animate-pulse" />
                               <h4 className="font-bold text-sm text-[#113f36]">Waybill Generator Standby</h4>
-                              <p className="text-[13px] text-zinc-500 max-w-sm">Enter the customized address details on the left, then click Generate Waybill. The system will construct official SOAP ClientInfo envelopes and return printable Domestic Waybills.</p>
+                              <p className="text-[15px] text-zinc-500 max-w-sm">Enter the customized address details on the left, then click Generate Waybill. The system will construct official SOAP ClientInfo envelopes and return printable Domestic Waybills.</p>
                             </div>
                           ) : shipLoading ? (
                             <div className="bg-[#113f36]/5 border border-[#113f36]/15 text-zinc-500 rounded-3xl p-10 h-[430px] flex flex-col items-center justify-center text-center space-y-4 font-mono text-[12px]">
@@ -1633,14 +1633,14 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                                   </div>
                                 </div>
 
-                                <div className="py-3 border-b border-zinc-200 grid grid-cols-2 gap-3 text-[13px] flex-1 overflow-y-auto">
+                                <div className="py-3 border-b border-zinc-200 grid grid-cols-2 gap-3 text-[15px] flex-1 overflow-y-auto">
                                   <div>
-                                    <span className="font-black text-zinc-550 block uppercase text-[13px] tracking-wider">1. Shipper / Sender</span>
+                                    <span className="font-black text-zinc-550 block uppercase text-[15px] tracking-wider">1. Shipper / Sender</span>
                                     <p className="font-bold">{shipResult.labelPreview.sender}</p>
                                     <p className="text-zinc-500 text-[12px] mt-0.5">Reference: {shipResult.carrierReference}</p>
                                   </div>
                                   <div>
-                                    <span className="font-black text-zinc-550 block uppercase text-[13px] tracking-wider">2. Consignee / Receiver</span>
+                                    <span className="font-black text-zinc-550 block uppercase text-[15px] tracking-wider">2. Consignee / Receiver</span>
                                     <p className="font-black text-zinc-950">{shipResult.labelPreview.receiver}</p>
                                     <p className="text-zinc-500 text-[12px] mt-0.5">Phone: {shipReceiverPhone}</p>
                                   </div>
@@ -1665,7 +1665,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                                         ></div>
                                       ))}
                                     </div>
-                                    <span className="text-[13px] font-black tracking-[0.25em] text-white absolute bottom-1 bg-zinc-950 px-1.5">{shipResult.trackingNumber}</span>
+                                    <span className="text-[15px] font-black tracking-[0.25em] text-white absolute bottom-1 bg-zinc-950 px-1.5">{shipResult.trackingNumber}</span>
                                   </div>
                                 </div>
 
@@ -1676,7 +1676,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                               </div>
  
                               {/* JSON Payloads raw data block */}
-                              <div className="bg-[#113f36]/5 text-zinc-800 border border-[#113f36]/15 rounded-3xl p-5 font-mono text-[13px] h-[430px] flex flex-col justify-between overflow-hidden shadow-xs relative">
+                              <div className="bg-[#113f36]/5 text-zinc-800 border border-[#113f36]/15 rounded-3xl p-5 font-mono text-[15px] h-[430px] flex flex-col justify-between overflow-hidden shadow-xs relative">
                                 <div className="absolute top-4 right-4 text-[12px] font-black uppercase text-[#113f36]/60">SOAP WSDL Trace</div>
                                 
                                 <div className="flex justify-between border-b border-zinc-200/60 pb-2.5 shrink-0 text-[12px] font-black uppercase text-zinc-550">
@@ -1725,7 +1725,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                           </h4>
 
                           <div className="space-y-2">
-                            <label className="text-[13px] font-black uppercase text-zinc-400">Courier Waybill Number</label>
+                            <label className="text-[15px] font-black uppercase text-zinc-400">Courier Waybill Number</label>
                             <input 
                               type="text"
                               value={trackNumberInput}
@@ -1733,7 +1733,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                               placeholder="e.g. ARX-45796-039210"
                               className="w-full bg-zinc-50 dark:bg-zinc-850 border border-zinc-150 dark:border-zinc-830 rounded-xl px-4 py-2.5 text-xs font-bold"
                             />
-                            <p className="text-[13px] text-zinc-500">Provides sandbox lookup matching specific checkpoint telemetry parameters.</p>
+                            <p className="text-[15px] text-zinc-500">Provides sandbox lookup matching specific checkpoint telemetry parameters.</p>
                           </div>
 
                           <button
@@ -1757,7 +1757,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                             <div className="border border-zinc-200 dark:border-zinc-800 rounded-3xl p-10 bg-white dark:bg-zinc-900 h-[340px] flex flex-col items-center justify-center text-center space-y-2">
                               <Globe className="w-12 h-12 text-zinc-300 animate-spin" style={{ animationDuration: '6s' }} />
                               <h4 className="font-bold text-sm text-zinc-855 dark:text-zinc-300">Tracking Service Portal</h4>
-                              <p className="text-[13px] text-zinc-500 max-w-xs">Enter a generated waybill and trigger status history queries to test webhook mappings.</p>
+                              <p className="text-[15px] text-zinc-500 max-w-xs">Enter a generated waybill and trigger status history queries to test webhook mappings.</p>
                             </div>
                           ) : trackLoading ? (
                             <div className="bg-black text-zinc-400 rounded-3xl p-10 h-[340px] flex flex-col items-center justify-center text-center space-y-4 font-mono text-[12px]">
@@ -1774,11 +1774,11 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                                     <ShieldAlert className="w-12 h-12 text-rose-500 animate-bounce" />
                                     <div className="space-y-1.5 max-w-sm">
                                       <h4 className="font-extrabold text-xs text-rose-600 dark:text-rose-400 uppercase tracking-widest">WSDL Sandbox Error Code 404</h4>
-                                      <p className="text-[13px] text-zinc-600 dark:text-zinc-400 font-semibold leading-relaxed">
+                                      <p className="text-[15px] text-zinc-600 dark:text-zinc-400 font-semibold leading-relaxed">
                                         {trackResult.error}
                                       </p>
                                     </div>
-                                    <div className="bg-zinc-50 dark:bg-zinc-850 px-3 py-2 rounded-xl border border-zinc-150 dark:border-zinc-800 text-[13px] font-mono text-zinc-400 uppercase max-w-xs">
+                                    <div className="bg-zinc-50 dark:bg-zinc-850 px-3 py-2 rounded-xl border border-zinc-150 dark:border-zinc-800 text-[15px] font-mono text-zinc-400 uppercase max-w-xs">
                                       Fault: SOAP-ENV:Client / OrderNotFound
                                     </div>
                                   </div>
@@ -1798,8 +1798,8 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                                           }`}></div>
                                           <div className="text-left">
                                             <div className="flex items-center gap-2">
-                                              <span className="text-[13px] font-bold text-zinc-900 dark:text-white">{step.location}</span>
-                                              <span className="text-[13px] font-bold text-zinc-400 font-mono">{step.time}</span>
+                                              <span className="text-[15px] font-bold text-zinc-900 dark:text-white">{step.location}</span>
+                                              <span className="text-[15px] font-bold text-zinc-400 font-mono">{step.time}</span>
                                             </div>
                                             <p className="text-[12px] text-zinc-500 mt-1 leading-relaxed">{step.description}</p>
                                             <span className="text-[12px] font-black tracking-widest text-[#113f36] uppercase mt-1 block bg-[#113f36]/5 dark:bg-zinc-800 inline-block px-1.5 py-0.5 rounded">{step.status}</span>
@@ -1812,7 +1812,7 @@ export default function MerchantIntegrations({ onNavigate }: MerchantIntegration
                               </div>
 
                               {/* Target SOAP API Logs */}
-                              <div className="md:col-span-1 bg-zinc-950 text-zinc-400 rounded-3xl p-5 h-[345px] font-mono text-[13px] flex flex-col justify-between overflow-hidden shadow-xl">
+                              <div className="md:col-span-1 bg-zinc-950 text-zinc-400 rounded-3xl p-5 h-[345px] font-mono text-[15px] flex flex-col justify-between overflow-hidden shadow-xl">
                                 <div className="text-[12px] font-black text-amber-400 flex justify-between uppercase border-b border-zinc-800 pb-2">
                                   <span>Tracking Payload Trace</span>
                                   <span>SOAP Envelopes</span>

@@ -297,7 +297,7 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
                         <tr key={idx} className="hover:bg-zinc-50/10">
                           <td className="p-4 pl-6">
                             <span className="font-bold text-zinc-805 block">{stm.id}</span>
-                            <span className="text-[13px] uppercase tracking-wider bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-md mt-1 inline-block">Audit Locked</span>
+                            <span className="text-[15px] uppercase tracking-wider bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-md mt-1 inline-block">Audit Locked</span>
                           </td>
                           <td className="p-4 text-zinc-500">{stm.period}</td>
                           <td className="p-4 font-mono font-bold text-zinc-800">{stm.totalOrders} Dispatches</td>
@@ -464,7 +464,7 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
                           <td className="p-4 font-bold font-mono text-zinc-900">AED {inv.amount.toFixed(2)}</td>
                           <td className="p-4">
                             <div className="flex justify-center">
-                              <span className={`px-2.5 py-1 rounded-full text-[13px] font-black uppercase tracking-widest ${
+                              <span className={`px-2.5 py-1 rounded-full text-[15px] font-black uppercase tracking-widest ${
                                 inv.status === 'Invoice Cleared' ? 'bg-[#113f36]/5 text-[#113f36]' : 'bg-orange-50 text-orange-600 animate-pulse'
                               }`}>
                                 {inv.status}
@@ -543,7 +543,7 @@ export default function MerchantPayments({ onNavigate }: MerchantPaymentsProps) 
                 </div>
                 <div className="space-y-1">
                   <h4 className="font-bold text-sm text-zinc-800">Processing Stripe UAE Gateway Settle...</h4>
-                  <p className="text-[13px] text-zinc-400">Verifying 3D secure and registering order at ae.stripe.com...</p>
+                  <p className="text-[15px] text-zinc-400">Verifying 3D secure and registering order at ae.stripe.com...</p>
                 </div>
               </div>
             ) : (

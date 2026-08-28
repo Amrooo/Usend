@@ -85,7 +85,7 @@ export default function UserOrders({ onNavigate }: UserOrdersProps) {
                     <span className="text-[12px] font-black uppercase tracking-[0.2em] text-zinc-400 bg-zinc-50 dark:bg-zinc-800 px-3 py-1.5 rounded-full">
                       {order.id}
                     </span>
-                    <span className="flex items-center gap-1.5 text-[13px] font-black uppercase tracking-widest text-[#113f36] bg-[#113f36]/5 dark:bg-[#113f36]/10 px-3 py-1.5 rounded-full">
+                    <span className="flex items-center gap-1.5 text-[15px] font-black uppercase tracking-widest text-[#113f36] bg-[#113f36]/5 dark:bg-[#113f36]/10 px-3 py-1.5 rounded-full">
                       Delivered
                     </span>
                   </div>

@@ -106,8 +106,8 @@ const courierCredentials = {
       storeId: process.env.NOON_STORE_ID || ''
     },
     productionCreds: {
-      apiKey: process.env.NOON_PROD_API_KEY || '',
-      storeId: process.env.NOON_PROD_STORE_ID || ''
+      apiKey: process.env.NOON_PROD_API_KEY || process.env.NOON_API_KEY || '',
+      storeId: process.env.NOON_PROD_STORE_ID || process.env.NOON_STORE_ID || ''
     }
   }
 };
@@ -132,7 +132,7 @@ const courierConfigs = {
     id: 'noon',
     name: 'Noon Hyperlocal',
     status: 'Active',
-    currentMode: 'sandbox',
+    currentMode: 'production',
     baseUrlUat: 'https://food-api-team.noonstg.team',
     baseUrlProd: 'https://food-api-team.noon.team',
     connectionStatus: { state: 'CONFIGURED_NOT_TESTED', lastTestedAt: null, lastTestedMode: null, errorMessage: null },

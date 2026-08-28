@@ -297,7 +297,7 @@ export default function MerchantInventory({ onNavigate }: MerchantInventoryProps
                           <td className="p-4">
                             <div className="flex items-center gap-2">
                                <span className="font-bold text-sm text-zinc-900">{item.stock}</span>
-                               <span className={`px-2.5 py-1 rounded-full text-[13px] font-black uppercase tracking-widest ${
+                               <span className={`px-2.5 py-1 rounded-full text-[15px] font-black uppercase tracking-widest ${
                                   item.status === 'In Stock' ? 'bg-[#113f36]/5 text-[#113f36]' :
                                   item.status === 'Low Stock' ? 'bg-orange-50 text-orange-600' :
                                   'bg-red-50 text-red-650'
@@ -364,7 +364,7 @@ export default function MerchantInventory({ onNavigate }: MerchantInventoryProps
                           <span className="font-bold text-xs text-zinc-800 block">{log.product}</span>
                           <span className="text-[12px] text-zinc-400 mt-0.5 block">{log.date} • Transfer lock: <b>{log.qty} Units</b> to {log.target}</span>
                         </div>
-                        <span className={`px-2.5 py-1 rounded-full text-[13px] font-black uppercase tracking-widest ${
+                        <span className={`px-2.5 py-1 rounded-full text-[15px] font-black uppercase tracking-widest ${
                           log.status === 'Completed' ? 'bg-[#113f36]/5 text-[#113f36]' : 'bg-[#113f36]/5 text-[#113f36] animate-pulse'
                         }`}>
                           {log.status}

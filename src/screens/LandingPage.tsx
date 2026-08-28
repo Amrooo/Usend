@@ -45,10 +45,10 @@ const landingTranslations = {
     hubAccess: 'Hub Access',
     heroBadge: 'Multi-Courier E-Commerce Shipping Gateway',
     heroTitle: 'Unified Courier Hub For E-Commerce',
-    heroDesc: 'TRSH Logistics is a central hub connecting online merchants and users with last-mile couriers to deliver products seamlessly. Provide recipient details, designate item prices, and choose payment modes in one unified dashboard. Dispatch via integrated channels like Aramex, Noon, Fetchr, DHL, and FedEx.',
+    heroDesc: 'Usend Logistics is a central hub connecting online merchants and users with last-mile couriers to deliver products seamlessly. Provide recipient details, designate item prices, and choose payment modes in one unified dashboard. Dispatch via integrated channels like Aramex, Noon, Fetchr, DHL, and FedEx.',
     btnDownloadApp: 'Download App',
     btnLearnMore: 'Get Pricing Estimate',
-    aboutCaption: 'About TRSH Gateway',
+    aboutCaption: 'About Usend Gateway',
     aboutTitle: 'Connect Online Shops & Custom API Dispatches to UAE Courier Networks.',
     aboutDesc: 'Enter receiver parameters, set the exact payment value you want to collect, and determine options for cash or card. Integrated services like Aramex, Noon, and Fetchr automatically route jobs to verified carrier networks for fast delivery.',
     aboutAchievement: '98.5% On-Time Delivery Across UAE Domestic Networks',
@@ -57,7 +57,7 @@ const landingTranslations = {
     statClients: '98%+ Courier SLA Met',
     servicesBadge: 'Unified Gateway',
     servicesTitle: 'One integration. Connected courier channels.',
-    servicesDesc: 'From establishing customer delivery addresses and collecting custom cash payouts to multi-carrier dispatch, TRSH Logistics powers the complete logistics loop.',
+    servicesDesc: 'From establishing customer delivery addresses and collecting custom cash payouts to multi-carrier dispatch, Usend Logistics powers the complete logistics loop.',
     portalsBadge: 'All-In-One Unified Ecosystem',
     portalsTitle: 'Connected Ports For UAE E-Commerce Deliveries',
     portalsDesc: 'Gain direct access to respective interfaces built precisely for portal merchants, active driver fleets, retail customers, and country-wide administrators.',
@@ -92,7 +92,7 @@ const landingTranslations = {
     howStep2Desc: 'Choose the courier that fits. Route your shipments directly via Aramex, Noon, Fetchr, DHL, or FedEx integrated APIs.',
     howStep3Num: '03',
     howStep3Title: 'On-Demand Local Driver Assignment',
-    howStep3Desc: 'Verified driver fleets accept pending TRSH dispatch orders via the Courier Terminal, initiating optimized navigation and live tracking.',
+    howStep3Desc: 'Verified driver fleets accept pending Usend dispatch orders via the Courier Terminal, initiating optimized navigation and live tracking.',
     howStep4Num: '04',
     howStep4Title: 'Instant COD Settlement',
     howStep4Desc: 'Cash-on-Delivery collections are automatically updated on your merchant ledger. Settle and withdraw payments straight to your bank account.',
@@ -102,7 +102,7 @@ const landingTranslations = {
     teamSlogan: 'Skilled Experts in Logistics and E-Commerce Integration. Delivering GCC Domestic Excellence.',
     faqBadge: 'Common Questions',
     faqTitle: 'Frequently Answered Questions',
-    faq1Q: 'How does TRSH integrate with my existing online store?',
+    faq1Q: 'How does Usend integrate with my existing online store?',
     faq1A: 'We support one-click API integrations for WooCommerce, Shopify, Magento, and Wix. Once connected, orders are synced in real-time, allowing immediate waybill generation.',
     faq2Q: 'Do you support international parcel shipping?',
     faq2A: 'International shipping across GCC states (Riyadh, Doha, Bahrain, Muscat) and worldwide is currently under construction and is marked as "Coming Soon" with live trials launching next quarter.',
@@ -112,14 +112,14 @@ const landingTranslations = {
     faq4A: 'Our smart wallet tracks driver feedback instantly. Once the receiver confirms signature and pays, the amount is credited to your Merchant Wallet to withdraw anytime.',
     footerLead: 'Accelerate E-Commerce Deliveries & Settle Payments Instantly',
     footerLeadDesc: 'Link your store with our multi-courier aggregator and optimize your delivery operational speed.',
-    copyright: '© 2026 TRSH LOGISTICS TECHNOLOGIES. REGULATION COMPLIANT IN UAE.',
-    botGreeting: 'Hello! I am TRSH AI Assistant. Enter any Order Number (e.g., REQ-1001) to track your delivery, or ask about our e-commerce integrations.',
+    copyright: '© 2026 USEND LOGISTICS TECHNOLOGIES. REGULATION COMPLIANT IN UAE.',
+    botGreeting: 'Hello! I am Usend AI Assistant. Enter any Order Number (e.g., REQ-1001) to track your delivery, or ask about our e-commerce integrations.',
     smartSolutionsTitle: 'Smart Solutions',
     smartSolutionsForShipping: 'for Shipping',
-    smartSolutionsDesc: 'TRSH Logistics offers shipping tools that simplify logistics for modern businesses',
+    smartSolutionsDesc: 'Usend Logistics offers shipping tools that simplify logistics for modern businesses',
     startNowBtn: 'Start Now',
     talkToSalesBtn: 'Talk to Sales',
-    aboutUsCaption: 'About TRSH Gateway',
+    aboutUsCaption: 'About Usend Gateway',
     aboutUsTitle: 'About Us',
     successRate: 'Success Rate In On-Time Product Delivery',
   },
@@ -1391,7 +1391,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                     onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
                     className="w-full p-6 text-start flex items-center justify-between gap-4 focus:outline-hidden cursor-pointer"
                   >
-                    <span className="font-extrabold text-[13px] md:text-sm text-slate-900 tracking-tight">{item.q}</span>
+                    <span className="font-extrabold text-[15px] md:text-sm text-slate-900 tracking-tight">{item.q}</span>
                     <span className={`w-6 h-6 rounded-full bg-[#113f36]/10 text-[#113f36] flex items-center justify-center shrink-0 transition-transform duration-300 ${activeFaq === idx ? 'rotate-180' : ''}`}>
                       <ChevronDown className="w-3.5 h-3.5" />
                     </span>
@@ -1404,7 +1404,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                         exit={{ height: 0 }}
                         className="overflow-hidden"
                       >
-                        <p className="px-6 pb-6 text-xs md:text-[13px] text-slate-500 font-medium leading-relaxed border-t border-slate-50 pt-4">
+                        <p className="px-6 pb-6 text-xs md:text-[15px] text-slate-500 font-medium leading-relaxed border-t border-slate-50 pt-4">
                           {item.a}
                         </p>
                       </motion.div>

@@ -21,7 +21,7 @@ export default function Footer({ onNavigate, setLoginRole, setLoginEmail, setLog
           {/* Large transparent watermark background logo */}
           <div className="absolute inset-x-0 bottom-4 text-center select-none pointer-events-none z-0">
             <span className="text-[15vw] font-black tracking-widest text-slate-900/[0.03] uppercase leading-none block font-sans">
-              {isRTL ? 'تي آر إس إتش' : 'TRSH'}
+              {isRTL ? 'يوسند' : 'Usend'}
             </span>
           </div>
 
@@ -33,7 +33,7 @@ export default function Footer({ onNavigate, setLoginRole, setLoginEmail, setLog
                 <div className="flex items-center gap-3">
                   <LogoIcon className="h-12 w-auto" />
                   <div className="flex flex-col text-start">
-                    <span className="text-sm font-black tracking-widest text-slate-900 uppercase leading-none">{isRTL ? 'تي آر إس إتش' : 'TRSH'}</span>
+                    <span className="text-sm font-black tracking-widest text-slate-900 uppercase leading-none">{isRTL ? 'يوسند' : 'Usend'}</span>
                     <span className="text-[12px] font-bold uppercase text-slate-700 tracking-wider leading-none mt-1">{isRTL ? 'الشحن الذكي' : 'Smart Shipping'}</span>
                   </div>
                 </div>
@@ -45,8 +45,8 @@ export default function Footer({ onNavigate, setLoginRole, setLoginEmail, setLog
               </div>
 
               <div className="space-y-4">
-                <h4 className="text-[13px] font-black uppercase text-slate-800 tracking-widest font-sans">{isRTL ? 'بوابات المنظومة' : 'Connect Hubs'}</h4>
-                <ul className="space-y-2 text-[13px] font-bold text-slate-600 font-sans">
+                <h4 className="text-[15px] font-black uppercase text-slate-800 tracking-widest font-sans">{isRTL ? 'بوابات المنظومة' : 'Connect Hubs'}</h4>
+                <ul className="space-y-2 text-[15px] font-bold text-slate-600 font-sans">
                   <li>
                     <span 
                       className="hover:text-[#113f36] transition-colors cursor-pointer" 
@@ -78,7 +78,7 @@ export default function Footer({ onNavigate, setLoginRole, setLoginEmail, setLog
 
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-12 border-t border-slate-200 text-[13px] font-black text-slate-500 uppercase tracking-widest font-sans">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-12 border-t border-slate-200 text-[15px] font-black text-slate-500 uppercase tracking-widest font-sans">
               <p>{content.copyright}</p>
               <div className="flex items-center gap-8">
                 <a href="#" className="hover:text-[#113f36] transition-colors">{isRTL ? 'سياسة الخصوصية' : 'Privacy Policy'}</a>

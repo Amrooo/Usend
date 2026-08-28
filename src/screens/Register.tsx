@@ -109,7 +109,7 @@ const Register: React.FC<RegisterProps> = ({ onNavigate }) => {
         
         <button 
           onClick={() => onNavigate('login')}
-          className="flex items-center gap-2 text-white/40 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest"
+          className="flex items-center gap-2 text-white/40 hover:text-white transition-colors text-sm font-bold uppercase tracking-widest"
         >
           <ChevronLeft className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />
           {isRTL ? 'تسجيل الدخول' : 'Sign In'}

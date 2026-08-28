@@ -526,7 +526,7 @@ export default function MerchantBatchOrders({ onNavigate }: MerchantBatchOrdersP
                     </div>
                     <div>
                       <h2 className="font-bold text-lg text-zinc-900">Commercial Carrier Booking details</h2>
-                      <span className="text-[13px] text-zinc-400">Ingest dimensions and coordinates for heavy containerized fleet dispatch</span>
+                      <span className="text-[15px] text-zinc-400">Ingest dimensions and coordinates for heavy containerized fleet dispatch</span>
                     </div>
                   </div>
 

@@ -67,7 +67,7 @@ export default function PortalSidebar({ currentScreen, onNavigate }: PortalSideb
             <LogoIcon className="w-9 h-9" />
           </div>
           <div>
-            <h1 className="text-[13px] font-black uppercase tracking-wider text-[#344633] leading-none">USend Portal</h1>
+            <h1 className="text-[15px] font-black uppercase tracking-wider text-[#344633] leading-none">USend Portal</h1>
             <span className="text-[11px] text-[#6D7D6A] font-bold uppercase tracking-widest mt-1 block">{isMerchant ? 'Merchant Access' : 'Consumer Access'}</span>
           </div>
         </div>

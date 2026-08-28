@@ -146,13 +146,13 @@ export default function Hub({ onNavigate }: HubProps) {
                     <div className="w-12 h-12 rounded-2xl bg-zinc-50 border border-zinc-100 shadow-sm flex items-center justify-center group-hover:bg-indigo-50/10 group-hover:scale-105 duration-300">
                       {terminal.icon}
                     </div>
-                    <span className={`text-[13px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${terminal.tagColor}`}>
+                    <span className={`text-[15px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${terminal.tagColor}`}>
                       {terminal.badgeText}
                     </span>
                   </div>
 
                   <div className="space-y-1">
-                    <p className="text-[13px] font-extrabold text-zinc-400 tracking-widest uppercase">
+                    <p className="text-[15px] font-extrabold text-zinc-400 tracking-widest uppercase">
                       {terminal.subtitle}
                     </p>
                     <h2 className="text-lg font-black text-zinc-950 flex items-center gap-1 group-hover:text-[#113f36] transition-colors duration-300">
@@ -175,7 +175,7 @@ export default function Hub({ onNavigate }: HubProps) {
                       className="w-10 h-10 rounded-xl object-cover border border-zinc-100 filter grayscale group-hover:grayscale-0 duration-500"
                     />
                     <div>
-                      <p className="text-[13px] font-black uppercase text-zinc-400 tracking-wider">
+                      <p className="text-[15px] font-black uppercase text-zinc-400 tracking-wider">
                         {terminal.metricLabel}
                       </p>
                       <p className="text-xs font-bold text-zinc-800">
@@ -209,7 +209,7 @@ export default function Hub({ onNavigate }: HubProps) {
             
             <div className="grid grid-cols-2 gap-8 col-span-1 md:col-span-2">
                <div>
-                  <h4 className="text-zinc-900 font-extrabold text-[13px] uppercase tracking-[0.3em] mb-6 opacity-40">Network</h4>
+                  <h4 className="text-zinc-900 font-extrabold text-[15px] uppercase tracking-[0.3em] mb-6 opacity-40">Network</h4>
                   <ul className="space-y-3 text-zinc-600 text-xs font-bold">
                     <li><a href="#" className="hover:text-amber-600 transition-colors">Express Depots</a></li>
                     <li><a href="#" className="hover:text-amber-600 transition-colors">Surface Fleet</a></li>
@@ -218,7 +218,7 @@ export default function Hub({ onNavigate }: HubProps) {
                </div>
 
                <div>
-                  <h4 className="text-zinc-900 font-extrabold text-[13px] uppercase tracking-[0.3em] mb-6 opacity-40">Resources</h4>
+                  <h4 className="text-zinc-900 font-extrabold text-[15px] uppercase tracking-[0.3em] mb-6 opacity-40">Resources</h4>
                   <ul className="space-y-3 text-zinc-600 text-xs font-bold">
                     <li><a href="#" className="hover:text-[#113f36] transition-colors">API Docs</a></li>
                     <li><a href="#" className="hover:text-[#113f36] transition-colors">Governance</a></li>
@@ -229,11 +229,11 @@ export default function Hub({ onNavigate }: HubProps) {
          </div>
 
          <div className="max-w-[1400px] mx-auto pt-10 border-t border-zinc-100 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="text-[13px] font-black text-zinc-400 uppercase tracking-[0.4em]">
+            <div className="text-[15px] font-black text-zinc-400 uppercase tracking-[0.4em]">
               © 2026 USEND SYSTEMS. ARCHITECTED IN UAE.
             </div>
             
-            <div className="flex items-center gap-8 text-[13px] font-black text-zinc-400 uppercase tracking-[0.4em]">
+            <div className="flex items-center gap-8 text-[15px] font-black text-zinc-400 uppercase tracking-[0.4em]">
                <a href="#" className="hover:text-[#113f36] transition-colors">Privacy</a>
                <a href="#" className="hover:text-[#113f36] transition-colors">Terms</a>
             </div>

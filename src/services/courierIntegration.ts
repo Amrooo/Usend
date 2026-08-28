@@ -109,7 +109,7 @@ export const defaultAramexCreds: CourierCredentials = {
   accountEntity: "DXB",
   accountCountryCode: "AE",
   source: "0",
-  username: "care@trsh.ae",
+  username: "care@usend.ae",
   password: "#Usend2027",
   apiEnv: 'production'
 };

@@ -1,0 +1,34 @@
+#!/usr/bin/expect -f
+set timeout 30
+
+spawn ssh -o StrictHostKeyChecking=no master_awqbxuyqcq@134.209.28.27 "cat << 'JS' > /home/1150801.cloudwaysapps.com/mksqztfeks/public_html/test-health.cjs
+async function run() {
+  const server = require('./functions/server.cjs');
+  const engine = await server.getCourierEngine();
+  console.log('--- ARAMEX HEALTH ---');
+  try {
+    const aramexRes = await engine.testConnection('aramex');
+    console.log(JSON.stringify(aramexRes, null, 2));
+  } catch (e) {
+    console.log('Aramex Error:', e.message);
+  }
+  console.log('--- NOON HEALTH ---');
+  try {
+    const noonRes = await engine.testConnection('noon');
+    console.log(JSON.stringify(noonRes, null, 2));
+  } catch (e) {
+    console.log('Noon Error:', e.message);
+  }
+  process.exit(0);
+}
+run();
+JS
+node /home/1150801.cloudwaysapps.com/mksqztfeks/public_html/test-health.cjs
+"
+expect {
+    -nocase "password:" {
+        send "rW9MJAfvXn4n\r"
+        exp_continue
+    }
+    eof
+}

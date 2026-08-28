@@ -334,7 +334,7 @@ export default function MerchantWallet({ onNavigate }: MerchantWalletProps) {
                 </div>
                 <div className="space-y-1">
                   <h4 className="font-bold text-sm text-zinc-800">Processing Stripe UAE Gateway Settle...</h4>
-                  <p className="text-[13px] text-zinc-400">Verifying 3D secure and registering order at ae.stripe.com...</p>
+                  <p className="text-[15px] text-zinc-400">Verifying 3D secure and registering order at ae.stripe.com...</p>
                 </div>
               </div>
             ) : (

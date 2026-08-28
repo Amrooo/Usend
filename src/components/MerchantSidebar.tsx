@@ -92,11 +92,11 @@ export default function MerchantSidebar({ currentScreen, onNavigate }: SidebarPr
     <div className="flex flex-col h-full bg-[#EFF3EE]/95 text-zinc-800 select-none border-r border-[#E2ECE0]">
       <div className="p-6 pb-5 flex items-center justify-between">
         <div className="flex items-center gap-3 cursor-pointer" onClick={() => handleItemClick('landing_page')}>
-          <div className="w-10 h-10 rounded-2xl bg-white border border-[#CBD7C9] flex items-center justify-center leading-none shrink-0 shadow-sm overflow-hidden p-1">
-            <LogoIcon className="w-full h-full" />
+          <div className="w-14 h-14 rounded-2xl bg-white border border-[#CBD7C9] flex items-center justify-center leading-none shrink-0 shadow-sm overflow-hidden p-1">
+            <LogoIcon className="w-full h-full p-1" />
           </div>
           <div>
-            <h1 className="text-[13px] font-black uppercase tracking-wider text-[#344633] leading-none">USend Portal</h1>
+            <h1 className="text-[15px] font-black uppercase tracking-wider text-[#344633] leading-none">USend Portal</h1>
             <span className="text-[11px] text-[#6D7D6A] font-bold uppercase tracking-widest mt-1 block">Merchant Access</span>
           </div>
         </div>
@@ -171,7 +171,7 @@ export default function MerchantSidebar({ currentScreen, onNavigate }: SidebarPr
       <div className={`md:hidden flex items-center justify-between p-4 bg-white text-zinc-800 sticky top-0 z-40 border-b border-[#e2e8f0] shadow-sm`}>
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => handleItemClick('landing_page')}>
           <div className="w-8 h-8 rounded-xl bg-white border border-[#CBD7C9] flex items-center justify-center overflow-hidden p-1">
-            <LogoIcon className="w-full h-full" />
+            <LogoIcon className="w-full h-full p-1" />
           </div>
           <span className="font-bold text-xs tracking-widest uppercase text-zinc-900">USend Merchant</span>
         </div>

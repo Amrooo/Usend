@@ -644,8 +644,8 @@ const ContactUs = ({ onNavigate }: LandingPageProps) => {
               </div>
 
               <div className="space-y-4">
-                <h4 className="text-[13px] font-black uppercase text-slate-800 tracking-widest font-sans">{isRTL ? 'بوابات المنظومة' : 'Connect Hubs'}</h4>
-                <ul className="space-y-2 text-[13px] font-bold text-slate-600 font-sans">
+                <h4 className="text-[15px] font-black uppercase text-slate-800 tracking-widest font-sans">{isRTL ? 'بوابات المنظومة' : 'Connect Hubs'}</h4>
+                <ul className="space-y-2 text-[15px] font-bold text-slate-600 font-sans">
                   <li>
                     <span 
                       className="hover:text-[#113f36] transition-colors cursor-pointer" 
@@ -677,7 +677,7 @@ const ContactUs = ({ onNavigate }: LandingPageProps) => {
 
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-12 border-t border-slate-200 text-[13px] font-black text-slate-500 uppercase tracking-widest font-sans">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-12 border-t border-slate-200 text-[15px] font-black text-slate-500 uppercase tracking-widest font-sans">
               <p>{content.copyright}</p>
               <div className="flex items-center gap-8">
                 <a href="#" className="hover:text-[#113f36] transition-colors">{isRTL ? 'سياسة الخصوصية' : 'Privacy Policy'}</a>

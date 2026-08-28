@@ -47,7 +47,7 @@ export default function Header({ onNavigate, setLoginRole, setLoginModalOpen, co
       id: '3',
       type: 'api',
       titleEn: 'Welcome Message', titleAr: 'رسالة ترحيبية',
-      descEn: 'Welcome to TRSH logistics platform.', descAr: 'مرحبا بك في منصة تي آر إس إتش اللوجستية.',
+      descEn: 'Welcome to Usend logistics platform.', descAr: 'مرحبا بك في منصة يوسند اللوجستية.',
       timeEn: '1d ago', timeAr: 'قبل يوم',
       read: true
     }
@@ -118,14 +118,14 @@ export default function Header({ onNavigate, setLoginRole, setLoginModalOpen, co
           >
             <LogoIcon className={`h-10 md:h-13 w-auto transition-all duration-300 ${!isSolid ? 'brightness-0 invert' : ''}`} />
             <div className="hidden md:flex flex-col text-start">
-              <span className={`text-lg md:text-xl font-black tracking-tight leading-none transition-colors duration-300 ${isSolid ? 'text-slate-900' : 'text-white'}`}>{isRTL ? 'تي آر إس إتش' : 'TRSH'}</span>
+              <span className={`text-lg md:text-xl font-black tracking-tight leading-none transition-colors duration-300 ${isSolid ? 'text-slate-900' : 'text-white'}`}>{isRTL ? 'يوسند' : 'Usend'}</span>
               <span className={`text-[9px] md:text-[10px] font-bold uppercase tracking-wider leading-none mt-1 md:mt-1.5 transition-colors duration-300 ${isSolid ? 'text-[#113f36]' : 'text-[#cca073]'}`}>{isRTL ? 'الشحن الذكي' : 'Smart Shipping'}</span>
             </div>
           </div>
         </div>
         
         {/* Navigation Links */}
-        <div className={`hidden md:flex items-center gap-6 text-[13px] font-medium transition-all duration-300 px-8 py-3 rounded-full ${
+        <div className={`hidden md:flex items-center gap-6 text-[15px] font-medium transition-all duration-300 px-8 py-3 rounded-full ${
           isSolid 
             ? 'text-slate-700 bg-slate-50 border border-slate-200/60' 
             : 'text-white bg-white/10 backdrop-blur-md border border-white/20'
@@ -349,7 +349,7 @@ export default function Header({ onNavigate, setLoginRole, setLoginModalOpen, co
           ) : (
             <button
               onClick={() => { setLoginRole('user'); setLoginModalOpen(true); }}
-              className={`px-3 sm:px-5 py-1.5 sm:py-2.5 rounded-lg font-bold transition-all cursor-pointer shadow-sm text-[11px] sm:text-[13px] flex items-center gap-1.5 sm:gap-2 ${
+              className={`px-3 sm:px-5 py-1.5 sm:py-2.5 rounded-lg font-bold transition-all cursor-pointer shadow-sm text-[11px] sm:text-[15px] flex items-center gap-1.5 sm:gap-2 ${
                 isSolid 
                   ? 'bg-[#113f36] hover:bg-[#0d3029] text-white' 
                   : 'bg-white hover:bg-slate-100 text-zinc-950 shadow-md'

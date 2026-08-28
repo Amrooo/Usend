@@ -616,7 +616,7 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                           onClick={() => {
                             alert(t('leave_review_prompt') || "Rate your experience with the courier (1-5 stars):\n\n★★★★★");
                           }}
-                          className="w-full py-3.5 border-2 border-zinc-200 text-zinc-900 hover:bg-zinc-50 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-[13px] uppercase tracking-widest cursor-pointer"
+                          className="w-full py-3.5 border-2 border-zinc-200 text-zinc-900 hover:bg-zinc-50 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-[15px] uppercase tracking-widest cursor-pointer"
                         >
                           {t('rate_courier') || 'Rate Courier & Review'}
                         </button>
@@ -629,7 +629,7 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
                           updateRequestStatus(selectedOrder.id, 'Pending', 'RMA Processing');
                           setSelectedOrder(null);
                         }}
-                        className="w-full py-3.5 bg-zinc-900 hover:bg-zinc-800 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-[13px] uppercase tracking-widest cursor-pointer"
+                        className="w-full py-3.5 bg-zinc-900 hover:bg-zinc-800 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-[15px] uppercase tracking-widest cursor-pointer"
                       >
                         <Package className="w-4 h-4" />
                         {t('create_rma') || 'Create Return Request (RMA)'}

@@ -694,7 +694,11 @@ app.post("/api/courier/test-connection", express.json(), async (req, res) => {
 
 app.post("/api/courier/rate", express.json(), async (req, res) => {
   try {
-    const { courierId, payload, credentials, environment } = req.body;
+    const { courierId, payload, environment } = req.body;
+    let { credentials } = req.body;
+    if (!credentials || Object.keys(credentials).length === 0) {
+      credentials = serverCourierCredentials?.[courierId]?.[environment === 'production' ? 'productionCreds' : 'sandboxCreds'] || {};
+    }
     const engine = await getCourierEngine();
     const adapter = engine.getAdapter(courierId);
     const result = await adapter.calculateRate(payload, credentials, environment);
@@ -706,7 +710,11 @@ app.post("/api/courier/rate", express.json(), async (req, res) => {
 
 app.post("/api/courier/shipment", express.json(), async (req, res) => {
   try {
-    const { courierId, payload, credentials, environment } = req.body;
+    const { courierId, payload, environment } = req.body;
+    let { credentials } = req.body;
+    if (!credentials || Object.keys(credentials).length === 0) {
+      credentials = serverCourierCredentials?.[courierId]?.[environment === 'production' ? 'productionCreds' : 'sandboxCreds'] || {};
+    }
     const engine = await getCourierEngine();
     const adapter = engine.getAdapter(courierId);
     const result = await adapter.createShipment(payload, credentials, environment);
@@ -718,7 +726,11 @@ app.post("/api/courier/shipment", express.json(), async (req, res) => {
 
 app.post("/api/courier/track", express.json(), async (req, res) => {
   try {
-    const { courierId, trackingId, credentials, environment } = req.body;
+    const { courierId, trackingId, environment } = req.body;
+    let { credentials } = req.body;
+    if (!credentials || Object.keys(credentials).length === 0) {
+      credentials = serverCourierCredentials?.[courierId]?.[environment === 'production' ? 'productionCreds' : 'sandboxCreds'] || {};
+    }
     const engine = await getCourierEngine();
     const adapter = engine.getAdapter(courierId);
     const result = await adapter.trackShipment(trackingId, credentials, environment);
@@ -730,7 +742,11 @@ app.post("/api/courier/track", express.json(), async (req, res) => {
 
 app.post("/api/courier/cancel", express.json(), async (req, res) => {
   try {
-    const { courierId, trackingId, credentials, environment } = req.body;
+    const { courierId, trackingId, environment } = req.body;
+    let { credentials } = req.body;
+    if (!credentials || Object.keys(credentials).length === 0) {
+      credentials = serverCourierCredentials?.[courierId]?.[environment === 'production' ? 'productionCreds' : 'sandboxCreds'] || {};
+    }
     const engine = await getCourierEngine();
     const adapter = engine.getAdapter(courierId);
     const result = await adapter.cancelShipment(trackingId, credentials, environment);

@@ -1,0 +1,20 @@
+#!/usr/bin/expect -f
+set timeout 30
+
+spawn ssh -o StrictHostKeyChecking=no master_awqbxuyqcq@134.209.28.27 "curl -s -X POST -H 'Content-Type: application/json' http://127.0.0.1:3005/api/courier/getRates -d '{\"pickupCity\":\"Dubai\",\"pickupCountry\":\"AE\",\"deliveryCity\":\"Abu Dhabi\",\"deliveryCountry\":\"AE\",\"weight\":1,\"paymentType\":\"guest\",\"courier\":\"aramex\"}'"
+expect {
+    -nocase "password:" {
+        send "rW9MJAfvXn4n\r"
+        exp_continue
+    }
+    eof
+}
+
+spawn ssh -o StrictHostKeyChecking=no master_awqbxuyqcq@134.209.28.27 "curl -s -X POST -H 'Content-Type: application/json' http://127.0.0.1:3005/api/courier/getRates -d '{\"pickupCity\":\"Dubai\",\"pickupCountry\":\"AE\",\"deliveryCity\":\"Abu Dhabi\",\"deliveryCountry\":\"AE\",\"weight\":1,\"paymentType\":\"guest\",\"courier\":\"noon\"}'"
+expect {
+    -nocase "password:" {
+        send "rW9MJAfvXn4n\r"
+        exp_continue
+    }
+    eof
+}

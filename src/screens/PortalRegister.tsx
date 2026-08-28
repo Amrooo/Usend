@@ -163,7 +163,7 @@ export default function PortalRegister({ onNavigate }: { onNavigate: (s: Screen)
                  <input required type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} minLength={6} className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all font-semibold" />
                  <input required type="tel" placeholder="+971 XXXXXX" value={phone} onChange={handlePhoneChange} className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all font-semibold font-mono tracking-widest" dir="ltr" />
                  
-                 <button disabled={loading || success} type="submit" className="w-full py-4 mt-4 bg-brand hover:bg-[brand/90] text-white font-bold uppercase tracking-widest text-[13px] rounded-xl transition-all shadow-md active:scale-95 flex justify-center items-center h-14">
+                 <button disabled={loading || success} type="submit" className="w-full py-4 mt-4 bg-brand hover:bg-[brand/90] text-white font-bold uppercase tracking-widest text-[15px] rounded-xl transition-all shadow-md active:scale-95 flex justify-center items-center h-14">
                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : success ? "Account Created!" : "Register Setup"}
                  </button>
              </form>

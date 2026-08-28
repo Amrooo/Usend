@@ -213,7 +213,7 @@ const INITIAL_COURIER_CONFIGS: Record<string, CourierIntegrationConfig> = {
       version: "v1"
     },
     productionCreds: {
-      username: "care@trsh.ae",
+      username: "care@usend.ae",
       password: "#Usend2027",
       accountNumber: "75788705",
       accountPin: "217147",

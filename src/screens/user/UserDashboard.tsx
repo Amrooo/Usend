@@ -234,11 +234,11 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 rounded-2xl border border-zinc-100 bg-white">
-                  <p className="text-[13px] font-black text-zinc-400 uppercase tracking-widest mb-1">Order ID</p>
+                  <p className="text-[15px] font-black text-zinc-400 uppercase tracking-widest mb-1">Order ID</p>
                   <p className="text-sm font-bold text-zinc-900">{selectedOrder.id}</p>
                 </div>
                 <div className="p-4 rounded-2xl border border-zinc-100 bg-white">
-                  <p className="text-[13px] font-black text-zinc-400 uppercase tracking-widest mb-1">Date</p>
+                  <p className="text-[15px] font-black text-zinc-400 uppercase tracking-widest mb-1">Date</p>
                   <p className="text-sm font-bold text-zinc-900">{selectedOrder.date}</p>
                 </div>
               </div>
@@ -249,7 +249,7 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
                     <Package className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-[13px] font-black text-zinc-400 uppercase tracking-widest">Items</p>
+                    <p className="text-[15px] font-black text-zinc-400 uppercase tracking-widest">Items</p>
                     <p className="text-sm font-bold text-zinc-900">{selectedOrder.items}</p>
                   </div>
                 </div>
@@ -258,7 +258,7 @@ export default function UserDashboard({ onNavigate }: UserDashboardProps) {
                     <MapPin className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-[13px] font-black text-zinc-400 uppercase tracking-widest">Delivery Address</p>
+                    <p className="text-[15px] font-black text-zinc-400 uppercase tracking-widest">Delivery Address</p>
                     <p className="text-sm font-medium text-zinc-600">{selectedOrder.address}</p>
                   </div>
                 </div>

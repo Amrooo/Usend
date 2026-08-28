@@ -815,7 +815,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
                 <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold text-sm bg-white transition-all ${isActive ? 'border-brand text-brand' : isCompleted ? 'border-zinc-300 text-zinc-400' : 'border-zinc-300 text-zinc-400'}`}>
                   {isCompleted ? <CheckCircle2 className="w-4 h-4 text-zinc-400" /> : s.id}
                 </div>
-                <span className={`text-[13px] md:text-xs font-semibold absolute -bottom-6 w-24 text-center ${isActive ? 'text-brand' : 'text-zinc-400'}`}>
+                <span className={`text-[15px] md:text-xs font-semibold absolute -bottom-6 w-24 text-center ${isActive ? 'text-brand' : 'text-zinc-400'}`}>
                   {s.label}
                 </span>
               </div>
@@ -1387,7 +1387,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
                     </div>
 
                     <p className="text-xs text-amber-950/90 font-medium leading-relaxed">
-                      Your order has been recorded locally under <strong>TRSH (FZC) (#75788705 - DXB)</strong>, but Aramex API returned: <span className="font-mono font-bold text-amber-900">{dispatchApiError || "ClientInfo - Failed to login using Portal Service"}</span>.
+                      Your order has been recorded locally under <strong>Usend (FZC) (#75788705 - DXB)</strong>, but Aramex API returned: <span className="font-mono font-bold text-amber-900">{dispatchApiError || "ClientInfo - Failed to login using Portal Service"}</span>.
                     </p>
                     <p className="text-[11px] text-amber-800/90 font-semibold bg-amber-100/70 p-3 rounded-xl border border-amber-200/80">
                       💡 <strong>Why isn't this order on your Aramex Dashboard yet?</strong> Aramex Web Services requires <strong>Web Services (API) Access</strong> to be explicitly enabled by Aramex Account Support for Account #75788705.
@@ -1416,7 +1416,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
                     </div>
 
                     <p className="text-xs text-emerald-950/90 font-medium leading-relaxed">
-                      Your order has been automatically dispatched to Aramex Production Logistics API using registered account <strong>TRSH (FZC) (#75788705 - DXB)</strong>.
+                      Your order has been automatically dispatched to Aramex Production Logistics API using registered account <strong>Usend (FZC) (#75788705 - DXB)</strong>.
                     </p>
 
                     <div className="bg-white/90 border border-emerald-200 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
