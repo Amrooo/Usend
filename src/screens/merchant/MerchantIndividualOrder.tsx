@@ -326,6 +326,19 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
 
   const stripeOptions = useMemo(() => stripeClientSecret ? { clientSecret: stripeClientSecret } : null, [stripeClientSecret]);
 
+  // Quick Wallet Top-up: switch to card checkout to fund wallet
+  const handleQuickWalletTopup = (amount: number) => {
+    setCheckoutPaymentMethod('card');
+    setIsCheckoutModalOpen(true);
+    window.dispatchEvent(new CustomEvent('app_toast', {
+      detail: {
+        title: 'Top-Up via Card',
+        message: `Complete card payment to add AED ${amount} to your wallet balance.`,
+        type: 'info'
+      }
+    }));
+  };
+
   // Execute Payment and Dispatch to Courier
   const handleExecutePaymentAndDispatch = async (paymentMethod: 'wallet' | 'card', stripePaymentIntent?: any) => {
     if (paymentMethod === 'wallet' && walletBalance < dynamicPricing.total) {

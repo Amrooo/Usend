@@ -208,12 +208,14 @@ async function requireAuth(req: any, res: express.Response, next: express.NextFu
   }
 }
 
-// Apply auth middleware to all sensitive courier and admin routes.
-// Webhooks, health, SSE, and payment config are intentionally public.
-const PROTECTED_ROUTE_PREFIXES = ['/api/courier/', '/api/admin/', '/api/aramex/'];
+// Apply auth middleware to ONLY admin/sensitive routes.
+// Courier rate, shipment, track, cancel are PUBLIC (guest-accessible) — rate limiting protects them.
+// Courier test-connection remains protected (admin function).
+const PROTECTED_ROUTE_PREFIXES = ['/api/admin/', '/api/courier/test-connection'];
 app.use((req: any, res: express.Response, next: express.NextFunction) => {
-  const isProtected = PROTECTED_ROUTE_PREFIXES.some(prefix => req.path.startsWith(prefix));
-  // /api/courier/rate and /api/courier/test-connection are also protected
+  const isProtected = PROTECTED_ROUTE_PREFIXES.some(prefix => req.path.startsWith(prefix))
+    || req.path.startsWith('/api/aramex/') // aramex proxy stays auth-protected
+    ;
   if (isProtected) {
     return requireAuth(req, res, next);
   }
@@ -1044,98 +1046,115 @@ const isProd = process.env.NODE_ENV === "production";
 let serverCourierCredentials: any = null;
 
 async function startServer() {
-  // Non-blocking firestore seed for courier integrations configuration
-  if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY || process.env.FIRESTORE_EMULATOR_HOST) {
+  // Non-blocking Firestore sync for courier integrations configuration
+  // Run whenever Firebase Admin is initialized (not just when service account key is present).
+  // In production on Cloudways, Firebase may be initialized via GOOGLE_APPLICATION_CREDENTIALS
+  // or application default credentials without FIREBASE_SERVICE_ACCOUNT_KEY being set explicitly.
+  const firebaseInitialized = admin.apps.length > 0;
+  if (firebaseInitialized) {
     try {
-      // 1. Listen to private courier credentials
-      dbAdmin.collection('private_settings').doc('courier_credentials').onSnapshot(
-        (docSnap) => {
+      // 1. Eagerly load credentials once on startup (non-blocking)
+      dbAdmin.collection('private_settings').doc('courier_credentials').get()
+        .then((docSnap: any) => {
           if (docSnap.exists) {
             serverCourierCredentials = docSnap.data();
-            console.log("[Firestore Sync] Loaded secure courier credentials from private_settings.");
+            console.log('[Firestore Sync] Eagerly loaded courier credentials on startup.');
+          }
+        })
+        .catch((err: any) => console.warn('[Firestore Sync] Eager load failed (non-blocking):', err.message));
+
+      // 2. Live listener to keep credentials fresh on any admin update
+      dbAdmin.collection('private_settings').doc('courier_credentials').onSnapshot(
+        (docSnap: any) => {
+          if (docSnap.exists) {
+            serverCourierCredentials = docSnap.data();
+            console.log('[Firestore Sync] Loaded secure courier credentials from private_settings.');
           }
         },
-        (err) => {
-          console.error("[Firestore Sync] Failed to read private_settings/courier_credentials:", err.message);
+        (err: any) => {
+          console.error('[Firestore Sync] Failed to read private_settings/courier_credentials:', err.message);
         }
       );
 
-      // 2. Seed public and private configs if they don't exist
-      dbAdmin.collection('settings').doc('courier_configs').get().then((docSnap) => {
-      if (!docSnap.exists) {
-        const initialPublicConfigs = {
-          aramex: {
-            id: 'aramex',
-            name: 'Aramex Express',
-            status: 'Active',
-            currentMode: 'production',
-            baseUrlUat: 'ws.aramex.net',
-            baseUrlProd: 'ws.aramex.net',
-            connectionStatus: 'UNTESTED'
-          },
-          noon: {
-            id: 'noon',
-            name: 'Noon Hyperlocal',
-            status: 'Active',
-            currentMode: 'sandbox',
-            baseUrlUat: 'https://food-api-team.noonstg.team',
-            baseUrlProd: 'https://food-api.noon.com',
-            connectionStatus: 'UNTESTED'
-          }
-        };
-        
-        const initialPrivateConfigs = {
-          aramex: {
-            sandboxCreds: {
-              username: "testingapi@aramex.com",
-              password: "R123456789$r",
-              accountNumber: "45796",
-              accountPin: "116216",
-              accountEntity: "DXB",
-              accountCountryCode: "AE",
-              source: "24",
-              version: "v1"
+      // 3. Seed public and private configs if they don't exist
+      dbAdmin.collection('settings').doc('courier_configs').get().then((docSnap: any) => {
+        if (!docSnap.exists) {
+          const initialPublicConfigs = {
+            aramex: {
+              id: 'aramex',
+              name: 'Aramex Express',
+              status: 'Active',
+              currentMode: 'production',
+              baseUrlUat: 'ws.aramex.net',
+              baseUrlProd: 'ws.aramex.net',
+              connectionStatus: 'UNTESTED'
             },
-            productionCreds: {
-              username: "care@trsh.ae",
-              password: "#Usend2027",
-              accountNumber: "75788705",
-              accountPin: "217147",
-              accountEntity: "DXB",
-              accountCountryCode: "AE",
-              source: "0",
-              version: "v1.0"
+            noon: {
+              id: 'noon',
+              name: 'Noon Hyperlocal',
+              status: 'Active',
+              currentMode: 'sandbox',
+              baseUrlUat: 'https://food-api-team.noonstg.team',
+              baseUrlProd: 'https://food-api-team.noon.team',
+              connectionStatus: 'UNTESTED'
             }
-          },
-          noon: {
-            sandboxCreds: {
-              apiKey: 'noon_secret_key_123',
-              storeId: ''
+          };
+
+          // SECURITY: Production credentials are seeded from server env vars, never hardcoded here.
+          const initialPrivateConfigs = {
+            aramex: {
+              sandboxCreds: {
+                username: process.env.ARAMEX_USERNAME || 'testingapi@aramex.com',
+                password: process.env.ARAMEX_PASSWORD || 'R123456789$r',
+                accountNumber: process.env.ARAMEX_ACCOUNT_NUMBER || '45796',
+                accountPin: process.env.ARAMEX_ACCOUNT_PIN || '116216',
+                accountEntity: process.env.ARAMEX_ACCOUNT_ENTITY || 'DXB',
+                accountCountryCode: process.env.ARAMEX_ACCOUNT_COUNTRY_CODE || 'AE',
+                source: process.env.ARAMEX_SOURCE || '24',
+                version: process.env.ARAMEX_VERSION || 'v1'
+              },
+              productionCreds: {
+                username: process.env.ARAMEX_PROD_USERNAME || 'care@trsh.ae',
+                password: process.env.ARAMEX_PROD_PASSWORD || '',
+                accountNumber: process.env.ARAMEX_PROD_ACCOUNT_NUMBER || '75788705',
+                accountPin: process.env.ARAMEX_PROD_ACCOUNT_PIN || '',
+                accountEntity: process.env.ARAMEX_PROD_ACCOUNT_ENTITY || 'DXB',
+                accountCountryCode: 'AE',
+                source: '0',
+                version: 'v1.0'
+              }
             },
-            productionCreds: {
-              apiKey: '',
-              storeId: ''
+            noon: {
+              sandboxCreds: {
+                // Real Noon staging key — the adapter rejects placeholder 'noon_secret_key_123'
+                apiKey: process.env.NOON_API_KEY || 'SstJi9Ho0EHG2t7kQVSz7nA2hOeL3iiwVxHxb0Njk60QJ0LfmvoXOsimw1zQC7VugHXiIRRMnWyU6f0uHcEcLlco5Eujqbd5pTwDlfBXpacuRI4m4AAj61NwM0B7Ihk',
+                storeId: process.env.NOON_STORE_ID || ''
+              },
+              productionCreds: {
+                apiKey: process.env.NOON_PROD_API_KEY || '',
+                storeId: process.env.NOON_PROD_STORE_ID || ''
+              }
             }
-          }
-        };
-        dbAdmin.collection('settings').doc('courier_configs').set(initialPublicConfigs)
-          .then(() => console.log("[Firestore Seed] Successfully initialized default public courier configurations."))
-          .catch((err: any) => console.error("[Firestore Seed] Failed to set default public courier configs:", err.message));
-          
-        dbAdmin.collection('private_settings').doc('courier_credentials').get().then((privateSnap) => {
-          if (!privateSnap.exists) {
-            dbAdmin.collection('private_settings').doc('courier_credentials').set(initialPrivateConfigs)
-              .then(() => console.log("[Firestore Seed] Successfully initialized default private courier credentials."));
-          }
-        });
-      }
-    }).catch((err: any) => {
-      console.warn("[Firestore Seed] Failed to read settings/courier_configs:", err.message);
-    });
-  } catch (err: any) {
-    console.error("[Firestore Seed] Failed to initialize check:", err.message);
+          };
+
+          dbAdmin.collection('settings').doc('courier_configs').set(initialPublicConfigs)
+            .then(() => console.log('[Firestore Seed] Successfully initialized default public courier configurations.'))
+            .catch((err: any) => console.error('[Firestore Seed] Failed to set default public courier configs:', err.message));
+
+          dbAdmin.collection('private_settings').doc('courier_credentials').get().then((privateSnap: any) => {
+            if (!privateSnap.exists) {
+              dbAdmin.collection('private_settings').doc('courier_credentials').set(initialPrivateConfigs)
+                .then(() => console.log('[Firestore Seed] Successfully initialized default private courier credentials.'));
+            }
+          });
+        }
+      }).catch((err: any) => {
+        console.warn('[Firestore Seed] Failed to read settings/courier_configs:', err.message);
+      });
+    } catch (err: any) {
+      console.error('[Firestore Seed] Failed to initialize check:', err.message);
+    }
   }
-}
 
   const distPath = path.join(process.cwd(), "dist");
   const distAdminPath = path.join(process.cwd(), "usendadmin2026");
@@ -1194,7 +1213,7 @@ app.get("/api/internal/test-couriers", async (req, res) => {
     const noonCredentials = serverCourierCredentials?.noon || {};
     const aramexCredentials = serverCourierCredentials?.aramex || {};
     
-    let results = { noon: {}, aramex: {} };
+    let results: Record<string, Record<string, unknown>> = { noon: {}, aramex: {} };
     
     // Test Noon
     if (noonCredentials.test) {

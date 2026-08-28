@@ -32,17 +32,17 @@ import UserIndividualOrder from './screens/user/UserIndividualOrder';
 import UserTracking from './screens/user/UserTracking';
 import UserPayments from './screens/user/UserPayments';
 import UserOrders from './screens/user/UserOrders';
-import { AlertCircle, Bell, CheckCircle2, Info, X, ShieldAlert } from 'lucide-react';
+import { AlertCircle, Bell, CheckCircle2, Info, LogIn, X, ShieldAlert } from 'lucide-react';
 
 import { AppProvider, useApp } from './context/AppContext';
 
 import PortalRegister from './screens/PortalRegister';
 
 function AuthGuard({ children, requiredRole, onNavigate }: { children: React.ReactNode, requiredRole?: 'merchant' | 'user', onNavigate?: (screen: Screen) => void }) {
-  const { user, setUser, handleLogout } = useApp();
+  const { user, setUser, signOut } = useApp();
   
   const handleExit = async () => {
-    await handleLogout();
+    await signOut();
     if (onNavigate) onNavigate('login');
   };
 

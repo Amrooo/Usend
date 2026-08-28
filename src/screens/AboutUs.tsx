@@ -471,7 +471,7 @@ const AboutUs = ({ onNavigate }: LandingPageProps) => {
             {heroSlides[heroSlideIdx].type === 'video' ? (
               <motion.video
                 key={heroSlideIdx}
-                src={heroSlides[heroSlideIdx].video}
+                src={(heroSlides[heroSlideIdx] as any).video}
                 autoPlay
                 loop
                 muted

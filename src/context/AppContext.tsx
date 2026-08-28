@@ -366,11 +366,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
             sandboxCreds: {
               ...(INITIAL_COURIER_CONFIGS[id]?.sandboxCreds || {}),
               ...(cfg.sandboxCreds || {})
-            },
+            } as CourierCredentials,
             productionCreds: {
               ...(INITIAL_COURIER_CONFIGS[id]?.productionCreds || {}),
               ...(cfg.productionCreds || {})
-            }
+            } as CourierCredentials
           };
         }
         return merged;
@@ -595,7 +595,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
               currentMode: data?.noon?.currentMode || 'production',
               baseUrlUat: 'https://food-api-team.noonstg.team',
               baseUrlProd: 'https://food-api-team.noon.team',
-              connectionStatus: data?.noon?.connectionStatus || { state: 'configured_untested', lastTestedAt: null, lastTestedMode: null, errorMessage: null },
+              connectionStatus: data?.noon?.connectionStatus || { state: 'CONFIGURED_NOT_TESTED', lastTestedAt: null, lastTestedMode: null, errorMessage: null },
               sandboxCreds: {
                 username: "noon_sandbox_user",
                 password: "",

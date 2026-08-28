@@ -204,7 +204,7 @@ export class AramexAdapter implements CourierAdapter {
         ChargeableWeight: { Value: payload.weightKg, Unit: "KG" },
         NumberOfPieces: 1,
         Services: payload.codAmount ? "CODS" : "",
-        CashOnDeliveryAmount: payload.codAmount ? { Value: payload.codAmount, CurrencyCode: payload.currency || "AED" } : null,
+        CashOnDeliveryAmount: payload.codAmount ? { Value: payload.codAmount, CurrencyCode: "AED" } : null,
         Dimensions: { Length: 10, Width: 10, Height: 10, Unit: "CM" },
         DescriptionOfGoods: "Rate check",
         GoodsOriginCountry: payload.originCountry,
@@ -420,9 +420,13 @@ export class AramexAdapter implements CourierAdapter {
   }
 
   async cancelShipment(trackingId: string, credentials: CourierCredentials, environment: CourierEnvironment): Promise<boolean> {
-    const baseUrl = this.getBaseUrl(environment); // this is our local proxy
+    // Using CancelPickup as Aramex proxy convention for cancelling.
+    // IMPORTANT: We POST to our own Express proxy (/api/aramex/cancel_pickup), NOT directly to Aramex.
+    // The proxy (server.ts) then forwards to the correct Aramex endpoint with injected server-side credentials.
+    const proxyUrl = typeof window !== 'undefined'
+      ? '/api/aramex/cancel_pickup'           // browser / frontend context
+      : `http://localhost:${process.env.BACKEND_PORT || process.env.API_PORT || 3005}/api/aramex/cancel_pickup`; // server-side context
 
-    // Using CancelPickup as Aramex proxy convention for cancelling
     const aramexPayload = {
       ClientInfo: {
         UserName: credentials.username || process.env.ARAMEX_USERNAME || 'dxbit@aramex.com',
@@ -438,13 +442,12 @@ export class AramexAdapter implements CourierAdapter {
         Reference1: `Cancel ${trackingId}`,
         Reference2: "", Reference3: "", Reference4: "", Reference5: ""
       },
-      PickupGUID: trackingId, // Often the GUID or waybill number is used here
+      PickupGUID: trackingId,
       Comments: "Cancelled by User via USend"
     };
 
     try {
-      // POST to our local proxy /api/aramex/cancel_pickup
-      const data = await this.postRequest(`${baseUrl}/api/aramex/cancel_pickup`, aramexPayload);
+      const data = await this.postRequest(proxyUrl, aramexPayload);
       if (data.HasErrors) {
         console.error("[AramexAdapter] CancelShipment Failed:", data.Notifications?.[0]?.Message || JSON.stringify(data));
         return false;

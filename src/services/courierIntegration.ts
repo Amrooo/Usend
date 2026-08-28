@@ -142,7 +142,9 @@ export const createdWaybills = new Set<string>();
 
 // ─── Auth Token Helper ────────────────────────────────────────────────────────
 // Attaches the Firebase ID token as a Bearer token to server API calls.
-// The server JWT middleware requires this for all /api/courier/* routes.
+// Auth is OPTIONAL: guest users (not logged in) can still dispatch via the
+// public courier endpoints — they just won't have an Authorization header.
+// Admin-only and user-specific routes still require auth at the server level.
 async function getAuthHeaders(extra?: Record<string, string>): Promise<Record<string, string>> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json', ...extra };
   try {
@@ -152,13 +154,12 @@ async function getAuthHeaders(extra?: Record<string, string>): Promise<Record<st
       // Force token refresh to ensure it hasn't expired silently
       const token = await currentUser.getIdToken(true);
       headers['Authorization'] = `Bearer ${token}`;
-    } else {
-      console.error('[getAuthHeaders] auth.currentUser is null. User must be logged in.');
-      throw new Error("Authentication required. Please log in again.");
     }
+    // If no user is logged in (guest), proceed without auth header.
+    // Server will accept guest requests for public courier endpoints.
   } catch (e) {
-    console.error('[CourierService] Could not get auth token:', e);
-    throw e;
+    console.warn('[CourierService] Could not get auth token (guest mode):', e);
+    // Non-fatal: continue without token for guest flows
   }
   return headers;
 }
