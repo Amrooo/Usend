@@ -1,7 +1,8 @@
 import LogoIcon from "../../components/LogoIcon";
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Screen } from '../../types';
 import YandexMapDisplay from '../../components/YandexMapDisplay';
+import Barcode from 'react-barcode';
 
 import { 
   BarChart3, Users, Store, Truck, Activity, 
@@ -10,7 +11,8 @@ import {
   ArrowUpRight, ArrowDownRight, MoreVertical,
   LogOut, LayoutDashboard, Database, MessageSquare, DollarSign, Wallet, Percent, CreditCard, ChevronDown, CheckCircle2, XCircle, Clock,
   Inbox, UserCircle2, Building2, MapPin, Code2, Repeat, X,
-  Boxes, ClipboardList, FileText, Coins, TrendingUp, Anchor, Plus, Check, Calendar, Banknote
+  Boxes, ClipboardList, FileText, Coins, TrendingUp, Anchor, Plus, Check, Calendar, Banknote,
+  AlertTriangle, AlertCircle, Copy, Phone, Package, Shield, ExternalLink, RefreshCw
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
@@ -393,7 +395,7 @@ const generateMerchantsArray = (baseMerchants: any[]): any[] => {
 
 function RequestsHub() {
   const { isRTL, t } = useLanguage();
-  const { activeRequests, updateRequestStatus, addRequest } = useApp();
+  const { activeRequests, updateRequest, updateRequestStatus, addRequest } = useApp();
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [showRawLogs, setShowRawLogs] = useState(false);
   const [statusFilter, setStatusFilter] = useState('All Requests');
@@ -403,6 +405,87 @@ function RequestsHub() {
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   
+  // Cancel Order Modal States
+  const [cancelModalOrder, setCancelModalOrder] = useState<any | null>(null);
+  const [cancelReason, setCancelReason] = useState<string>('Customer requested cancellation');
+  const [customReasonNote, setCustomReasonNote] = useState<string>('');
+  const [isCancelling, setIsCancelling] = useState<boolean>(false);
+  const [copiedText, setCopiedText] = useState<string | null>(null);
+
+  const handleCopy = (text: string, label: string) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    setCopiedText(label);
+    triggerToast(`Copied ${label}`);
+    setTimeout(() => setCopiedText(null), 2000);
+  };
+
+  const handleOpenCancelModal = (order: any) => {
+    setCancelModalOrder(order);
+    setCancelReason('Customer requested cancellation');
+    setCustomReasonNote('');
+  };
+
+  const handleConfirmCancel = async () => {
+    if (!cancelModalOrder) return;
+    setIsCancelling(true);
+    try {
+      const trackingId = cancelModalOrder.externalTrackingNumber || cancelModalOrder.noonTaskId;
+      if (cancelModalOrder.carrier && trackingId) {
+        try {
+          const res = await fetch('/api/courier/cancel', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              courierId: cancelModalOrder.carrier,
+              trackingId,
+              environment: 'production'
+            })
+          });
+          const data = await res.json();
+          if (!data.success) {
+            console.warn(`Courier API cancellation response: ${data.error}`);
+          }
+        } catch (courierErr: any) {
+          console.warn("Courier cancel API call error:", courierErr);
+        }
+      }
+
+      const fullReason = customReasonNote.trim()
+        ? `${cancelReason} - ${customReasonNote.trim()}`
+        : cancelReason;
+
+      updateRequestStatus(cancelModalOrder.id, 'Cancelled');
+      
+      try {
+        await updateRequest(cancelModalOrder.id, {
+          status: 'Cancelled',
+          cancellationReason: fullReason,
+          cancelledBy: 'Admin',
+          cancelledAt: new Date().toISOString()
+        });
+      } catch (e) {
+        console.warn("Firestore cancellation details note:", e);
+      }
+
+      triggerToast(`Order ${cancelModalOrder.id} cancelled successfully.`);
+      if (selectedRequest?.id === cancelModalOrder.id) {
+        setSelectedRequest((prev: any) => prev ? { 
+          ...prev, 
+          status: 'Cancelled', 
+          cancellationReason: fullReason, 
+          cancelledBy: 'Admin', 
+          cancelledAt: new Date().toISOString() 
+        } : null);
+      }
+      setCancelModalOrder(null);
+    } catch (err: any) {
+      triggerToast("Error cancelling shipment: " + err.message);
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
   // Pagination State for Express requests list
   const [expressPage, setExpressPage] = useState(1);
   const expressPageSize = 5;
@@ -980,195 +1063,489 @@ function RequestsHub() {
         </div>
       )}
 
-      {/* Slide-out Panel */}
-      {selectedRequest && (
-        <div className="fixed inset-0 z-50 flex justify-end">
-          <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={() => setSelectedRequest(null)}></div>
-          <motion.div 
-            initial={{ x: isRTL ? '-100%' : '100%' }} animate={{ x: 0 }} exit={{ x: isRTL ? '-100%' : '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="w-full max-w-md bg-white h-full shadow-2xl relative z-10 flex flex-col"
-          >
-             <div className="p-8 border-b border-zinc-100 flex items-center justify-between">
-                 <div>
-                   <h2 className="text-xl font-display font-medium uppercase tracking-tight">{t('request_details') || 'Request Details'}</h2>
-                   <p className="text-zinc-500 text-xs font-bold">{selectedRequest.id}</p>
-                 </div>
-                 <button onClick={() => setSelectedRequest(null)} className="w-10 h-10 rounded-full bg-zinc-50 flex items-center justify-center text-zinc-500 hover:bg-zinc-100">
-                   <XCircle className="w-5 h-5" />
-                 </button>
-             </div>
-             
-             <div className="p-8 flex-1 overflow-y-auto space-y-8">
-               <div>
-                  <p className="text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-2">{t('applicant_info') || 'Applicant Info'} ({selectedRequest.applicantType})</p>
-                  <p className="text-lg font-bold text-zinc-900">{selectedRequest.name}</p>
-                  <p className="text-sm text-zinc-500 flex items-center gap-2 mt-1"><MapPin className="w-4 h-4" /> {selectedRequest.address}</p>
-               </div>
-
-               
-               <div className="grid grid-cols-2 gap-4">
-                 <div className="bg-zinc-50 p-4 rounded-2xl">
-                   <p className="text-[12px] font-black uppercase tracking-widest text-[#4f95cc] mb-1">{t('item_type') || 'Item Type'}</p>
-                   <p className="text-sm font-bold text-zinc-900">{selectedRequest.itemType}</p>
-                 </div>
-                 <div className="bg-zinc-50 p-4 rounded-2xl">
-                   <p className="text-[12px] font-black uppercase tracking-widest text-[#4f95cc] mb-1">{t('order_amount') || 'Order Amount'}</p>
-                   <p className="text-sm font-bold text-zinc-900">{selectedRequest.orderAmount}</p>
-                 </div>
-                 <div className="bg-zinc-50 p-4 rounded-2xl">
-                   <p className="text-[12px] font-black uppercase tracking-widest text-[#4f95cc] mb-1">{t('payment_method') || 'Payment Method'}</p>
-                   <p className="text-sm font-bold text-zinc-900">{selectedRequest.paymentMethod}</p>
-                 </div>
-                 <div className="bg-zinc-50 p-4 rounded-2xl">
-                   <p className="text-[12px] font-black uppercase tracking-widest text-[#4f95cc] mb-1">{t('eta') || 'ETA'}</p>
-                   <p className="text-sm font-bold text-zinc-900">{selectedRequest.etaTime}</p>
-                 </div>
-                 <div className="bg-zinc-50 p-4 rounded-2xl">
-                   <p className="text-[12px] font-black uppercase tracking-widest text-[#4f95cc] mb-1">{t('channel') || 'Channel'}</p>
-                   <p className="text-sm font-bold text-zinc-900">{selectedRequest.channel}</p>
-                 </div>
-                 <div className="bg-zinc-50 p-4 rounded-2xl">
-                   <p className="text-[12px] font-black uppercase tracking-widest text-[#4f95cc] mb-1">{t('date') || 'Date'}</p>
-                   <p className="text-sm font-bold text-zinc-900">{selectedRequest.date}</p>
-                 </div>
-               </div>
-
-               <div>
-                 <div className="flex items-center justify-between mb-2">
-                   <p className="text-[12px] font-black uppercase tracking-widest text-zinc-400">{t('description') || 'Description'}</p>
-                   {selectedRequest.amountType && (
-                     <span className="px-2 py-1 bg-zinc-100 text-zinc-600 rounded text-[12px] uppercase font-bold tracking-widest">{selectedRequest.amountType}</span>
-                   )}
-                 </div>
-                 <p className="text-sm text-zinc-700 bg-zinc-50 p-4 rounded-2xl leading-relaxed">{selectedRequest.description}</p>
-               </div>
-
-               {selectedRequest.photoUrl && (
-                  <div>
-                    <p className="text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-2">{t('item_photo') || 'Item Photo'}</p>
-                    <div className="h-40 w-full rounded-2xl overflow-hidden border border-zinc-200">
-                      <img src={selectedRequest.photoUrl} alt="Item" className="w-full h-full object-cover" />
+      {/* Advanced Order Details Side-Sheet (Matching User & Merchant Portals) */}
+      <AnimatePresence>
+        {selectedRequest && (
+          <div className="fixed inset-0 z-[100] flex justify-end">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedRequest(null)}
+              className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
+            />
+            <motion.div
+              initial={{ x: isRTL ? '-100%' : '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: isRTL ? '-100%' : '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 240 }}
+              className={`relative bg-white shadow-2xl w-[95%] md:w-full md:max-w-2xl h-full overflow-hidden flex flex-col ${isRTL ? 'text-right' : 'text-left'}`}
+            >
+              {/* Drawer Header */}
+              <div className="p-6 border-b border-zinc-200 flex items-center justify-between shadow-xs z-10 bg-white">
+                <div>
+                  <h2 className="text-xl font-black text-zinc-900 uppercase tracking-tight">{t('order_details') || 'Order Details'}</h2>
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{selectedRequest.id}</p>
+                    {selectedRequest.externalTrackingNumber && (
+                      <button
+                        onClick={() => handleCopy(selectedRequest.externalTrackingNumber, 'Tracking Number')}
+                        className="text-[10px] font-mono font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded-md border border-amber-200 uppercase inline-flex items-center gap-1 hover:bg-amber-200 transition-colors cursor-pointer"
+                        title="Click to copy"
+                      >
+                        {selectedRequest.externalTrackingNumber}
+                        <Copy className="w-2.5 h-2.5 opacity-70" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setSelectedRequest(null)} 
+                  className="p-2 border border-zinc-200 rounded-full text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              {/* Drawer Body */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide">
+                {/* Status Progress Banner */}
+                <div className={`flex items-center justify-between p-4.5 rounded-2xl border ${
+                  selectedRequest.status === 'Cancelled'
+                    ? 'bg-red-50/90 border-red-200 text-red-950'
+                    : selectedRequest.status === 'delivered' || selectedRequest.status === 'Completed'
+                    ? 'bg-emerald-50/90 border-emerald-200 text-emerald-950'
+                    : 'bg-amber-50/90 border-amber-200 text-amber-950'
+                }`}>
+                  <div className="flex items-center gap-3">
+                    <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-white shadow-sm ${
+                      selectedRequest.status === 'Cancelled'
+                        ? 'bg-red-600'
+                        : selectedRequest.status === 'delivered' || selectedRequest.status === 'Completed'
+                        ? 'bg-[#113f36]'
+                        : 'bg-amber-500'
+                    }`}>
+                      {selectedRequest.status === 'Cancelled' ? (
+                        <XCircle className="w-6 h-6" />
+                      ) : selectedRequest.status === 'delivered' || selectedRequest.status === 'Completed' ? (
+                        <CheckCircle2 className="w-6 h-6" />
+                      ) : (
+                        <Clock className="w-6 h-6" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest opacity-60 leading-none">Current Status</p>
+                      <h4 className="text-sm font-black uppercase mt-1">
+                        {selectedRequest.noonStatusLabel || selectedRequest.status}
+                      </h4>
                     </div>
                   </div>
-               )}
-
-               {selectedRequest.carrier === 'aramex' && (
-                  <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-4 overflow-hidden space-y-3">
-                     <p className="text-[12px] font-black uppercase tracking-widest text-[#d12421] flex items-center justify-between gap-2">
-                        <span className="flex items-center gap-2">
-                          <Truck className="w-3.5 h-3.5" />
-                          Aramex Integration
-                        </span>
-                        {selectedRequest.aramexLogs && (
-                          <button 
-                            type="button"
-                            onClick={() => setShowRawLogs(!showRawLogs)}
-                            className="text-[10px] bg-zinc-200 hover:bg-zinc-300 text-zinc-700 px-2 py-1 rounded font-bold uppercase tracking-wider transition-colors"
-                          >
-                            {showRawLogs ? 'Hide API Payload' : 'Show API Payload'}
-                          </button>
-                        )}
-                     </p>
-                     <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <span className="text-[11px] uppercase tracking-widest text-zinc-400 font-bold">Tracking Number</span>
-                          <p className="text-sm font-black font-mono text-zinc-900">{selectedRequest.externalTrackingNumber || 'N/A'}</p>
-                        </div>
-                        <div>
-                          <span className="text-[11px] uppercase tracking-widest text-zinc-400 font-bold">Pickup Status</span>
-                          <p className="text-sm font-black font-mono text-zinc-900">{selectedRequest.aramexLogs?.pickupId || 'Not Booked'}</p>
-                        </div>
-                     </div>
-                     {selectedRequest.aramexLogs?.response?.Notifications?.length > 0 && (
-                       <div className="bg-[#d12421]/10 text-[#d12421] p-2 rounded-xl border border-[#d12421]/20">
-                         <span className="text-[11px] font-black uppercase tracking-widest block mb-1">API Error</span>
-                         <p className="text-xs font-bold">{selectedRequest.aramexLogs.response.Notifications[0].Message}</p>
-                       </div>
-                     )}
-                     {showRawLogs && selectedRequest.aramexLogs && (
-                       <div className="bg-zinc-900 text-zinc-100 p-3 rounded-xl text-[10px] font-mono overflow-x-auto max-h-48 text-left leading-relaxed">
-                         <span className="text-[9px] text-zinc-400 block uppercase mb-1">// Raw SOAP Payload Logs</span>
-                         <pre>{JSON.stringify(selectedRequest.aramexLogs, null, 2)}</pre>
-                       </div>
-                     )}
+                  <div className="text-right">
+                    <p className="text-[10px] font-black uppercase tracking-widest opacity-60 leading-none">Estimated Delivery</p>
+                    <h4 className="text-sm font-black uppercase mt-1">
+                      {selectedRequest.etaTime || '15-30 Mins'}
+                    </h4>
                   </div>
-                )}
- 
-                {selectedRequest.carrier === 'noon' && (
-                  <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-4 overflow-hidden space-y-3">
-                     <p className="text-[12px] font-black uppercase tracking-widest text-amber-600 flex items-center justify-between gap-2">
-                        <span className="flex items-center gap-2">
-                          <Truck className="w-3.5 h-3.5 text-amber-500" />
-                          Noon RoD Staging Integration
-                        </span>
-                        {selectedRequest.noonLogs && (
-                          <button 
-                            type="button"
-                            onClick={() => setShowRawLogs(!showRawLogs)}
-                            className="text-[10px] bg-zinc-200 hover:bg-zinc-300 text-zinc-700 px-2 py-1 rounded font-bold uppercase tracking-wider transition-colors"
-                          >
-                            {showRawLogs ? 'Hide API Payload' : 'Show API Payload'}
-                          </button>
-                        )}
-                     </p>
-                     <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <span className="text-[11px] uppercase tracking-widest text-zinc-400 font-bold">Task Number (mp_task_nr)</span>
-                          <p className="text-sm font-black font-mono text-zinc-900">{selectedRequest.externalTrackingNumber || 'N/A'}</p>
-                        </div>
-                        <div>
-                          <span className="text-[11px] uppercase tracking-widest text-zinc-400 font-bold">Staging Status</span>
-                          <p className="text-sm font-black font-mono text-amber-600">Active Task</p>
-                        </div>
-                     </div>
-                     {selectedRequest.noonLogs && (
-                       <div className="bg-amber-50 text-amber-900 p-2.5 rounded-xl border border-amber-200">
-                         <span className="text-[11px] font-black uppercase tracking-widest block mb-1">Last Sync Details</span>
-                         <p className="text-xs font-medium">Staging delivery task registered successfully: {selectedRequest.externalTrackingNumber}</p>
-                       </div>
-                     )}
-                     {showRawLogs && selectedRequest.noonLogs && (
-                       <div className="bg-zinc-900 text-zinc-100 p-3 rounded-xl text-[10px] font-mono overflow-x-auto max-h-48 text-left leading-relaxed">
-                         <span className="text-[9px] text-zinc-400 block uppercase mb-1">// Raw JSON payload logs</span>
-                         <pre>{JSON.stringify(selectedRequest.noonLogs, null, 2)}</pre>
-                       </div>
-                     )}
+                </div>
+
+                {/* Cancellation Details Card if Cancelled */}
+                {selectedRequest.status === 'Cancelled' && selectedRequest.cancellationReason && (
+                  <div className="bg-red-50 border border-red-200 rounded-2xl p-4 space-y-1">
+                    <div className="flex items-center gap-1.5 text-red-800 font-bold text-xs">
+                      <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
+                      <span>Cancellation Reason:</span>
+                    </div>
+                    <p className="text-xs text-red-900 font-medium leading-relaxed pl-5.5">
+                      {selectedRequest.cancellationReason}
+                    </p>
+                    {selectedRequest.cancelledAt && (
+                      <p className="text-[10px] text-red-600/80 pl-5.5 font-mono">
+                        Cancelled at: {new Date(selectedRequest.cancelledAt).toLocaleString()} by {selectedRequest.cancelledBy || 'Admin'}
+                      </p>
+                    )}
                   </div>
                 )}
 
-               <div className="grid grid-cols-2 gap-4">
-                 <div className="bg-[#113f36]/5 p-4 rounded-2xl">
-                   <p className="text-[12px] font-black uppercase tracking-widest text-[#113f36]/70 mb-1">{t('from') || 'From Destination'}</p>
-                   <p className="text-sm font-bold text-[#113f36] leading-snug">{selectedRequest.fromDestination}</p>
-                 </div>
-                 <div className="bg-orange-50 p-4 rounded-2xl">
-                   <p className="text-[12px] font-black uppercase tracking-widest text-orange-600/70 mb-1">{t('to') || 'To Destination'}</p>
-                   <p className="text-sm font-bold text-orange-900 leading-snug">{selectedRequest.toDestination}</p>
-                 </div>
-               </div>
-               
-               <div>
-                 <p className="text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-3">{t('location_map') || 'Location on Map'}</p>
-                 <div className="h-[200px] w-full rounded-2xl overflow-hidden relative border border-zinc-200 z-0">
+                {/* Enhanced Waybill & Courier Stamp Card */}
+                {(selectedRequest.externalTrackingNumber || selectedRequest.carrier || selectedRequest.courier) && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="relative border-2 border-dashed border-zinc-200 rounded-3xl p-6 bg-zinc-50/40 overflow-hidden"
+                  >
+                    <div className="flex justify-between items-start mb-6 relative z-10">
+                      <div className="flex flex-col">
+                         <div className="flex items-center gap-2">
+                           <h3 className="text-xl font-black italic tracking-tighter text-zinc-900 uppercase">
+                             {(selectedRequest.carrier || selectedRequest.courier || '').toLowerCase().includes('noon') ? 'Noon RoD' : (selectedRequest.carrier || selectedRequest.courier || '').toLowerCase().includes('aramex') ? 'Aramex Express' : 'USend Fleet'}
+                           </h3>
+                           {(selectedRequest.carrier || selectedRequest.courier || '').toLowerCase().includes('noon') && (
+                             <span className="bg-[#feee00] text-black text-[9px] font-black uppercase px-2 py-0.5 rounded-md">HYPERLOCAL</span>
+                           )}
+                           {(selectedRequest.carrier || selectedRequest.courier || '').toLowerCase().includes('aramex') && (
+                             <span className="bg-[#e2001a] text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-md">LOGISTICS</span>
+                           )}
+                         </div>
+                         <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Tracking Waybill Reference</span>
+                      </div>
+                      
+                      <div className="flex flex-col items-end">
+                        <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Waybill ID</span>
+                        <button
+                          onClick={() => handleCopy(selectedRequest.externalTrackingNumber || selectedRequest.id, 'Waybill ID')}
+                          className="text-xs font-black font-mono bg-zinc-900 text-white px-3 py-1 rounded-lg mt-0.5 hover:bg-zinc-800 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                        >
+                          {selectedRequest.externalTrackingNumber || selectedRequest.id}
+                          <Copy className="w-3 h-3 text-zinc-400" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6 mb-6 relative z-10">
+                      <div>
+                        <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Shipper / Sender</p>
+                        <p className="text-xs font-black text-zinc-900 leading-tight">{selectedRequest.name || 'USend Node'}</p>
+                        <p className="text-[11px] font-medium text-zinc-500 mt-0.5">{selectedRequest.phone || '+971 522715506'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Consignee / Recipient</p>
+                        <p className="text-xs font-black text-zinc-900 leading-tight">{selectedRequest.receiverName || selectedRequest.name || 'Customer'}</p>
+                        <p className="text-[11px] font-medium text-zinc-500 mt-0.5">{selectedRequest.receiverPhone || '+971 545454545'}</p>
+                      </div>
+                    </div>
+
+                    {/* Noon Pickup Outlet Code Chip */}
+                    {selectedRequest.noonOutletCode && (
+                      <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center justify-between">
+                        <div>
+                          <span className="text-[9px] font-black uppercase tracking-wider text-amber-700 block">Noon Pickup Point Outlet</span>
+                          <span className="text-xs font-mono font-black text-amber-950">{selectedRequest.noonOutletCode}</span>
+                        </div>
+                        <span className="text-[10px] font-bold bg-amber-200/80 text-amber-900 px-2 py-0.5 rounded-md uppercase">Live Outlet</span>
+                      </div>
+                    )}
+
+                    {/* Barcode Stamp */}
+                    <div className="flex flex-col items-center justify-center pt-4 border-t border-zinc-200 relative z-10">
+                      <div className="bg-white p-3 rounded-2xl shadow-xs border border-zinc-100">
+                        <Barcode 
+                          value={selectedRequest.externalTrackingNumber || selectedRequest.id} 
+                          width={1.4} 
+                          height={42} 
+                          fontSize={11}
+                          background="transparent"
+                          lineColor="#18181b"
+                        />
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Order Parameters & Details Card */}
+                <div className="bg-white border border-[#EBEFE9] rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(220,225,235,0.45)] flex flex-col gap-4">
+                  <div className="flex items-center gap-3 border-b border-[#EBEFE9] pb-4">
+                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-black text-sm text-zinc-900 uppercase tracking-widest">Order Details</h3>
+                      <p className="text-[11px] text-blue-600 font-bold mt-0.5">Booking Specs & Payment Info</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-100">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Created At</span>
+                      <p className="text-xs font-black text-zinc-900">{selectedRequest.date || 'Today'}</p>
+                    </div>
+
+                    <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-100">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Payment Method</span>
+                      <p className="text-xs font-black text-zinc-900">{selectedRequest.paymentMethod || 'Credit Card'}</p>
+                    </div>
+
+                    <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-100">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Channel</span>
+                      <p className="text-xs font-black text-zinc-900">{selectedRequest.channel || selectedRequest.applicantType || 'Web Portal'}</p>
+                    </div>
+
+                    <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-100">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Payment Status</span>
+                      <span className={`text-[11px] font-black uppercase px-2 py-0.5 rounded-md inline-block ${
+                        selectedRequest.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                      }`}>
+                        {selectedRequest.paymentStatus || 'Paid'}
+                      </span>
+                    </div>
+
+                    <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-100">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Applicant Type</span>
+                      <p className="text-xs font-black text-zinc-900">{selectedRequest.applicantType || 'Customer'}</p>
+                    </div>
+
+                    <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-100">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Item Category</span>
+                      <p className="text-xs font-black text-zinc-900 truncate">{selectedRequest.itemType || 'Package'}</p>
+                    </div>
+                  </div>
+
+                  {selectedRequest.description && (
+                    <div className="bg-zinc-50 rounded-xl p-3.5 border border-zinc-100">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Goods Description</span>
+                      <p className="text-xs text-zinc-700 font-medium leading-relaxed">{selectedRequest.description}</p>
+                    </div>
+                  )}
+
+                  {selectedRequest.photoUrl && (
+                    <div>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 block mb-2">Item Photo</span>
+                      <div className="h-36 w-full rounded-2xl overflow-hidden border border-zinc-200">
+                        <img src={selectedRequest.photoUrl} alt="Item" className="w-full h-full object-cover" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Summary & Locations Card */}
+                <div className="bg-white border border-[#EBEFE9] rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(220,225,235,0.45)] flex flex-col gap-4">
+                  <div className="flex items-center gap-3 border-b border-[#EBEFE9] pb-4">
+                    <div className="w-10 h-10 rounded-xl bg-[#546a40]/10 flex items-center justify-center text-[#546a40]">
+                      <Check className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-black text-sm text-zinc-900 uppercase tracking-widest">Routing & Locations</h3>
+                      <p className="text-[11px] text-[#546a40] font-bold mt-0.5">Origin, Destination & Interactive Map</p>
+                    </div>
+                  </div>
+
+                  {/* Interactive Map */}
+                  <div className="h-[200px] w-full rounded-2xl overflow-hidden relative border border-zinc-200 z-0 bg-zinc-50">
                     <YandexMapDisplay 
-                       center={selectedRequest.position || [25.2048, 55.2708]} 
-                       zoom={11} 
-                       markers={[{ position: selectedRequest.position || [25.2048, 55.2708], color: '#113f36' }]} 
+                      center={selectedRequest.position || [25.2048, 55.2708]} 
+                      zoom={11} 
+                      markers={[
+                        { position: selectedRequest.position || [25.2048, 55.2708], color: '#113f36', hint: selectedRequest.name || 'Order Location' }
+                      ]} 
                     />
-                 </div>
-               </div>
-             </div>
+                  </div>
 
-             <div className="p-8 border-t border-zinc-100 bg-zinc-50 grid grid-cols-2 gap-4">
-               {selectedRequest.status !== 'Cancelled' && (
-                 <button onClick={() => handleCancelShipment(selectedRequest)} className="py-4 col-span-2 rounded-2xl text-red-600 bg-red-100 font-bold text-[12px] uppercase tracking-widest hover:bg-red-200 transition-colors">
-                   Cancel Shipment
-                 </button>
-               )}
-             </div>
-          </motion.div>
-        </div>
-      )}
+                  {/* Addresses */}
+                  <div className="grid grid-cols-1 gap-3">
+                    <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-100 flex items-start gap-2.5">
+                      <MapPin className="w-4 h-4 text-[#113f36] mt-0.5 shrink-0" />
+                      <div className="flex flex-col overflow-hidden">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Pickup Origin (From)</span>
+                        <span className="text-xs font-semibold text-zinc-800 leading-snug mt-0.5">{selectedRequest.fromDestination || selectedRequest.pickupAddress || 'Dubai, UAE'}</span>
+                        <span className="text-[11px] text-zinc-500 font-medium mt-0.5">{selectedRequest.name || 'Sender'} ({selectedRequest.phone || '+971'})</span>
+                      </div>
+                    </div>
+
+                    <div className="bg-zinc-50 rounded-xl p-3 border border-zinc-100 flex items-start gap-2.5">
+                      <MapPin className="w-4 h-4 text-orange-600 mt-0.5 shrink-0" />
+                      <div className="flex flex-col overflow-hidden">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Dropoff Destination (To)</span>
+                        <span className="text-xs font-semibold text-zinc-800 leading-snug mt-0.5">{selectedRequest.toDestination || selectedRequest.address || 'Dubai, UAE'}</span>
+                        <span className="text-[11px] text-zinc-500 font-medium mt-0.5">{selectedRequest.receiverName || 'Recipient'} ({selectedRequest.receiverPhone || '+971'})</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Billing Breakdown */}
+                  <div className="bg-[#113f36]/5 border border-[#113f36]/15 rounded-2xl p-4.5 space-y-3 mt-1">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-bold text-zinc-600">Base Delivery Fee</span>
+                      <span className="font-bold text-zinc-900">{selectedRequest.deliveryFee || selectedRequest.orderAmount || '30.00 AED'}</span>
+                    </div>
+                    {selectedRequest.collectCashFromCustomer && (
+                      <div className="flex justify-between items-center text-xs text-amber-800 bg-amber-100/60 px-2.5 py-1.5 rounded-lg font-bold">
+                        <span>Cash On Delivery (COD)</span>
+                        <span>{selectedRequest.collectAmount || selectedRequest.orderAmount}</span>
+                      </div>
+                    )}
+                    <div className="border-t border-[#113f36]/10 pt-2.5 flex justify-between items-end">
+                      <div>
+                        <span className="text-[10px] uppercase font-black tracking-widest text-zinc-400 block">Total Amount</span>
+                        <span className="text-[11px] text-zinc-500 font-medium">Incl. VAT & Courier Fee</span>
+                      </div>
+                      <span className="font-display font-black text-xl text-[#113f36]">
+                        {selectedRequest.deliveryFee || selectedRequest.orderAmount || '30.00 AED'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Raw Courier API Logs (Collapsible for Admin) */}
+                {(selectedRequest.aramexLogs || selectedRequest.noonLogs) && (
+                  <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-black uppercase tracking-wider text-zinc-700 flex items-center gap-1.5">
+                        <Code2 className="w-3.5 h-3.5" />
+                        Courier Integration Debug Payload
+                      </span>
+                      <button 
+                        type="button"
+                        onClick={() => setShowRawLogs(!showRawLogs)}
+                        className="text-[10px] bg-zinc-200 hover:bg-zinc-300 text-zinc-800 px-2.5 py-1 rounded font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                      >
+                        {showRawLogs ? 'Hide Payload' : 'Inspect Raw JSON/SOAP'}
+                      </button>
+                    </div>
+
+                    {showRawLogs && (
+                      <div className="bg-zinc-900 text-zinc-100 p-3 rounded-xl text-[10px] font-mono overflow-x-auto max-h-52 text-left leading-relaxed">
+                        <pre>{JSON.stringify(selectedRequest.noonLogs || selectedRequest.aramexLogs, null, 2)}</pre>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Drawer Footer Actions */}
+              <div className="p-5 border-t border-zinc-200 bg-zinc-50 flex items-center justify-between gap-3">
+                {selectedRequest.status !== 'Cancelled' ? (
+                  <button 
+                    onClick={() => handleOpenCancelModal(selectedRequest)} 
+                    className="flex-1 py-3.5 px-4 rounded-xl text-red-700 bg-red-100 hover:bg-red-200 font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+                  >
+                    <XCircle className="w-4 h-4 text-red-600" />
+                    Cancel Shipment
+                  </button>
+                ) : (
+                  <div className="w-full py-3 px-4 rounded-xl bg-red-100/70 border border-red-200 text-red-900 text-xs font-bold text-center">
+                    This order has been cancelled
+                  </div>
+                )}
+                
+                <button
+                  onClick={() => setSelectedRequest(null)}
+                  className="py-3.5 px-6 rounded-xl border border-zinc-300 hover:bg-zinc-100 text-zinc-700 font-black text-xs uppercase tracking-widest transition-colors cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Cancellation Reason Modal Popup */}
+      <AnimatePresence>
+        {cancelModalOrder && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => !isCancelling && setCancelModalOrder(null)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 15 }}
+              className="relative bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-zinc-100 z-10 space-y-6"
+            >
+              {/* Header */}
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center shrink-0">
+                  <AlertTriangle className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-zinc-900 uppercase tracking-tight">Cancel Shipment</h3>
+                  <p className="text-xs text-zinc-500 mt-1">
+                    Select a reason why order <span className="font-mono font-bold text-zinc-800">{cancelModalOrder.id}</span> is being cancelled.
+                  </p>
+                </div>
+              </div>
+
+              {/* Preset Reason Chips */}
+              <div className="space-y-2">
+                <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500 block">
+                  Select Cancellation Reason
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {[
+                    'Customer requested cancellation',
+                    'Incorrect pickup/delivery address',
+                    'Driver / Courier unavailable',
+                    'Duplicate order',
+                    'Item out of stock / unable to fulfill',
+                    'Other / Custom reason'
+                  ].map((reasonOption) => (
+                    <button
+                      key={reasonOption}
+                      type="button"
+                      onClick={() => setCancelReason(reasonOption)}
+                      className={`p-3 rounded-xl border text-left text-xs font-bold transition-all cursor-pointer flex items-center justify-between ${
+                        cancelReason === reasonOption
+                          ? 'border-red-500 bg-red-50 text-red-950 shadow-xs'
+                          : 'border-zinc-200 hover:border-zinc-300 text-zinc-700 bg-zinc-50/50'
+                      }`}
+                    >
+                      <span className="truncate pr-1">{reasonOption}</span>
+                      {cancelReason === reasonOption && (
+                        <div className="w-2 h-2 rounded-full bg-red-600 shrink-0" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Custom Reason / Additional Notes */}
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500 block">
+                  Additional Notes (Optional)
+                </label>
+                <textarea
+                  value={customReasonNote}
+                  onChange={(e) => setCustomReasonNote(e.target.value)}
+                  placeholder="Provide any additional explanation or internal admin notes..."
+                  className="w-full p-3.5 rounded-xl border border-zinc-200 text-xs text-zinc-800 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all resize-none h-20"
+                />
+              </div>
+
+              {/* Courier Notice */}
+              <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-[11px] text-amber-900 leading-relaxed flex items-start gap-2">
+                <span className="text-sm">⚡</span>
+                <span>
+                  If this shipment was registered with <strong>Noon</strong> or <strong>Aramex</strong>, a cancellation request will automatically be sent to the carrier logistics API.
+                </span>
+              </div>
+
+              {/* Modal Buttons */}
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  disabled={isCancelling}
+                  onClick={() => setCancelModalOrder(null)}
+                  className="flex-1 py-3.5 px-4 rounded-xl border border-zinc-200 text-zinc-700 hover:bg-zinc-50 font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  Keep Order
+                </button>
+                <button
+                  type="button"
+                  disabled={isCancelling}
+                  onClick={handleConfirmCancel}
+                  className="flex-1 py-3.5 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md shadow-red-600/20 disabled:opacity-50"
+                >
+                  {isCancelling ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      Cancelling...
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className="w-4 h-4" />
+                      Confirm Cancellation
+                    </>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
