@@ -94,8 +94,18 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
           targetRole = data.role;
         }
       }
+
       let redirectScreen: Screen = 'merchant_dashboard';
-      if (targetRole === 'user' || (targetRole as string) === 'Individual' || (targetRole as string) === 'driver') redirectScreen = 'user_dashboard';
+      const isAdmin = targetRole === 'admin' || cred.user.email?.toLowerCase() === 'amro-samman@hotmail.com';
+      
+      if (isAdmin) {
+        // Admin credentials can access merchant dashboard or admin dashboard
+        redirectScreen = selectedRole === 'merchant' ? 'merchant_dashboard' : 'admin_dashboard';
+      } else if (targetRole === 'user' || (targetRole as string) === 'Individual' || (targetRole as string) === 'driver') {
+        redirectScreen = 'user_dashboard';
+      } else {
+        redirectScreen = 'merchant_dashboard';
+      }
 
       onClose();
       onNavigate(redirectScreen);
@@ -159,7 +169,7 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
             </div>
 
             
-            {selectedRole !== 'admin' && (
+            {selectedRole !== 'admin' && defaultRole !== 'admin' && (
               <div className="flex items-center gap-2 mb-6 p-1 bg-slate-100 rounded-xl">
                 <button
                   type="button"
@@ -178,7 +188,8 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
               </div>
             )}
 
-            {/* Google Quick Sign-In Button */}
+            {/* Google Quick Sign-In Button (Only for User/Individual, NOT for Merchant) */}
+            {selectedRole !== 'merchant' && defaultRole !== 'admin' && (
             <button
               type="button"
               onClick={handleGoogleSignIn}
@@ -193,7 +204,15 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
               </svg>
               <span>Sign in with Google</span>
             </button>
+            )}
 
+            {selectedRole === 'merchant' && (
+              <div className="p-3 bg-emerald-50 border border-emerald-200/60 rounded-xl text-emerald-800 text-xs font-semibold mb-4">
+                Merchant accounts are accessed via authorized business credentials. Contact admin if you need a password reset.
+              </div>
+            )}
+
+            {selectedRole !== 'merchant' && defaultRole !== 'admin' && (
             <div className="relative my-4">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-slate-200" />
@@ -202,6 +221,7 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
                 <span className="bg-white px-3 text-slate-400 font-bold tracking-widest">Or Sign In with Email</span>
               </div>
             </div>
+            )}
 
             {/* Login Form */}
             <form onSubmit={handleSubmit} className="space-y-4">

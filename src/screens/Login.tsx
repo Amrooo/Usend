@@ -89,7 +89,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, isAdminApp }) => {
     try {
       const cred = await signInWithEmailAndPassword(auth, email, password);
       
-      let redirectScreen: Screen = 'merchant_dashboard';
+      let redirectScreen: Screen = loginType === 'business' ? 'merchant_dashboard' : 'user_dashboard';
       
       if (isAdminApp) {
         redirectScreen = 'admin_dashboard';
@@ -100,7 +100,26 @@ const Login: React.FC<LoginProps> = ({ onNavigate, isAdminApp }) => {
           
           if (userDocSnap.exists()) {
             const data = userDocSnap.data();
-            if (data.role === 'user' || (data.role as string) === 'Individual' || data.role === 'driver') redirectScreen = 'user_dashboard';
+            const isAdmin = data.role === 'admin' || cred.user.email?.toLowerCase() === 'amro-samman@hotmail.com';
+            
+            if (isAdmin) {
+              // Admin credentials can access merchant portal directly when selected
+              if (loginType === 'business') {
+                redirectScreen = 'merchant_dashboard';
+              } else if (loginType === 'individual') {
+                redirectScreen = 'user_dashboard';
+              } else {
+                redirectScreen = 'admin_dashboard';
+              }
+            } else if (data.role === 'merchant') {
+              redirectScreen = 'merchant_dashboard';
+            } else if (data.role === 'user' || (data.role as string) === 'Individual' || data.role === 'driver') {
+              redirectScreen = 'user_dashboard';
+            }
+          } else {
+            if (cred.user.email?.toLowerCase() === 'amro-samman@hotmail.com') {
+              redirectScreen = loginType === 'business' ? 'merchant_dashboard' : 'admin_dashboard';
+            }
           }
         } catch (docErr) {
           // Ignored
@@ -113,7 +132,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, isAdminApp }) => {
         try {
           const { createUserWithEmailAndPassword } = await import('firebase/auth');
           await createUserWithEmailAndPassword(auth, email, password);
-          onNavigate('admin_dashboard');
+          onNavigate(loginType === 'business' ? 'merchant_dashboard' : 'admin_dashboard');
           return;
         } catch (createErr) {
           console.error("Auto-create failed", createErr);
@@ -121,8 +140,8 @@ const Login: React.FC<LoginProps> = ({ onNavigate, isAdminApp }) => {
       }
 
       if (password === 'password') {
-        let redirectScreen: Screen = 'merchant_dashboard';
-        let targetRole = 'merchant';
+        let redirectScreen: Screen = loginType === 'business' ? 'merchant_dashboard' : 'user_dashboard';
+        let targetRole = loginType === 'business' ? 'merchant' : 'user';
         setUser({
           uid: 'demo-fallback-uid',
           email: email,
@@ -306,8 +325,8 @@ const Login: React.FC<LoginProps> = ({ onNavigate, isAdminApp }) => {
                     <h2 className="text-2xl font-extrabold uppercase tracking-tight text-zinc-950 leading-tight">Access Terminal</h2>
                   </div>
 
-                  {/* Google Quick Sign-In Button */}
-                  {!isAdminApp && (
+                  {/* Google Quick Sign-In Button (Only for Individual/Consumer accounts, not for Business/Merchant) */}
+                  {!isAdminApp && loginType !== 'business' && (
                   <button
                     type="button"
                     onClick={handleGoogleSignIn}
@@ -324,6 +343,17 @@ const Login: React.FC<LoginProps> = ({ onNavigate, isAdminApp }) => {
                   </button>
                   )}
 
+                  {loginType === 'business' && (
+                    <div className="p-3.5 rounded-xl bg-emerald-50/80 border border-emerald-200/60 text-emerald-900 text-xs font-semibold">
+                      <p>
+                        {isRTL 
+                          ? 'بوابة التجار والشركات: تسجيل الدخول يتم حصراً عبر بيانات الحساب الممنوحة من إدارة المنصة (البريد وكلمة المرور).'
+                          : 'Merchant Console: Access is authorized via issued corporate credentials. Contact administration for account setup or password resets.'}
+                      </p>
+                    </div>
+                  )}
+
+                  {!isAdminApp && loginType !== 'business' && (
                   <div className="relative my-4">
                     <div className="absolute inset-0 flex items-center">
                       <div className="w-full border-t border-zinc-200" />
@@ -332,6 +362,7 @@ const Login: React.FC<LoginProps> = ({ onNavigate, isAdminApp }) => {
                       <span className="bg-white px-3 text-zinc-400 font-black tracking-widest">{isRTL ? 'أو بواسطة البريد' : 'Or Sign In with Email'}</span>
                     </div>
                   </div>
+                  )}
 
                   <form onSubmit={handleLogin} className="space-y-4">
                     <div className="space-y-1">

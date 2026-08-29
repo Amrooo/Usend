@@ -69,8 +69,14 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
     }
 
     // Carrier Filter
-    if (carrierFilter !== 'all_carriers' && order.carrier !== carrierFilter) {
-      return false;
+    if (carrierFilter !== 'all_carriers') {
+      const c = (order.carrier || '').toLowerCase();
+      let ok = false;
+      if (carrierFilter === 'aramex') ok = c.includes('aramex') || (order.externalTrackingNumber && order.externalTrackingNumber.startsWith('4'));
+      else if (carrierFilter === 'noon') ok = c.includes('noon') || !!order.noonTaskId;
+      else if (carrierFilter === 'usend') ok = c.includes('usend') || c.includes('fleet') || c.includes('internal') || !order.carrier;
+      else ok = c.includes(carrierFilter.toLowerCase());
+      if (!ok) return false;
     }
 
     // Date Range Filter
@@ -312,7 +318,14 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
     const matchesSearch = !sTerm || searchStr.includes(sTerm);
 
     // 3. Carrier Filter
-    const matchesCarrier = carrierFilter === 'all_carriers' || (order.carrier === carrierFilter);
+    const matchesCarrier = (() => {
+      if (carrierFilter === 'all_carriers') return true;
+      const c = (order.carrier || '').toLowerCase();
+      if (carrierFilter === 'aramex') return c.includes('aramex') || (order.externalTrackingNumber && order.externalTrackingNumber.startsWith('4'));
+      if (carrierFilter === 'noon') return c.includes('noon') || !!order.noonTaskId;
+      if (carrierFilter === 'usend') return c.includes('usend') || c.includes('fleet') || c.includes('internal') || !order.carrier;
+      return c.includes(carrierFilter.toLowerCase());
+    })();
 
     // 4. Date Range Filter
     let matchesDate = true;
@@ -439,33 +452,34 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
               </div>
 
               {/* Integrated Filters & Grid Search */}
-              <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3">
+              <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2.5 flex-wrap">
                 {/* Search */}
-                <div className="relative min-w-[200px] flex-1">
+                <div className="relative min-w-[220px] flex-1">
                   <Search className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 ${isRTL ? 'right-3' : 'left-3'}`} />
                   <input 
                     type="text" 
-                    placeholder={t('search_orders') || 'Search orders...'}
+                    placeholder={t('search_orders') || 'Search orders, tracking #, recipient...'}
                     value={gridSearch}
                     onChange={(e) => { setGridSearch(e.target.value); setGridPage(1); }}
-                    className={`w-full h-10 pl-9 pr-4 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-hidden focus:border-[#113f36] focus:ring-4 focus:ring-[#113f36]/5 transition-all ${isRTL ? 'text-right' : 'text-left'}`}
+                    className={`w-full h-10 pl-9 pr-4 bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-semibold text-zinc-800 placeholder-zinc-400 focus:outline-hidden focus:border-[#113f36] focus:ring-2 focus:ring-[#113f36]/10 transition-all ${isRTL ? 'text-right' : 'text-left'}`}
                   />
                 </div>
 
                 {/* Date range picker */}
-                <div className="flex items-center gap-1 bg-zinc-50 border border-zinc-200 rounded-xl px-2.5 h-10">
+                <div className="flex items-center gap-1.5 bg-zinc-50 border border-zinc-200 rounded-xl px-3 h-10 shrink-0">
+                  <Calendar className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                   <input 
                      type="date" 
                      value={dateRange.start} 
                      onChange={(e) => { setDateRange(p => ({...p, start: e.target.value})); setGridPage(1); }}
-                     className="bg-transparent text-xs text-zinc-600 outline-none font-medium border-none focus:ring-0 p-0"
+                     className="bg-transparent text-xs text-zinc-700 outline-none font-bold border-none focus:ring-0 p-0 cursor-pointer"
                   />
-                  <span className="text-zinc-400 self-center">-</span>
+                  <span className="text-zinc-400 self-center text-xs font-bold">-</span>
                   <input 
                      type="date" 
                      value={dateRange.end} 
                      onChange={(e) => { setDateRange(p => ({...p, end: e.target.value})); setGridPage(1); }}
-                     className="bg-transparent text-xs text-zinc-600 outline-none font-medium border-none focus:ring-0 p-0"
+                     className="bg-transparent text-xs text-zinc-700 outline-none font-bold border-none focus:ring-0 p-0 cursor-pointer"
                   />
                 </div>
 
@@ -473,22 +487,22 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                 <select 
                   value={carrierFilter}
                   onChange={(e) => { setCarrierFilter(e.target.value); setGridPage(1); }}
-                  className="bg-zinc-50 border border-zinc-200 rounded-xl px-3 h-10 outline-none text-zinc-900 text-xs font-bold min-w-[120px]"
+                  className="bg-zinc-50 border border-zinc-200 rounded-xl px-3.5 h-10 outline-none text-zinc-800 text-xs font-bold shrink-0 cursor-pointer hover:border-[#113f36] transition-colors"
                 >
-                  <option value="all_carriers">All Carriers</option>
-                  <option value="aramex">Aramex</option>
-                  <option value="dhl_express">DHL</option>
-                  <option value="usend">USend Fleet</option>
+                  <option value="all_carriers">{isRTL ? 'جميع الناقلين' : 'All Carriers'}</option>
+                  <option value="aramex">{isRTL ? 'أرامكس إكسبريس' : 'Aramex Express'}</option>
+                  <option value="noon">{isRTL ? 'توصيل نون (Noon)' : 'Noon Delivery'}</option>
+                  <option value="usend">{isRTL ? 'أسطول يوسند' : 'USend Fleet'}</option>
                 </select>
 
                 {/* Sort Order */}
                 <select
                   value={sortOrder}
                   onChange={(e) => { setSortOrder(e.target.value as any); setGridPage(1); }}
-                  className="bg-zinc-50 border border-zinc-200 rounded-xl px-3 h-10 outline-none text-zinc-900 text-xs font-bold min-w-[120px]"
+                  className="bg-zinc-50 border border-zinc-200 rounded-xl px-3.5 h-10 outline-none text-zinc-800 text-xs font-bold shrink-0 cursor-pointer hover:border-[#113f36] transition-colors"
                 >
-                  <option value="newest">Newest First</option>
-                  <option value="oldest">Oldest First</option>
+                  <option value="newest">{isRTL ? 'الأحدث أولاً' : 'Newest First'}</option>
+                  <option value="oldest">{isRTL ? 'الأقدم أولاً' : 'Oldest First'}</option>
                 </select>
               </div>
             </div>

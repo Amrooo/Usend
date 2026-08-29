@@ -1059,16 +1059,16 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
                           }));
                         }
                       }}
-                      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+                      className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer select-none shadow-xs ${
                         receiverData.street.includes("Call recipient on arrival")
-                          ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-400 text-amber-800 dark:text-amber-300 shadow-sm'
-                          : 'bg-zinc-100/70 dark:bg-zinc-800/60 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:border-amber-400 hover:text-amber-700'
+                          ? 'bg-[#113F36] border-[#113F36] text-white shadow-md shadow-[#113F36]/20'
+                          : 'bg-emerald-50/70 border-emerald-200/90 text-[#113F36] hover:bg-emerald-100 hover:border-emerald-400'
                       }`}
                     >
-                      <Phone className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
-                      <span>{isRTL ? "📞 الاتصال بالمستلم عند الوصول لتحديد موقع التسليم الدقيق" : "Call recipient on arrival / for exact drop-off pin"}</span>
+                      <Phone className={`w-3.5 h-3.5 shrink-0 ${receiverData.street.includes("Call recipient on arrival") ? 'text-[#cca073]' : 'text-emerald-700'}`} />
+                      <span>{isRTL ? "الاتصال بالمستلم عند الوصول لتحديد موقع التسليم الدقيق" : "Call recipient on arrival / for exact drop-off pin"}</span>
                       {receiverData.street.includes("Call recipient on arrival") && (
-                        <CheckCircle2 className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#cca073] shrink-0" />
                       )}
                     </button>
                   </div>

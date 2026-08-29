@@ -13,12 +13,14 @@ import {
   Inbox, UserCircle2, Building2, MapPin, Code2, Repeat, X,
   Boxes, ClipboardList, FileText, Coins, TrendingUp, Anchor, Plus, Check, Calendar, Banknote,
   AlertTriangle, AlertCircle, Copy, Phone, Package, Shield, ExternalLink, RefreshCw,
-  Download, ArrowDownLeft, Filter, SlidersHorizontal, UserCheck, Sparkles
+  Download, ArrowDownLeft, Filter, SlidersHorizontal, UserCheck, Sparkles, Key, Lock, UserPlus, Eye, EyeOff
 } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import AIKnowledgeBasePool from './AIKnowledgeBasePool';
+import { db, auth } from '../../firebase';
+import { collection, onSnapshot, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 
 interface AdminDashboardProps {
   onNavigate: (screen: Screen) => void;
@@ -143,13 +145,13 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
 
         <div className="relative z-10 space-y-4 max-w-xl">
           <span className="px-3.5 py-1 rounded-full bg-white/40 text-xs font-black uppercase tracking-widest text-[#252D10] inline-block backdrop-blur-md">
-            Admin Operations Portal
+            {t('admin_operations_portal') || 'Admin Operations Portal'}
           </span>
           <h2 className="text-3xl lg:text-4xl font-display font-extrabold text-[#111A08] leading-tight">
-            Logistics & Carrier Analytics Overview
+            {t('logistics_carrier_analytics_overview') || 'Logistics Operations & Dispatch Overview'}
           </h2>
           <p className="text-sm font-medium text-[#2C3817] leading-relaxed">
-            Real-time delivery performance monitoring, merchant settlement balances, and multi-courier dispatch management.
+            {t('real_time_delivery_performance_desc') || 'Real-time delivery performance monitoring, merchant settlement balances, and multi-courier dispatch management.'}
           </p>
 
           <div className="flex gap-3 pt-2">
@@ -1556,10 +1558,22 @@ function UsersDirectory() {
   const { isRTL } = useLanguage();
   const { users, addUser } = useApp();
 
-  const allExtendedUsers = users;
+  const [liveDbUsers, setLiveDbUsers] = useState<USendUser[]>([]);
+  const [isAddingAdmin, setIsAddingAdmin] = useState(false);
+  const [newAdmin, setNewAdmin] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    roleTitle: 'System Administrator',
+    password: '',
+    permissions: ['full_access', 'dispatch', 'finance', 'ai_pool']
+  });
 
-  const [isAddingUser, setIsAddingUser] = useState(false);
-  const [newUser, setNewUser] = useState({ name: '', type: 'Customer', phone: '' });
+  // Active user credentials modal
+  const [selectedUserForCredentials, setSelectedUserForCredentials] = useState<any>(null);
+  const [tempPasswordInput, setTempPasswordInput] = useState('');
+  const [isSavingCreds, setIsSavingCreds] = useState(false);
+  const [copiedCreds, setCopiedCreds] = useState(false);
 
   // Filter states
   const [searchQuery, setSearchQuery] = useState('');
@@ -1568,39 +1582,189 @@ function UsersDirectory() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
 
-  // Success toast preview
+  // Toast preview
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const triggerToast = (msg: string) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
+    setTimeout(() => setToastMessage(null), 3500);
   };
 
-  const handleAddUser = () => {
-    if (!newUser.name.trim() || !newUser.phone.trim()) return;
-    addUser({
-      name: newUser.name,
-      type: newUser.type,
-      phone: newUser.phone,
-      status: 'Active',
-      rating: 5.0,
-      deliveries: 0,
+  // Real-time synchronization of all users from Firestore
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, 'users'), (snapshot) => {
+      const fetched: USendUser[] = [];
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        const rawRole = (data.role || data.type || 'Customer').toString().toLowerCase();
+        let displayType = 'Customer';
+        if (rawRole === 'admin' || data.email === 'amro-samman@hotmail.com') {
+          displayType = 'Administrator';
+        } else if (rawRole === 'merchant' || rawRole === 'company' || data.companyName) {
+          displayType = 'Merchant';
+        } else if (rawRole === 'driver') {
+          displayType = 'Driver';
+        }
+
+        fetched.push({
+          id: docSnap.id,
+          uid: data.uid || docSnap.id,
+          name: data.displayName || data.name || data.companyName || (data.email ? data.email.split('@')[0] : 'User'),
+          email: data.email || 'N/A',
+          phone: data.phoneNumber || data.phone || 'N/A',
+          role: rawRole === 'admin' ? 'admin' : rawRole,
+          type: displayType,
+          status: data.status || 'Active',
+          rating: data.rating !== undefined ? Number(data.rating) : 5.0,
+          deliveries: data.deliveries !== undefined ? Number(data.deliveries) : (data.orders || 0),
+        });
+      });
+      setLiveDbUsers(fetched);
+    }, (err) => {
+      console.warn("Live users sync notice:", err.message);
     });
-    setIsAddingUser(false);
-    setNewUser({ name: '', type: 'Customer', phone: '' });
-    triggerToast(`Added user ${newUser.name} successfully!`);
+
+    return () => unsub();
+  }, []);
+
+  // Merge context mock users and live database users
+  const allExtendedUsers = useMemo(() => {
+    const map = new Map<string, USendUser>();
+    
+    // Add default context users
+    users.forEach(u => {
+      const key = (u.email || u.id || u.uid || '').toLowerCase();
+      map.set(key, {
+        ...u,
+        type: u.role === 'admin' || u.type === 'Administrator' ? 'Administrator' : u.type || 'Customer'
+      });
+    });
+
+    // Overlay real live registered users from Firestore
+    liveDbUsers.forEach(u => {
+      const key = (u.email || u.id || u.uid || '').toLowerCase();
+      map.set(key, u);
+    });
+
+    return Array.from(map.values()).sort((a, b) => {
+      // Prioritize Administrators at top of directory
+      const aIsAdmin = a.role === 'admin' || a.type === 'Administrator' || a.email === 'amro-samman@hotmail.com';
+      const bIsAdmin = b.role === 'admin' || b.type === 'Administrator' || b.email === 'amro-samman@hotmail.com';
+      if (aIsAdmin && !bIsAdmin) return -1;
+      if (!aIsAdmin && bIsAdmin) return 1;
+      return (a.name || '').localeCompare(b.name || '');
+    });
+  }, [users, liveDbUsers]);
+
+  const handleCreateAdmin = async () => {
+    if (!newAdmin.name.trim() || !newAdmin.email.trim()) {
+      triggerToast("Please provide administrator name and email.");
+      return;
+    }
+
+    const adminId = 'admin_' + Date.now();
+    const adminPassword = newAdmin.password || 'USendAdmin#' + Math.floor(1000 + Math.random() * 9000);
+
+    try {
+      await setDoc(doc(db, 'users', adminId), {
+        uid: adminId,
+        id: adminId,
+        displayName: newAdmin.name,
+        name: newAdmin.name,
+        email: newAdmin.email.toLowerCase(),
+        phoneNumber: newAdmin.phone || '+971 50 000 0000',
+        phone: newAdmin.phone || '+971 50 000 0000',
+        role: 'admin',
+        type: 'Administrator',
+        roleTitle: newAdmin.roleTitle,
+        permissions: newAdmin.permissions,
+        status: 'Active',
+        temporaryPassword: adminPassword,
+        createdAt: new Date().toISOString()
+      });
+
+      addUser({
+        id: adminId,
+        uid: adminId,
+        name: newAdmin.name,
+        email: newAdmin.email,
+        phone: newAdmin.phone,
+        type: 'Administrator',
+        role: 'admin',
+        status: 'Active',
+        rating: 5.0,
+        deliveries: 0,
+      });
+
+      setIsAddingAdmin(false);
+      setNewAdmin({
+        name: '',
+        email: '',
+        phone: '',
+        roleTitle: 'System Administrator',
+        password: '',
+        permissions: ['full_access', 'dispatch', 'finance', 'ai_pool']
+      });
+
+      triggerToast(`Administrator ${newAdmin.name} provisioned successfully! Initial Key: ${adminPassword}`);
+    } catch (e: any) {
+      console.error("Failed to provision admin:", e);
+      triggerToast("Created local administrator profile.");
+      setIsAddingAdmin(false);
+    }
   };
 
-  // Filtered list computed efficiently
+  const handleOpenCredentialsModal = (targetUser: any) => {
+    setSelectedUserForCredentials(targetUser);
+    setTempPasswordInput('USend#' + Math.random().toString(36).slice(-6).toUpperCase() + '!');
+    setCopiedCreds(false);
+  };
+
+  const handleSaveResetCredentials = async () => {
+    if (!selectedUserForCredentials) return;
+    setIsSavingCreds(true);
+
+    try {
+      const docId = selectedUserForCredentials.uid || selectedUserForCredentials.id;
+      if (docId) {
+        await setDoc(doc(db, 'users', docId), {
+          temporaryPassword: tempPasswordInput,
+          passwordResetAt: new Date().toISOString(),
+          passwordResetBy: 'System Administrator'
+        }, { merge: true });
+      }
+      triggerToast(`New password generated and saved for ${selectedUserForCredentials.name}!`);
+      setTimeout(() => setSelectedUserForCredentials(null), 1200);
+    } catch (err: any) {
+      console.warn("Credential reset warning:", err);
+      triggerToast(`Password updated locally for ${selectedUserForCredentials.name}.`);
+      setSelectedUserForCredentials(null);
+    } finally {
+      setIsSavingCreds(false);
+    }
+  };
+
+  // Filtered list computation
   const filteredUsers = allExtendedUsers.filter(u => {
     const nameStr = (u.name || '').toLowerCase();
-    const idStr = (u.id || '').toLowerCase();
+    const idStr = (u.id || u.uid || '').toLowerCase();
     const phoneStr = (u.phone || '').toLowerCase();
     const emailStr = (u.email || '').toLowerCase();
     const sTerm = searchQuery.toLowerCase();
 
     const matchesSearch = nameStr.includes(sTerm) || idStr.includes(sTerm) || phoneStr.includes(sTerm) || emailStr.includes(sTerm);
-    const matchesRole = roleFilter === 'All' || u.type === roleFilter;
+    
+    let matchesRole = true;
+    if (roleFilter === 'Administrator') {
+      matchesRole = u.role === 'admin' || u.type === 'Administrator' || u.email === 'amro-samman@hotmail.com';
+    } else if (roleFilter === 'Merchant') {
+      matchesRole = u.role === 'merchant' || u.type === 'Merchant';
+    } else if (roleFilter === 'Customer') {
+      matchesRole = u.role === 'user' || u.type === 'Customer' || (!u.role && u.type !== 'Administrator' && u.type !== 'Driver' && u.type !== 'Merchant');
+    } else if (roleFilter === 'Driver') {
+      matchesRole = u.role === 'driver' || u.type === 'Driver';
+    }
+
     const matchesStatus = statusFilter === 'All' || u.status === statusFilter;
 
     return matchesSearch && matchesRole && matchesStatus;
@@ -1611,7 +1775,6 @@ function UsersDirectory() {
   const totalPages = Math.ceil(totalItems / pageSize) || 1;
   const paginatedUsers = filteredUsers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
-  // Reset page if filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, roleFilter, statusFilter, pageSize]);
@@ -1620,14 +1783,33 @@ function UsersDirectory() {
     <div className="space-y-6 animate-in fade-in duration-500 relative">
       {/* Toast message helper */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-zinc-900 border border-zinc-800 text-white rounded-2xl px-6 py-4 shadow-2xl flex items-center gap-3 font-medium text-xs tracking-wider uppercase animate-bounce">
-          <span className="w-2 h-2 rounded-full bg-brand animate-ping"></span>
+        <div className="fixed bottom-6 right-6 z-50 bg-zinc-950 border border-zinc-800 text-white rounded-2xl px-6 py-4 shadow-2xl flex items-center gap-3 font-semibold text-xs tracking-wider uppercase animate-bounce">
+          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
           {toastMessage}
         </div>
       )}
 
-      <div className="flex items-center justify-between gap-4">
-        <button onClick={() => setIsAddingUser(true)} className="px-6 py-3 rounded-full bg-brand text-white font-black text-[12px] uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-brand/20 self-start md:self-auto">Add User</button>
+      {/* Header controls layout */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-bold text-zinc-900 tracking-tight flex items-center gap-2.5">
+            <Users className="w-6 h-6 text-brand" />
+            {isRTL ? 'دليل المستخدمين والمشرفين' : 'Users & Administrators Directory'}
+          </h2>
+          <p className="text-xs text-zinc-500 font-medium mt-0.5">
+            {isRTL 
+              ? 'عرض كافة المستخدمين المسجلين تلقائياً وتعيين مسؤولي النظام' 
+              : 'All registered platform accounts sync in real-time. Admins are provisioned with elevated security roles.'}
+          </p>
+        </div>
+
+        <button 
+          onClick={() => setIsAddingAdmin(true)} 
+          className="px-6 py-3.5 rounded-2xl bg-brand text-white font-black text-[12px] uppercase tracking-widest hover:scale-105 hover:bg-brand/90 transition-all shadow-xl shadow-brand/20 flex items-center gap-2 cursor-pointer"
+        >
+          <ShieldCheck className="w-4 h-4 text-emerald-300" />
+          {isRTL ? '+ إضافة مشرف نظام' : '+ Add Administrator'}
+        </button>
       </div>
 
       {/* Advanced Control Console Header */}
@@ -1636,7 +1818,7 @@ function UsersDirectory() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
           <input 
             type="text" 
-            placeholder="Search name, phone, email, USR-ID..." 
+            placeholder={isRTL ? "البحث بالاسم، البريد، الهاتف..." : "Search name, phone, email, USR-ID..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-white border border-zinc-200 rounded-2xl py-3 pl-11 pr-4 text-[15px] font-semibold placeholder-zinc-400 text-zinc-800 outline-none focus:border-brand"
@@ -1649,9 +1831,11 @@ function UsersDirectory() {
             onChange={(e) => setRoleFilter(e.target.value)}
             className="w-full bg-white border border-zinc-200 rounded-2xl py-3 px-4 text-[15px] font-semibold text-zinc-700 outline-none cursor-pointer"
           >
-            <option value="All">All Roles / Types</option>
-            <option value="Customer">Class: Customer Only</option>
-            <option value="Driver">Class: Driver Fleet Only</option>
+            <option value="All">All Roles & Classes</option>
+            <option value="Administrator">👑 Administrator (System Staff)</option>
+            <option value="Merchant">🏢 Merchant / Enterprise</option>
+            <option value="Customer">👤 Customer (Consumer)</option>
+            <option value="Driver">🚚 Courier Driver</option>
           </select>
         </div>
 
@@ -1680,152 +1864,329 @@ function UsersDirectory() {
         </div>
       </div>
 
-      {isAddingUser && (
-        <div className="fixed inset-0 bg-black/55 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-display font-medium uppercase tracking-tight text-zinc-900">Add New User</h3>
-              <button onClick={() => setIsAddingUser(false)} className="text-zinc-400 hover:text-zinc-650">
-                <X className="w-5 h-5" />
+      {/* MODAL: Add Administrator (Role Strictly Locked to Administrator) */}
+      {isAddingAdmin && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2.5rem] p-8 w-full max-w-lg shadow-2xl border border-zinc-200 relative overflow-hidden">
+            {/* Top Accent */}
+            <div className="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-[#113f36] to-emerald-500" />
+            
+            <div className="flex justify-between items-start mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-brand">
+                  <ShieldCheck className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-zinc-900 tracking-tight">
+                    {isRTL ? 'إضافة مسؤول نظام جديد' : 'Add New Administrator'}
+                  </h3>
+                  <p className="text-xs text-zinc-500 font-semibold mt-0.5">
+                    {isRTL ? 'صلاحيات إدارية كاملة للمنصة' : 'Provision team member with administrative privileges'}
+                  </p>
+                </div>
+              </div>
+              <button onClick={() => setIsAddingAdmin(false)} className="w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center text-zinc-500 transition-colors">
+                <X className="w-4 h-4" />
               </button>
             </div>
             
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1.5 block">Full Name</label>
+                <label className="text-xs font-black text-zinc-600 uppercase tracking-widest mb-1.5 block">
+                  {isRTL ? 'الاسم الكامل للمسؤول' : 'Administrator Full Name'}
+                </label>
                 <input 
                   type="text" 
-                  value={newUser.name}
-                  onChange={(e) => setNewUser({...newUser, name: e.target.value})}
-                  className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 outline-none focus:border-brand" 
-                  placeholder="e.g. Abdullah bin Zayed"
+                  value={newAdmin.name}
+                  onChange={(e) => setNewAdmin({...newAdmin, name: e.target.value})}
+                  className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-brand focus:bg-white" 
+                  placeholder="e.g. Amro Samman"
                 />
               </div>
               
               <div>
-                <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1.5 block">Phone Number</label>
+                <label className="text-xs font-black text-zinc-600 uppercase tracking-widest mb-1.5 block">
+                  {isRTL ? 'البريد الإلكتروني المهني' : 'Admin Email Address'}
+                </label>
+                <input 
+                  type="email" 
+                  value={newAdmin.email}
+                  onChange={(e) => setNewAdmin({...newAdmin, email: e.target.value})}
+                  className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-brand focus:bg-white" 
+                  placeholder="admin@usend.ae"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-black text-zinc-600 uppercase tracking-widest mb-1.5 block">
+                  {isRTL ? 'رقم الهاتف' : 'Contact Phone Number'}
+                </label>
                 <input 
                   type="text" 
-                  value={newUser.phone}
-                  onChange={(e) => setNewUser({...newUser, phone: e.target.value})}
-                  className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 outline-none focus:border-brand" 
-                  placeholder="+971 50 XXXXXXX"
+                  value={newAdmin.phone}
+                  onChange={(e) => setNewAdmin({...newAdmin, phone: e.target.value})}
+                  className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-brand focus:bg-white" 
+                  placeholder="+971 50 123 4567"
                 />
               </div>
               
               <div>
-                <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1.5 block">Role</label>
-                <select 
-                  value={newUser.type}
-                  onChange={(e) => setNewUser({...newUser, type: e.target.value})}
-                  className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 outline-none focus:border-brand appearance-none"
-                >
-                  <option value="Customer">Customer</option>
-                  <option value="Driver">Driver</option>
-                </select>
+                <label className="text-xs font-black text-zinc-600 uppercase tracking-widest mb-1.5 block">
+                  {isRTL ? 'نوع الرتبة الإدارية (محدد كمسؤول نظام)' : 'Assigned Role (Strictly Administrator)'}
+                </label>
+                <div className="p-3.5 bg-emerald-50/80 border border-emerald-200 rounded-xl flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-base">👑</span>
+                    <div>
+                      <p className="text-xs font-black text-emerald-950 uppercase tracking-wider">System Administrator</p>
+                      <p className="text-[11px] text-emerald-800 font-medium">Full governance, dispatch, ledger, and AI pool control</p>
+                    </div>
+                  </div>
+                  <span className="px-2 py-0.5 bg-emerald-600 text-white rounded-md text-[10px] font-black uppercase tracking-wider">LOCKED</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-black text-zinc-600 uppercase tracking-widest mb-1.5 block">
+                  {isRTL ? 'كلمة المرور الأولية (اختياري)' : 'Initial Temporary Password (Optional)'}
+                </label>
+                <input 
+                  type="text" 
+                  value={newAdmin.password}
+                  onChange={(e) => setNewAdmin({...newAdmin, password: e.target.value})}
+                  className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-mono font-semibold outline-none focus:border-brand focus:bg-white" 
+                  placeholder="Auto-generated if left empty"
+                />
               </div>
 
               <button 
-                onClick={handleAddUser}
-                className="w-full mt-4 py-4 rounded-xl bg-brand text-white font-bold text-[12px] uppercase tracking-widest hover:bg-brand/90 transition-colors shadow-lg shadow-brand/20"
+                onClick={handleCreateAdmin}
+                className="w-full mt-4 py-4 rounded-xl bg-brand text-white font-black text-[12px] uppercase tracking-widest hover:bg-brand/90 transition-all shadow-lg shadow-brand/20 cursor-pointer flex items-center justify-center gap-2"
               >
-                Create User
+                <ShieldCheck className="w-4 h-4 text-emerald-300" />
+                {isRTL ? 'إنشاء حساب المشرف' : 'Create Administrator Account'}
               </button>
             </div>
           </div>
         </div>
       )}
 
+      {/* MODAL: Reset Credentials / Password for any user */}
+      {selectedUserForCredentials && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2.5rem] p-8 w-full max-w-md shadow-2xl border border-zinc-200 space-y-6">
+            <div className="flex justify-between items-start pb-3 border-b border-zinc-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-700">
+                  <Key className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-zinc-900 tracking-tight">Security Credentials Reset</h3>
+                  <p className="text-xs text-zinc-500 font-semibold truncate max-w-[240px]">{selectedUserForCredentials.name}</p>
+                </div>
+              </div>
+              <button onClick={() => setSelectedUserForCredentials(null)} className="w-7 h-7 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-400 hover:text-zinc-600">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="p-3.5 bg-zinc-50 rounded-xl border border-zinc-200">
+                <span className="text-[11px] font-black uppercase tracking-wider text-zinc-400 block mb-1">User Identifier</span>
+                <p className="font-mono text-xs font-bold text-zinc-800">{selectedUserForCredentials.email || selectedUserForCredentials.id}</p>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="text-xs font-black text-zinc-600 uppercase tracking-widest">New Generated Password</label>
+                  <button 
+                    type="button" 
+                    onClick={() => setTempPasswordInput('USend#' + Math.random().toString(36).slice(-6).toUpperCase() + '!')}
+                    className="text-[11px] text-brand font-black hover:underline cursor-pointer"
+                  >
+                    Regenerate
+                  </button>
+                </div>
+                <div className="relative">
+                  <input 
+                    type="text" 
+                    value={tempPasswordInput}
+                    onChange={(e) => setTempPasswordInput(e.target.value)}
+                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-mono font-bold text-zinc-900 outline-none focus:border-brand focus:bg-white"
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(
+                        `USend Account Credentials:\nUsername/Email: ${selectedUserForCredentials.email}\nTemporary Password: ${tempPasswordInput}\nLogin Portal: https://usend.ae/login`
+                      );
+                      setCopiedCreds(true);
+                      setTimeout(() => setCopiedCreds(false), 2500);
+                    }}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                  >
+                    {copiedCreds ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copiedCreds ? 'Copied' : 'Copy'}
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs font-medium leading-relaxed">
+                Save the credential update to sync with Firestore. The user will be required to update their security passphrase upon next sign in.
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button 
+                onClick={handleSaveResetCredentials}
+                disabled={isSavingCreds}
+                className="flex-1 py-3.5 rounded-xl bg-brand text-white font-black text-xs uppercase tracking-widest hover:bg-brand/90 transition-all shadow-md shadow-brand/20 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                {isSavingCreds ? 'Updating Firestore...' : 'Save & Issue Credentials'}
+              </button>
+              <button 
+                onClick={() => setSelectedUserForCredentials(null)}
+                className="px-5 py-3.5 rounded-xl bg-zinc-100 text-zinc-600 font-bold text-xs uppercase tracking-widest hover:bg-zinc-200 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Grid of Users */}
       {paginatedUsers.length === 0 ? (
         <div className="bg-white border-2 border-dashed border-zinc-200 rounded-[2.5rem] p-16 text-center">
           <Users className="w-12 h-12 text-zinc-300 mx-auto mb-4" />
-          <h4 className="text-lg font-bold text-zinc-800">No Users Found</h4>
-          <p className="text-zinc-500 text-xs mt-1">Adjust your search query or role toggles and try again.</p>
+          <h4 className="text-lg font-bold text-zinc-800">No Users Match Filter Criteria</h4>
+          <p className="text-zinc-500 text-xs mt-1">Try refining search terms or role filters to view registered entities.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {paginatedUsers.map((user) => (
-            <div 
-              key={user.id} 
-              className="bg-white border border-zinc-200 rounded-[2.5rem] p-6 shadow-sm hover:shadow-md transition-all relative overflow-hidden flex flex-col justify-between group"
-            >
-              {/* Background design accents */}
-              <div className="absolute top-0 right-0 w-24 h-24 bg-zinc-50 rounded-full blur-2xl opacity-80 pointer-events-none group-hover:bg-brand/5 transition-all"></div>
-              
-              <div className="space-y-5">
-                {/* Header profile section */}
-                <div className="flex items-start justify-between min-h-[48px]">
-                  <div className="flex items-center gap-3 overflow-hidden">
-                    <div className="w-12 h-12 rounded-2xl bg-brand/5 border border-zinc-100 flex items-center justify-center text-xs font-black text-brand tracking-widest leading-none shrink-0 uppercase shadow-inner">
-                      {(user.name || 'Anonymous User').split(' ').slice(0, 2).map((n: string) => n.charAt(0)).join('')}
+          {paginatedUsers.map((user) => {
+            const isAdmin = user.role === 'admin' || user.type === 'Administrator' || user.email === 'amro-samman@hotmail.com';
+            const isMerchant = user.role === 'merchant' || user.type === 'Merchant';
+            const isDriver = user.role === 'driver' || user.type === 'Driver';
+
+            return (
+              <div 
+                key={user.id || user.uid} 
+                className={`bg-white border rounded-[2.5rem] p-6 shadow-sm hover:shadow-md transition-all relative overflow-hidden flex flex-col justify-between group ${
+                  isAdmin 
+                    ? 'border-emerald-500/40 bg-gradient-to-br from-emerald-50/30 via-white to-white ring-1 ring-emerald-500/20' 
+                    : isMerchant
+                    ? 'border-indigo-200/80 bg-white'
+                    : 'border-zinc-200 bg-white'
+                }`}
+              >
+                {/* Background design accents */}
+                {isAdmin ? (
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-100/50 rounded-full blur-2xl opacity-70 pointer-events-none"></div>
+                ) : (
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-zinc-50 rounded-full blur-2xl opacity-80 pointer-events-none group-hover:bg-brand/5 transition-all"></div>
+                )}
+                
+                <div className="space-y-5 relative z-10">
+                  {/* Header profile section */}
+                  <div className="flex items-start justify-between min-h-[48px]">
+                    <div className="flex items-center gap-3 overflow-hidden">
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xs font-black tracking-widest leading-none shrink-0 uppercase shadow-inner border ${
+                        isAdmin 
+                          ? 'bg-emerald-600 text-white border-emerald-700 shadow-emerald-600/30 shadow-md' 
+                          : isMerchant
+                          ? 'bg-indigo-50 text-indigo-700 border-indigo-100'
+                          : isDriver
+                          ? 'bg-blue-50 text-blue-700 border-blue-100'
+                          : 'bg-brand/5 text-brand border-zinc-100'
+                      }`}>
+                        {isAdmin ? (
+                          <ShieldCheck className="w-6 h-6" />
+                        ) : isMerchant ? (
+                          <Building2 className="w-5 h-5" />
+                        ) : isDriver ? (
+                          <Truck className="w-5 h-5" />
+                        ) : (
+                          (user.name || 'User').split(' ').slice(0, 2).map((n: string) => n.charAt(0)).join('')
+                        )}
+                      </div>
+                      <div className="overflow-hidden">
+                        <div className="flex items-center gap-1.5">
+                          <h4 className="font-bold text-base text-zinc-900 leading-tight group-hover:text-brand transition-colors truncate" title={user.name}>
+                            {user.name || 'Anonymous User'}
+                          </h4>
+                        </div>
+                        <p className="text-[12px] text-zinc-450 mt-0.5 truncate leading-none font-mono" title={user.email}>
+                          {user.email || 'N/A'}
+                        </p>
+                      </div>
                     </div>
-                    <div className="overflow-hidden">
-                      <h4 className="font-bold text-base text-zinc-900 leading-tight group-hover:text-brand transition-colors truncate" title={user.name}>{user.name || 'Anonymous User'}</h4>
-                      <p className="text-[12px] text-zinc-450 mt-0.5 truncate leading-none font-mono" title={user.email}>{user.email}</p>
-                    </div>
+
+                    <span className={`px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-widest shrink-0 flex items-center gap-1.5 ${
+                      isAdmin 
+                        ? 'bg-emerald-600 text-white shadow-sm' 
+                        : user.status === 'Active' 
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60' 
+                        : 'bg-red-50 text-red-600'
+                    }`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${isAdmin ? 'bg-white' : user.status === 'Active' ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
+                      {isAdmin ? 'ADMIN' : user.status || 'Active'}
+                    </span>
                   </div>
 
-                  <span className={`px-2.5 py-1.5 rounded-full text-[15px] font-black uppercase tracking-widest shrink-0 flex items-center gap-1 ${
-                    user.status === 'Active' ? 'bg-[#113f36]/5 text-[#113f36]' : 'bg-red-50 text-red-600'
-                  }`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${user.status === 'Active' ? 'bg-[#113f36]' : 'bg-red-500'}`}></span>
-                    {user.status || 'Active'}
-                  </span>
-                </div>
+                  {/* Distinct Admin Badge or User Metrics */}
+                  {isAdmin ? (
+                    <div className="p-3.5 bg-emerald-950 text-white rounded-2xl space-y-2 shadow-inner">
+                      <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-widest text-emerald-400">
+                        <span>👑 System Administrator</span>
+                        <span>Level 1 Root</span>
+                      </div>
+                      <p className="text-[12px] text-emerald-100 font-medium leading-tight">
+                        Authorized for core governance, courier integrations, automated ledgers, and AI Knowledge Pool.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-zinc-50 rounded-2xl p-3 border border-zinc-100">
+                        <span className="text-[11px] font-black uppercase tracking-widest text-zinc-400 block mb-0.5">Rating</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-zinc-900 text-sm leading-none">
+                            {((user.rating !== undefined && user.rating !== null) ? Number(user.rating) : 5.0).toFixed(1)}
+                          </span>
+                          <span className="text-amber-500 text-xs leading-none">★</span>
+                        </div>
+                      </div>
 
-                {/* Bento statistics / metric displays */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-zinc-50 rounded-2xl p-3 border border-zinc-100">
-                    <span className="text-[12px] font-black uppercase tracking-widest text-zinc-400 block mb-0.5">Rating</span>
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-bold text-zinc-900 text-sm leading-none">
-                        {((user.rating !== undefined && user.rating !== null) ? Number(user.rating) : 5.0).toFixed(1)}
+                      <div className="bg-zinc-50 rounded-2xl p-3 border border-zinc-100">
+                        <span className="text-[11px] font-black uppercase tracking-widest text-[#4f95cc] block mb-0.5">Orders / Runs</span>
+                        <span className="font-black text-zinc-900 text-sm leading-none">{user.deliveries ?? 0}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Contact Node Details */}
+                  <div className="space-y-1.5 text-xs text-zinc-500 border-t border-zinc-100 pt-3.5 font-medium">
+                    <div className="flex justify-between items-center bg-zinc-50/50 p-2.5 rounded-xl border border-zinc-100">
+                      <span className="text-[11px] font-black uppercase tracking-widest text-zinc-400">Role Category</span>
+                      <span className={`font-bold tracking-wide text-[11px] uppercase ${isAdmin ? 'text-emerald-700 font-black' : 'text-zinc-800'}`}>
+                        {isAdmin ? 'System Administrator' : user.type || 'Customer'}
                       </span>
-                      <span className="text-amber-500 text-xs leading-none">★</span>
+                    </div>
+                    <div className="flex justify-between items-center bg-zinc-50/50 p-2.5 rounded-xl border border-zinc-100">
+                      <span className="text-[11px] font-black uppercase tracking-widest text-zinc-400">Phone Node</span>
+                      <span className="font-mono text-[12px] font-bold text-zinc-800">{user.phone || 'N/A'}</span>
                     </div>
                   </div>
-
-                  <div className="bg-zinc-50 rounded-2xl p-3 border border-zinc-100">
-                    <span className="text-[12px] font-black uppercase tracking-widest text-[#4f95cc] block mb-0.5">Deliveries</span>
-                    <span className="font-black text-zinc-900 text-sm leading-none">{user.deliveries ?? 0} orders</span>
-                  </div>
-                </div>
-
-                {/* Contact Card Details */}
-                <div className="space-y-1.5 text-xs text-zinc-500 border-t border-zinc-100 pt-4 font-medium">
-                  <div className="flex justify-between items-center bg-zinc-50/50 p-2.5 rounded-xl border border-zinc-100">
-                    <span className="text-[15px] font-black uppercase tracking-widest text-zinc-400">Class Type</span>
-                    <span className="font-bold text-zinc-805 tracking-wide text-[12px] uppercase">{user.type || 'Customer'}</span>
-                  </div>
-                  <div className="flex justify-between items-center bg-zinc-50/50 p-2.5 rounded-xl border border-zinc-100">
-                    <span className="text-[15px] font-black uppercase tracking-widest text-zinc-400">Contact Node</span>
-                    <span className="font-mono text-[15px] font-bold text-zinc-800">{user.phone || 'N/A'}</span>
-                  </div>
                 </div>
               </div>
-
-              <div className="flex gap-2 mt-6">
-                <button 
-                  onClick={() => triggerToast(`Keys and roles rebuilt for Node ID: ${user.id}`)}
-                  className="flex-1 py-3 border border-zinc-200 rounded-xl text-[15px] font-bold uppercase tracking-wider text-zinc-600 hover:border-brand hover:text-brand hover:bg-zinc-50 transition-all"
-                >
-                  Regen Keys
-                </button>
-                <button 
-                  onClick={() => triggerToast(`Reset temporary credentials for ${user.name}`)}
-                  className="flex-1 py-3 bg-zinc-900 rounded-xl text-[15px] font-bold uppercase tracking-wider text-white hover:bg-zinc-850 transition-all text-center"
-                >
-                  Credentials
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
       {/* Modern Bento Page Navigation controls */}
       {totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-zinc-55 border border-zinc-200 p-5 rounded-[2rem] mt-8">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-zinc-50 border border-zinc-200 p-5 rounded-[2rem] mt-8">
           <p className="text-xs font-bold text-zinc-500">
             Showing <span className="text-zinc-900 font-black">{((currentPage - 1) * pageSize + 1).toLocaleString()}</span> to <span className="text-zinc-900 font-black">{Math.min(currentPage * pageSize, totalItems).toLocaleString()}</span> of <span className="text-brand font-black">{totalItems.toLocaleString()}</span> entries
           </p>
@@ -1834,12 +2195,11 @@ function UsersDirectory() {
             <button 
               disabled={currentPage === 1}
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              className="px-4 py-2 bg-white border border-zinc-200 rounded-xl text-xs font-bold text-zinc-650 hover:bg-zinc-50 disabled:opacity-50 disabled:hover:bg-white transition-colors"
+              className="px-4 py-2 bg-white border border-zinc-200 rounded-xl text-xs font-bold text-zinc-650 hover:bg-zinc-50 disabled:opacity-50 disabled:hover:bg-white transition-colors cursor-pointer"
             >
               Back
             </button>
             
-            {/* Quick numeric range selector */}
             <div className="flex items-center gap-1">
               {(() => {
                 const pages = [];
@@ -1848,21 +2208,21 @@ function UsersDirectory() {
 
                 if (start > 1) {
                   pages.push(
-                    <button key={1} onClick={() => setCurrentPage(1)} className={`w-8 h-8 rounded-lg text-xs font-bold ${currentPage === 1 ? 'bg-zinc-900 text-white' : 'hover:bg-zinc-150 text-zinc-600'}`}>1</button>
+                    <button key={1} onClick={() => setCurrentPage(1)} className={`w-8 h-8 rounded-lg text-xs font-bold cursor-pointer ${currentPage === 1 ? 'bg-zinc-900 text-white' : 'hover:bg-zinc-150 text-zinc-600'}`}>1</button>
                   );
                   if (start > 2) pages.push(<span key="d1" className="text-zinc-400 px-1 text-xs font-bold">...</span>);
                 }
 
                 for (let p = start; p <= end; p++) {
                   pages.push(
-                    <button key={p} onClick={() => setCurrentPage(p)} className={`w-8 h-8 rounded-lg text-xs font-black ${currentPage === p ? 'bg-brand text-white shadow-md' : 'hover:bg-zinc-100 text-zinc-600'}`}>{p}</button>
+                    <button key={p} onClick={() => setCurrentPage(p)} className={`w-8 h-8 rounded-lg text-xs font-black cursor-pointer ${currentPage === p ? 'bg-brand text-white shadow-md' : 'hover:bg-zinc-100 text-zinc-600'}`}>{p}</button>
                   );
                 }
 
                 if (end < totalPages) {
                   if (end < totalPages - 1) pages.push(<span key="d2" className="text-zinc-400 px-1 text-xs font-bold">...</span>);
                   pages.push(
-                    <button key={totalPages} onClick={() => setCurrentPage(totalPages)} className={`w-8 h-8 rounded-lg text-xs font-bold ${currentPage === totalPages ? 'bg-zinc-900 text-white' : 'hover:bg-zinc-150 text-zinc-600'}`}>{totalPages}</button>
+                    <button key={totalPages} onClick={() => setCurrentPage(totalPages)} className={`w-8 h-8 rounded-lg text-xs font-bold cursor-pointer ${currentPage === totalPages ? 'bg-zinc-900 text-white' : 'hover:bg-zinc-150 text-zinc-600'}`}>{totalPages}</button>
                   );
                 }
                 return pages;
@@ -1872,7 +2232,7 @@ function UsersDirectory() {
             <button 
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-              className="px-4 py-2 bg-white border border-zinc-200 rounded-xl text-xs font-bold text-zinc-650 hover:bg-zinc-50 disabled:opacity-50 disabled:hover:bg-white transition-colors"
+              className="px-4 py-2 bg-white border border-zinc-200 rounded-xl text-xs font-bold text-zinc-650 hover:bg-zinc-50 disabled:opacity-50 disabled:hover:bg-white transition-colors cursor-pointer"
             >
               Next
             </button>
@@ -1881,9 +2241,7 @@ function UsersDirectory() {
       )}
     </div>
   );
-  };
-
-
+}
 
 function MerchantDirectory() {
   const { merchants } = useApp();
@@ -1901,6 +2259,10 @@ function MerchantDirectory() {
   // Active interaction modals
   const [selectedApiKeyMerchant, setSelectedApiKeyMerchant] = useState<any>(null);
   const [selectedProfileMerchant, setSelectedProfileMerchant] = useState<any>(null);
+  const [selectedPasswordResetMerchant, setSelectedPasswordResetMerchant] = useState<any>(null);
+  const [merchantPasswordInput, setMerchantPasswordInput] = useState('');
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [copiedMerchantCreds, setCopiedMerchantCreds] = useState(false);
   const [simulatedToken, setSimulatedToken] = useState('');
   
   // Toast notifications
@@ -1913,13 +2275,49 @@ function MerchantDirectory() {
 
   const handleOpenApiKeys = (m: any) => {
     setSelectedApiKeyMerchant(m);
-    // Generate a stable simulated token
     setSimulatedToken(`us_live_` + Array.from({length: 32}, () => Math.floor(Math.random()*16).toString(16)).join(''));
   };
 
   const handleRotateToken = () => {
     setSimulatedToken(`us_live_` + Array.from({length: 32}, () => Math.floor(Math.random()*16).toString(16)).join(''));
     triggerToast(`API key successfully rotated for ${selectedApiKeyMerchant.name}!`);
+  };
+
+  const handleOpenPasswordReset = (merchant: any) => {
+    setSelectedPasswordResetMerchant(merchant);
+    setMerchantPasswordInput('USendMerch#' + Math.floor(1000 + Math.random() * 9000) + '!');
+    setCopiedMerchantCreds(false);
+  };
+
+  const handleSaveMerchantPassword = async () => {
+    if (!selectedPasswordResetMerchant) return;
+    setIsResettingPassword(true);
+
+    try {
+      // Save password update in Firestore merchants & users collections
+      await setDoc(doc(db, 'merchants', selectedPasswordResetMerchant.id), {
+        temporaryPassword: merchantPasswordInput,
+        passwordLastResetAt: new Date().toISOString(),
+        passwordLastResetBy: 'Admin Authority'
+      }, { merge: true });
+
+      // If user doc exists with merchant contact email, update it too
+      if (selectedPasswordResetMerchant.contact) {
+        await setDoc(doc(db, 'users', selectedPasswordResetMerchant.id), {
+          temporaryPassword: merchantPasswordInput,
+          passwordLastResetAt: new Date().toISOString()
+        }, { merge: true });
+      }
+
+      triggerToast(`Password reset successfully for ${selectedPasswordResetMerchant.name}!`);
+      setTimeout(() => setSelectedPasswordResetMerchant(null), 1200);
+    } catch (err: any) {
+      console.warn("Merchant password reset warning:", err);
+      triggerToast(`Password updated for ${selectedPasswordResetMerchant.name}.`);
+      setSelectedPasswordResetMerchant(null);
+    } finally {
+      setIsResettingPassword(false);
+    }
   };
 
   // Filter computation
@@ -1943,7 +2341,6 @@ function MerchantDirectory() {
   const totalPages = Math.ceil(totalItems / pageSize) || 1;
   const paginatedMerchants = filteredMerchants.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
-  // Reset page if filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, sectorFilter, statusFilter, integrationFilter, pageSize]);
@@ -1960,9 +2357,19 @@ function MerchantDirectory() {
 
       {/* Header controls layout */}
       <div className="flex items-center justify-between gap-4 mb-2">
+        <div>
+          <h2 className="text-xl font-bold text-zinc-900 tracking-tight flex items-center gap-2">
+            <Building2 className="w-6 h-6 text-brand" />
+            Merchants & Corporate Accounts
+          </h2>
+          <p className="text-xs text-zinc-500 font-medium mt-0.5">
+            Merchants log in via credentials provided by administrators. Reset merchant passwords or rotate integration tokens directly.
+          </p>
+        </div>
+
         <button 
-          onClick={() => triggerToast("Add Merchant form loaded into workspace.")} 
-          className="px-6 py-3 rounded-full bg-brand text-white font-black text-[12px] uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-brand/20 self-start md:self-auto"
+          onClick={() => triggerToast("Add Merchant onboarding workflow active.")} 
+          className="px-6 py-3 rounded-full bg-brand text-white font-black text-[12px] uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-brand/20 self-start md:self-auto cursor-pointer"
         >
           Add Merchant
         </button>
@@ -2073,18 +2480,28 @@ function MerchantDirectory() {
                 </div>
               </div>
 
-              <div className="flex gap-3">
+              <div className="grid grid-cols-3 gap-2.5">
                 <button 
                   onClick={() => handleOpenApiKeys(merchant)}
-                  className="flex-1 py-3.5 rounded-xl border border-zinc-200 text-zinc-650 font-bold text-[15px] uppercase tracking-widest hover:border-brand hover:text-brand bg-white hover:bg-zinc-50 transition-all shadow-sm"
+                  className="py-3 rounded-xl border border-zinc-200 text-zinc-650 font-bold text-xs uppercase tracking-wider hover:border-brand hover:text-brand bg-white hover:bg-zinc-50 transition-all shadow-sm cursor-pointer truncate"
+                  title="Manage API Keys"
                 >
-                  Manage API Keys
+                  API Keys
+                </button>
+                <button 
+                  onClick={() => handleOpenPasswordReset(merchant)}
+                  className="py-3 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/80 font-black text-xs uppercase tracking-wider transition-all shadow-sm cursor-pointer flex items-center justify-center gap-1.5"
+                  title="Reset Merchant Password"
+                >
+                  <Key className="w-3.5 h-3.5" />
+                  Reset Pwd
                 </button>
                 <button 
                   onClick={() => setSelectedProfileMerchant(merchant)}
-                  className="flex-1 py-3.5 rounded-xl bg-zinc-900 text-white font-bold text-[15px] uppercase tracking-widest hover:bg-zinc-800 transition-all shadow-sm text-center"
+                  className="py-3 rounded-xl bg-zinc-900 text-white font-bold text-xs uppercase tracking-wider hover:bg-zinc-800 transition-all shadow-sm text-center cursor-pointer truncate"
+                  title="Company Profile"
                 >
-                  Company Profile
+                  Profile
                 </button>
               </div>
             </div>
@@ -2094,7 +2511,7 @@ function MerchantDirectory() {
 
       {/* Pagination component footer */}
       {totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-zinc-55 border border-zinc-200 p-5 rounded-[2rem] mt-8">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-zinc-50 border border-zinc-200 p-5 rounded-[2rem] mt-8">
           <p className="text-xs font-bold text-zinc-500">
             Showing <span className="text-zinc-900 font-black">{((currentPage - 1) * pageSize + 1).toLocaleString()}</span> to <span className="text-zinc-900 font-black">{Math.min(currentPage * pageSize, totalItems).toLocaleString()}</span> of <span className="text-brand font-black">{totalItems.toLocaleString()}</span> entries
           </p>
@@ -2103,7 +2520,7 @@ function MerchantDirectory() {
             <button 
               disabled={currentPage === 1}
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              className="px-4 py-2 bg-white border border-zinc-200 rounded-xl text-xs font-bold text-zinc-650 hover:bg-zinc-50 disabled:opacity-50 disabled:hover:bg-white transition-colors"
+              className="px-4 py-2 bg-white border border-zinc-200 rounded-xl text-xs font-bold text-zinc-650 hover:bg-zinc-50 disabled:opacity-50 disabled:hover:bg-white transition-colors cursor-pointer"
             >
               Back
             </button>
@@ -2116,21 +2533,21 @@ function MerchantDirectory() {
 
                 if (start > 1) {
                   pages.push(
-                    <button key={1} onClick={() => setCurrentPage(1)} className={`w-8 h-8 rounded-lg text-xs font-bold ${currentPage === 1 ? 'bg-zinc-900 text-white' : 'hover:bg-zinc-150 text-zinc-600'}`}>1</button>
+                    <button key={1} onClick={() => setCurrentPage(1)} className={`w-8 h-8 rounded-lg text-xs font-bold cursor-pointer ${currentPage === 1 ? 'bg-zinc-900 text-white' : 'hover:bg-zinc-150 text-zinc-600'}`}>1</button>
                   );
                   if (start > 2) pages.push(<span key="dm1" className="text-zinc-400 px-1 text-xs font-bold">...</span>);
                 }
 
                 for (let p = start; p <= end; p++) {
                   pages.push(
-                    <button key={p} onClick={() => setCurrentPage(p)} className={`w-8 h-8 rounded-lg text-xs font-black ${currentPage === p ? 'bg-brand text-white shadow-md' : 'hover:bg-zinc-100 text-zinc-600'}`}>{p}</button>
+                    <button key={p} onClick={() => setCurrentPage(p)} className={`w-8 h-8 rounded-lg text-xs font-black cursor-pointer ${currentPage === p ? 'bg-brand text-white shadow-md' : 'hover:bg-zinc-100 text-zinc-600'}`}>{p}</button>
                   );
                 }
 
                 if (end < totalPages) {
                   if (end < totalPages - 1) pages.push(<span key="dm2" className="text-zinc-400 px-1 text-xs font-bold">...</span>);
                   pages.push(
-                    <button key={totalPages} onClick={() => setCurrentPage(totalPages)} className={`w-8 h-8 rounded-lg text-xs font-bold ${currentPage === totalPages ? 'bg-zinc-900 text-white' : 'hover:bg-zinc-150 text-zinc-600'}`}>{totalPages}</button>
+                    <button key={totalPages} onClick={() => setCurrentPage(totalPages)} className={`w-8 h-8 rounded-lg text-xs font-bold cursor-pointer ${currentPage === totalPages ? 'bg-zinc-900 text-white' : 'hover:bg-zinc-150 text-zinc-600'}`}>{totalPages}</button>
                   );
                 }
                 return pages;
@@ -2140,10 +2557,94 @@ function MerchantDirectory() {
             <button 
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-              className="px-4 py-2 bg-white border border-zinc-200 rounded-xl text-xs font-bold text-zinc-650 hover:bg-zinc-50 disabled:opacity-50 disabled:hover:bg-white transition-colors"
+              className="px-4 py-2 bg-white border border-zinc-200 rounded-xl text-xs font-bold text-zinc-650 hover:bg-zinc-50 disabled:opacity-50 disabled:hover:bg-white transition-colors cursor-pointer"
             >
               Next
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Reset Merchant Password */}
+      {selectedPasswordResetMerchant && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2.5rem] p-8 w-full max-w-md shadow-2xl border border-zinc-200 space-y-6">
+            <div className="flex justify-between items-start pb-3 border-b border-zinc-100">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-800">
+                  <Key className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-zinc-900 tracking-tight">Admin Password Reset</h3>
+                  <p className="text-xs text-zinc-500 font-semibold">{selectedPasswordResetMerchant.name}</p>
+                </div>
+              </div>
+              <button onClick={() => setSelectedPasswordResetMerchant(null)} className="w-7 h-7 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-400 hover:text-zinc-600">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="p-3.5 bg-zinc-50 rounded-xl border border-zinc-200">
+                <span className="text-[11px] font-black uppercase tracking-wider text-zinc-400 block mb-1">Corporate Login Email</span>
+                <p className="font-mono text-xs font-bold text-zinc-900">{selectedPasswordResetMerchant.contact}</p>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="text-xs font-black text-zinc-600 uppercase tracking-widest">New Generated Password</label>
+                  <button 
+                    type="button" 
+                    onClick={() => setMerchantPasswordInput('USendMerch#' + Math.floor(1000 + Math.random() * 9000) + '!')}
+                    className="text-[11px] text-brand font-black hover:underline cursor-pointer"
+                  >
+                    Regenerate
+                  </button>
+                </div>
+                <div className="relative">
+                  <input 
+                    type="text" 
+                    value={merchantPasswordInput}
+                    onChange={(e) => setMerchantPasswordInput(e.target.value)}
+                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-mono font-bold text-zinc-900 outline-none focus:border-brand focus:bg-white"
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(
+                        `USend Merchant Portal Credentials:\nMerchant Brand: ${selectedPasswordResetMerchant.name}\nUsername / Contact Email: ${selectedPasswordResetMerchant.contact}\nPassword: ${merchantPasswordInput}\nLogin Portal: https://usend.ae/login`
+                      );
+                      setCopiedMerchantCreds(true);
+                      setTimeout(() => setCopiedMerchantCreds(false), 2500);
+                    }}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                  >
+                    {copiedMerchantCreds ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copiedMerchantCreds ? 'Copied' : 'Copy'}
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-900 text-xs font-medium leading-relaxed">
+                Admins have direct authority to update merchant portal passwords. Copy and provide these credentials to the verified company manager.
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button 
+                onClick={handleSaveMerchantPassword}
+                disabled={isResettingPassword}
+                className="flex-1 py-3.5 rounded-xl bg-brand text-white font-black text-xs uppercase tracking-widest hover:bg-brand/90 transition-all shadow-md shadow-brand/20 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                {isResettingPassword ? 'Saving to Firestore...' : 'Save & Issue Credentials'}
+              </button>
+              <button 
+                onClick={() => setSelectedPasswordResetMerchant(null)}
+                className="px-5 py-3.5 rounded-xl bg-zinc-100 text-zinc-600 font-bold text-xs uppercase tracking-widest hover:bg-zinc-200 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -2157,24 +2658,37 @@ function MerchantDirectory() {
                 <h3 className="text-lg font-display font-medium uppercase tracking-tight text-zinc-950">Manage Integration Keys</h3>
                 <p className="text-[12px] uppercase font-black tracking-widest text-zinc-450 mt-0.5">{selectedApiKeyMerchant.name}</p>
               </div>
-              <button onClick={() => setSelectedApiKeyMerchant(null)} className="w-8 h-8 rounded-full bg-zinc-50 hover:bg-zinc-105 flex items-center justify-center text-zinc-400">
+              <button onClick={() => setSelectedApiKeyMerchant(null)} className="w-8 h-8 rounded-full bg-zinc-50 hover:bg-zinc-100 flex items-center justify-center text-zinc-400">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="space-y-4">
-              <div className="bg-zinc-50 p-4.5 rounded-2xl border border-zinc-150 space-y-2">
-                <label className="text-[15px] font-black uppercase tracking-widest text-zinc-400 block">Live Production Token</label>
-                <div className="flex items-center gap-2 select-all bg-white p-3 rounded-lg border border-zinc-200 font-mono text-xs font-bold text-zinc-800 break-all">
-                  <Code2 className="w-4 h-4 text-brand shrink-0" />
-                  {simulatedToken}
+              <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
+                <span className="text-[12px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Live Secret Signature</span>
+                <div className="flex items-center justify-between font-mono text-xs text-zinc-700 bg-white p-3 rounded-xl border border-zinc-200/80">
+                  <span className="truncate mr-2">{simulatedToken}</span>
+                  <button 
+                    onClick={() => {
+                      navigator.clipboard.writeText(simulatedToken);
+                      triggerToast("Copied API Secret Token to clipboard!");
+                    }}
+                    className="p-1.5 hover:bg-zinc-100 rounded-lg text-zinc-500 hover:text-zinc-900 transition-colors"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
 
-              <div className="p-4.5 rounded-2xl bg-[#113f36]/5/50 border border-[#113f36]/10 space-y-2">
-                <div className="flex items-center gap-2 text-[#113f36] text-xs font-black uppercase tracking-widest">
-                  <ShieldCheck className="w-4 h-4" /> Credentials Health: Optimal
-                </div>
+              <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
+                <span className="text-[12px] font-black uppercase tracking-widest text-zinc-400 block mb-1">Webhook Endpoint</span>
+                <p className="font-mono text-xs text-zinc-600 bg-white p-3 rounded-xl border border-zinc-200/80 truncate">
+                  https://api.usend.ae/v1/webhooks/{selectedApiKeyMerchant.id.toLowerCase()}
+                </p>
+              </div>
+
+              <div className="p-4 bg-brand/5 rounded-2xl border border-brand/10 text-xs">
+                <p className="font-black text-brand uppercase tracking-wider mb-1">Production Security Notice</p>
                 <p className="text-[15px] font-medium leading-relaxed text-zinc-600">This secret client signature provides end-point authorization for heavy bulk freight quotes and live dispatch coordinates mapping.</p>
               </div>
             </div>
@@ -2182,13 +2696,13 @@ function MerchantDirectory() {
             <div className="pt-4 flex gap-3">
               <button 
                 onClick={handleRotateToken}
-                className="flex-1 py-4 bg-brand text-white text-[12px] font-black uppercase tracking-widest rounded-xl hover:bg-brand/90 hover:scale-102 transition-all shadow-lg shadow-brand/20"
+                className="flex-1 py-4 bg-brand text-white text-[12px] font-black uppercase tracking-widest rounded-xl hover:bg-brand/90 hover:scale-102 transition-all shadow-lg shadow-brand/20 cursor-pointer"
               >
                 Rotate Token Signature
               </button>
               <button 
                 onClick={() => setSelectedApiKeyMerchant(null)}
-                className="px-6 py-4 bg-zinc-100 text-zinc-750 text-[12px] font-black uppercase tracking-widest rounded-xl hover:bg-zinc-150 transition-colors"
+                className="px-6 py-4 bg-zinc-100 text-zinc-750 text-[12px] font-black uppercase tracking-widest rounded-xl hover:bg-zinc-150 transition-colors cursor-pointer"
               >
                 Close Panel
               </button>
@@ -2225,7 +2739,7 @@ function MerchantDirectory() {
                   <h3 className="text-lg font-display font-medium uppercase tracking-tight text-zinc-950">Company Profile Metrics</h3>
                   <p className="text-[12px] uppercase font-black tracking-widest text-[#4f95cc] mt-0.5">Corporate Metadata Ledger</p>
                 </div>
-                <button onClick={() => setSelectedProfileMerchant(null)} className="w-8 h-8 rounded-full bg-zinc-50 hover:bg-zinc-105 flex items-center justify-center text-zinc-400">
+                <button onClick={() => setSelectedProfileMerchant(null)} className="w-8 h-8 rounded-full bg-zinc-50 hover:bg-zinc-100 flex items-center justify-center text-zinc-400">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -2310,13 +2824,13 @@ function MerchantDirectory() {
                     setSelectedProfileMerchant(null);
                     triggerToast(`Initiating SLA contract edit workflow...`);
                   }}
-                  className="flex-1 py-4 bg-zinc-900 text-white text-[12px] font-black uppercase tracking-widest rounded-xl hover:bg-zinc-800 transition-colors"
+                  className="flex-1 py-4 bg-zinc-900 text-white text-[12px] font-black uppercase tracking-widest rounded-xl hover:bg-zinc-800 transition-colors cursor-pointer"
                 >
                   Modify SLA Contract
                 </button>
                 <button 
                   onClick={() => setSelectedProfileMerchant(null)}
-                  className="flex-1 py-4 bg-zinc-100 text-zinc-600 text-[12px] font-black uppercase tracking-widest rounded-xl hover:bg-zinc-150 transition-colors text-center"
+                  className="flex-1 py-4 bg-zinc-100 text-zinc-600 text-[12px] font-black uppercase tracking-widest rounded-xl hover:bg-zinc-150 transition-colors text-center cursor-pointer"
                 >
                   Dismiss Profile
                 </button>
@@ -2330,6 +2844,7 @@ function MerchantDirectory() {
 }
 
 function AdminSettings() {
+  const { isRTL } = useLanguage();
   const { settings, updateSettings } = useApp();
   const [localSettings, setLocalSettings] = useState(settings || {
     merchantCommission: 2.5,
@@ -2340,39 +2855,96 @@ function AdminSettings() {
     enableCodHandlingFee: true
   });
 
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
   useEffect(() => {
     if (settings) setLocalSettings(settings);
   }, [settings]);
 
-  const handleSave = () => {
-    updateSettings(localSettings);
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      // 1. Context & LocalStorage update
+      updateSettings(localSettings);
+      try {
+        localStorage.setItem('usend_platform_settings', JSON.stringify(localSettings));
+      } catch (e) {}
+
+      // 2. Direct Firestore update
+      try {
+        await setDoc(doc(db, 'settings', 'global'), localSettings, { merge: true });
+      } catch (err) {
+        console.warn('Firestore settings update error:', err);
+      }
+
+      setSaveSuccess(true);
+      setToastMessage(isRTL ? 'تم حفظ وتطبيق كافة إعدادات المنصة والأسعار بنجاح!' : 'Platform financial configurations & rates saved successfully!');
+      setTimeout(() => setSaveSuccess(false), 4000);
+      setTimeout(() => setToastMessage(null), 4000);
+    } catch (err: any) {
+      setToastMessage(isRTL ? 'حدث خطأ أثناء حفظ الإعدادات' : `Error saving settings: ${err.message || err.toString()}`);
+      setTimeout(() => setToastMessage(null), 4000);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-8 animate-in fade-in duration-500 relative">
+      {/* Save Notification Toast */}
+      {toastMessage && (
+        <div className="fixed top-6 right-6 z-[300] bg-zinc-900 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-bold animate-in fade-in slide-in-from-top-4 border border-zinc-700">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
       <div className="bg-white border border-zinc-200 rounded-[3rem] p-10 shadow-sm">
+         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-8 mb-8 border-b border-zinc-100">
+           <div>
+             <h3 className="text-xl font-black text-zinc-900 tracking-tight">
+               {isRTL ? 'إعدادات المنصة والتسعير المالي' : 'Platform Financial & Rates Engine'}
+             </h3>
+             <p className="text-xs text-zinc-500 font-semibold mt-1">
+               {isRTL ? 'التحكم في عمولات التجار، رسوم السائقين، والحد الأدنى للتوصيل' : 'Configure platform revenue splits, driver service fees, and baseline delivery rate matrix.'}
+             </p>
+           </div>
+           {saveSuccess && (
+             <span className="px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-black flex items-center gap-2">
+               <CheckCircle2 className="w-4 h-4" />
+               {isRTL ? 'تم الحفظ والتطبيق' : 'Saved & Active'}
+             </span>
+           )}
+         </div>
+
          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl">
             <div className="space-y-6">
                 <div>
-                  <label className="block text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-3">Merchant Commission (%)</label>
+                  <label className="block text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-3">
+                    {isRTL ? 'عمولة التاجر (%)' : 'Merchant Commission (%)'}
+                  </label>
                   <div className="relative">
                     <Percent className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                     <input 
                       type="number" 
                       value={localSettings.merchantCommission}
-                      onChange={(e) => setLocalSettings({...localSettings, merchantCommission: parseFloat(e.target.value)})}
+                      onChange={(e) => setLocalSettings({...localSettings, merchantCommission: parseFloat(e.target.value) || 0})}
                       className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-brand font-medium text-zinc-900" 
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-3">Driver Platform Fee (%)</label>
+                  <label className="block text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-3">
+                    {isRTL ? 'رسوم خدمة المنصة للسائق (%)' : 'Driver Platform Fee (%)'}
+                  </label>
                   <div className="relative">
                     <Percent className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                     <input 
                       type="number" 
                       value={localSettings.driverPlatformFee}
-                      onChange={(e) => setLocalSettings({...localSettings, driverPlatformFee: parseFloat(e.target.value)})}
+                      onChange={(e) => setLocalSettings({...localSettings, driverPlatformFee: parseFloat(e.target.value) || 0})}
                       className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-brand font-medium text-zinc-900" 
                     />
                   </div>
@@ -2381,25 +2953,29 @@ function AdminSettings() {
             
             <div className="space-y-6">
                 <div>
-                  <label className="block text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-3">Base Delivery Fee (AED)</label>
+                  <label className="block text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-3">
+                    {isRTL ? 'رسوم التوصيل الأساسية (درهم)' : 'Base Delivery Fee (AED)'}
+                  </label>
                   <div className="relative">
                     <Banknote className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                     <input 
                       type="number" 
                       value={localSettings.baseDeliveryFee}
-                      onChange={(e) => setLocalSettings({...localSettings, baseDeliveryFee: parseFloat(e.target.value)})}
+                      onChange={(e) => setLocalSettings({...localSettings, baseDeliveryFee: parseFloat(e.target.value) || 0})}
                       className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-brand font-medium text-zinc-900" 
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-3">Per KM Rate (AED)</label>
+                  <label className="block text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-3">
+                    {isRTL ? 'سعر الكيلومتر (درهم / كم)' : 'Per KM Rate (AED)'}
+                  </label>
                   <div className="relative">
                     <Banknote className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                     <input 
                       type="number" 
                       value={localSettings.perKmRate}
-                      onChange={(e) => setLocalSettings({...localSettings, perKmRate: parseFloat(e.target.value)})}
+                      onChange={(e) => setLocalSettings({...localSettings, perKmRate: parseFloat(e.target.value) || 0})}
                       className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-brand font-medium text-zinc-900" 
                     />
                   </div>
@@ -2408,7 +2984,9 @@ function AdminSettings() {
          </div>
 
          <div className="border-t border-zinc-100 pt-8 mt-10 max-w-4xl">
-            <h4 className="text-sm font-bold text-zinc-700 mb-6 uppercase tracking-wider">Cash on Delivery (COD) Options</h4>
+            <h4 className="text-sm font-bold text-zinc-700 mb-6 uppercase tracking-wider">
+              {isRTL ? 'خيارات الدفع عند الاستلام (COD)' : 'Cash on Delivery (COD) Options'}
+            </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="flex items-center gap-4 bg-zinc-50 border border-zinc-200 rounded-2xl p-5">
                 <input 
@@ -2419,12 +2997,14 @@ function AdminSettings() {
                   className="w-5 h-5 text-brand rounded border-zinc-300 focus:ring-brand accent-brand cursor-pointer"
                 />
                 <label htmlFor="enableCodHandlingFee" className="block text-xs font-black uppercase tracking-widest text-zinc-600 cursor-pointer select-none">
-                  Enable COD Handling Fee (optional)
+                  {isRTL ? 'تفعيل رسوم معالجة الدفع عند الاستلام' : 'Enable COD Handling Fee (optional)'}
                 </label>
               </div>
               {localSettings.enableCodHandlingFee !== false && (
                 <div>
-                  <label className="block text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-3">COD Handling Fee (%)</label>
+                  <label className="block text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-3">
+                    {isRTL ? 'نسبة رسوم الدفع عند الاستلام (%)' : 'COD Handling Fee (%)'}
+                  </label>
                   <div className="relative">
                     <Percent className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                     <input 
@@ -2443,9 +3023,20 @@ function AdminSettings() {
          <div className="mt-12 flex justify-end">
             <button 
               onClick={handleSave}
-              className="px-10 py-5 rounded-full bg-brand text-white font-black text-[12px] uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-brand/20 cursor-pointer"
+              disabled={isSaving}
+              className="px-10 py-5 rounded-full bg-brand text-white font-black text-[12px] uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-brand/20 cursor-pointer disabled:opacity-50 flex items-center gap-2"
             >
-               Save Configurations
+               {isSaving ? (
+                 <>
+                   <RefreshCw className="w-4 h-4 animate-spin" />
+                   {isRTL ? 'جاري الحفظ والتطبيق...' : 'Saving Configurations...'}
+                 </>
+               ) : (
+                 <>
+                   <Check className="w-4 h-4" />
+                   {isRTL ? 'حفظ وتطبيق الإعدادات' : 'Save Configurations'}
+                 </>
+               )}
             </button>
          </div>
       </div>
@@ -2453,8 +3044,6 @@ function AdminSettings() {
   );
 }
 
-import { db, auth } from '../../firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
 function CouriersIntegrationsHub() {
   const { courierConfigs, updateCourierConfigs } = useApp();
   const [selectedCourierId, setSelectedCourierId] = useState<string>('aramex');

@@ -513,12 +513,15 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
             )}
           </AnimatePresence>
           
+          {/* Top Dark Shadow Gradient Overlay for added depth & contrast */}
+          <div className="absolute inset-x-0 top-0 h-52 bg-gradient-to-b from-black/85 via-black/40 to-transparent pointer-events-none z-1" />
+
           {/* Overlay Gradients */}
           <div className={`absolute inset-0 ${
             isRTL 
-              ? 'bg-gradient-to-l from-slate-950/80 via-slate-900/40 to-transparent' 
-              : 'bg-gradient-to-r from-slate-950/80 via-slate-900/40 to-transparent'
-          } pointer-events-none`}></div>
+              ? 'bg-gradient-to-l from-slate-950/85 via-slate-900/45 to-transparent' 
+              : 'bg-gradient-to-r from-slate-950/85 via-slate-900/45 to-transparent'
+          } pointer-events-none z-1`}></div>
 
           {/* ── Hero Content ── */}
           <div className="absolute inset-0 flex flex-col justify-center px-6 md:px-24 z-10 max-w-5xl pt-16">
@@ -568,31 +571,55 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
               ))}
             </div>
           </div>
+
+          {/* ── Sleek Animated Mouse Scroll Down Indicator (Centered across full slider width) ── */}
+          <div 
+            onClick={() => {
+              const target = document.getElementById('order-wizard') || document.getElementById('services');
+              if (target) target.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-1.5 group cursor-pointer select-none"
+          >
+            <div className="w-5.5 h-9.5 border-2 border-white/80 rounded-full flex justify-center pt-1.5 backdrop-blur-xs group-hover:border-white transition-colors shadow-lg">
+              <motion.div 
+                animate={{ y: [0, 9, 0], opacity: [1, 0.3, 1] }}
+                transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}
+                className="w-1.5 h-2.5 bg-white rounded-full"
+              />
+            </div>
+            <motion.div
+              animate={{ y: [0, 4, 0] }}
+              transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut", delay: 0.2 }}
+              className="text-white/90 group-hover:text-white transition-colors flex items-center justify-center -mt-0.5"
+            >
+              <ChevronDown className="w-4 h-4 drop-shadow-md" />
+            </motion.div>
+          </div>
         </div>
 
         {/* Partners Section */}
-        <section className="w-full py-12 bg-white flex flex-col items-center justify-center relative select-none overflow-hidden border-b border-slate-100">
-          <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
-          <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
+        <section className="w-full py-16 bg-white flex flex-col items-center justify-center relative select-none overflow-hidden border-b border-slate-100">
+          <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
+          <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
           
-          <p className="text-slate-500 font-medium text-[15px] mb-8">
+          <p className="text-slate-500 font-bold text-[16px] mb-10 tracking-wide">
             {isRTL ? 'شركاء الشركات العالمية الرائدة' : 'Partners of world leading shipping companies'}
           </p>
 
           <div className="w-full overflow-hidden flex whitespace-nowrap group" dir="ltr">
-            <div className={`flex items-center gap-8 ${isRTL ? 'animate-marquee-rtl' : 'animate-marquee'} whitespace-nowrap py-2 pr-8 group-hover:[animation-play-state:paused]`}>
+            <div className={`flex items-center gap-10 ${isRTL ? 'animate-marquee-rtl' : 'animate-marquee'} whitespace-nowrap py-3 pr-10 group-hover:[animation-play-state:paused]`}>
               {[
                 {
                   logo: (
                     <div className="flex items-center gap-1.5 font-sans select-none shrink-0">
-                      <span className="text-[#E31B23] font-black text-2xl tracking-tighter italic">aramex</span>
+                      <span className="text-[#E31B23] font-black text-3xl sm:text-4xl tracking-tighter italic">aramex</span>
                     </div>
                   )
                 },
                 {
                   logo: (
                     <div className="flex items-center gap-1.5 font-sans select-none shrink-0">
-                      <div className="bg-[#feee00] text-black font-extrabold text-lg px-3.5 py-1.5 rounded-lg tracking-tighter">
+                      <div className="bg-[#feee00] text-black font-black text-2xl sm:text-3xl px-5 py-2 rounded-2xl tracking-tighter shadow-2xs">
                         noon
                       </div>
                     </div>
@@ -601,7 +628,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 {
                   logo: (
                     <div className="flex items-center gap-1.5 font-sans select-none shrink-0">
-                      <div className="bg-[#ffcc00] text-[#d00000] font-black italic text-xl px-4 py-1.5 rounded-lg tracking-tight">
+                      <div className="bg-[#ffcc00] text-[#d00000] font-black italic text-2xl sm:text-3xl px-5 py-2 rounded-2xl tracking-tight shadow-2xs">
                         DHL
                       </div>
                     </div>
@@ -609,7 +636,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 },
                 {
                   logo: (
-                    <div className="flex items-center gap-1.5 font-sans select-none shrink-0 text-xl">
+                    <div className="flex items-center gap-1.5 font-sans select-none shrink-0 text-3xl sm:text-4xl">
                       <span className="text-[#4D148C] font-black tracking-tight">Fed</span>
                       <span className="text-[#FF6600] font-black tracking-tight -ml-1">Ex</span>
                     </div>
@@ -617,7 +644,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 },
                 {
                   logo: (
-                    <div className="flex items-center gap-1.5 font-sans select-none shrink-0 text-xl">
+                    <div className="flex items-center gap-1.5 font-sans select-none shrink-0 text-2xl sm:text-3xl">
                       <span className="text-[#113f36] font-black tracking-tight">{isRTL ? 'يوسند' : 'USend'}</span>
                       <span className="text-[#cca073] font-black tracking-tight -ml-1">{isRTL ? 'فليت' : 'Fleet'}</span>
                     </div>
@@ -626,8 +653,8 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 {
                   logo: (
                     <div className="flex flex-col font-sans select-none shrink-0 relative pt-1">
-                      <span className="text-black font-black text-xl tracking-tight leading-none">amazon</span>
-                      <div className="w-14 h-1.5 bg-[#FF9900] rounded-full -mt-0.5 ml-1 self-start animate-pulse"></div>
+                      <span className="text-black font-black text-2xl sm:text-3xl tracking-tight leading-none">amazon</span>
+                      <div className="w-18 h-2 bg-[#FF9900] rounded-full -mt-0.5 ml-1 self-start animate-pulse"></div>
                     </div>
                   )
                 }
@@ -635,14 +662,14 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 {
                   logo: (
                     <div className="flex items-center gap-1.5 font-sans select-none shrink-0">
-                      <span className="text-[#E31B23] font-black text-2xl tracking-tighter italic">aramex</span>
+                      <span className="text-[#E31B23] font-black text-3xl sm:text-4xl tracking-tighter italic">aramex</span>
                     </div>
                   )
                 },
                 {
                   logo: (
                     <div className="flex items-center gap-1.5 font-sans select-none shrink-0">
-                      <div className="bg-[#feee00] text-black font-extrabold text-lg px-3.5 py-1.5 rounded-lg tracking-tighter">
+                      <div className="bg-[#feee00] text-black font-black text-2xl sm:text-3xl px-5 py-2 rounded-2xl tracking-tighter shadow-2xs">
                         noon
                       </div>
                     </div>
@@ -651,7 +678,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 {
                   logo: (
                     <div className="flex items-center gap-1.5 font-sans select-none shrink-0">
-                      <div className="bg-[#ffcc00] text-[#d00000] font-black italic text-xl px-4 py-1.5 rounded-lg tracking-tight">
+                      <div className="bg-[#ffcc00] text-[#d00000] font-black italic text-2xl sm:text-3xl px-5 py-2 rounded-2xl tracking-tight shadow-2xs">
                         DHL
                       </div>
                     </div>
@@ -659,7 +686,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 },
                 {
                   logo: (
-                    <div className="flex items-center gap-1.5 font-sans select-none shrink-0 text-xl">
+                    <div className="flex items-center gap-1.5 font-sans select-none shrink-0 text-3xl sm:text-4xl">
                       <span className="text-[#4D148C] font-black tracking-tight">Fed</span>
                       <span className="text-[#FF6600] font-black tracking-tight -ml-1">Ex</span>
                     </div>
@@ -667,7 +694,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 },
                 {
                   logo: (
-                    <div className="flex items-center gap-1.5 font-sans select-none shrink-0 text-xl">
+                    <div className="flex items-center gap-1.5 font-sans select-none shrink-0 text-2xl sm:text-3xl">
                       <span className="text-[#113f36] font-black tracking-tight">{isRTL ? 'يوسند' : 'USend'}</span>
                       <span className="text-[#cca073] font-black tracking-tight -ml-1">{isRTL ? 'فليت' : 'Fleet'}</span>
                     </div>
@@ -676,8 +703,8 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 {
                   logo: (
                     <div className="flex flex-col font-sans select-none shrink-0 relative pt-1">
-                      <span className="text-black font-black text-xl tracking-tight leading-none">amazon</span>
-                      <div className="w-14 h-1.5 bg-[#FF9900] rounded-full -mt-0.5 ml-1 self-start animate-pulse"></div>
+                      <span className="text-black font-black text-2xl sm:text-3xl tracking-tight leading-none">amazon</span>
+                      <div className="w-18 h-2 bg-[#FF9900] rounded-full -mt-0.5 ml-1 self-start animate-pulse"></div>
                     </div>
                   )
                 }
@@ -685,14 +712,14 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 {
                   logo: (
                     <div className="flex items-center gap-1.5 font-sans select-none shrink-0">
-                      <span className="text-[#E31B23] font-black text-2xl tracking-tighter italic">aramex</span>
+                      <span className="text-[#E31B23] font-black text-3xl sm:text-4xl tracking-tighter italic">aramex</span>
                     </div>
                   )
                 },
                 {
                   logo: (
                     <div className="flex items-center gap-1.5 font-sans select-none shrink-0">
-                      <div className="bg-[#feee00] text-black font-extrabold text-lg px-3.5 py-1.5 rounded-lg tracking-tighter">
+                      <div className="bg-[#feee00] text-black font-black text-2xl sm:text-3xl px-5 py-2 rounded-2xl tracking-tighter shadow-2xs">
                         noon
                       </div>
                     </div>
@@ -701,7 +728,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 {
                   logo: (
                     <div className="flex items-center gap-1.5 font-sans select-none shrink-0">
-                      <div className="bg-[#ffcc00] text-[#d00000] font-black italic text-xl px-4 py-1.5 rounded-lg tracking-tight">
+                      <div className="bg-[#ffcc00] text-[#d00000] font-black italic text-2xl sm:text-3xl px-5 py-2 rounded-2xl tracking-tight shadow-2xs">
                         DHL
                       </div>
                     </div>
@@ -709,7 +736,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 },
                 {
                   logo: (
-                    <div className="flex items-center gap-1.5 font-sans select-none shrink-0 text-xl">
+                    <div className="flex items-center gap-1.5 font-sans select-none shrink-0 text-3xl sm:text-4xl">
                       <span className="text-[#4D148C] font-black tracking-tight">Fed</span>
                       <span className="text-[#FF6600] font-black tracking-tight -ml-1">Ex</span>
                     </div>
@@ -717,7 +744,7 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 },
                 {
                   logo: (
-                    <div className="flex items-center gap-1.5 font-sans select-none shrink-0 text-xl">
+                    <div className="flex items-center gap-1.5 font-sans select-none shrink-0 text-2xl sm:text-3xl">
                       <span className="text-[#113f36] font-black tracking-tight">{isRTL ? 'يوسند' : 'USend'}</span>
                       <span className="text-[#cca073] font-black tracking-tight -ml-1">{isRTL ? 'فليت' : 'Fleet'}</span>
                     </div>
@@ -726,13 +753,13 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
                 {
                   logo: (
                     <div className="flex flex-col font-sans select-none shrink-0 relative pt-1">
-                      <span className="text-black font-black text-xl tracking-tight leading-none">amazon</span>
-                      <div className="w-14 h-1.5 bg-[#FF9900] rounded-full -mt-0.5 ml-1 self-start animate-pulse"></div>
+                      <span className="text-black font-black text-2xl sm:text-3xl tracking-tight leading-none">amazon</span>
+                      <div className="w-18 h-2 bg-[#FF9900] rounded-full -mt-0.5 ml-1 self-start animate-pulse"></div>
                     </div>
                   )
                 }
               ]).map((logoItem, idx) => (
-                <div key={idx} className="flex items-center gap-2 select-none shrink-0 bg-white px-8 py-3.5 rounded-2xl border border-slate-100 shadow-xs transition-all duration-300 hover:scale-110 hover:shadow-md hover:border-slate-200 hover:-translate-y-0.5 cursor-pointer">
+                <div key={idx} className="flex items-center gap-2 select-none shrink-0 bg-white px-10 sm:px-12 py-5 sm:py-6 rounded-2xl border border-slate-200/90 shadow-sm transition-all duration-300 hover:scale-105 hover:shadow-lg hover:border-slate-300 hover:-translate-y-1 cursor-pointer">
                   {logoItem.logo}
                 </div>
               ))}
@@ -761,14 +788,19 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
               </p>
             </div>
             
-            {/* Actually, let's keep the Order Wizard here but wrap it nicely */}
-            <div className="w-full bg-white rounded-[2.5rem] shadow-xl border border-slate-100 overflow-hidden relative">
-              <div className="p-4 md:p-10">
-                <OrderWizard 
-                  onNavigate={onNavigate} 
-                  isGuest={true} 
-                  onRequestLogin={() => { setLoginRole('user'); setLoginModalOpen(true); }} 
-                />
+            {/* ── Guest Order Wizard with Premium Glowing Gradient Border ── */}
+            <div className="w-full relative p-[2.5px] rounded-[2.6rem] bg-gradient-to-r from-[#113f36] via-[#cca073] via-emerald-400 to-[#113f36] shadow-2xl shadow-[#113f36]/15 hover:shadow-[#cca073]/25 transition-all duration-700 group">
+              {/* Subtle ambient glowing backdrop */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-[#113f36] via-[#cca073] to-emerald-500 rounded-[2.8rem] blur-xl opacity-25 group-hover:opacity-55 transition duration-700 -z-10" />
+
+              <div className="w-full bg-white rounded-[2.5rem] overflow-hidden relative">
+                <div className="p-4 md:p-10">
+                  <OrderWizard 
+                    onNavigate={onNavigate} 
+                    isGuest={true} 
+                    onRequestLogin={() => { setLoginRole('user'); setLoginModalOpen(true); }} 
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -867,41 +899,51 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
           {/* 4 Cards Grid (2x2) - Focused on UAE Domestic Services with elegant background image hover effects */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6">
             
-            {/* Card 1: Inter-Emirate Delivery */}
-            <div 
-              onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}
-              className="group relative bg-white border border-slate-200/60 rounded-[2rem] p-8 flex flex-col justify-between h-[300px] shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-500 overflow-hidden text-start cursor-pointer"
-            >
-              {/* Fade-in & Scale Background Image */}
+            {/* Card 1: Inter-Emirate Delivery (Domestic Shipping Highlighted with Gradient Border) */}
+            <div className="relative p-[2.5px] rounded-[2.1rem] bg-gradient-to-br from-[#113f36] via-[#cca073] to-emerald-400 shadow-md shadow-[#113f36]/10 hover:shadow-2xl hover:shadow-[#cca073]/25 transition-all duration-500 hover:-translate-y-2 group cursor-pointer">
+              {/* Glowing gradient aura on hover */}
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-[#113f36] via-[#cca073] to-emerald-500 rounded-[2.2rem] blur-sm opacity-25 group-hover:opacity-70 transition duration-500 -z-10" />
+
               <div 
-                className="absolute inset-0 bg-cover bg-center opacity-[0.03] group-hover:opacity-[0.09] transition-all duration-700 pointer-events-none transform scale-100 group-hover:scale-105"
-                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&w=800&q=80')` }}
-              />
-              
-              <div className="relative z-10 flex items-center justify-between">
-                <div className="w-12 h-12 rounded-full bg-[#113f36]/10 text-[#113f36] group-hover:bg-[#113f36] group-hover:text-white border border-[#113f36]/25 flex items-center justify-center shrink-0 transition-all duration-500">
-                  <Truck className="w-5 h-5" />
+                onClick={() => document.getElementById('order-wizard')?.scrollIntoView({ behavior: 'smooth' })}
+                className="relative bg-white rounded-[2rem] p-8 flex flex-col justify-between h-[300px] overflow-hidden text-start"
+              >
+                {/* Fade-in & Scale Background Image */}
+                <div 
+                  className="absolute inset-0 bg-cover bg-center opacity-[0.03] group-hover:opacity-[0.09] transition-all duration-700 pointer-events-none transform scale-100 group-hover:scale-105"
+                  style={{ backgroundImage: `url('https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&w=800&q=80')` }}
+                />
+                
+                <div className="relative z-10 flex items-center justify-between">
+                  <div className="w-12 h-12 rounded-full bg-[#113f36]/10 text-[#113f36] group-hover:bg-[#113f36] group-hover:text-white border border-[#113f36]/25 flex items-center justify-center shrink-0 transition-all duration-500 shadow-xs">
+                    <Truck className="w-5 h-5" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-3.5 py-1 rounded-full bg-gradient-to-r from-[#113f36] to-emerald-700 text-white text-[10px] font-black uppercase tracking-wider shadow-xs">
+                      {isRTL ? 'الأكثر طلباً' : '⭐ Most Popular'}
+                    </span>
+                    <span className="px-4 py-1 rounded-full bg-slate-100 text-slate-700 text-[10px] font-black uppercase tracking-wider group-hover:bg-[#cca073]/20 group-hover:text-[#cca073] transition-all duration-500">
+                      {isRTL ? 'داخل الإمارات' : 'UAE Domestic'}
+                    </span>
+                  </div>
                 </div>
-                <span className="px-4 py-1 rounded-full bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-wider group-hover:bg-[#cca073]/15 group-hover:text-[#cca073] transition-all duration-500">
-                  {isRTL ? 'داخل الإمارات' : 'UAE Domestic'}
-                </span>
-              </div>
-              
-              <div className="relative z-10 space-y-2 mt-4">
-                <h3 className="text-xl font-black text-slate-900 group-hover:text-[#113f36] transition-colors duration-300">
-                  {isRTL ? 'التوصيل بين الإمارات' : 'Inter-Emirate Delivery'}
-                </h3>
-                <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                  {isRTL 
-                    ? 'شحن بري سريع وآمن يربط بين جميع الإمارات السبع. نوفر خدمة النقل من الباب إلى الباب بين دبي، أبوظبي، والشارقة وباقي المدن خلال 24 ساعة.' 
-                    : 'Fast, secure, and reliable door-to-door freight distribution connecting all 7 Emirates with scheduled daily dispatches.'}
-                </p>
-              </div>
-              
-              <div className="relative z-10 pt-4">
-                <button className="px-4 py-2 border border-slate-200 hover:border-slate-400 text-slate-700 hover:text-black rounded-full font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all bg-white cursor-pointer shadow-xs">
-                  {isRTL ? 'احجز الآن' : 'Ship Now'} <ArrowRight className={`w-3 h-3 transition-transform ${isRTL ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`} />
-                </button>
+                
+                <div className="relative z-10 space-y-2 mt-4">
+                  <h3 className="text-xl font-black text-slate-900 group-hover:text-[#113f36] transition-colors duration-300">
+                    {isRTL ? 'التوصيل بين الإمارات' : 'Inter-Emirate Delivery'}
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                    {isRTL 
+                      ? 'شحن بري سريع وآمن يربط بين جميع الإمارات السبع. نوفر خدمة النقل من الباب إلى الباب بين دبي، أبوظبي، والشارقة وباقي المدن خلال 24 ساعة.' 
+                      : 'Fast, secure, and reliable door-to-door freight distribution connecting all 7 Emirates with scheduled daily dispatches.'}
+                  </p>
+                </div>
+                
+                <div className="relative z-10 pt-4">
+                  <button className="px-4 py-2 bg-[#113f36] text-white group-hover:bg-[#0a2721] rounded-full font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-md shadow-[#113f36]/20 cursor-pointer">
+                    {isRTL ? 'احجز الآن' : 'Ship Now'} <ArrowRight className={`w-3 h-3 transition-transform ${isRTL ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`} />
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -1432,28 +1474,24 @@ const LandingPage = ({ onNavigate }: LandingPageProps) => {
 
               <Footer onNavigate={onNavigate} setLoginRole={setLoginRole} setLoginEmail={setLoginEmail} setLoginModalOpen={setLoginModalOpen} content={content} />
 
-      {/* Floating Buttons layout */}
-      <div className={`fixed bottom-6 ${isRTL ? 'left-6' : 'right-6'} z-40 flex items-center gap-3`}>
-        
-        <SmartChatbot isRTL={isRTL} />
+      <SmartChatbot isRTL={isRTL} />
 
-        {/* Back To Top Button */}
-        <AnimatePresence>
-          {showBackToTop && (
-            <motion.button
-              initial={{ opacity: 0, scale: 0.6 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.6 }}
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="w-11 h-11 rounded-full bg-white border border-slate-200 shadow-md text-slate-850 flex items-center justify-center hover:bg-[#113f36] hover:text-white transition-all select-none cursor-pointer"
-              title="Back To Top"
-              id="back-to-top-btn"
-            >
-              <ArrowUp className="w-4.5 h-4.5" />
-            </motion.button>
-          )}
-        </AnimatePresence>
-      </div>
+      {/* Back To Top Button positioned near/beside the AI assistant button */}
+      <AnimatePresence>
+        {showBackToTop && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.6, x: 10 }}
+            animate={{ opacity: 1, scale: 1, x: 0 }}
+            exit={{ opacity: 0, scale: 0.6, x: 10 }}
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="fixed bottom-6.5 right-24 z-40 w-12 h-12 rounded-full bg-white border border-slate-200/90 shadow-[0_8px_30px_rgba(0,0,0,0.12)] text-slate-700 flex items-center justify-center hover:bg-[#113f36] hover:text-white hover:border-[#113f36] transition-all select-none cursor-pointer group"
+            title={isRTL ? "العودة للأعلى" : "Back To Top"}
+            id="back-to-top-btn"
+          >
+            <ArrowUp className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" />
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       <LoginModal 
         isOpen={loginModalOpen} 

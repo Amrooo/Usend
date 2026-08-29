@@ -274,32 +274,32 @@ export default function AIKnowledgeBasePool() {
     switch (cat) {
       case 'rule':
         return {
-          bg: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800',
+          bg: 'bg-rose-50 text-rose-800 border-rose-300 font-bold',
           icon: ShieldCheck,
           label: language === 'ar' ? 'قاعدة تشغيلية' : 'Core Rule'
         };
       case 'faq':
         return {
-          bg: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800',
+          bg: 'bg-sky-50 text-sky-800 border-sky-300 font-bold',
           icon: HelpCircle,
           label: language === 'ar' ? 'سؤال وجواب (FAQ)' : 'FAQ & Q/A'
         };
       case 'policy':
         return {
-          bg: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800',
+          bg: 'bg-purple-50 text-purple-800 border-purple-300 font-bold',
           icon: FileText,
           label: language === 'ar' ? 'سياسة ولوائح' : 'Policy & Terms'
         };
       case 'carrier':
         return {
-          bg: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800',
+          bg: 'bg-amber-50 text-amber-900 border-amber-300 font-bold',
           icon: Truck,
           label: language === 'ar' ? 'شروط الناقل (3PL)' : 'Carrier Protocol'
         };
       case 'paragraph':
       default:
         return {
-          bg: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800',
+          bg: 'bg-emerald-50 text-emerald-900 border-emerald-300 font-bold',
           icon: BookOpen,
           label: language === 'ar' ? 'معلومات الخدمة' : 'Knowledge Paragraph'
         };

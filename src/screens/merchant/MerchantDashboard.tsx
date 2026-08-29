@@ -319,11 +319,15 @@ export default function MerchantDashboard({ onNavigate }: MerchantDashboardProps
                       </td>
                       <td className="p-8">
                         <span className={`inline-block px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${
-                          (order.carrier || '').toLowerCase() === 'noon' ? 'bg-amber-100 text-amber-800' :
-                          (order.carrier || '').toLowerCase() === 'aramex' ? 'bg-red-100 text-red-800' :
+                          (order.carrier || '').toLowerCase().includes('noon') ? 'bg-amber-100 text-amber-800' :
+                          (order.carrier || '').toLowerCase().includes('aramex') ? 'bg-red-100 text-red-800' :
+                          (order.carrier || '').toLowerCase().includes('usend') ? 'bg-emerald-100 text-emerald-800' :
                           'bg-zinc-100 text-zinc-650'
                         }`}>
-                          {order.carrier || 'Not Dispatched'}
+                          {(order.carrier || '').toLowerCase().includes('noon') ? 'Noon Delivery' :
+                           (order.carrier || '').toLowerCase().includes('aramex') ? 'Aramex Express' :
+                           (order.carrier || '').toLowerCase().includes('usend') ? 'USend Fleet' :
+                           (order.carrier || 'Pending Dispatch')}
                         </span>
                       </td>
                       <td className="p-8">

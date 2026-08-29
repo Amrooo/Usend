@@ -164,7 +164,7 @@ function AdminOverview({ onTabChange }: { onTabChange: (tab: any) => void }) {
               {t('admin_operations_portal') || 'Admin Operations Portal'}
             </div>
             <h2 className="text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight">
-              {t('logistics_carrier_analytics_overview') || 'Logistics & Carrier Analytics Overview'}
+              {t('logistics_carrier_analytics_overview') || 'Logistics Operations & Dispatch Overview'}
             </h2>
             <p className="text-sm text-emerald-100/90 leading-relaxed font-medium mt-2">
               {t('real_time_delivery_performance_desc') || 'Real-time delivery performance monitoring, merchant settlement balances, and multi-courier dispatch management.'}
