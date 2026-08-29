@@ -718,6 +718,32 @@ app.post("/api/courier/shipment", express.json(), async (req, res) => {
     const engine = await getCourierEngine();
     const adapter = engine.getAdapter(courierId);
     const result = await adapter.createShipment(payload, credentials, environment);
+
+    // Auto-update Firestore on backend with Admin SDK
+    if (result && result.success) {
+      const orderId = payload.reference || payload.orderId;
+      if (orderId) {
+        try {
+          const dbAdminInstance = getDbAdmin();
+          const wb = result.trackingNumber || result.externalTrackingNumber || result.noonTaskId || '';
+          await dbAdminInstance.collection('requests').doc(orderId).set({
+            status: 'Assigned',
+            carrier: courierId === 'noon' ? 'noon' : 'aramex',
+            externalTrackingNumber: wb,
+            noonTaskId: result.noonTaskId || wb,
+            noonOutletCode: result.outletCode || '',
+            noonProviderStatus: 'pending_assignment',
+            noonStatusLabel: 'Finding Driver (Assigned)',
+            etaTime: '15-30 Mins (Same-Day RoD)',
+            courierDispatchedAt: new Date().toISOString(),
+            noonLogs: { request: payload, response: result, timestamp: new Date().toISOString() }
+          }, { merge: true });
+        } catch (dbErr: any) {
+          console.warn('[server] Backend Firestore auto-update skipped:', dbErr.message);
+        }
+      }
+    }
+
     return res.json(result);
   } catch (error: any) {
     return res.json({ success: false, error: error.message });

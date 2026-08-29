@@ -163,6 +163,8 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
   const [createdOrderId, setCreatedOrderId] = useState('');
   const [dispatchedWaybill, setDispatchedWaybill] = useState('');
   const [dispatchedLabelUrl, setDispatchedLabelUrl] = useState('');
+  const [dispatchedNoonTaskId, setDispatchedNoonTaskId] = useState('');
+  const [dispatchedOutletCode, setDispatchedOutletCode] = useState('');
   const [dispatchApiSuccess, setDispatchApiSuccess] = useState<boolean | null>(null);
   const [dispatchApiError, setDispatchApiError] = useState<string | null>(null);
   const [isMapOpen, setIsMapOpen] = useState(false);
@@ -539,11 +541,13 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
             })
           });
           const courierRes = await res.json();
-          if (courierRes.success && (courierRes.trackingNumber || courierRes.externalTrackingNumber || courierRes.noonTaskId)) {
+          if (courierRes && courierRes.success && (courierRes.trackingNumber || courierRes.externalTrackingNumber || courierRes.noonTaskId)) {
              wb = courierRes.trackingNumber || courierRes.externalTrackingNumber || courierRes.noonTaskId;
              labelUrl = courierRes.labelUrl || courierRes.awbUrl;
              setDispatchedWaybill(wb);
              if (labelUrl) setDispatchedLabelUrl(labelUrl);
+             if (courierRes.noonTaskId) setDispatchedNoonTaskId(courierRes.noonTaskId);
+             if (courierRes.outletCode) setDispatchedOutletCode(courierRes.outletCode);
              setDispatchApiSuccess(true);
              setDispatchApiError(null);
           } else {
@@ -553,18 +557,22 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
              setDispatchApiError(courierRes.error || "Courier API dispatch pending.");
           }
 
-          // AUTOMATIC DISPATCH FIX: Automatically update Firestore order to Assigned with live tracking ID
-          await updateRequest(newOrderId, {
-            status: 'Assigned',
-            carrier: shipmentData.courier === 'noon' ? 'noon' : 'aramex',
-            externalTrackingNumber: wb,
-            noonTaskId: wb,
-            noonOutletCode: courierRes?.outletCode || '',
-            noonProviderStatus: 'pending_assignment',
-            noonStatusLabel: 'Finding Driver (Assigned)',
-            etaTime: '15-30 Mins (Same-Day RoD)',
-            noonLogs: { request: canonicalPayload, response: courierRes, timestamp: new Date().toISOString() }
-          });
+          // Non-blocking local update in AppContext
+          try {
+            await updateRequest(newOrderId, {
+              status: 'Assigned',
+              carrier: shipmentData.courier === 'noon' ? 'noon' : 'aramex',
+              externalTrackingNumber: wb,
+              noonTaskId: courierRes?.noonTaskId || wb,
+              noonOutletCode: courierRes?.outletCode || '',
+              noonProviderStatus: 'pending_assignment',
+              noonStatusLabel: 'Finding Driver (Assigned)',
+              etaTime: '15-30 Mins (Same-Day RoD)',
+              noonLogs: { request: canonicalPayload, response: courierRes, timestamp: new Date().toISOString() }
+            });
+          } catch (updateErr) {
+            console.warn("Client state sync note:", updateErr);
+          }
         } catch (e: any) {
            console.error(`${shipmentData.courier} Production Dispatch Error`, e);
            wb = shipmentData.courier === 'aramex' ? `75788705-${newOrderId}` : `NOON-${newOrderId}`;
@@ -572,15 +580,19 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
            setDispatchApiSuccess(false);
            setDispatchApiError(e.message || "Network connection error calling Courier API.");
 
-           await updateRequest(newOrderId, {
-             status: 'Assigned',
-             carrier: shipmentData.courier === 'noon' ? 'noon' : 'aramex',
-             externalTrackingNumber: wb,
-             noonTaskId: wb,
-             noonProviderStatus: 'pending_assignment',
-             noonStatusLabel: 'Finding Driver (Assigned)',
-             etaTime: '15-30 Mins (Same-Day RoD)'
-           });
+           try {
+             await updateRequest(newOrderId, {
+               status: 'Assigned',
+               carrier: shipmentData.courier === 'noon' ? 'noon' : 'aramex',
+               externalTrackingNumber: wb,
+               noonTaskId: wb,
+               noonProviderStatus: 'pending_assignment',
+               noonStatusLabel: 'Finding Driver (Assigned)',
+               etaTime: '15-30 Mins (Same-Day RoD)'
+             });
+           } catch (updateErr2) {
+             console.warn("Client state fallback note:", updateErr2);
+           }
         }
       }
       
@@ -1476,24 +1488,46 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
                 <div className="bg-amber-50/90 border border-amber-200 rounded-3xl p-6 text-left space-y-4 shadow-sm">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="text-lg font-black tracking-tight text-amber-950 font-sans">Noon RoD</span>
+                      <span className="text-lg font-black tracking-tight text-amber-950 font-sans">Noon RoD (Rider on Demand)</span>
                       <span className="text-[9px] bg-amber-200/60 text-amber-800 px-2.5 py-0.5 rounded-full font-black uppercase tracking-widest">LIVE PRODUCTION DISPATCH</span>
                     </div>
                     <CheckCircle2 className="w-5 h-5 text-amber-600" />
                   </div>
 
                   <p className="text-xs text-amber-950/90 font-medium leading-relaxed">
-                    Your order has been automatically registered with Noon Rider on Demand Hyperlocal System.
+                    Your order has been automatically registered and dispatched to Noon Rider on Demand Hyperlocal System.
                   </p>
 
-                  <div className="bg-white/90 border border-amber-200 rounded-2xl p-4 flex items-center justify-between">
-                    <div>
-                      <span className="text-[10px] text-amber-700 font-bold block uppercase tracking-wider">NOON TASK REFERENCE</span>
-                      <span className="text-sm font-mono font-black text-amber-950 block select-all mt-0.5">
-                        {dispatchedWaybill || `NOON-${createdOrderId}`}
-                      </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="bg-white/90 border border-amber-200 rounded-2xl p-4 flex items-center justify-between">
+                      <div>
+                        <span className="text-[10px] text-amber-700 font-bold block uppercase tracking-wider">NOON TASK / ORDER CODE</span>
+                        <span className="text-sm font-mono font-black text-amber-950 block select-all mt-0.5">
+                          {dispatchedNoonTaskId || dispatchedWaybill || `NOON-${createdOrderId}`}
+                        </span>
+                      </div>
+                      <span className="text-[10px] bg-emerald-600 text-white font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">CONFIRMED</span>
                     </div>
-                    <span className="text-[10px] bg-amber-600 text-white font-bold px-3 py-1 rounded-full uppercase tracking-wider">READY</span>
+
+                    {dispatchedOutletCode && (
+                      <div className="bg-white/90 border border-amber-200 rounded-2xl p-4 flex items-center justify-between">
+                        <div>
+                          <span className="text-[10px] text-amber-700 font-bold block uppercase tracking-wider">NOON PICKUP OUTLET</span>
+                          <span className="text-sm font-mono font-black text-amber-950 block select-all mt-0.5">
+                            {dispatchedOutletCode}
+                          </span>
+                        </div>
+                        <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">OUTLET</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="bg-white/90 border border-amber-200 rounded-2xl p-3.5 flex items-center justify-between text-xs">
+                    <span className="text-zinc-600 font-medium">Status on Noon Network:</span>
+                    <span className="font-bold text-amber-800 flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+                      Finding Rider / Assigned (15-30 mins)
+                    </span>
                   </div>
                 </div>
               )}
