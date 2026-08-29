@@ -151,6 +151,7 @@ interface AppContextType {
   updateSettings: (settings: PlatformSettings) => void;
   updateCourierConfigs: (configs: Record<string, CourierIntegrationConfig>) => Promise<void>;
   addUser: (user: Partial<USendUser>) => void;
+  updateUser: (id: string, data: Partial<USendUser>) => Promise<void>;
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
   user: any;
@@ -805,6 +806,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const updateUser = async (id: string, data: Partial<USendUser>) => {
+    setUsers(prev => prev.map(u => (u.id === id || u.uid === id) ? { ...u, ...data } : u));
+    try {
+      await updateDocument('users', id, data);
+    } catch (e) {
+      console.warn('Firestore user update failed, local state updated:', e);
+    }
+  };
+
   return (
     <AppContext.Provider value={{ 
       activeRequests, 
@@ -818,6 +828,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       updateSettings,
       updateCourierConfigs,
       addUser,
+      updateUser,
       signIn,
       signOut: signOutUser,
       user,
