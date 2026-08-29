@@ -46,7 +46,7 @@ export default function YandexMapDisplay({
       const apikey = (import.meta as any).env.VITE_YANDEX_MAPS_API_KEY || '';
       script = document.createElement('script');
       script.id = 'yango-maps-api-script';
-      script.src = `https://api-maps.yandex.ru/2.1/?apikey=${apikey}&lang=en_US`;
+      script.src = `https://api-maps.yandex.ru/2.1/?lang=en_US&coordorder=latlong${apikey ? `&apikey=${apikey}` : ''}`;
       script.async = true;
       document.head.appendChild(script);
     }
@@ -74,8 +74,12 @@ export default function YandexMapDisplay({
         container.innerHTML = ''; // Clear container
 
         try {
+          const safeCenter: [number, number] = (Array.isArray(center) && center.length === 2 && center[0] != null && center[1] != null)
+            ? center
+            : [25.2048, 55.2708];
+
           const map = new window.ymaps.Map(mapContainerId, {
-            center: center,
+            center: safeCenter,
             zoom: zoom,
             controls: ['zoomControl']
           }, {
@@ -85,9 +89,14 @@ export default function YandexMapDisplay({
           mapInstanceRef.current = map;
           setIsMapReady(true);
 
-          // Add markers
-          markers.forEach(m => {
-            const placemark = new window.ymaps.Placemark(m.position, {
+          // Add markers with safe position guard
+          (markers || []).forEach(m => {
+            if (!m) return;
+            const safePos: [number, number] = (Array.isArray(m.position) && m.position.length === 2 && m.position[0] != null && m.position[1] != null)
+              ? m.position
+              : safeCenter;
+
+            const placemark = new window.ymaps.Placemark(safePos, {
               hintContent: m.hint,
               balloonContent: m.balloonContent
             }, {

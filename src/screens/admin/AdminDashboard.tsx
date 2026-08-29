@@ -1151,9 +1151,9 @@ function RequestsHub() {
                  <p className="text-[12px] font-black uppercase tracking-widest text-zinc-400 mb-3">{t('location_map') || 'Location on Map'}</p>
                  <div className="h-[200px] w-full rounded-2xl overflow-hidden relative border border-zinc-200 z-0">
                     <YandexMapDisplay 
-                       center={selectedRequest.position} 
+                       center={selectedRequest.position || [25.2048, 55.2708]} 
                        zoom={11} 
-                       markers={[{ position: selectedRequest.position, color: '#113f36' }]} 
+                       markers={[{ position: selectedRequest.position || [25.2048, 55.2708], color: '#113f36' }]} 
                     />
                  </div>
                </div>
