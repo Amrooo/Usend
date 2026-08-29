@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { XCircle, ArrowRight } from 'lucide-react';
-import { aiModel, systemInstruction } from '../firebase';
+import { aiModel } from '../firebase';
+import { subscribeToKnowledgeBase, buildDynamicSystemInstruction, KnowledgeItem } from '../services/aiKnowledgeService';
 import aiIcon from '../assets/ai.png';
 
 interface SmartChatbotProps {
@@ -13,25 +14,37 @@ export default function SmartChatbot({ isRTL }: SmartChatbotProps) {
   const [botInput, setBotInput] = useState('');
   const [botMessages, setBotMessages] = useState<{sender: 'user'|'bot', text: string}[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [knowledgeItems, setKnowledgeItems] = useState<KnowledgeItem[]>([]);
   const chatSessionRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Initialize chat session
+  // Subscribe to real-time Knowledge Base Pool
   useEffect(() => {
-    if (!chatSessionRef.current) {
-      const initialGreeting = isRTL 
-        ? "مرحباً! أنا المساعد الذكي لـ يو سند. كيف يمكنني مساعدتك اليوم؟" 
-        : "Hello! I am the USend smart assistant. How can I help you today?";
-        
+    const unsubscribe = subscribeToKnowledgeBase((items) => {
+      setKnowledgeItems(items);
+      // Re-initialize or update chat session with latest dynamic instruction
+      const dynamicInstruction = buildDynamicSystemInstruction(
+        "You are a smart, helpful human-like assistant for USend, an advanced logistics and multi-courier e-commerce shipping gateway in the UAE.",
+        items
+      );
+      
       chatSessionRef.current = aiModel.chats.create({
         model: "gemini-3.6-flash",
         config: {
-          systemInstruction: systemInstruction,
-          temperature: 0.7
+          systemInstruction: dynamicInstruction,
+          temperature: 0.6
         }
       });
-      // We don't preload history with the greeting in the API to save tokens initially, 
-      // just show it in the UI as if it said hello.
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Initialize initial greeting message
+  useEffect(() => {
+    if (botMessages.length === 0) {
+      const initialGreeting = isRTL 
+        ? "مرحباً! أنا المساعد الذكي لـ يو سند. كيف يمكنني مساعدتك اليوم؟" 
+        : "Hello! I am the USend smart assistant. How can I help you today?";
       setBotMessages([{ sender: 'bot', text: initialGreeting }]);
     }
   }, [isRTL]);

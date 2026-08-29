@@ -18,6 +18,7 @@ import {
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import AIKnowledgeBasePool from './AIKnowledgeBasePool';
 
 interface AdminDashboardProps {
   onNavigate: (screen: Screen) => void;
@@ -4551,7 +4552,7 @@ function WalletManagementDesk() {
 export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
   const { t, isRTL, language, setLanguage } = useLanguage();
   const { signOut } = useApp();
-  const [activeTab, setActiveTab] = useState<'overview' | 'requests' | 'batches' | 'finance' | 'merchants' | 'users' | 'integrations' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'requests' | 'batches' | 'finance' | 'merchants' | 'users' | 'integrations' | 'ai_pool' | 'settings'>('overview');
   const [searchQuery, setSearchQuery] = useState('');
 
   const renderContent = () => {
@@ -4559,9 +4560,10 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
       case 'overview': return <AdminOverview onTabChange={setActiveTab} />;
       case 'requests': return <RequestsHub />;
       case 'finance': return <WalletManagementDesk />;
-      case 'users': return <UsersDirectory />;
       case 'merchants': return <MerchantDirectory />;
+      case 'users': return <UsersDirectory />;
       case 'integrations': return <CouriersIntegrationsHub />;
+      case 'ai_pool': return <AIKnowledgeBasePool />;
       case 'settings': return <AdminSettings />;
       default: return <AdminOverview onTabChange={setActiveTab} />;
     }
@@ -4601,6 +4603,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
               { id: 'merchants', icon: <Building2 className="w-[18px] h-[18px]" />, label: t('merchant_directory') || 'Merchant Directory' },
               { id: 'users', icon: <UserCircle2 className="w-[18px] h-[18px]" />, label: t('users_directory') || 'Users Directory' },
               { id: 'integrations', icon: <Code2 className="w-[18px] h-[18px]" />, label: t('courier_integrations') || 'Courier Integrations' },
+              { id: 'ai_pool', icon: <BrainCircuit className="w-[18px] h-[18px]" />, label: t('ai_knowledge_pool') || 'AI Knowledge Pool' },
               { id: 'settings', icon: <Settings className="w-[18px] h-[18px]" />, label: t('settings') || 'Settings' },
             ].map((item) => {
               const isActive = activeTab === item.id;
@@ -4675,6 +4678,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                   { id: 'merchants', label: t('merchant_directory') || 'Merchant Directory' },
                   { id: 'users', label: t('users_directory') || 'Users Directory' },
                   { id: 'integrations', label: t('courier_integrations') || 'Courier Integrations' },
+                  { id: 'ai_pool', label: t('ai_knowledge_pool') || 'AI Knowledge Pool' },
                   { id: 'settings', label: t('settings') || 'Settings' },
                 ].find(t => t.id === activeTab)?.label || 'Admin Control Center'}
               </h1>
