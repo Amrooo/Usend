@@ -1026,7 +1026,40 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
                     <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Dropoff Address *</label>
                     <button type="button" onClick={() => { setMapTarget('receiver'); setIsMapOpen(true); }} className="text-xs font-bold text-rose-500 bg-rose-500/10 px-2 py-1 flex items-center gap-1 rounded-md mb-1"><Map className="w-3 h-3"/> Map Picker</button>
                   </div>
-                  <input required type="text" value={receiverData.street} onChange={e => setReceiverData(p => ({...p, street: e.target.value}))} className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none" />
+                  <input required type="text" value={receiverData.street} onChange={e => setReceiverData(p => ({...p, street: e.target.value}))} placeholder="e.g. Dubai Marina, Princess Tower or Area..." className="w-full bg-zinc-50 border border-zinc-200 focus:border-brand rounded-xl px-4 py-3 outline-none" />
+                  
+                  {/* Quick option: Call recipient on arrival */}
+                  <div className="pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const note = "Call recipient on arrival / for exact drop-off pin";
+                        if (receiverData.street.includes("Call recipient on arrival")) {
+                          setReceiverData(p => ({
+                            ...p,
+                            street: p.street.replace(new RegExp(`(\\s*[-–,]\\s*)?${note}`, 'gi'), '').trim()
+                          }));
+                        } else {
+                          const base = receiverData.street.trim() ? `${receiverData.street.trim()} - ` : 'Dubai, UAE - ';
+                          setReceiverData(p => ({
+                            ...p,
+                            street: `${base}${note}`
+                          }));
+                        }
+                      }}
+                      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+                        receiverData.street.includes("Call recipient on arrival")
+                          ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-400 text-amber-800 dark:text-amber-300 shadow-sm'
+                          : 'bg-zinc-100/70 dark:bg-zinc-800/60 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:border-amber-400 hover:text-amber-700'
+                      }`}
+                    >
+                      <Phone className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+                      <span>{isRTL ? "📞 الاتصال بالمستلم عند الوصول لتحديد موقع التسليم الدقيق" : "Call recipient on arrival / for exact drop-off pin"}</span>
+                      {receiverData.street.includes("Call recipient on arrival") && (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
               <div className="flex gap-4 pt-6"><button type="button" onClick={handlePrevStep} className="px-8 py-3.5 rounded-xl border border-zinc-300 text-zinc-600 font-bold uppercase tracking-widest text-xs">Back</button><button type="submit" className="flex-1 py-3.5 rounded-xl bg-brand text-white font-bold uppercase tracking-widest text-xs shadow-lg">Next</button></div>

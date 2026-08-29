@@ -310,10 +310,13 @@ export class AramexAdapter implements CourierAdapter {
           ThirdParty: null,
           Reference4: "", Reference5: "",
           ShippingDateTime: `/Date(${new Date().getTime()})/`,
-          DueDate: `/Date(${new Date(new Date().getTime() + 86400000).getTime()})/`,
-          Comments: "USend Aggregation Dispatch",
+          Comments: (payload.receiverAddress?.includes("Call recipient") || (payload as any).instructions?.includes("Call recipient"))
+            ? "Call recipient on arrival for exact drop-off pin"
+            : "USend Aggregation Dispatch",
           PickupLocation: "Reception",
-          OperationsInstructions: "Handle with care",
+          OperationsInstructions: (payload.receiverAddress?.includes("Call recipient") || (payload as any).instructions?.includes("Call recipient"))
+            ? "Please call recipient on arrival to verify location pin"
+            : "Handle with care",
           AccountingInstrcutions: "",
           Details: {
             Dimensions: payload.dimensions ? {

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, ChangeEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronLeft, Camera, MapPin, Calendar, Clock, ArrowRight, Mic, Home, Briefcase, Package, Plus, CheckCircle2, Sparkles, Loader2 } from 'lucide-react';
+import { ChevronLeft, Camera, MapPin, Calendar, Clock, ArrowRight, Mic, Home, Briefcase, Package, Plus, CheckCircle2, Sparkles, Loader2, Phone } from 'lucide-react';
 import { Screen } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 import { GoogleGenAI } from "@google/genai";
@@ -471,6 +471,33 @@ export default function Details({ onNavigate }: DetailsProps) {
                   initialValue={dropoffAddress}
                   onChange={setDropoffAddress}
                 />
+                
+                {/* Quick option: Call recipient on arrival */}
+                <div className="mt-2.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const note = "Call recipient on arrival / for exact drop-off pin";
+                      if (dropoffAddress.includes("Call recipient on arrival")) {
+                        setDropoffAddress(dropoffAddress.replace(new RegExp(`(\\s*[-–,]\\s*)?${note}`, 'gi'), '').trim());
+                      } else {
+                        const base = dropoffAddress.trim() ? `${dropoffAddress.trim()} - ` : 'Dubai, UAE - ';
+                        setDropoffAddress(`${base}${note}`);
+                      }
+                    }}
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-semibold border transition-all ${
+                      dropoffAddress.includes("Call recipient on arrival")
+                        ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-400 text-amber-800 dark:text-amber-300 shadow-xs'
+                        : 'bg-zinc-50 dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:border-amber-400 hover:text-amber-700'
+                    }`}
+                  >
+                    <Phone className="w-3 h-3 text-amber-500 flex-shrink-0" />
+                    <span>{isRTL ? "📞 الاتصال بالمستلم عند الوصول لتحديد الموقع" : "Call recipient on arrival / for exact drop-off pin"}</span>
+                    {dropoffAddress.includes("Call recipient on arrival") && (
+                      <CheckCircle2 className="w-3 h-3 text-amber-600 flex-shrink-0" />
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

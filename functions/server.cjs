@@ -327,10 +327,9 @@ var init_AramexAdapter = __esm({
               Reference4: "",
               Reference5: "",
               ShippingDateTime: `/Date(${(/* @__PURE__ */ new Date()).getTime()})/`,
-              DueDate: `/Date(${new Date((/* @__PURE__ */ new Date()).getTime() + 864e5).getTime()})/`,
-              Comments: "USend Aggregation Dispatch",
+              Comments: payload.receiverAddress?.includes("Call recipient") || payload.instructions?.includes("Call recipient") ? "Call recipient on arrival for exact drop-off pin" : "USend Aggregation Dispatch",
               PickupLocation: "Reception",
-              OperationsInstructions: "Handle with care",
+              OperationsInstructions: payload.receiverAddress?.includes("Call recipient") || payload.instructions?.includes("Call recipient") ? "Please call recipient on arrival to verify location pin" : "Handle with care",
               AccountingInstrcutions: "",
               Details: {
                 Dimensions: payload.dimensions ? {

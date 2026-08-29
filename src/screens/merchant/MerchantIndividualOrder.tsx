@@ -894,6 +894,40 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                           </button>
                         </div>
                       </div>
+
+                      {/* Quick option: Call recipient on arrival */}
+                      <div className="pt-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const note = "Call recipient on arrival / for exact drop-off pin";
+                            const current = formData.address || '';
+                            let newAddress = '';
+                            if (current.includes("Call recipient on arrival")) {
+                              newAddress = current.replace(new RegExp(`(\\s*[-–,]\\s*)?${note}`, 'gi'), '').trim();
+                            } else {
+                              const base = current.trim() ? `${current.trim()} - ` : 'Dubai, UAE - ';
+                              newAddress = `${base}${note}`;
+                            }
+                            setFormData({
+                              ...formData,
+                              address: newAddress,
+                              position: getDeterministicCoordinates(newAddress)
+                            });
+                          }}
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+                            formData.address?.includes("Call recipient on arrival")
+                              ? 'bg-amber-50 border-amber-400 text-amber-800 shadow-xs'
+                              : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-amber-400 hover:text-amber-700'
+                          }`}
+                        >
+                          <Phone className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+                          <span>{isRTL ? "📞 الاتصال بالمستلم عند الوصول لتحديد موقع التسليم" : "Call recipient on arrival / for exact drop-off pin"}</span>
+                          {formData.address?.includes("Call recipient on arrival") && (
+                            <CheckCircle2 className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
+                          )}
+                        </button>
+                      </div>
                     </div>
                   </div>
 
