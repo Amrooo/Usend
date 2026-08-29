@@ -816,18 +816,18 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
     ];
     if (wizardStep === 0 || wizardStep === 5) return null;
     return (
-      <div className="w-full mb-10 px-4">
+      <div className="w-full mb-8 sm:mb-10 px-1 sm:px-4">
         <div className="flex items-center justify-between relative" dir={isRTL ? 'rtl' : 'ltr'}>
           <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-0.5 bg-zinc-200 -z-10" />
           {steps.map((s) => {
             const isActive = wizardStep === s.id;
             const isCompleted = wizardStep > s.id;
             return (
-              <div key={s.id} className="flex flex-col items-center gap-2 relative bg-white md:bg-transparent">
-                <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold text-sm bg-white transition-all ${isActive ? 'border-brand text-brand' : isCompleted ? 'border-zinc-300 text-zinc-400' : 'border-zinc-300 text-zinc-400'}`}>
-                  {isCompleted ? <CheckCircle2 className="w-4 h-4 text-zinc-400" /> : s.id}
+              <div key={s.id} className="flex flex-col items-center gap-1.5 relative bg-white md:bg-transparent">
+                <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center font-bold text-xs sm:text-sm bg-white transition-all shadow-xs ${isActive ? 'border-brand text-brand' : isCompleted ? 'border-[#cca073] text-[#cca073] bg-amber-50/50' : 'border-zinc-300 text-zinc-400'}`}>
+                  {isCompleted ? <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#cca073]" /> : s.id}
                 </div>
-                <span className={`text-[15px] md:text-xs font-semibold absolute -bottom-6 w-24 text-center ${isActive ? 'text-brand' : 'text-zinc-400'}`}>
+                <span className={`text-[11px] sm:text-xs font-bold absolute -bottom-5 w-16 sm:w-24 text-center ${isActive ? 'text-brand' : 'text-zinc-400'}`}>
                   {s.label}
                 </span>
               </div>
@@ -960,7 +960,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.3, ease: 'easeInOut' }}
           >
-            <form onSubmit={handleNextStep} className="space-y-8 mt-16 pb-4">
+            <form onSubmit={handleNextStep} className="space-y-8 mt-8 sm:mt-12 pb-4">
               <h3 className="text-xl font-bold mb-2 uppercase tracking-tight">{isRTL ? "بيانات المرسل" : "Shipper Details"}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
                 <div className={`space-y-2 ${isGuest ? '' : 'md:col-span-2'}`}>
@@ -1011,7 +1011,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.3, ease: 'easeInOut' }}
           >
-            <form onSubmit={handleNextStep} className="space-y-8 mt-16 pb-4">
+            <form onSubmit={handleNextStep} className="space-y-8 mt-8 sm:mt-12 pb-4">
               <h3 className="text-xl font-bold mb-2 uppercase tracking-tight">{isRTL ? "بيانات المستلم" : "Receiver Details"}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
                 <div className="space-y-2">
@@ -1089,7 +1089,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.3, ease: 'easeInOut' }}
           >
-            <form onSubmit={handleNextStep} className="space-y-6 mt-16 pb-4">
+            <form onSubmit={handleNextStep} className="space-y-6 mt-8 sm:mt-12 pb-4">
               <h3 className="text-xl font-bold mb-2 uppercase tracking-tight">{isRTL ? "تفاصيل الشحنة" : "Shipment Details"}</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
@@ -1209,7 +1209,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.3, ease: 'easeInOut' }}
           >
-            <div className="space-y-8 mt-16 pb-4">
+            <div className="space-y-8 mt-8 sm:mt-12 pb-4">
               <h3 className="text-xl font-bold mb-2 uppercase tracking-tight">{isRTL ? "مراجعة الطلب" : "Summary & Payment"}</h3>
               
               <div className="bg-white border border-slate-200 rounded-[2rem] p-4 md:p-8 space-y-6 shadow-xs mb-6 text-left rtl:text-right">

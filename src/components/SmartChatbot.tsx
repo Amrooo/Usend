@@ -1,10 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   X, Send, Sparkles, RefreshCw, Bot, User, Package, 
   DollarSign, ShieldCheck, Clock, Zap, ChevronRight, MessageSquare 
 } from 'lucide-react';
 import { aiModel } from '../firebase';
+import { useApp } from '../context/AppContext';
 import { subscribeToKnowledgeBase, buildDynamicSystemInstruction, KnowledgeItem } from '../services/aiKnowledgeService';
 import aiIcon from '../assets/ai.png';
 
@@ -13,6 +14,7 @@ interface SmartChatbotProps {
 }
 
 export default function SmartChatbot({ isRTL }: SmartChatbotProps) {
+  const { user, activeRequests } = useApp();
   const [botOpen, setBotOpen] = useState(false);
   const [botInput, setBotInput] = useState('');
   const [botMessages, setBotMessages] = useState<{ sender: 'user' | 'bot'; text: string; time?: string }[]>([]);
@@ -21,13 +23,56 @@ export default function SmartChatbot({ isRTL }: SmartChatbotProps) {
   const chatSessionRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Subscribe to real-time Knowledge Base Pool
+  // Compute live user and active order context
+  const liveUserContext = useMemo(() => {
+    if (!user) {
+      return "Current User: Guest (Not logged in). If the user asks about their orders, politely ask them for their tracking number or invite them to log in to view their account orders.";
+    }
+
+    const role = user.role || 'user';
+    let userOrders = activeRequests || [];
+    if (role === 'merchant') {
+      userOrders = (activeRequests || []).filter(r => 
+        r.merchantId === user.id || 
+        r.userId === user.id || 
+        (user.name && r.name?.toLowerCase().includes(user.name.toLowerCase()))
+      );
+    } else if (role === 'user') {
+      userOrders = (activeRequests || []).filter(r => 
+        r.userId === user.id || 
+        (user.name && r.name?.toLowerCase().includes(user.name.toLowerCase())) ||
+        (user.phone && r.phone === user.phone)
+      );
+    } else if (role === 'admin') {
+      userOrders = (activeRequests || []).slice(0, 15);
+    }
+
+    const ordersList = userOrders.length > 0
+      ? userOrders.slice(0, 10).map((o, idx) => 
+          `${idx + 1}. Order #${o.id} | Status: ${o.status} | Carrier: ${o.carrier || 'USend Fleet'} | Tracking: ${o.externalTrackingNumber || o.id} | From: ${o.fromDestination || 'Dubai'} to: ${o.toDestination || o.address || 'UAE'} | Amount: ${o.orderAmount || '0'} AED | Date: ${o.date || 'Recent'}`
+        ).join('\n')
+      : "No active orders currently on file for this account.";
+
+    return `
+AUTHENTICATED USER PROFILE & PORTAL SESSION:
+- Name: ${user.name || 'Valued User'}
+- Email: ${user.email || 'N/A'}
+- Role: ${role} (${role === 'merchant' ? 'Merchant Account' : role === 'admin' ? 'Admin Portal' : 'Customer Account'})
+- User ID: ${user.id || 'N/A'}
+
+USER ACTIVE SHIPMENTS & ORDERS (${userOrders.length} total):
+${ordersList}
+
+INSTRUCTION: When this user asks about their orders, status, shipments, or account, use the live data above to give them real, accurate, instant answers with exact tracking numbers, courier name, and current delivery status.
+`;
+  }, [user, activeRequests]);
+
+  // Subscribe to real-time Knowledge Base Pool and update chat session
   useEffect(() => {
     const unsubscribe = subscribeToKnowledgeBase((items) => {
       setKnowledgeItems(items);
-      // Re-initialize or update chat session with latest dynamic instruction
       const dynamicInstruction = buildDynamicSystemInstruction(
-        "You are USend's official intelligent AI assistant for logistics and e-commerce shipping in the United Arab Emirates. Provide clear, accurate, human-friendly responses in the user's language (Arabic or English).",
+        `You are USend's official intelligent AI assistant for logistics and e-commerce shipping in the United Arab Emirates. Provide clear, accurate, human-friendly responses in the user's language (Arabic or English).\n\n${liveUserContext}`,
         items
       );
       
@@ -40,7 +85,24 @@ export default function SmartChatbot({ isRTL }: SmartChatbotProps) {
       });
     });
     return () => unsubscribe();
-  }, []);
+  }, [liveUserContext]);
+
+  // Re-build chat session if user profile or orders change
+  useEffect(() => {
+    if (knowledgeItems.length > 0) {
+      const dynamicInstruction = buildDynamicSystemInstruction(
+        `You are USend's official intelligent AI assistant for logistics and e-commerce shipping in the United Arab Emirates. Provide clear, accurate, human-friendly responses in the user's language (Arabic or English).\n\n${liveUserContext}`,
+        knowledgeItems
+      );
+      chatSessionRef.current = aiModel.chats.create({
+        model: "gemini-3.6-flash",
+        config: {
+          systemInstruction: dynamicInstruction,
+          temperature: 0.6
+        }
+      });
+    }
+  }, [liveUserContext, knowledgeItems]);
 
   // Initialize initial greeting message
   const initGreeting = () => {
@@ -296,21 +358,18 @@ export default function SmartChatbot({ isRTL }: SmartChatbotProps) {
       {/* ── Floating Docked Bot Button with Animated Gradient Border ── */}
       <button
         onClick={() => setBotOpen(!botOpen)}
-        className="fixed bottom-6 right-6 z-40 p-[2.5px] rounded-full bg-gradient-to-tr from-[#113F36] via-[#cca073] via-emerald-400 to-[#113F36] shadow-[0_10px_35px_rgba(17,63,54,0.3)] flex items-center justify-center transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_18px_45px_rgba(204,160,115,0.45)] active:translate-y-0 active:scale-95 cursor-pointer group"
+        className="fixed bottom-6 right-6 z-40 p-[2.5px] rounded-full bg-gradient-to-tr from-[#113F36] via-[#cca073] via-emerald-400 to-[#113F36] flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer group"
         id="docked-bot-trigger"
         aria-label="Open AI Assistant"
       >
-        {/* Subtle pulsing background glow ring */}
-        <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-[#113F36] via-[#cca073] to-emerald-400 blur-md opacity-40 group-hover:opacity-85 transition duration-500 animate-pulse -z-10" />
-
-        <div className="relative w-14 h-14 flex items-center justify-center bg-gradient-to-br from-[#113F36] to-[#0a2721] rounded-full overflow-hidden shadow-inner p-1">
+        <div className="relative w-14 h-14 flex items-center justify-center bg-gradient-to-br from-[#113F36] to-[#0a2721] rounded-full overflow-hidden p-1">
           <img 
             src={aiIcon} 
             alt="AI Bot" 
             className="w-full h-full object-cover rounded-full filter drop-shadow transition-all duration-500 group-hover:scale-110 relative z-10" 
           />
           {/* Online badge */}
-          <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-emerald-400 border-2 border-[#113F36] rounded-full z-20" />
+          <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-emerald-400 border-2 border-[#113F36] rounded-full z-20 shadow-xs" />
         </div>
       </button>
     </>
