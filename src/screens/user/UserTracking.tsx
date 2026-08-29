@@ -188,11 +188,7 @@ export default function UserTracking({ onNavigate }: UserTrackingProps) {
           animate={{ opacity: 1, y: 0 }}
           className="max-w-6xl mx-auto space-y-6"
         >
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-black text-zinc-900">{t('requests_orders') || 'Requests and Orders'}</h1>
-              <p className="text-zinc-500 mt-1">{t('monitor_active_deliveries') || 'Monitor your delivery requests and orders'}</p>
-            </div>
+          <div className="flex flex-col md:flex-row md:items-center justify-end gap-4">
             <button 
               onClick={() => onNavigate('user_individual')}
               className="px-6 py-3.5 bg-[#113f36] hover:bg-[#0e332c] text-white text-xs font-black uppercase tracking-widest rounded-2xl transition-all shadow-lg shadow-[#113f36]/20 hover:shadow-xl hover:shadow-[#113f36]/30 active:scale-[0.98] flex items-center gap-2 cursor-pointer self-start md:self-auto"

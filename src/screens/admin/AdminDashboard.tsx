@@ -593,39 +593,107 @@ function RequestsHub() {
       )}
       
       {/* Requests and Orders Header & Analytics Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3 flex-wrap">
-            <h2 className="text-2xl lg:text-3xl font-display font-black text-zinc-900 tracking-tight">
-              <span className="text-zinc-400 font-normal">Admin Dashboard <span className="mx-2">&rsaquo;</span></span> Requests and Orders
-            </h2>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              {t('live_sync') || 'Live Sync'}
-            </span>
-          </div>
-          <p className="text-[11px] text-zinc-500 font-medium mt-1.5">
-            Manage parcel shipping orders, assign courier carriers, and track delivery statuses across all channels.
-          </p>
-        </div>
-
+      <div className="flex flex-col md:flex-row md:items-center justify-end gap-4">
         <div className="flex items-center gap-3">
-          <button 
-            onClick={() => setIsBookingOpen(true)}
-            className="px-6 py-3.5 bg-[#113f36] hover:bg-[#0e332c] text-white text-xs font-black uppercase tracking-widest rounded-2xl transition-all shadow-lg shadow-[#113f36]/20 hover:shadow-xl hover:shadow-[#113f36]/30 active:scale-[0.98] flex items-center gap-2.5 cursor-pointer"
-          >
-            <Plus className="w-4 h-4 text-emerald-400" />
-            <span>Book Delivery</span>
-          </button>
+          {/* Action buttons removed */}
         </div>
       </div>
 
       {/* Control Console Card */}
-      <div className="bg-white border border-zinc-200/80 rounded-[2rem] p-6 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] mb-6 space-y-5">
-        {/* Status Filter Tabs & Date Range */}
-        <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 border-b border-zinc-100 pb-5">
-          {/* Status Tabs with real dynamic counts */}
-          <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto">
+      <div className="bg-white border border-zinc-200/80 rounded-[2rem] p-5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] mb-6 space-y-4">
+        {/* Top Row: Search & Date */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4">
+           {/* Primary Search */}
+           <div className="relative">
+             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+             <input 
+               type="text" 
+               placeholder="Search by order ID, customer name, phone, or courier..."
+               value={expressSearch}
+               onChange={(e) => setExpressSearch(e.target.value)}
+               className="w-full bg-zinc-50 border border-zinc-200/80 focus:bg-white rounded-2xl py-3.5 pl-11 pr-10 text-[15px] font-semibold text-zinc-800 placeholder-zinc-400 outline-none focus:border-[#113f36] focus:ring-4 focus:ring-[#113f36]/10 transition-all"
+             />
+             {expressSearch && (
+               <button
+                 onClick={() => setExpressSearch('')}
+                 className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-zinc-700 rounded-full hover:bg-zinc-200 transition-colors cursor-pointer"
+               >
+                 <X className="w-3.5 h-3.5" />
+               </button>
+             )}
+           </div>
+           
+           {/* Date Range Picker */}
+           <div className="flex items-center gap-2 bg-zinc-50 p-1.5 rounded-2xl border border-zinc-200/80">
+             <div className="flex items-center gap-2 px-2">
+               <Calendar className="w-4 h-4 text-zinc-400 shrink-0" />
+               <input 
+                  type="date" 
+                  value={dateRange.start} 
+                  onChange={(e) => setDateRange(p => ({...p, start: e.target.value}))}
+                  className="bg-transparent text-[14px] font-semibold text-zinc-700 outline-none w-32 cursor-pointer"
+               />
+             </div>
+             <span className="text-zinc-300 font-bold">-</span>
+             <div className="flex items-center gap-2 px-2 relative pr-8">
+               <input 
+                  type="date" 
+                  value={dateRange.end} 
+                  onChange={(e) => setDateRange(p => ({...p, end: e.target.value}))}
+                  className="bg-transparent text-[14px] font-semibold text-zinc-700 outline-none w-32 cursor-pointer"
+               />
+               {(dateRange.start || dateRange.end) && (
+                 <button
+                   onClick={() => setDateRange({ start: '', end: '' })}
+                   className="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-zinc-700 rounded-full hover:bg-zinc-200 transition-colors cursor-pointer"
+                   title="Reset dates"
+                 >
+                   <X className="w-3 h-3" />
+                 </button>
+               )}
+             </div>
+           </div>
+        </div>
+
+        {/* Middle Row: Dropdown Filters */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+             <select
+               value={sortOrder}
+               onChange={(e) => setSortOrder(e.target.value as any)}
+               className="bg-zinc-50 border border-zinc-200/80 rounded-2xl px-4 py-3 text-[13px] font-bold text-zinc-700 outline-none cursor-pointer hover:bg-zinc-100 transition-all focus:border-[#113f36] w-full"
+             >
+               <option value="newest">Sort: Newest First</option>
+               <option value="oldest">Sort: Oldest First</option>
+             </select>
+
+             <select 
+               value={carrierFilter} 
+               onChange={(e) => setCarrierFilter(e.target.value)} 
+               className="bg-zinc-50 border border-zinc-200/80 rounded-2xl px-4 py-3 text-[13px] font-bold text-zinc-700 outline-none cursor-pointer hover:bg-zinc-100 transition-all focus:border-[#113f36] w-full"
+             >
+               <option value="All Carriers">Carrier: {t('all_carriers') || 'All'}</option>
+               <option value="aramex">Aramex Express</option>
+               <option value="noon">Noon Delivery (RoD)</option>
+               <option value="dhl_express">DHL Express</option>
+               <option value="fetchr">Fetchr Express Logistics</option>
+             </select>
+
+             <select 
+               value={channelFilter} 
+               onChange={(e) => setChannelFilter(e.target.value)} 
+               className="bg-zinc-50 border border-zinc-200/80 rounded-2xl px-4 py-3 text-[13px] font-bold text-zinc-700 outline-none cursor-pointer hover:bg-zinc-100 transition-all focus:border-[#113f36] w-full"
+             >
+               <option>Channel: All</option>
+               <option>Merchant Portal</option>
+               <option>Mobile App</option>
+               <option>User Portal</option>
+               <option>Direct API</option>
+             </select>
+        </div>
+
+        {/* Bottom Row: Status Tabs Segmented Control */}
+        <div className="pt-2">
+          <div className="flex overflow-x-auto hide-scrollbar bg-zinc-50 p-1.5 rounded-2xl border border-zinc-200/60 shadow-inner">
             {[
               { id: 'All Requests', label: 'All', count: activeRequests.length, dot: 'bg-zinc-400' },
               { id: 'Pending', label: 'Pending', count: activeRequests.filter(r => r.status === 'Pending').length, dot: 'bg-amber-500' },
@@ -640,16 +708,16 @@ function RequestsHub() {
                 <button 
                   key={tab.id}
                   onClick={() => setStatusFilter(tab.id)} 
-                  className={`px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer ${
+                  className={`flex-1 min-w-[120px] px-3 py-2.5 rounded-xl text-xs font-bold tracking-wide flex items-center justify-center gap-2 transition-all cursor-pointer ${
                     isActive 
-                      ? 'bg-[#113f36] text-white shadow-md shadow-[#113f36]/25 ring-2 ring-[#113f36]/20' 
-                      : 'bg-zinc-50 hover:bg-zinc-100 text-zinc-600 border border-zinc-200/80 hover:border-zinc-300'
+                      ? 'bg-white text-[#113f36] shadow-sm ring-1 ring-zinc-200/80' 
+                      : 'text-zinc-500 hover:text-zinc-700 hover:bg-zinc-100/60'
                   }`}
                 >
-                  <span className={`w-2 h-2 rounded-full ${tab.dot} ${tab.pulse ? 'animate-pulse' : ''} ${isActive ? 'ring-2 ring-white/50' : ''}`} />
+                  <span className={`w-1.5 h-1.5 rounded-full ${tab.dot} ${tab.pulse ? 'animate-pulse' : ''}`} />
                   <span>{tab.label}</span>
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold ${
-                    isActive ? 'bg-white/20 text-white' : 'bg-zinc-200/70 text-zinc-600'
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono ${
+                    isActive ? 'bg-[#113f36]/10 text-[#113f36]' : 'bg-zinc-200/70 text-zinc-500'
                   }`}>
                     {tab.count}
                   </span>
@@ -657,94 +725,6 @@ function RequestsHub() {
               );
             })}
           </div>
-          
-          {/* Date Range Picker */}
-          <div className="flex items-center gap-2 w-full xl:w-auto bg-zinc-50 p-1.5 rounded-2xl border border-zinc-200/80">
-             <div className="flex items-center gap-2 px-2">
-               <Calendar className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-               <input 
-                  type="date" 
-                  value={dateRange.start} 
-                  onChange={(e) => setDateRange(p => ({...p, start: e.target.value}))}
-                  className="bg-white border border-zinc-200 rounded-xl px-3 py-1.5 text-[15px] font-semibold text-zinc-700 outline-none focus:border-[#113f36] transition-colors"
-               />
-             </div>
-             <span className="text-zinc-400 font-bold text-xs">-</span>
-             <div className="flex items-center gap-2 px-2">
-               <input 
-                  type="date" 
-                  value={dateRange.end} 
-                  onChange={(e) => setDateRange(p => ({...p, end: e.target.value}))}
-                  className="bg-white border border-zinc-200 rounded-xl px-3 py-1.5 text-[15px] font-semibold text-zinc-700 outline-none focus:border-[#113f36] transition-colors"
-               />
-               {(dateRange.start || dateRange.end) && (
-                 <button
-                   onClick={() => setDateRange({ start: '', end: '' })}
-                   className="p-1 text-zinc-400 hover:text-zinc-700 rounded-full hover:bg-zinc-200 transition-colors cursor-pointer"
-                   title="Reset dates"
-                 >
-                   <X className="w-3 h-3" />
-                 </button>
-               )}
-             </div>
-          </div>
-        </div>
-        
-        {/* Search and Secondary Filter Dropdowns */}
-        <div className="flex flex-col md:flex-row gap-3 w-full items-stretch">
-           <div className="relative flex-1">
-             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-             <input 
-               type="text" 
-               placeholder="Search by order ID, customer name, phone, or courier..."
-               value={expressSearch}
-               onChange={(e) => setExpressSearch(e.target.value)}
-               className="w-full bg-zinc-50 border border-zinc-200/80 focus:bg-white rounded-2xl py-3 pl-11 pr-10 text-[15px] font-semibold text-zinc-800 placeholder-zinc-400 outline-none focus:border-[#113f36] focus:ring-4 focus:ring-[#113f36]/10 transition-all"
-             />
-             {expressSearch && (
-               <button
-                 onClick={() => setExpressSearch('')}
-                 className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-zinc-700 rounded-full hover:bg-zinc-200 transition-colors cursor-pointer"
-               >
-                 <X className="w-3.5 h-3.5" />
-               </button>
-             )}
-           </div>
-
-           <div className="flex items-center gap-2.5 flex-wrap">
-             <select
-               value={sortOrder}
-               onChange={(e) => setSortOrder(e.target.value as any)}
-               className="bg-zinc-50 border border-zinc-200/80 rounded-2xl px-4 py-3 text-xs font-black uppercase tracking-wider text-zinc-700 outline-none cursor-pointer hover:bg-zinc-100 hover:border-zinc-300 transition-all focus:border-[#113f36] focus:ring-4 focus:ring-[#113f36]/10"
-             >
-               <option value="newest">Newest First</option>
-               <option value="oldest">Oldest First</option>
-             </select>
-
-             <select 
-               value={carrierFilter} 
-               onChange={(e) => setCarrierFilter(e.target.value)} 
-               className="bg-zinc-50 border border-zinc-200/80 rounded-2xl px-4 py-3 text-xs font-black uppercase tracking-wider text-zinc-700 outline-none cursor-pointer hover:bg-zinc-100 hover:border-zinc-300 transition-all focus:border-[#113f36] focus:ring-4 focus:ring-[#113f36]/10"
-             >
-               <option value="All Carriers">{t('all_carriers') || 'All Carriers'}</option>
-               <option value="aramex">Aramex Express</option>
-               <option value="noon">Noon Delivery (RoD)</option>
-               <option value="dhl_express">DHL Express</option>
-               <option value="fetchr">Fetchr Express Logistics</option>
-             </select>
-
-             <select 
-               value={channelFilter} 
-               onChange={(e) => setChannelFilter(e.target.value)} 
-               className="bg-zinc-50 border border-zinc-200/80 rounded-2xl px-4 py-3 text-xs font-black uppercase tracking-wider text-zinc-700 outline-none cursor-pointer hover:bg-zinc-100 hover:border-zinc-300 transition-all focus:border-[#113f36] focus:ring-4 focus:ring-[#113f36]/10"
-             >
-               <option>All Channels</option>
-               <option>Merchant Portal</option>
-               <option>Mobile App</option>
-               <option>User Portal</option>
-               <option>Direct API</option>
-             </select>
-           </div>
         </div>
       </div>
 
@@ -1267,11 +1247,7 @@ function UsersDirectory() {
         </div>
       )}
 
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h3 className="text-xl font-display font-medium text-zinc-900 mb-1 uppercase tracking-tight">Users Directory ({totalItems.toLocaleString()} Total)</h3>
-          <p className="text-sm text-zinc-500">Search, monitor and configure all consumers & active dispatchers.</p>
-        </div>
+      <div className="flex items-center justify-between gap-4">
         <button onClick={() => setIsAddingUser(true)} className="px-6 py-3 rounded-full bg-brand text-white font-black text-[12px] uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-brand/20 self-start md:self-auto">Add User</button>
       </div>
 
@@ -1604,11 +1580,7 @@ function MerchantDirectory() {
       )}
 
       {/* Header controls layout */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h3 className="text-xl font-display font-medium text-zinc-900 mb-1 uppercase tracking-tight">Merchant Directory ({totalItems.toLocaleString()} Total)</h3>
-          <p className="text-sm text-zinc-500">Manage active businesses, secure API endpoints, and monitor order volume.</p>
-        </div>
+      <div className="flex items-center justify-between gap-4 mb-2">
         <button 
           onClick={() => triggerToast("Add Merchant form loaded into workspace.")} 
           className="px-6 py-3 rounded-full bg-brand text-white font-black text-[12px] uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-brand/20 self-start md:self-auto"
@@ -2000,11 +1972,6 @@ function AdminSettings() {
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="bg-white border border-zinc-200 rounded-[3rem] p-10 shadow-sm">
-         <div className="mb-12">
-            <h3 className="text-xl font-display font-medium uppercase tracking-tight text-zinc-900 mb-2">Platform Fees & Pricing</h3>
-            <p className="text-xs text-zinc-500 font-medium">Configure platform commission rates and delivery fees setup.</p>
-         </div>
-
          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl">
             <div className="space-y-6">
                 <div>
@@ -2618,11 +2585,7 @@ function CouriersIntegrationsHub() {
       )}
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-display font-semibold uppercase tracking-tight text-zinc-900"><span className="text-zinc-400 font-normal normal-case">Admin Dashboard <span className="mx-2">&rsaquo;</span></span> Courier Integration Hub</h2>
-          <p className="text-sm text-zinc-500 mt-1">Manage API credentials, environment modes, and rate matrices for each active courier partner.</p>
-        </div>
+      <div className="flex flex-col md:flex-row md:items-center justify-end gap-4">
         <div className="flex gap-3">
           <button
             onClick={() => setShowAddCourierModal(true)}
@@ -3246,13 +3209,7 @@ function WalletManagementDesk() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 text-left pb-20">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h3 className="text-2xl font-display font-black text-zinc-900 tracking-tight flex items-center gap-3">
-            <span className="text-zinc-400 font-normal">Admin Dashboard <span className="mx-2">&rsaquo;</span></span> Platform Wallets & Ledger
-          </h3>
-          <p className="text-zinc-500 font-medium mt-1">Reconcile Accounts Payable, COD Receivables, and Platform Revenue seamlessly.</p>
-        </div>
+      <div className="flex flex-col md:flex-row md:items-center justify-end gap-4">
       </div>
 
       {notif && (
@@ -3523,15 +3480,15 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
 
       <div className="flex relative z-10 w-full min-h-screen">
         {/* Modern Elevated Sidebar */}
-        <aside className={`w-[280px] lg:w-[310px] h-screen sticky top-0 bg-[#113F36] text-white border-${isRTL ? 'l' : 'r'} border-slate-200/20 p-5 flex flex-col shrink-0 shadow-sm overflow-hidden select-none z-20`} dir={isRTL ? 'rtl' : 'ltr'}>
+        <aside className={`w-[280px] lg:w-[310px] h-[calc(100vh-2rem)] my-4 ml-4 rounded-[2rem] sticky top-4 bg-[#113F36] text-white border-${isRTL ? 'l' : 'r'} border-slate-200/20 p-5 flex flex-col shrink-0 shadow-sm overflow-hidden select-none z-20`} dir={isRTL ? 'rtl' : 'ltr'}>
           {/* Brand Logo Header */}
           <div className="p-3 pb-4 flex items-center justify-between mb-6 border-b border-white/10">
             <div className="flex items-center gap-3 cursor-pointer group" onClick={() => onNavigate('landing_page')}>
-              <div className="w-14 h-14 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                <LogoIcon className="w-12 h-12 text-white" />
+              <div className="w-16 h-16 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <LogoIcon className="w-14 h-14 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-extrabold uppercase tracking-wider text-white leading-none">Usend Portal</h1>
+                <h1 className="text-sm font-extrabold uppercase tracking-wider text-white leading-none">Usend Portal</h1>
                 <span className="text-[9px] text-emerald-400/80 font-bold uppercase tracking-widest mt-1 block">Platform Admin</span>
               </div>
             </div>
@@ -3614,7 +3571,15 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                 <span className="text-xs text-slate-400 font-medium">UAE Logistics Mesh</span>
               </div>
               <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900 uppercase">
-                {t('admin_dashboard_center') || 'Admin Control Center'}
+                {[
+                  { id: 'overview', label: t('dashboard') || 'Dashboard' },
+                  { id: 'requests', label: t('requests_orders') || 'Courier Requests & Orders' },
+                  { id: 'finance', label: t('ledger_cod_settling') || 'Platform Wallets & Ledger' },
+                  { id: 'merchants', label: t('merchant_directory') || 'Merchant Directory' },
+                  { id: 'users', label: t('users_directory') || 'Users Directory' },
+                  { id: 'integrations', label: t('courier_integrations') || 'Courier Integrations' },
+                  { id: 'settings', label: t('settings') || 'Settings' },
+                ].find(t => t.id === activeTab)?.label || 'Admin Control Center'}
               </h1>
             </div>
 
@@ -3655,7 +3620,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                   }}
                   className="w-11 h-11 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer relative shadow-xs">
                   <Bell className="w-4.5 h-4.5" />
-                  <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-emerald-500 rounded-full shadow-[0_0_8px_#10B981]"></span>
+                  {/* <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-emerald-500 rounded-full shadow-[0_0_8px_#10B981]"></span> */}
                 </button>
               </div>
 

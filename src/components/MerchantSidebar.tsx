@@ -92,11 +92,11 @@ export default function MerchantSidebar({ currentScreen, onNavigate }: SidebarPr
     <div className="flex flex-col h-full bg-[#EFF3EE]/95 text-zinc-800 select-none border-r border-[#E2ECE0]">
       <div className="p-6 pb-5 flex items-center justify-between">
         <div className="flex items-center gap-3 cursor-pointer" onClick={() => handleItemClick('landing_page')}>
-          <div className="w-14 h-14 rounded-2xl bg-white border border-[#CBD7C9] flex items-center justify-center leading-none shrink-0 shadow-sm overflow-hidden p-1">
-            <LogoIcon className="w-full h-full p-1" />
+          <div className="w-16 h-16 rounded-2xl bg-white border border-[#CBD7C9] flex items-center justify-center leading-none shrink-0 shadow-sm overflow-hidden p-1">
+            <LogoIcon className="w-14 h-14 p-1" />
           </div>
           <div>
-            <h1 className="text-[15px] font-black uppercase tracking-wider text-[#344633] leading-none">USend Portal</h1>
+            <h1 className="text-sm font-black uppercase tracking-wider text-[#344633] leading-none">USend Portal</h1>
             <span className="text-[11px] text-[#6D7D6A] font-bold uppercase tracking-widest mt-1 block">Merchant Access</span>
           </div>
         </div>
@@ -214,7 +214,7 @@ export default function MerchantSidebar({ currentScreen, onNavigate }: SidebarPr
         )}
       </AnimatePresence>
 
-      <div className={`hidden md:flex flex-col w-[260px] h-screen sticky top-0 overflow-hidden shadow-sm border-${isRTL ? 'l' : 'r'} border-[#E2ECE0] bg-[#EFF3EE]`} dir={isRTL ? 'rtl' : 'ltr'}>
+      <div className={`hidden md:flex flex-col w-[260px] h-[calc(100vh-2rem)] my-4 ml-4 rounded-[2rem] sticky top-4 overflow-hidden shadow-sm border-${isRTL ? 'l' : 'r'} border-[#E2ECE0] bg-[#EFF3EE]`} dir={isRTL ? 'rtl' : 'ltr'}>
         <SidebarContent />
       </div>
     </>

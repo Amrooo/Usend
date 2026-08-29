@@ -170,9 +170,7 @@ export default function Header({ onNavigate, setLoginRole, setLoginModalOpen, co
             >
               <Bell className="w-4 h-4" />
               {user && unreadNotifsCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center animate-pulse">
-                  {unreadNotifsCount}
-                </span>
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-emerald-500 rounded-full shadow-[0_0_8px_#10B981]"></span>
               )}
             </button>
 
