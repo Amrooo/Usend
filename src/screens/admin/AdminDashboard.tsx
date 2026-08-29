@@ -3933,7 +3933,7 @@ function WalletManagementDesk() {
             </div>
             <div>
               <div className="flex items-center gap-2.5">
-                <h3 className="text-xl font-black text-zinc-900 tracking-tight">Stripe Gateway & Clearing</h3>
+                <h3 className="text-xl font-black text-zinc-900 tracking-tight">{t('stripe_gateway_title') || 'Stripe Gateway & Clearing'}</h3>
                 <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${
                   stripeStatus?.connected 
                     ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
@@ -3943,14 +3943,14 @@ function WalletManagementDesk() {
                 </span>
               </div>
               <p className="text-xs text-zinc-500 mt-1">
-                Real-time liquidity, automated card clearing, and customer wallet settlement pipeline.
+                {t('stripe_gateway_desc') || 'Real-time liquidity, automated card clearing, and customer wallet settlement pipeline.'}
               </p>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-4">
             <div className="bg-zinc-50 border border-zinc-200/70 rounded-2xl px-5 py-3 text-right min-w-[140px]">
-              <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 block">Stripe Available</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 block">{t('stripe_available') || 'Stripe Available'}</span>
               <span className="text-lg font-black font-mono text-zinc-900">
                 {stripeStatus?.available && stripeStatus.available.length > 0 
                   ? `${(stripeStatus.available[0].amount / 100).toFixed(2)} ${stripeStatus.available[0].currency.toUpperCase()}`
@@ -3958,7 +3958,7 @@ function WalletManagementDesk() {
               </span>
             </div>
             <div className="bg-zinc-50 border border-zinc-200/70 rounded-2xl px-5 py-3 text-right min-w-[140px]">
-              <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 block">Stripe Pending</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 block">{t('stripe_pending') || 'Stripe Pending'}</span>
               <span className="text-lg font-black font-mono text-zinc-900">
                 {stripeStatus?.pending && stripeStatus.pending.length > 0 
                   ? `${(stripeStatus.pending[0].amount / 100).toFixed(2)} ${stripeStatus.pending[0].currency.toUpperCase()}`
@@ -3983,45 +3983,45 @@ function WalletManagementDesk() {
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
             <Wallet className="w-16 h-16 text-[#4f95cc]" />
           </div>
-          <span className="text-[11px] font-black uppercase tracking-widest text-[#4f95cc] block mb-2 relative z-10">Total Platform Wallets</span>
+          <span className="text-[11px] font-black uppercase tracking-widest text-[#4f95cc] block mb-2 relative z-10">{t('total_wallets_card') || 'Total Platform Wallets'}</span>
           <span className="text-3xl font-display font-black text-zinc-900 relative z-10 block">
             {platformFinancials.totalWalletBalances.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-base text-zinc-400 font-bold">AED</span>
           </span>
-          <span className="text-xs text-zinc-500 font-semibold mt-2 block relative z-10">Deposited across {allWalletAccounts.length} accounts</span>
+          <span className="text-xs text-zinc-500 font-semibold mt-2 block relative z-10">{t('deposited_across_accounts') || 'Deposited across accounts'}</span>
         </div>
 
         <div className="bg-gradient-to-br from-white to-zinc-50 border border-zinc-200/60 p-6 rounded-[2rem] shadow-xs relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
             <Banknote className="w-16 h-16 text-emerald-600" />
           </div>
-          <span className="text-[11px] font-black uppercase tracking-widest text-emerald-600 block mb-2 relative z-10">COD Pending Remittance</span>
+          <span className="text-[11px] font-black uppercase tracking-widest text-emerald-600 block mb-2 relative z-10">{t('cod_pending_card') || 'COD Pending Remittance'}</span>
           <span className="text-3xl font-display font-black text-zinc-900 relative z-10 block">
             {platformFinancials.codTotalPending.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-base text-zinc-400 font-bold">AED</span>
           </span>
-          <span className="text-xs text-zinc-500 font-semibold mt-2 block relative z-10">To be settled with merchants</span>
+          <span className="text-xs text-zinc-500 font-semibold mt-2 block relative z-10">{t('to_be_settled_merchants') || 'To be settled with merchants'}</span>
         </div>
 
         <div className="bg-gradient-to-br from-white to-zinc-50 border border-zinc-200/60 p-6 rounded-[2rem] shadow-xs relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
             <Truck className="w-16 h-16 text-[#d12421]" />
           </div>
-          <span className="text-[11px] font-black uppercase tracking-widest text-[#d12421] block mb-2 relative z-10">3PL Carrier Outflow</span>
+          <span className="text-[11px] font-black uppercase tracking-widest text-[#d12421] block mb-2 relative z-10">{t('carrier_outflow_card') || '3PL Carrier Outflow'}</span>
           <span className="text-3xl font-display font-black text-zinc-900 relative z-10 block">
             {platformFinancials.totalCarrierCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-base text-zinc-400 font-bold">AED</span>
           </span>
-          <span className="text-xs text-zinc-500 font-semibold mt-2 block relative z-10">Accrued Noon & Aramex fees</span>
+          <span className="text-xs text-zinc-500 font-semibold mt-2 block relative z-10">{t('accrued_carrier_fees') || 'Accrued Noon & Aramex fees'}</span>
         </div>
 
         <div className="bg-gradient-to-br from-[#113f36] to-[#0c2a24] text-white p-6 rounded-[2rem] shadow-xl shadow-[#113f36]/20 relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
             <TrendingUp className="w-16 h-16 text-white" />
           </div>
-          <span className="text-[11px] font-black uppercase tracking-widest text-emerald-200 block mb-2 relative z-10">Platform Delivery Revenue</span>
+          <span className="text-[11px] font-black uppercase tracking-widest text-emerald-200 block mb-2 relative z-10">{t('delivery_revenue_card') || 'Platform Delivery Revenue'}</span>
           <span className="text-3xl font-display font-black relative z-10 block">
             {platformFinancials.totalDeliveryFees.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-base text-emerald-300 font-bold">AED</span>
           </span>
           <span className="text-xs text-emerald-100/70 font-semibold mt-2 block relative z-10">
-            Est. Net Margin: {platformFinancials.platformGrossMargin.toFixed(2)} AED
+            {t('est_net_margin') || 'Est. Net Margin'}: {platformFinancials.platformGrossMargin.toFixed(2)} AED
           </span>
         </div>
       </div>
@@ -4031,10 +4031,10 @@ function WalletManagementDesk() {
         {/* Navigation Tabs */}
         <div className="flex flex-wrap border-b border-zinc-100">
           {[
-            { id: 'wallets', label: 'User & Merchant Wallets', count: allWalletAccounts.length },
-            { id: 'ledger', label: 'Master Financial Ledger', count: masterLedger.length },
-            { id: 'couriers', label: '3PL Carrier Payables', count: carrierPayables.length },
-            { id: 'stripe', label: 'Stripe Gateway Live Details', count: stripeStatus?.connected ? 'Live' : 'Check' }
+            { id: 'wallets', label: t('tab_user_merchant_wallets') || 'User & Merchant Wallets', count: allWalletAccounts.length },
+            { id: 'ledger', label: t('tab_master_ledger') || 'Master Financial Ledger', count: masterLedger.length },
+            { id: 'couriers', label: t('tab_carrier_payables') || '3PL Carrier Payables', count: carrierPayables.length },
+            { id: 'stripe', label: t('tab_stripe_details') || 'Stripe Gateway Live Details', count: stripeStatus?.connected ? 'Live' : 'Check' }
           ].map(tab => (
             <button
               key={tab.id}
@@ -4060,28 +4060,33 @@ function WalletManagementDesk() {
             {/* Search & Filter Bar */}
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="relative w-full md:w-96">
-                <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" />
+                <Search className={`w-4 h-4 absolute ${isRTL ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-zinc-400`} />
                 <input
                   type="text"
                   value={walletSearch}
                   onChange={(e) => setWalletSearch(e.target.value)}
-                  placeholder="Search by name, email, phone or ID..."
-                  className="w-full pl-11 pr-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-bold text-zinc-800 placeholder-zinc-400 outline-none focus:border-[#113f36] focus:bg-white transition-all"
+                  placeholder={t('search_wallets') || 'Search by name, email, phone or ID...'}
+                  className={`w-full ${isRTL ? 'pr-11 pl-4 text-right' : 'pl-11 pr-4 text-left'} py-3 bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-bold text-zinc-800 placeholder-zinc-400 outline-none focus:border-[#113f36] focus:bg-white transition-all`}
                 />
               </div>
 
               <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto">
-                {(['all', 'Merchant', 'Customer', 'Driver'] as const).map(role => (
+                {[
+                  { key: 'all', label: t('role_all') || 'All Roles' },
+                  { key: 'Merchant', label: t('role_merchants') || 'Merchants' },
+                  { key: 'Customer', label: t('role_customers') || 'Customers' },
+                  { key: 'Driver', label: t('role_drivers') || 'Drivers' }
+                ].map(r => (
                   <button
-                    key={role}
-                    onClick={() => setRoleFilter(role)}
+                    key={r.key}
+                    onClick={() => setRoleFilter(r.key as any)}
                     className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      roleFilter === role
+                      roleFilter === r.key
                         ? 'bg-[#113f36] text-white shadow-xs'
                         : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
                     }`}
                   >
-                    {role === 'all' ? 'All Roles' : `${role}s`}
+                    {r.label}
                   </button>
                 ))}
               </div>
@@ -4089,16 +4094,16 @@ function WalletManagementDesk() {
 
             {/* Wallets Table */}
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[900px]">
+              <table className={`w-full ${isRTL ? 'text-right' : 'text-left'} border-collapse min-w-[900px]`}>
                 <thead>
                   <tr className="bg-zinc-50/50 text-zinc-400 text-[10px] font-black uppercase tracking-widest border-b border-zinc-100">
-                    <th className="p-4">Account Holder</th>
-                    <th className="p-4">Role</th>
-                    <th className="p-4">Contact Info</th>
-                    <th className="p-4 font-mono text-right text-zinc-900">Wallet Balance</th>
-                    <th className="p-4 font-mono text-right text-amber-600">Pending COD</th>
-                    <th className="p-4 text-center">Status</th>
-                    <th className="p-4 text-right">Actions</th>
+                    <th className="p-4">{t('account_holder') || 'Account Holder'}</th>
+                    <th className="p-4">{t('role') || 'Role'}</th>
+                    <th className="p-4">{t('contact_info') || 'Contact Info'}</th>
+                    <th className={`p-4 font-mono ${isRTL ? 'text-left' : 'text-right'} text-zinc-900`}>{t('wallet_balance') || 'Wallet Balance'}</th>
+                    <th className={`p-4 font-mono ${isRTL ? 'text-left' : 'text-right'} text-amber-600`}>{t('pending_cod') || 'Pending COD'}</th>
+                    <th className="p-4 text-center">{t('status') || 'Status'}</th>
+                    <th className={`p-4 ${isRTL ? 'text-left' : 'text-right'}`}>{t('actions') || 'Actions'}</th>
                   </tr>
                 </thead>
                 <tbody className="text-xs font-semibold text-zinc-700">
@@ -4133,11 +4138,11 @@ function WalletManagementDesk() {
                         <p className="text-[11px] text-zinc-400">{acc.phone}</p>
                       </td>
 
-                      <td className="p-4 font-mono text-right font-black text-sm text-zinc-900">
+                      <td className={`p-4 font-mono ${isRTL ? 'text-left' : 'text-right'} font-black text-sm text-zinc-900`}>
                         {acc.walletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} AED
                       </td>
 
-                      <td className="p-4 font-mono text-right font-bold text-amber-700">
+                      <td className={`p-4 font-mono ${isRTL ? 'text-left' : 'text-right'} font-bold text-amber-700`}>
                         {acc.pendingCOD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} AED
                       </td>
 
@@ -4147,7 +4152,7 @@ function WalletManagementDesk() {
                         </span>
                       </td>
 
-                      <td className="p-4 text-right">
+                      <td className={`p-4 ${isRTL ? 'text-left' : 'text-right'}`}>
                         <div className="flex items-center justify-end gap-2">
                           {acc.pendingCOD > 0 && (
                             <button
@@ -4155,7 +4160,7 @@ function WalletManagementDesk() {
                               className="px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-lg text-[10px] font-black uppercase tracking-wider transition-colors cursor-pointer"
                               title="Transfer pending COD to Wallet"
                             >
-                              Settle COD
+                              {t('settle_cod') || 'Settle COD'}
                             </button>
                           )}
                           <button
@@ -4166,7 +4171,7 @@ function WalletManagementDesk() {
                             }}
                             className="px-3 py-1.5 bg-[#113f36] hover:bg-[#0c2a24] text-white rounded-lg text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer shadow-xs"
                           >
-                            Adjust Balance
+                            {t('adjust_balance') || 'Adjust Balance'}
                           </button>
                         </div>
                       </td>
@@ -4184,13 +4189,13 @@ function WalletManagementDesk() {
             {/* Ledger Filters & Export */}
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="relative w-full md:w-96">
-                <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" />
+                <Search className={`w-4 h-4 absolute ${isRTL ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-zinc-400`} />
                 <input
                   type="text"
                   value={ledgerSearch}
                   onChange={(e) => setLedgerSearch(e.target.value)}
-                  placeholder="Search transactions, order IDs, descriptions..."
-                  className="w-full pl-11 pr-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-bold text-zinc-800 placeholder-zinc-400 outline-none focus:border-[#113f36] focus:bg-white transition-all"
+                  placeholder={t('search_ledger') || 'Search transactions, order IDs, descriptions...'}
+                  className={`w-full ${isRTL ? 'pr-11 pl-4 text-right' : 'pl-11 pr-4 text-left'} py-3 bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-bold text-zinc-800 placeholder-zinc-400 outline-none focus:border-[#113f36] focus:bg-white transition-all`}
                 />
               </div>
 
@@ -4206,7 +4211,7 @@ function WalletManagementDesk() {
                           : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
                       }`}
                     >
-                      {cat === 'all' ? 'All' : cat}
+                      {cat === 'all' ? (t('all') || 'All') : cat}
                     </button>
                   ))}
                 </div>
@@ -4216,23 +4221,23 @@ function WalletManagementDesk() {
                   className="px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer shrink-0"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  Export CSV
+                  {t('export_csv') || 'Export CSV'}
                 </button>
               </div>
             </div>
 
             {/* Ledger Table */}
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[900px]">
+              <table className={`w-full ${isRTL ? 'text-right' : 'text-left'} border-collapse min-w-[900px]`}>
                 <thead>
                   <tr className="bg-zinc-50/50 text-zinc-400 text-[10px] font-black uppercase tracking-widest border-b border-zinc-100">
-                    <th className="p-4">Transaction ID</th>
-                    <th className="p-4">Category & Type</th>
-                    <th className="p-4">Reference Source</th>
-                    <th className="p-4">Description</th>
-                    <th className="p-4">Date</th>
-                    <th className="p-4 font-mono text-right">Amount (AED)</th>
-                    <th className="p-4 text-center">Status</th>
+                    <th className="p-4">{t('transaction_id') || 'Transaction ID'}</th>
+                    <th className="p-4">{t('category_type') || 'Category & Type'}</th>
+                    <th className="p-4">{t('reference_source') || 'Reference Source'}</th>
+                    <th className="p-4">{t('description') || 'Description'}</th>
+                    <th className="p-4">{t('date') || 'Date'}</th>
+                    <th className={`p-4 font-mono ${isRTL ? 'text-left' : 'text-right'}`}>{t('amount_aed') || 'Amount (AED)'}</th>
+                    <th className="p-4 text-center">{t('status') || 'Status'}</th>
                   </tr>
                 </thead>
                 <tbody className="text-xs font-semibold text-zinc-700">
@@ -4262,7 +4267,7 @@ function WalletManagementDesk() {
 
                       <td className="p-4 text-zinc-400 font-mono text-[11px]">{tx.date}</td>
 
-                      <td className={`p-4 font-mono text-right font-black text-sm ${
+                      <td className={`p-4 font-mono ${isRTL ? 'text-left' : 'text-right'} font-black text-sm ${
                         tx.amount >= 0 ? 'text-emerald-700' : 'text-red-600'
                       }`}>
                         {tx.amount >= 0 ? `+${tx.amount.toFixed(2)}` : tx.amount.toFixed(2)} AED
@@ -4291,17 +4296,17 @@ function WalletManagementDesk() {
         {financialTab === 'couriers' && (
           <div className="p-6 space-y-6">
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[900px]">
+              <table className={`w-full ${isRTL ? 'text-right' : 'text-left'} border-collapse min-w-[900px]`}>
                 <thead>
                   <tr className="bg-zinc-50/50 text-zinc-400 text-[10px] font-black uppercase tracking-widest border-b border-zinc-100">
-                    <th className="p-4">Payable Batch ID</th>
-                    <th className="p-4">Logistics Partner</th>
-                    <th className="p-4">Type</th>
-                    <th className="p-4 text-center font-mono">Dispatched Shipments</th>
-                    <th className="p-4 font-mono text-right">Contract Rate</th>
-                    <th className="p-4 font-mono text-right text-red-600">Total Accrued Payable</th>
-                    <th className="p-4 text-center">Status</th>
-                    <th className="p-4 text-right">Action</th>
+                    <th className="p-4">{t('payable_batch_id') || 'Payable Batch ID'}</th>
+                    <th className="p-4">{t('logistics_partner') || 'Logistics Partner'}</th>
+                    <th className="p-4">{t('type') || 'Type'}</th>
+                    <th className="p-4 text-center font-mono">{t('dispatched_shipments') || 'Dispatched Shipments'}</th>
+                    <th className={`p-4 font-mono ${isRTL ? 'text-left' : 'text-right'}`}>{t('contract_rate') || 'Contract Rate'}</th>
+                    <th className={`p-4 font-mono ${isRTL ? 'text-left' : 'text-right'} text-red-600`}>{t('total_accrued_payable') || 'Total Accrued Payable'}</th>
+                    <th className="p-4 text-center">{t('status') || 'Status'}</th>
+                    <th className={`p-4 ${isRTL ? 'text-left' : 'text-right'}`}>{t('actions') || 'Action'}</th>
                   </tr>
                 </thead>
                 <tbody className="text-xs font-semibold text-zinc-700">
@@ -4322,9 +4327,9 @@ function WalletManagementDesk() {
 
                       <td className="p-4 font-mono text-center font-bold text-zinc-900">{pay.shipments}</td>
 
-                      <td className="p-4 font-mono text-right text-zinc-600">{pay.ratePerOrder}</td>
+                      <td className={`p-4 font-mono ${isRTL ? 'text-left' : 'text-right'} text-zinc-600`}>{pay.ratePerOrder}</td>
 
-                      <td className="p-4 font-mono text-right font-black text-sm text-red-600">
+                      <td className={`p-4 font-mono ${isRTL ? 'text-left' : 'text-right'} font-black text-sm text-red-600`}>
                         {pay.totalPayable.toFixed(2)} AED
                       </td>
 
@@ -4334,12 +4339,12 @@ function WalletManagementDesk() {
                         </span>
                       </td>
 
-                      <td className="p-4 text-right">
+                      <td className={`p-4 ${isRTL ? 'text-left' : 'text-right'}`}>
                         <button
                           onClick={() => triggerAction(`Cleared & authorized payout batch ${pay.id} for ${pay.carrier}.`)}
                           className="px-3.5 py-1.5 bg-[#113f36] hover:bg-[#0c2a24] text-white rounded-lg text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer shadow-xs"
                         >
-                          Approve Payout
+                          {t('approve_payout') || 'Approve Payout'}
                         </button>
                       </td>
                     </tr>
@@ -4424,7 +4429,7 @@ function WalletManagementDesk() {
               initial={{ scale: 0.95, opacity: 0, y: 15 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 15 }}
-              className="relative bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-zinc-100 z-10 space-y-6 text-left"
+              className={`relative bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-zinc-100 z-10 space-y-6 ${isRTL ? 'text-right' : 'text-left'}`}
             >
               {/* Modal Header */}
               <div className="flex items-start gap-4">
@@ -4432,12 +4437,12 @@ function WalletManagementDesk() {
                   <Wallet className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-black text-zinc-900 uppercase tracking-tight">Adjust Wallet Balance</h3>
+                  <h3 className="text-lg font-black text-zinc-900 uppercase tracking-tight">{t('adjust_wallet_modal_title') || 'Adjust Wallet Balance'}</h3>
                   <p className="text-xs text-zinc-500 mt-0.5">
                     Account: <span className="font-bold text-zinc-800">{selectedWalletUser.name}</span> ({selectedWalletUser.role})
                   </p>
                   <p className="text-xs text-emerald-700 font-mono font-bold mt-1">
-                    Current Balance: {selectedWalletUser.walletBalance.toFixed(2)} AED
+                    {t('wallet_balance') || 'Current Balance'}: {selectedWalletUser.walletBalance.toFixed(2)} AED
                   </p>
                 </div>
               </div>
@@ -4453,7 +4458,7 @@ function WalletManagementDesk() {
                       : 'text-zinc-600 hover:text-zinc-900'
                   }`}
                 >
-                  + Credit (Add)
+                  {t('credit_add') || '+ Credit (Add)'}
                 </button>
                 <button
                   type="button"
@@ -4464,14 +4469,14 @@ function WalletManagementDesk() {
                       : 'text-zinc-600 hover:text-zinc-900'
                   }`}
                 >
-                  - Debit (Deduct)
+                  {t('debit_deduct') || '- Debit (Deduct)'}
                 </button>
               </div>
 
               {/* Amount Input */}
               <div className="space-y-1.5">
                 <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500 block">
-                  Amount in AED
+                  {t('amount_in_aed') || 'Amount in AED'}
                 </label>
                 <div className="relative">
                   <input
@@ -4483,7 +4488,7 @@ function WalletManagementDesk() {
                     onChange={(e) => setAdjustmentAmount(e.target.value)}
                     className="w-full px-4 py-3.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm font-mono font-black text-zinc-900 outline-none focus:border-[#113f36] focus:bg-white transition-all"
                   />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-zinc-400">
+                  <span className={`absolute ${isRTL ? 'left-4' : 'right-4'} top-1/2 -translate-y-1/2 text-xs font-bold text-zinc-400`}>
                     AED
                   </span>
                 </div>
@@ -4492,7 +4497,7 @@ function WalletManagementDesk() {
               {/* Reason / Reference Note */}
               <div className="space-y-1.5">
                 <label className="text-[11px] font-black uppercase tracking-wider text-zinc-500 block">
-                  Reason & Audit Note
+                  {t('reason_audit_note') || 'Reason & Audit Note'}
                 </label>
                 <input
                   type="text"
@@ -4511,7 +4516,7 @@ function WalletManagementDesk() {
                   onClick={() => setSelectedWalletUser(null)}
                   className="flex-1 py-3.5 px-4 rounded-xl border border-zinc-200 text-zinc-700 hover:bg-zinc-50 font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer disabled:opacity-50"
                 >
-                  Cancel
+                  {t('cancel') || 'Cancel'}
                 </button>
                 <button
                   type="button"
@@ -4531,7 +4536,7 @@ function WalletManagementDesk() {
                   ) : (
                     <>
                       <CheckCircle2 className="w-4 h-4" />
-                      Confirm {adjustmentType === 'credit' ? 'Credit' : 'Debit'}
+                      {adjustmentType === 'credit' ? (t('confirm_credit') || 'Confirm Credit') : (t('confirm_debit') || 'Confirm Debit')}
                     </>
                   )}
                 </button>
