@@ -5,6 +5,7 @@ import { Screen } from './types';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import LogoIcon from './LogoIcon';
+import OrdersBasketDropdown from './OrdersBasketDropdown';
 
 interface HeaderProps {
   onNavigate: (screen: Screen) => void;
@@ -138,8 +139,11 @@ export default function Header({ onNavigate, setLoginRole, setLoginModalOpen, co
         </div>
 
         {/* Right CTA / Logged in User Menu */}
-        <div className="flex items-center gap-3 md:gap-4 relative">
+        <div className="flex items-center gap-2 sm:gap-3 md:gap-4 relative">
           
+          {/* Active Orders & Shipments Basket Dropdown */}
+          <OrdersBasketDropdown onNavigate={onNavigate} isSolidHeader={isSolid} />
+
           {/* Language Switcher */}
           <button
             onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}

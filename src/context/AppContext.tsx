@@ -507,6 +507,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     // Only subscribe to collections if the user is authenticated.
     // If user is null, they remain in fallback/offline mode with rich simulated data.
     if (!user) {
+      try {
+        const storedGuest = JSON.parse(localStorage.getItem('guestOrders') || '[]');
+        if (Array.isArray(storedGuest) && storedGuest.length > 0) {
+          setActiveRequests(prev => {
+            const map = new Map<string, USendRequest>();
+            [...storedGuest, ...prev].forEach(item => {
+              if (item && item.id) map.set(item.id, item);
+            });
+            return Array.from(map.values());
+          });
+        }
+      } catch (e) {
+        // ignore
+      }
       setIsLoading(false);
       return;
     }
@@ -711,6 +725,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (prev.some(r => r.id === req.id)) return prev;
       return [requestData, ...prev];
     });
+
+    if (!user) {
+      try {
+        const stored = JSON.parse(localStorage.getItem('guestOrders') || '[]');
+        if (Array.isArray(stored) && !stored.some((o: any) => o.id === req.id)) {
+          stored.unshift(requestData);
+          localStorage.setItem('guestOrders', JSON.stringify(stored));
+        }
+      } catch (e) {
+        console.warn('Failed to save to guestOrders:', e);
+      }
+    }
+
+    // Broadcast update across tabs / components
+    window.dispatchEvent(new CustomEvent('usend_order_updated', { detail: requestData }));
+
     try {
       await createDocument('requests', req.id, requestData);
     } catch (e) {
