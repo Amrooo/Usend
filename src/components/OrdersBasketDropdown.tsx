@@ -170,6 +170,25 @@ export default function OrdersBasketDropdown({ onNavigate, isSolidHeader = false
     };
   }, [isOpen]);
 
+  // Lock background body scroll when tracking modal is open
+  useEffect(() => {
+    if (selectedOrderForModal) {
+      const originalOverflow = document.body.style.overflow;
+      const originalPaddingRight = document.body.style.paddingRight;
+      // Prevent layout shift from scrollbar disappearing
+      const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+      if (scrollBarWidth > 0) {
+        document.body.style.paddingRight = `${scrollBarWidth}px`;
+      }
+      document.body.style.overflow = 'hidden';
+
+      return () => {
+        document.body.style.overflow = originalOverflow;
+        document.body.style.paddingRight = originalPaddingRight;
+      };
+    }
+  }, [selectedOrderForModal]);
+
   // Status badge styling helper
   const getStatusBadge = (status: string) => {
     const s = (status || '').toLowerCase();
@@ -538,7 +557,12 @@ export default function OrdersBasketDropdown({ onNavigate, isSolidHeader = false
       {/* ── Live Detailed Tracking Modal ── */}
       <AnimatePresence>
         {selectedOrderForModal && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div 
+            className="fixed inset-0 z-[200] flex items-center justify-center p-4 overscroll-contain select-none"
+            onTouchMove={(e) => {
+              if (e.target === e.currentTarget) e.preventDefault();
+            }}
+          >
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -551,8 +575,9 @@ export default function OrdersBasketDropdown({ onNavigate, isSolidHeader = false
               initial={{ opacity: 0, scale: 0.94, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.94, y: 20 }}
-              className="relative w-full max-w-lg bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl border border-zinc-100 dark:border-zinc-800 p-6 overflow-hidden z-10 max-h-[90vh] flex flex-col"
+              className="relative w-full max-w-lg bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl border border-zinc-100 dark:border-zinc-800 p-6 overflow-hidden z-10 max-h-[90vh] flex flex-col overscroll-contain select-text"
               dir={isRTL ? 'rtl' : 'ltr'}
+              onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Top */}
               <div className="flex items-center justify-between pb-4 border-b border-zinc-100 dark:border-zinc-800">
