@@ -63,8 +63,18 @@ export default function Home({ onNavigate }: HomeProps) {
     const generated: Array<{ id: string | number; title: string; message: string; time: string; icon: any; color: string }> = [];
 
     userOrders.slice(0, 5).forEach((req) => {
+      const isCancelled = (req.status || '').toLowerCase().includes('cancel');
       const isDelivered = (req.status || '').toLowerCase().includes('deliver');
-      if (isDelivered) {
+      if (isCancelled) {
+        generated.push({
+          id: `notif-${req.id}-cancel`,
+          title: `Shipment ${req.id} Cancelled`,
+          message: req.cancellationReason ? `Reason: ${req.cancellationReason}` : `Shipment was cancelled.`,
+          time: req.cancelledAt ? new Date(req.cancelledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Cancelled',
+          icon: AlertCircle,
+          color: 'text-rose-600'
+        });
+      } else if (isDelivered) {
         generated.push({
           id: `notif-${req.id}-deliv`,
           title: `Shipment ${req.id} Delivered`,

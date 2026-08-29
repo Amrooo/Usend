@@ -173,12 +173,22 @@ export default function OrdersBasketDropdown({ onNavigate, isSolidHeader = false
   // Status badge styling helper
   const getStatusBadge = (status: string) => {
     const s = (status || '').toLowerCase();
+    if (s.includes('cancel')) {
+      return {
+        bg: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800',
+        dot: 'bg-rose-500',
+        label: language === 'ar' ? 'ملغي' : 'Cancelled',
+        step: 0,
+        isCancelled: true
+      };
+    }
     if (s.includes('deliver') || s.includes('complete')) {
       return {
         bg: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800',
         dot: 'bg-emerald-500',
         label: language === 'ar' ? 'تم التوصيل' : 'Delivered',
-        step: 4
+        step: 4,
+        isCancelled: false
       };
     }
     if (s.includes('transit') || s.includes('route') || s.includes('en-route')) {
@@ -186,7 +196,8 @@ export default function OrdersBasketDropdown({ onNavigate, isSolidHeader = false
         bg: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800',
         dot: 'bg-blue-500 animate-ping',
         label: language === 'ar' ? 'في الطريق' : 'In Transit',
-        step: 3
+        step: 3,
+        isCancelled: false
       };
     }
     if (s.includes('assign')) {
@@ -194,14 +205,16 @@ export default function OrdersBasketDropdown({ onNavigate, isSolidHeader = false
         bg: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800',
         dot: 'bg-purple-500',
         label: language === 'ar' ? 'تم تعيين السائق' : 'Driver Assigned',
-        step: 2
+        step: 2,
+        isCancelled: false
       };
     }
     return {
       bg: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800',
       dot: 'bg-amber-500',
       label: language === 'ar' ? 'قيد المعالجة' : 'Processing',
-      step: 1
+      step: 1,
+      isCancelled: false
     };
   };
 
@@ -390,7 +403,10 @@ export default function OrdersBasketDropdown({ onNavigate, isSolidHeader = false
                     return (
                       <div
                         key={order.id}
-                        onClick={() => setSelectedOrderForModal(order)}
+                        onClick={() => {
+                          setSelectedOrderForModal(order);
+                          setIsOpen(false);
+                        }}
                         className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700/70 hover:border-[#113f36] dark:hover:border-[#6d8c55] hover:shadow-md transition-all cursor-pointer group space-y-3"
                       >
                         {/* Order Number & Status Pill */}
@@ -437,29 +453,37 @@ export default function OrdersBasketDropdown({ onNavigate, isSolidHeader = false
                           </div>
                         </div>
 
-                        {/* Mini Visual Step Bar */}
-                        <div className="pt-1">
-                          <div className="grid grid-cols-4 gap-1">
-                            {[1, 2, 3, 4].map((step) => (
-                              <div
-                                key={step}
-                                className={`h-1.5 rounded-full transition-all ${
-                                  step <= statusInfo.step
-                                    ? 'bg-[#113f36] dark:bg-[#6d8c55]'
-                                    : 'bg-zinc-100 dark:bg-zinc-700'
-                                }`}
-                              />
-                            ))}
+                        {/* Cancellation Notice or Mini Visual Step Bar */}
+                        {statusInfo.isCancelled ? (
+                          <div className="pt-1">
+                            <div className="bg-rose-50 dark:bg-rose-950/40 border border-rose-200/60 dark:border-rose-800/40 p-2 rounded-xl text-[11px] text-rose-700 dark:text-rose-300 font-medium">
+                              <span className="font-bold">{language === 'ar' ? 'سبب الإلغاء:' : 'Cancelled:'}</span> {order.cancellationReason || (language === 'ar' ? 'تم إلغاء الطلب' : 'Shipment cancelled')}
+                            </div>
                           </div>
-                          <div className="flex justify-between items-center mt-1.5 text-[10px] text-zinc-400 font-medium">
-                            <span>{language === 'ar' ? 'تم الحجز' : 'Booked'}</span>
-                            <span>{order.etaTime || '18 mins'}</span>
-                            <span className="text-[#113f36] dark:text-[#6d8c55] font-bold group-hover:underline flex items-center gap-0.5">
-                              {language === 'ar' ? 'تتبع' : 'Track'}
-                              <ChevronRight className="w-3 h-3" />
-                            </span>
+                        ) : (
+                          <div className="pt-1">
+                            <div className="grid grid-cols-4 gap-1">
+                              {[1, 2, 3, 4].map((step) => (
+                                <div
+                                  key={step}
+                                  className={`h-1.5 rounded-full transition-all ${
+                                    step <= statusInfo.step
+                                      ? 'bg-[#113f36] dark:bg-[#6d8c55]'
+                                      : 'bg-zinc-100 dark:bg-zinc-700'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            <div className="flex justify-between items-center mt-1.5 text-[10px] text-zinc-400 font-medium">
+                              <span>{language === 'ar' ? 'تم الحجز' : 'Booked'}</span>
+                              <span>{order.etaTime || '18 mins'}</span>
+                              <span className="text-[#113f36] dark:text-[#6d8c55] font-bold group-hover:underline flex items-center gap-0.5">
+                                {language === 'ar' ? 'تتبع' : 'Track'}
+                                <ChevronRight className="w-3 h-3" />
+                              </span>
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                     );
                   })
@@ -514,13 +538,13 @@ export default function OrdersBasketDropdown({ onNavigate, isSolidHeader = false
       {/* ── Live Detailed Tracking Modal ── */}
       <AnimatePresence>
         {selectedOrderForModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedOrderForModal(null)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-md"
+              className="absolute inset-0 bg-black/70 backdrop-blur-md"
             />
 
             <motion.div
@@ -533,7 +557,11 @@ export default function OrdersBasketDropdown({ onNavigate, isSolidHeader = false
               {/* Modal Top */}
               <div className="flex items-center justify-between pb-4 border-b border-zinc-100 dark:border-zinc-800">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                  <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${
+                    getStatusBadge(selectedOrderForModal.status).isCancelled 
+                      ? 'bg-rose-500/10 text-rose-600' 
+                      : 'bg-emerald-500/10 text-emerald-600'
+                  }`}>
                     <Truck className="w-5 h-5" />
                   </div>
                   <div>
@@ -547,7 +575,7 @@ export default function OrdersBasketDropdown({ onNavigate, isSolidHeader = false
                 </div>
                 <button
                   onClick={() => setSelectedOrderForModal(null)}
-                  className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center justify-center transition-colors"
+                  className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center justify-center transition-colors cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -556,22 +584,46 @@ export default function OrdersBasketDropdown({ onNavigate, isSolidHeader = false
               {/* Modal Body */}
               <div className="overflow-y-auto py-5 space-y-5 scrollbar-thin">
                 {/* Status Hero */}
-                <div className="bg-gradient-to-br from-[#113f36] to-[#0a2721] p-5 rounded-2xl text-white shadow-lg space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs uppercase tracking-widest text-[#cca073] font-bold">
-                      {selectedOrderForModal.carrier || 'USend Direct Delivery'}
-                    </span>
-                    <span className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold">
-                      {getStatusBadge(selectedOrderForModal.status).label}
-                    </span>
+                {getStatusBadge(selectedOrderForModal.status).isCancelled ? (
+                  <div className="bg-gradient-to-br from-rose-950 via-rose-900 to-zinc-950 p-5 rounded-2xl text-white shadow-lg space-y-3 border border-rose-800/40">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs uppercase tracking-widest text-rose-300 font-bold">
+                        {selectedOrderForModal.carrier ? selectedOrderForModal.carrier.toUpperCase() : 'USEND LOGISTICS'}
+                      </span>
+                      <span className="px-3 py-1 bg-rose-500/20 text-rose-200 border border-rose-400/30 backdrop-blur-md rounded-full text-xs font-bold flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse" />
+                        {language === 'ar' ? 'تم إلغاء الشحنة' : 'Order Cancelled'}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-lg font-black text-rose-100">
+                        {selectedOrderForModal.cancellationReason || (language === 'ar' ? 'تم إلغاء الطلب من قبل الإدارة / العميل' : 'Cancelled by Admin / Customer')}
+                      </p>
+                      <p className="text-xs text-rose-300/80 font-medium mt-1">
+                        {selectedOrderForModal.cancelledAt 
+                          ? (language === 'ar' ? `تاريخ الإلغاء: ${new Date(selectedOrderForModal.cancelledAt).toLocaleString('ar-AE')}` : `Cancelled at: ${new Date(selectedOrderForModal.cancelledAt).toLocaleString()}`)
+                          : (language === 'ar' ? 'تم إيقاف مسار التوصيل واسترجاع أي مبالغ مستحقة' : 'Delivery stopped. Applicable refunds processed.')}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-2xl font-black">{selectedOrderForModal.etaTime || '18 mins away'}</p>
-                    <p className="text-xs text-zinc-300 font-medium">
-                      {language === 'ar' ? 'الوقت التقديري لوصول السائق' : 'Estimated courier arrival time'}
-                    </p>
+                ) : (
+                  <div className="bg-gradient-to-br from-[#113f36] to-[#0a2721] p-5 rounded-2xl text-white shadow-lg space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs uppercase tracking-widest text-[#cca073] font-bold">
+                        {selectedOrderForModal.carrier || 'USend Direct Delivery'}
+                      </span>
+                      <span className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold">
+                        {getStatusBadge(selectedOrderForModal.status).label}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-2xl font-black">{selectedOrderForModal.etaTime || '18 mins away'}</p>
+                      <p className="text-xs text-zinc-300 font-medium">
+                        {language === 'ar' ? 'الوقت التقديري لوصول السائق' : 'Estimated courier arrival time'}
+                      </p>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Route Cards */}
                 <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl p-4 space-y-3 border border-zinc-100 dark:border-zinc-800">
@@ -613,61 +665,94 @@ export default function OrdersBasketDropdown({ onNavigate, isSolidHeader = false
                   </h4>
 
                   <div className="space-y-4 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-zinc-200 dark:before:bg-zinc-700">
+                    {/* Step 1: Created */}
                     <div className="flex items-center gap-3 relative z-10">
-                      <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs">
+                      <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs shadow-xs">
                         <CheckCircle2 className="w-3.5 h-3.5" />
                       </div>
                       <div>
-                        <p className="text-xs font-bold">{language === 'ar' ? 'تم إنشاء الطلب وتأكيده' : 'Order Created & Confirmed'}</p>
+                        <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100">{language === 'ar' ? 'تم إنشاء الطلب وتأكيده' : 'Order Created & Confirmed'}</p>
                         <p className="text-[10px] text-zinc-400">{selectedOrderForModal.date || 'Today'}</p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 relative z-10">
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
-                        getStatusBadge(selectedOrderForModal.status).step >= 2
-                          ? 'bg-emerald-500 text-white'
-                          : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-400'
-                      }`}>
-                        <ShieldCheck className="w-3.5 h-3.5" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold">{language === 'ar' ? 'تجهيز بوليصة الشحن وتعيين الناقل' : 'Waybill Prepared & Carrier Assigned'}</p>
-                        <p className="text-[10px] text-zinc-400">
-                          {selectedOrderForModal.externalTrackingNumber ? `AWB #${selectedOrderForModal.externalTrackingNumber}` : 'Pending assignment'}
-                        </p>
-                      </div>
-                    </div>
+                    {getStatusBadge(selectedOrderForModal.status).isCancelled ? (
+                      /* Cancelled Step Milestone */
+                      <>
+                        <div className="flex items-center gap-3 relative z-10">
+                          <div className="w-6 h-6 rounded-full bg-rose-600 text-white flex items-center justify-center text-xs shadow-xs">
+                            <X className="w-3.5 h-3.5" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-rose-600 dark:text-rose-400">{language === 'ar' ? 'تم إلغاء الشحنة' : 'Shipment Cancelled'}</p>
+                            <p className="text-[10px] text-rose-500 font-semibold">
+                              {selectedOrderForModal.cancellationReason ? `Reason: ${selectedOrderForModal.cancellationReason}` : (language === 'ar' ? 'تم إيقاف عملية الشحن' : 'Delivery aborted')}
+                            </p>
+                          </div>
+                        </div>
 
-                    <div className="flex items-center gap-3 relative z-10">
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
-                        getStatusBadge(selectedOrderForModal.status).step >= 3
-                          ? 'bg-emerald-500 text-white'
-                          : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-400'
-                      }`}>
-                        <Truck className="w-3.5 h-3.5" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold">{language === 'ar' ? 'السائق في الطريق للتسليم' : 'Courier Out for Delivery'}</p>
-                        <p className="text-[10px] text-zinc-400">
-                          {selectedOrderForModal.noonDriverName ? `Rider: ${selectedOrderForModal.noonDriverName}` : 'Driver on the way'}
-                        </p>
-                      </div>
-                    </div>
+                        <div className="flex items-center gap-3 relative z-10 opacity-40">
+                          <div className="w-6 h-6 rounded-full bg-zinc-200 dark:bg-zinc-700 text-zinc-400 flex items-center justify-center text-xs">
+                            <Truck className="w-3.5 h-3.5" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold line-through">{language === 'ar' ? 'التوصيل والاستلام' : 'Delivery & Handoff'}</p>
+                            <p className="text-[10px] text-zinc-400">{language === 'ar' ? 'تم الإلغاء' : 'Cancelled'}</p>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        {/* Step 2: Waybill */}
+                        <div className="flex items-center gap-3 relative z-10">
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
+                            getStatusBadge(selectedOrderForModal.status).step >= 2
+                              ? 'bg-emerald-500 text-white'
+                              : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-400'
+                          }`}>
+                            <ShieldCheck className="w-3.5 h-3.5" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold">{language === 'ar' ? 'تجهيز بوليصة الشحن وتعيين الناقل' : 'Waybill Prepared & Carrier Assigned'}</p>
+                            <p className="text-[10px] text-zinc-400">
+                              {selectedOrderForModal.externalTrackingNumber ? `AWB #${selectedOrderForModal.externalTrackingNumber}` : 'Pending assignment'}
+                            </p>
+                          </div>
+                        </div>
 
-                    <div className="flex items-center gap-3 relative z-10">
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
-                        getStatusBadge(selectedOrderForModal.status).step >= 4
-                          ? 'bg-emerald-500 text-white'
-                          : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-400'
-                      }`}>
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold">{language === 'ar' ? 'تم استلام الشحنة وتوقيع الإيصال' : 'Shipment Delivered & Signed'}</p>
-                        <p className="text-[10px] text-zinc-400">{getStatusBadge(selectedOrderForModal.status).step >= 4 ? 'Completed' : 'Pending'}</p>
-                      </div>
-                    </div>
+                        {/* Step 3: Out for Delivery */}
+                        <div className="flex items-center gap-3 relative z-10">
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
+                            getStatusBadge(selectedOrderForModal.status).step >= 3
+                              ? 'bg-emerald-500 text-white'
+                              : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-400'
+                          }`}>
+                            <Truck className="w-3.5 h-3.5" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold">{language === 'ar' ? 'السائق في الطريق للتسليم' : 'Courier Out for Delivery'}</p>
+                            <p className="text-[10px] text-zinc-400">
+                              {selectedOrderForModal.noonDriverName ? `Rider: ${selectedOrderForModal.noonDriverName}` : 'Driver on the way'}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Step 4: Delivered */}
+                        <div className="flex items-center gap-3 relative z-10">
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
+                            getStatusBadge(selectedOrderForModal.status).step >= 4
+                              ? 'bg-emerald-500 text-white'
+                              : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-400'
+                          }`}>
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold">{language === 'ar' ? 'تم استلام الشحنة وتوقيع الإيصال' : 'Shipment Delivered & Signed'}</p>
+                            <p className="text-[10px] text-zinc-400">{getStatusBadge(selectedOrderForModal.status).step >= 4 ? 'Completed' : 'Pending'}</p>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -679,7 +764,7 @@ export default function OrdersBasketDropdown({ onNavigate, isSolidHeader = false
                     const text = `Hi, I am inquiring about my USend shipment #${selectedOrderForModal.id}`;
                     window.open(`https://wa.me/971500000000?text=${encodeURIComponent(text)}`, '_blank');
                   }}
-                  className="px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-xs font-bold transition-all flex items-center gap-2"
+                  className="px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <Send className="w-3.5 h-3.5 text-emerald-500" />
                   <span>WhatsApp Support</span>
@@ -687,7 +772,7 @@ export default function OrdersBasketDropdown({ onNavigate, isSolidHeader = false
 
                 <button
                   onClick={() => setSelectedOrderForModal(null)}
-                  className="px-6 py-2.5 bg-[#113f36] hover:bg-[#0d3029] text-white text-xs font-bold rounded-xl transition-all shadow-sm"
+                  className="px-6 py-2.5 bg-[#113f36] hover:bg-[#0d3029] text-white text-xs font-bold rounded-xl transition-all shadow-sm cursor-pointer"
                 >
                   {language === 'ar' ? 'إغلاق' : 'Close'}
                 </button>

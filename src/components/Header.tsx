@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Globe2, ChevronDown, Bell, LogOut, ArrowUpRight, Menu, X, ArrowRight, Truck, Calculator, Bot, Shield } from 'lucide-react';
 import { Screen } from './types';
@@ -17,46 +17,113 @@ interface HeaderProps {
 }
 
 export default function Header({ onNavigate, setLoginRole, setLoginModalOpen, content, handleScrollTo, forceSolid = false }: HeaderProps) {
-  const { user, signOut } = useApp();
+  const { user, signOut, activeRequests } = useApp();
   const { language, setLanguage, isRTL } = useLanguage();
   
   const [isScrolled, setIsScrolled] = useState(false);
   const [notifDropdownOpen, setNotifDropdownOpen] = useState(false);
   
-  // Mock notifications
   const [readNotifIds, setReadNotifIds] = useState<string[]>([]);
   const [clearedNotifIds, setClearedNotifIds] = useState<string[]>([]);
   
-  const mockNotifs = [
-    {
-      id: '1',
-      type: 'order',
-      titleEn: 'System Update', titleAr: 'تحديث النظام',
-      descEn: 'We have updated our terms of service.', descAr: 'لقد قمنا بتحديث شروط الخدمة الخاصة بنا.',
-      timeEn: '2h ago', timeAr: 'قبل ساعتين',
-      read: false
-    },
-    {
-      id: '2',
-      type: 'wallet',
-      titleEn: 'New Shipment Alert', titleAr: 'تنبيه شحنة جديدة',
-      descEn: 'Your shipment #12345 has been delivered.', descAr: 'تم توصيل شحنتك رقم 12345.',
-      timeEn: '5h ago', timeAr: 'قبل 5 ساعات',
-      read: false
-    },
-    {
-      id: '3',
-      type: 'api',
-      titleEn: 'Welcome Message', titleAr: 'رسالة ترحيبية',
-      descEn: 'Welcome to Usend logistics platform.', descAr: 'مرحبا بك في منصة يوسند اللوجستية.',
-      timeEn: '1d ago', timeAr: 'قبل يوم',
-      read: true
-    }
-  ];
+  const dynamicNotifs = useMemo(() => {
+    if (!user) return [];
 
-  const notifications = mockNotifs
-    .filter(n => !clearedNotifIds.includes(n.id))
-    .map(n => ({ ...n, read: n.read || readNotifIds.includes(n.id) }));
+    const userOrders = (activeRequests || []).filter(r => 
+      r.userId === user.uid || 
+      r.id?.includes(user.uid || '') || 
+      user.role === 'admin' || 
+      user.role === 'merchant'
+    );
+
+    const generated: Array<{
+      id: string;
+      type: 'order' | 'wallet' | 'courier' | 'system' | 'api';
+      titleEn: string;
+      titleAr: string;
+      descEn: string;
+      descAr: string;
+      timeEn: string;
+      timeAr: string;
+      read: boolean;
+    }> = [];
+
+    generated.push({
+      id: `welcome-${user.uid || user.id || 'usr'}`,
+      type: 'system',
+      titleEn: `System Active for ${user.name || 'Account'}`,
+      titleAr: `النظام نشط لحساب ${user.name || 'المستخدم'}`,
+      descEn: `Connected to Aramex, Noon & USend Fleet dispatch network.`,
+      descAr: `متصل بشبكة شحن أرامكس، نون، وأسطول يو سيند.`,
+      timeEn: 'Active',
+      timeAr: 'نشط',
+      read: readNotifIds.includes(`welcome-${user.uid || user.id || 'usr'}`)
+    });
+
+    userOrders.slice(0, 10).forEach((order) => {
+      const isCancelled = (order.status || '').toLowerCase().includes('cancel');
+      const isDelivered = (order.status || '').toLowerCase().includes('deliver');
+      const isInTransit = !isCancelled && ((order.status || '').toLowerCase().includes('transit') || (order.status || '').toLowerCase().includes('dispatch'));
+
+      if (isCancelled) {
+        const cancelId = `order-cancel-${order.id}`;
+        generated.push({
+          id: cancelId,
+          type: 'order',
+          titleEn: `Order ${order.id} Cancelled`,
+          titleAr: `تم إلغاء الطلب ${order.id}`,
+          descEn: order.cancellationReason ? `Reason: ${order.cancellationReason}` : 'Shipment cancelled by system/admin.',
+          descAr: order.cancellationReason ? `سبب الإلغاء: ${order.cancellationReason}` : 'تم إلغاء الشحنة وإيقاف مسار التوصيل.',
+          timeEn: order.cancelledAt ? new Date(order.cancelledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (order.date || 'Cancelled'),
+          timeAr: order.cancelledAt ? new Date(order.cancelledAt).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) : (order.date || 'ملغي'),
+          read: readNotifIds.includes(cancelId)
+        });
+      } else if (isDelivered) {
+        const delivId = `order-deliv-${order.id}`;
+        generated.push({
+          id: delivId,
+          type: 'courier',
+          titleEn: `Shipment ${order.id} Delivered`,
+          titleAr: `تم تسليم الشحنة ${order.id}`,
+          descEn: `Package successfully delivered to destination recipient.`,
+          descAr: `تم تسليم الطرد بنجاح للمستلم في الوجهة.`,
+          timeEn: 'Delivered',
+          timeAr: 'تم التسليم',
+          read: readNotifIds.includes(delivId)
+        });
+      } else if (isInTransit) {
+        const transId = `order-trans-${order.id}`;
+        generated.push({
+          id: transId,
+          type: 'courier',
+          titleEn: `Shipment ${order.id} Out for Delivery`,
+          titleAr: `الشحنة ${order.id} قيد التوصيل`,
+          descEn: `Driver/Courier is on route to recipient. Tracking active.`,
+          descAr: `السائق/الناقل في طريقه للمستلم. التتبع نشط.`,
+          timeEn: 'In Transit',
+          timeAr: 'جاري التوصيل',
+          read: readNotifIds.includes(transId)
+        });
+      } else {
+        const notifId = `order-created-${order.id}`;
+        generated.push({
+          id: notifId,
+          type: 'order',
+          titleEn: `Order ${order.id} Created`,
+          titleAr: `تم إنشاء الطلب ${order.id}`,
+          descEn: `Shipment from ${order.fromDestination || order.originCity || 'Dubai'} to ${order.toDestination || order.destinationCity || 'UAE'}.`,
+          descAr: `تم تسجيل شحنة من ${order.fromDestination || order.originCity || 'دبي'} إلى ${order.toDestination || order.destinationCity || 'الإمارات'}.`,
+          timeEn: order.date || 'Today',
+          timeAr: order.date || 'اليوم',
+          read: readNotifIds.includes(notifId)
+        });
+      }
+    });
+
+    return generated;
+  }, [user, activeRequests, readNotifIds]);
+
+  const notifications = dynamicNotifs.filter(n => !clearedNotifIds.includes(n.id));
 
   const unreadNotifsCount = notifications.filter(n => !n.read).length;
 
@@ -72,7 +139,7 @@ export default function Header({ onNavigate, setLoginRole, setLoginModalOpen, co
   };
 
   const clearAllNotifications = () => {
-    setClearedNotifIds(mockNotifs.map(n => n.id));
+    setClearedNotifIds(notifications.map(n => n.id));
     setNotifDropdownOpen(false);
   };
 

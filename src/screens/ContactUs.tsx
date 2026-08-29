@@ -357,23 +357,37 @@ const ContactUs = ({ onNavigate }: LandingPageProps) => {
     });
 
     userOrders.slice(0, 10).forEach((order) => {
+      const isCancelled = (order.status || '').toLowerCase().includes('cancel');
       const isDelivered = (order.status || '').toLowerCase().includes('deliver');
-      const isInTransit = (order.status || '').toLowerCase().includes('transit') || (order.status || '').toLowerCase().includes('dispatch');
+      const isInTransit = !isCancelled && ((order.status || '').toLowerCase().includes('transit') || (order.status || '').toLowerCase().includes('dispatch'));
       
       const notifId = `order-created-${order.id}`;
       generated.push({
         id: notifId,
         titleEn: `Order ${order.id} Created`,
         titleAr: `تم إنشاء الطلب ${order.id}`,
-        descEn: `Shipment from ${order.originCity || 'Dubai'} to ${order.destinationCity || order.receiverCity || 'UAE'} via ${order.carrier || 'Aramex'}.`,
-        descAr: `تم تسجيل شحنة من ${order.originCity || 'دبي'} إلى ${order.destinationCity || order.receiverCity || 'الإمارات'} عبر ${order.carrier || 'أرامكس'}.`,
+        descEn: `Shipment from ${order.fromDestination || order.originCity || 'Dubai'} to ${order.toDestination || order.destinationCity || order.receiverCity || 'UAE'} via ${order.carrier || 'Aramex'}.`,
+        descAr: `تم تسجيل شحنة من ${order.fromDestination || order.originCity || 'دبي'} إلى ${order.toDestination || order.destinationCity || order.receiverCity || 'الإمارات'} عبر ${order.carrier || 'أرامكس'}.`,
         timeEn: order.date || 'Today',
         timeAr: order.date || 'اليوم',
         read: readNotifIds.includes(notifId),
         type: 'order'
       });
 
-      if (isDelivered) {
+      if (isCancelled) {
+        const cancelId = `order-cancel-${order.id}`;
+        generated.push({
+          id: cancelId,
+          titleEn: `Order ${order.id} Cancelled`,
+          titleAr: `تم إلغاء الطلب ${order.id}`,
+          descEn: order.cancellationReason ? `Reason: ${order.cancellationReason}` : 'Shipment cancelled by system/admin.',
+          descAr: order.cancellationReason ? `سبب الإلغاء: ${order.cancellationReason}` : 'تم إلغاء الشحنة وإيقاف التوصيل.',
+          timeEn: order.cancelledAt ? new Date(order.cancelledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (order.date || 'Cancelled'),
+          timeAr: order.cancelledAt ? new Date(order.cancelledAt).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) : (order.date || 'ملغي'),
+          read: readNotifIds.includes(cancelId),
+          type: 'order'
+        });
+      } else if (isDelivered) {
         const delivId = `order-deliv-${order.id}`;
         generated.push({
           id: delivId,
