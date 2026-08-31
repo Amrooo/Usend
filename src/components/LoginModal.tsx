@@ -132,11 +132,11 @@ export default function LoginModal({ isOpen, onClose, defaultRole, onNavigate }:
 
           {/* Modal Card */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 15 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 15 }}
-            transition={{ type: 'spring', duration: 0.4 }}
-            className="bg-white text-slate-900 border border-slate-200 rounded-[2.5rem] w-full max-w-md p-8 shadow-2xl relative overflow-hidden z-10 select-none animate-in fade-in zoom-in duration-200"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="bg-white text-slate-900 border border-slate-200 rounded-[2.5rem] w-full max-w-md p-6 sm:p-8 shadow-2xl relative overflow-hidden z-10 select-none"
           >
             {/* Elegant Background Light Accent */}
             <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#113f36]/10 rounded-full blur-3xl pointer-events-none" />

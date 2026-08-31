@@ -475,10 +475,10 @@ export default function YangoMapView({
   const currentCoords = activeMode === 'dropoff' ? dropoffCoords : pickupCoords;
 
   return (
-    <div className={`relative w-full h-[70vh] min-h-[480px] max-h-[680px] bg-[#f8fafc] text-zinc-900 overflow-hidden flex flex-col ${isModal ? 'rounded-2xl' : ''}`}>
+    <div className={`relative w-full h-full sm:h-[70vh] min-h-[380px] sm:min-h-[480px] sm:max-h-[680px] bg-[#f8fafc] text-zinc-900 overflow-hidden flex flex-col ${isModal ? 'sm:rounded-2xl' : ''}`}>
       
       {/* 1. TOP FLOATING SEARCH & CONTROLS */}
-      <div className="absolute top-4 inset-x-4 z-[500] flex flex-col items-center gap-1 max-w-xl mx-auto pointer-events-auto">
+      <div className="absolute top-3 sm:top-4 inset-x-3 sm:inset-x-4 z-[500] flex flex-col items-center gap-1 max-w-xl mx-auto pointer-events-auto">
         <div className="relative w-full bg-white/95 backdrop-blur-xl border border-zinc-200/80 rounded-2xl shadow-xl flex items-center px-3.5 py-2.5 transition-all focus-within:ring-2 focus-within:ring-[#FF2B42]/30 focus-within:border-[#FF2B42]">
           <div className="flex items-center gap-2 mr-2">
             {activeMode === 'pickup' ? (
@@ -508,7 +508,7 @@ export default function YangoMapView({
                 ? (isRTL ? "ابحث بالاسم (مثال: JVC, Downtown) أو اضغط بالخريطة..." : "Search address (e.g. JVC, Marina, Downtown) or tap map...")
                 : (isRTL ? "ابحث بالاسم (مثال: JVC, Downtown) أو اضغط بالخريطة..." : "Search address (e.g. JVC, Marina, Downtown) or tap map...")
             }
-            className="w-full bg-transparent text-xs font-semibold text-zinc-800 placeholder:text-zinc-400 outline-none"
+            className="w-full bg-transparent text-sm sm:text-xs font-semibold text-zinc-800 placeholder:text-zinc-400 outline-none"
           />
 
           {isSearching && (
@@ -598,7 +598,7 @@ export default function YangoMapView({
       <div
         id={mapContainerId}
         className="w-full flex-1 z-0 cursor-crosshair"
-        style={{ width: '100%', height: '100%', minHeight: '380px' }}
+        style={{ width: '100%', height: '100%' }}
       />
 
       {/* Loading Overlay */}
@@ -612,14 +612,14 @@ export default function YangoMapView({
       )}
 
       {/* 3. CLEAN BOTTOM CONFIRMATION BAR */}
-      <div className="absolute bottom-4 inset-x-4 z-[500] max-w-xl mx-auto pointer-events-auto">
-        <div className="bg-white/95 backdrop-blur-2xl border border-zinc-200/80 rounded-3xl p-4 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-3.5">
+      <div className="absolute bottom-3 sm:bottom-4 inset-x-3 sm:inset-x-4 z-[500] max-w-xl mx-auto pointer-events-auto">
+        <div className="bg-white/95 backdrop-blur-2xl border border-zinc-200/80 rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-3.5">
           {/* Address Information */}
           <div className="flex items-start gap-3 w-full sm:w-auto flex-1 min-w-0">
-            <div className={`p-2.5 rounded-2xl shrink-0 mt-0.5 ${
+            <div className={`p-2 sm:p-2.5 rounded-xl sm:rounded-2xl shrink-0 mt-0.5 ${
               activeMode === 'pickup' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-[#FF2B42]'
             }`}>
-              <MapPin className="w-5 h-5" />
+              <MapPin className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
             </div>
 
             <div className="min-w-0 flex-1">
@@ -640,7 +640,7 @@ export default function YangoMapView({
           {/* Direct Confirm Action Button */}
           <button
             onClick={handleConfirmLocation}
-            className={`w-full sm:w-auto px-7 py-3.5 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer shrink-0 ${
+            className={`w-full sm:w-auto px-5 sm:px-7 py-3 sm:py-3.5 text-white font-black text-xs uppercase tracking-wider rounded-xl sm:rounded-2xl shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer shrink-0 ${
               activeMode === 'pickup'
                 ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/25'
                 : 'bg-[#FF2B42] hover:bg-[#e02439] shadow-[#FF2B42]/25'

@@ -282,13 +282,18 @@ export default function OrdersBasketDropdown({ onNavigate, isSolidHeader = false
       <AnimatePresence>
         {isOpen && (
           <>
+            {/* Mobile backdrop to close on tap */}
+            <div 
+              className="fixed inset-0 z-40 sm:hidden" 
+              onClick={() => setIsOpen(false)}
+            />
             <motion.div
-              initial={{ opacity: 0, y: 12, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 10, scale: 0.96 }}
-              transition={{ duration: 0.18, ease: 'easeOut' }}
-              className={`absolute top-full mt-3 w-[360px] sm:w-[420px] max-w-[calc(100vw-24px)] bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-200/90 dark:border-zinc-800 rounded-[1.75rem] shadow-2xl z-50 overflow-hidden text-zinc-900 dark:text-zinc-100 flex flex-col max-h-[85vh] ${
-                isRTL ? 'left-0 sm:-left-6 origin-top-left' : 'right-[-50px] sm:right-0 origin-top-right'
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 6 }}
+              transition={{ duration: 0.15, ease: 'easeOut' }}
+              className={`fixed left-3 right-3 sm:absolute sm:left-auto top-18 sm:top-full mt-2 sm:mt-3 w-auto sm:w-[420px] max-w-[calc(100vw-24px)] bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-200/90 dark:border-zinc-800 rounded-[1.75rem] shadow-2xl z-50 overflow-hidden text-zinc-900 dark:text-zinc-100 flex flex-col max-h-[85vh] ${
+                isRTL ? 'sm:left-0 sm:origin-top-left' : 'sm:right-0 sm:origin-top-right'
               }`}
             >
               {/* Top Header */}

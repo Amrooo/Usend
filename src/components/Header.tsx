@@ -255,14 +255,14 @@ export default function Header({ onNavigate, setLoginRole, setLoginModalOpen, co
                   />
                   
                   <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 6 }}
                     transition={{ duration: 0.15 }}
-                    className={`absolute top-full mt-3.5 w-[330px] sm:w-[370px] max-w-[calc(100vw-32px)] bg-white border border-slate-200/90 rounded-2xl shadow-2xl p-4.5 z-50 overflow-hidden ${
+                    className={`fixed left-3 right-3 sm:absolute sm:left-auto top-18 sm:top-full mt-2 sm:mt-3.5 w-auto sm:w-[370px] max-w-[calc(100vw-24px)] bg-white border border-slate-200/90 rounded-2xl shadow-2xl p-4.5 z-50 overflow-hidden ${
                       isRTL 
-                        ? 'left-0 sm:-left-4 origin-top-left' 
-                        : 'right-[-60px] sm:right-0 origin-top-right'
+                        ? 'sm:left-0 sm:origin-top-left' 
+                        : 'sm:right-0 sm:origin-top-right'
                     }`}
                   >
                     {/* Header */}

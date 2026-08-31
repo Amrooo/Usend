@@ -26,7 +26,7 @@ export default function MapPicker({
     : [25.1972, 55.2744]; // Downtown Dubai
 
   return (
-    <div className="w-full h-[70vh] min-h-[480px] max-h-[680px] bg-[#f8fafc] rounded-3xl overflow-hidden shadow-2xl">
+    <div className="w-full h-full min-h-[420px] sm:h-[70vh] sm:min-h-[480px] sm:max-h-[680px] bg-[#f8fafc] rounded-none sm:rounded-3xl overflow-hidden shadow-none sm:shadow-2xl flex flex-col flex-1">
       <YangoMapView
         mode={targetType}
         initialPickup={targetType === 'pickup' ? (initialAddress || 'Downtown Dubai, UAE') : 'Downtown Dubai, UAE'}
