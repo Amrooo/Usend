@@ -128,7 +128,7 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
     description: '', 
     quantity: '1', 
     photo: null as string | null, 
-    courier: 'aramex' as 'aramex' | 'noon', 
+    courier: 'usend' as 'usend' | 'aramex' | 'noon', 
     declaredValue: '',
     // Optional: cash amount to collect FROM customer at delivery (COD for customer)
     collectCashFromCustomer: false,
@@ -1115,38 +1115,22 @@ export default function OrderWizard({ onNavigate, onRequestLogin, isGuest = true
                 </div>
                 
                 <div className="space-y-4 md:col-span-2 pt-4 border-t border-zinc-100">
-                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Select Courier & Shipping Speed</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 block">Select Courier</label>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     
-                    {/* Aramex Option */}
+                    {/* USend Fleet Option */}
                     <label 
-                      onClick={() => { setShipmentData(p =>({...p, courier: 'aramex'})); setIsAramexBoxModalOpen(true); }}
-                      className={`flex flex-col justify-between p-5 rounded-2xl border-2 cursor-pointer transition-all ${shipmentData.courier === 'aramex' ? 'border-[#E31B23] bg-red-500/5 shadow-md shadow-red-500/5' : 'border-zinc-200 bg-white hover:border-zinc-300'}`}
+                      onClick={() => setShipmentData(p =>({...p, courier: 'usend'}))}
+                      className={`flex flex-col justify-between p-5 rounded-2xl border-2 cursor-pointer transition-all ${shipmentData.courier === 'usend' ? 'border-[#113F36] bg-[#113F36]/5 shadow-md shadow-[#113F36]/5' : 'border-zinc-200 bg-white hover:border-zinc-300'}`}
                     >
-                      <input type="radio" value="aramex" checked={shipmentData.courier === 'aramex'} onChange={() => {}} className="hidden"/>
+                      <input type="radio" value="usend" checked={shipmentData.courier === 'usend'} onChange={() => {}} className="hidden"/>
                       <div className="space-y-3">
                         <div className="flex items-center gap-1.5 font-sans select-none shrink-0">
-                          <span className="text-[#E31B23] font-black text-xl tracking-tighter italic">aramex</span>
+                          <span className="text-[#113F36] font-black text-xl tracking-tighter">USend Fleet</span>
                         </div>
                         <div>
-                          <span className="font-black text-xl text-[#E31B23]">35 AED</span>
-                          <p className="text-[10px] text-zinc-500 font-bold uppercase mt-1">Next-Day Delivery</p>
-                        </div>
-                      </div>
-                    </label>
-
-                    {/* Noon Option */}
-                    <label className={`flex flex-col justify-between p-5 rounded-2xl border-2 cursor-pointer transition-all ${shipmentData.courier === 'noon' ? 'border-[#feee00] bg-yellow-500/5 shadow-md shadow-yellow-500/5' : 'border-zinc-200 bg-white hover:border-zinc-300'}`}>
-                      <input type="radio" value="noon" checked={shipmentData.courier === 'noon'} onChange={() => setShipmentData(p =>({...p, courier: 'noon'}))} className="hidden"/>
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-1.5 font-sans select-none shrink-0">
-                          <div className="bg-[#feee00] text-black font-extrabold text-xs px-2 py-1 rounded tracking-tighter">
-                            noon
-                          </div>
-                        </div>
-                        <div>
-                          <span className="font-black text-xl text-zinc-950">28 AED</span>
-                          <p className="text-[10px] text-zinc-500 font-bold uppercase mt-1">Eco-Saver Delivery</p>
+                          <span className="font-black text-xl text-[#113F36]">30 AED</span>
+                          <p className="text-[10px] text-zinc-500 font-bold uppercase mt-1">Manual Assign</p>
                         </div>
                       </div>
                     </label>
