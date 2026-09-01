@@ -1194,292 +1194,45 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                     <h2 className="font-bold text-lg text-zinc-800">Courier & Driver Fulfillment</h2>
                   </div>
 
-                  <div className="space-y-4">
-                    <p className="text-[12px] uppercase font-black tracking-wider text-zinc-400">Choose Courier Channel</p>
                     <div className="flex flex-col gap-3.5">
-                      {/* Aramex Option */}
+                      {/* USend Fleet Option */}
                       <div className="space-y-3">
                         <div
                           role="button"
                           tabIndex={0}
-                          onClick={() => { 
-                            setFormData(prev => ({
-                              ...prev,
-                              carrier: 'aramex',
-                              aramexBox: prev.aramexBox || { id: 'small', name: 'Small Box', size: '30 × 22 × 15', weight: '2', length: '30', width: '22', height: '15', img: '📦', desc: 'MAX 2 KG', tag: 'Light (2kg)' }
-                            }));
-                          }}
+                          onClick={() => setFormData({...formData, carrier: 'usend'})}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter' || e.key === ' ') {
-                              setFormData(prev => ({
-                                ...prev,
-                                carrier: 'aramex',
-                                aramexBox: prev.aramexBox || { id: 'small', name: 'Small Box', size: '30 × 22 × 15', weight: '2', length: '30', width: '22', height: '15', img: '📦', desc: 'MAX 2 KG', tag: 'Light (2kg)' }
-                              }));
+                              setFormData({...formData, carrier: 'usend'});
                             }
                           }}
                           className={`flex flex-col p-5 rounded-2xl border-2 text-left transition-all cursor-pointer w-full relative overflow-hidden gap-3 ${
-                            formData.carrier === 'aramex'
-                              ? 'border-[#d12421] bg-[#d12421]/5 text-zinc-950 shadow-sm'
+                            formData.carrier === 'usend' || formData.carrier === 'aramex' || formData.carrier === 'noon'
+                              ? 'border-[#113F36] bg-[#113F36]/5 text-zinc-950 shadow-sm'
                               : 'border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-700'
                           }`}
                         >
                           <div className="flex items-center justify-between w-full">
                             <div className="flex items-center gap-4">
-                              <div className="w-10 h-10 rounded-full bg-[#d12421] text-white flex items-center justify-center text-[10px] font-black tracking-tighter shrink-0 shadow-xs">
-                                aramex
+                              <div className="w-10 h-10 rounded-full bg-[#113F36] text-white flex items-center justify-center text-[10px] font-black tracking-tighter shrink-0 shadow-xs">
+                                USend
                               </div>
                               <div>
                                 <div className="flex items-center gap-2">
-                                  <span className="font-extrabold text-sm text-zinc-900 block">Aramex Express</span>
-                                  <span className="text-[10px] font-black bg-red-100 text-[#d12421] px-2 py-0.5 rounded-full uppercase">Global Fleet</span>
+                                  <span className="font-extrabold text-sm text-zinc-900 block">USend Fleet</span>
+                                  <span className="text-[10px] font-black bg-[#113F36]/10 text-[#113F36] px-2 py-0.5 rounded-full uppercase">Manual Assign</span>
                                 </div>
                                 <p className="text-[11px] text-zinc-500 leading-relaxed mt-0.5 max-w-md">
-                                  Global & domestic express shipping across all UAE Emirates with full linehaul coverage.
+                                  USend local fleet dispatched by administrators.
                                 </p>
                               </div>
                             </div>
                             <div className={`w-4.5 h-4.5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                              formData.carrier === 'aramex' ? 'border-[#d12421]' : 'border-zinc-300'
+                              formData.carrier === 'usend' || formData.carrier === 'aramex' || formData.carrier === 'noon' ? 'border-[#113F36]' : 'border-zinc-300'
                             }`}>
-                              {formData.carrier === 'aramex' && (
-                                <div className="w-2.5 h-2.5 rounded-full bg-[#d12421]" />
-                              )}
+                              <div className="w-2.5 h-2.5 rounded-full bg-[#113F36]" />
                             </div>
                           </div>
-
-                          {/* Aramex Capability Chips */}
-                          <div className="flex flex-wrap gap-1.5 pt-1 border-t border-zinc-200/60">
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200/60">
-                              📅 Next-Day SLA (24-48 Hours)
-                            </span>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700">
-                              🌍 All 7 UAE Emirates
-                            </span>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700">
-                              ⚖️ Up to 50 kg
-                            </span>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700">
-                              💵 COD up to AED 10K
-                            </span>
-                          </div>
-
-                          {/* Aramex Same-Day SLA Warning Banner */}
-                          {formData.carrier === 'aramex' && (
-                            <div className="p-3 bg-amber-50/90 border border-amber-200/90 rounded-xl space-y-1.5 text-xs text-left" onClick={(e) => e.stopPropagation()}>
-                              <div className="flex items-center gap-1.5 text-amber-900 font-bold">
-                                <AlertCircle className="w-4 h-4 shrink-0 text-amber-600" />
-                                <span>Aramex Express SLA Notice:</span>
-                              </div>
-                              <p className="text-[11px] text-amber-800 leading-relaxed">
-                                Aramex operates on Next-Day / 24-48 Hours SLA across UAE. If you require <strong>Instant Same-Day / 2-Hour Delivery</strong>, use Noon RoD.
-                              </p>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setFormData(prev => ({ ...prev, carrier: 'noon' }));
-                                }}
-                                className="mt-1 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-[10px] uppercase tracking-wider transition-all cursor-pointer shadow-xs"
-                              >
-                                ⚡ Switch to Noon RoD (Same-Day Delivery)
-                              </button>
-                            </div>
-                          )}
-
-                          {/* Aramex Violations Alert (if any) */}
-                          {formData.carrier === 'aramex' && !courierCompliance.isCompliant && (
-                            <div className="p-3 bg-red-50 border border-red-200 rounded-xl space-y-1 text-xs">
-                              <div className="flex items-center gap-1.5 text-red-700 font-bold">
-                                <AlertCircle className="w-4 h-4 shrink-0" />
-                                <span>Aramex Express Compliance Notice:</span>
-                              </div>
-                              {courierCompliance.violations.map((v, i) => (
-                                <p key={i} className="text-[11px] text-red-650 pl-5 leading-tight">
-                                  • {v.message}
-                                </p>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Aramex Sub-Categories / Box Selection - ONLY shown after selecting Aramex as courier */}
-                        {formData.carrier === 'aramex' && (
-                          <div className="bg-red-50/60 border border-red-200/90 rounded-2xl p-4.5 space-y-3.5 animate-in fade-in slide-in-from-top-1">
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-red-200/60 pb-3">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-xs font-black uppercase tracking-wider text-zinc-900">
-                                  Package Type:
-                                </span>
-                                <span className="text-[11px] font-bold text-[#d12421] bg-white px-2.5 py-0.5 rounded-full border border-red-200">
-                                  {formData.aramexBox?.name || 'Standard Box'}
-                                </span>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => setIsAramexBoxModalOpen(true)}
-                                className="text-[11px] font-black uppercase text-[#d12421] hover:text-red-700 bg-white px-3 py-1.5 rounded-lg border border-red-200 shadow-xs cursor-pointer self-start sm:self-auto transition-colors"
-                              >
-                                Browse All Box Sizes
-                              </button>
-                            </div>
-
-                            {/* Direct Box Type Pills */}
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                              {[
-                                { id: 'envelope', name: 'A4 Envelope', weight: '0.5', length: '33', width: '24', height: '3', size: '33×24×3 cm', img: '✉️', tag: 'Docs' },
-                                { id: 'small', name: 'Small Box', weight: '2', length: '30', width: '22', height: '15', size: '30×22×15 cm', img: '📦', tag: 'Light (2kg)' },
-                                { id: 'medium', name: 'Medium Box', weight: '15', length: '50', width: '40', height: '37', size: '50×40×37 cm', img: '📦', tag: 'Popular (15kg)' },
-                                { id: 'large', name: 'Large Box', weight: '30', length: '65', width: '50', height: '46', size: '65×50×46 cm', img: '📦', tag: 'Heavy (30kg)' }
-                              ].map((box) => {
-                                const isSelected = formData.aramexBox?.id === box.id || (formData.length === box.length && formData.width === box.width);
-                                return (
-                                  <button
-                                    key={box.id}
-                                    type="button"
-                                    onClick={() => {
-                                      setFormData(prev => ({
-                                        ...prev,
-                                        carrier: 'aramex',
-                                        aramexBox: {
-                                          id: box.id,
-                                          name: box.name,
-                                          size: box.size,
-                                          weight: box.weight,
-                                          length: box.length,
-                                          width: box.width,
-                                          height: box.height,
-                                          img: box.img,
-                                          desc: `MAX ${box.weight} KG`,
-                                          tag: box.tag
-                                        },
-                                        weight: box.weight,
-                                        length: box.length,
-                                        width: box.width,
-                                        height: box.height
-                                      }));
-                                    }}
-                                    className={`p-2.5 rounded-xl border text-left flex flex-col justify-between transition-all cursor-pointer ${
-                                      isSelected 
-                                        ? 'border-[#d12421] bg-white ring-2 ring-red-500/20 shadow-xs' 
-                                        : 'border-red-100/80 bg-white/70 hover:bg-white hover:border-red-200'
-                                    }`}
-                                  >
-                                    <div className="flex items-center justify-between gap-1 mb-1">
-                                      <span className="text-base">{box.img}</span>
-                                      <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md ${isSelected ? 'bg-[#d12421] text-white' : 'bg-zinc-100 text-zinc-600'}`}>
-                                        {box.tag}
-                                      </span>
-                                    </div>
-                                    <span className="text-[11px] font-extrabold text-zinc-900 truncate block">{box.name}</span>
-                                    <span className="text-[10px] text-zinc-500 font-medium">{box.size}</span>
-                                  </button>
-                                );
-                              })}
-                            </div>
-                            
-                            <div className="flex items-center justify-between text-[11px] text-zinc-500 bg-white/80 p-2.5 rounded-xl border border-red-100">
-                              <span className="font-semibold text-zinc-700">Applied Dimensions:</span>
-                              <span className="font-mono font-bold text-zinc-900">
-                                {formData.length} × {formData.width} × {formData.height} cm ({formData.weight} kg)
-                              </span>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Noon Option */}
-                      <div className="space-y-2">
-                        <div
-                          role="button"
-                          tabIndex={0}
-                          onClick={() => setFormData({...formData, carrier: 'noon'})}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              setFormData({...formData, carrier: 'noon'});
-                            }
-                          }}
-                          className={`flex flex-col p-5 rounded-2xl border-2 text-left transition-all cursor-pointer w-full relative overflow-hidden gap-3 ${
-                            formData.carrier === 'noon'
-                              ? (!courierCompliance.isCompliant ? 'border-rose-400 bg-rose-50/50' : 'border-amber-500 bg-amber-50') + ' text-zinc-950 shadow-sm'
-                              : 'border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-700'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between w-full">
-                            <div className="flex items-center gap-4">
-                              <div className="w-10 h-10 rounded-full bg-[#feee00] text-black flex items-center justify-center text-[10px] font-black tracking-tight border border-amber-300 shrink-0 shadow-xs">
-                                noon
-                              </div>
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-extrabold text-sm text-zinc-900 block">Noon Hyperlocal</span>
-                                  <span className="text-[10px] font-black bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full uppercase">On-Demand</span>
-                                </div>
-                                <p className="text-[11px] text-zinc-500 leading-relaxed mt-0.5 max-w-md">
-                                  Rapid same-day on-demand intra-emirate parcel delivery via Noon rider network (e.g. Dubai to Dubai, Abu Dhabi to Abu Dhabi).
-                                </p>
-                              </div>
-                            </div>
-                            <div className={`w-4.5 h-4.5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                              formData.carrier === 'noon' ? 'border-amber-500' : 'border-zinc-300'
-                            }`}>
-                              {formData.carrier === 'noon' && (
-                                <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Noon Capability Chips */}
-                          <div className="flex flex-wrap gap-1.5 pt-1 border-t border-zinc-200/60">
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200/60">
-                              ⚡ Same-Day / On-Demand
-                            </span>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200/60">
-                              🏠 Intra-Emirate Only (Same Emirate)
-                            </span>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700">
-                              ⚖️ Max 15 kg
-                            </span>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700">
-                              💵 COD up to AED 2,500
-                            </span>
-                          </div>
-
-                          {/* Noon Violations Alert & 1-Click Resolution */}
-                          {formData.carrier === 'noon' && !courierCompliance.isCompliant && (
-                            <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl space-y-2 text-xs">
-                              <div className="flex items-center gap-1.5 text-rose-800 font-bold">
-                                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                                <span>Noon Process Rule Violation Detected:</span>
-                              </div>
-                              <div className="space-y-1 pl-5">
-                                {courierCompliance.violations.map((v, i) => (
-                                  <p key={i} className="text-[11px] text-rose-700 leading-tight">
-                                    • <strong>{v.rule}:</strong> {v.message}
-                                  </p>
-                                ))}
-                              </div>
-                              <div className="pt-1.5 flex items-center justify-between gap-2 border-t border-rose-200/70">
-                                <span className="text-[11px] font-semibold text-rose-800">
-                                  Aramex Express is fully compatible with this shipment:
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setFormData(prev => ({
-                                      ...prev,
-                                      carrier: 'aramex',
-                                      aramexBox: prev.aramexBox || { id: 'medium', name: 'Medium Box', size: '50 × 40 × 37', weight: '15', length: '50', width: '40', height: '37', img: '📦', desc: 'MAX 15 KG', tag: 'Popular (15kg)' }
-                                    }));
-                                  }}
-                                  className="px-3 py-1.5 bg-[#d12421] hover:bg-red-700 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer shrink-0 shadow-xs"
-                                >
-                                  ⚡ Switch to Aramex Express
-                                </button>
-                              </div>
-                            </div>
-                          )}
                         </div>
                       </div>
                     </div>
@@ -1511,25 +1264,10 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                       <div className="bg-zinc-50 rounded-2xl p-4 border border-zinc-200/70 space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Carrier Service</span>
-                          <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${
-                            formData.carrier === 'aramex' ? 'bg-[#d12421] text-white shadow-xs' :
-                            'bg-[#feee00] text-black border border-amber-300'
-                          }`}>
-                            {formData.carrier === 'aramex' ? 'Aramex Express' : 'Noon Hyperlocal'}
+                          <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-[#113F36] text-white shadow-xs`}>
+                            USend Fleet
                           </span>
                         </div>
-                        
-                        {formData.carrier === 'aramex' && formData.aramexBox && (
-                          <div className="flex items-center justify-between text-xs pt-2 border-t border-zinc-200/60">
-                            <span className="text-zinc-600 font-medium flex items-center gap-1.5">
-                              <span>{formData.aramexBox.img}</span>
-                              <span className="font-bold text-zinc-800">{formData.aramexBox.name}</span>
-                            </span>
-                            <span className="text-[11px] font-bold text-zinc-700 bg-white px-2 py-0.5 rounded-md border border-zinc-200">
-                              {formData.aramexBox.size} cm
-                            </span>
-                          </div>
-                        )}
                       </div>
 
                       {/* Routing Details */}
