@@ -5,7 +5,7 @@ import { Search, MapPin, Package, Clock, X, Phone, User, FileText, Star, AlertCi
 import { useState, useEffect, ReactNode, FC } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useApp, USendRequest } from '../../context/AppContext';
-import { courierIntegrationService, defaultAramexCreds } from '../../services/courierIntegration';
+/* courierIntegrationService removed — platform uses USend Fleet only */
 import Barcode from "react-barcode";
 import YandexMapDisplay from '../../components/YandexMapDisplay';
 import YangoMapView from '../../components/YangoMapView';
@@ -17,7 +17,7 @@ interface MerchantTrackingProps {
 
 export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) {
   const { t, isRTL } = useLanguage();
-  const { activeRequests, user, updateRequest, updateRequestStatus, courierConfigs } = useApp();
+  const { activeRequests, user, updateRequest, updateRequestStatus } = useApp();
   const [isMapReady, setIsMapReady] = useState(false);
   const [mapEngine, setMapEngine] = useState<'yango' | 'leaflet'>('yango');
   const [filter, setFilter] = useState('all');
@@ -68,14 +68,10 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
       if (!matchesStatus) return false;
     }
 
-    // Carrier Filter
+    // Carrier Filter — USend Fleet only
     if (carrierFilter !== 'all_carriers') {
       const c = (order.carrier || '').toLowerCase();
-      let ok = false;
-      if (carrierFilter === 'aramex') ok = c.includes('aramex') || (order.externalTrackingNumber && order.externalTrackingNumber.startsWith('4'));
-      else if (carrierFilter === 'noon') ok = c.includes('noon') || !!order.noonTaskId;
-      else if (carrierFilter === 'usend') ok = c.includes('usend') || c.includes('fleet') || c.includes('internal') || !order.carrier;
-      else ok = c.includes(carrierFilter.toLowerCase());
+      const ok = c.includes('usend') || c.includes('fleet') || c.includes('internal') || !order.carrier;
       if (!ok) return false;
     }
 
@@ -107,8 +103,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
 
   const [selectedOrder, setSelectedOrder] = useState<USendRequest | null>(null);
   const liveSelectedOrder = selectedOrder ? (merchantRequests.find(r => r.id === selectedOrder.id) || selectedOrder) : null;
-  const [isDispatching, setIsDispatching] = useState(false);
-  const [showSoapLogs, setShowSoapLogs] = useState(false);
+
 
   const getDispatchError = (order: USendRequest) => {
     if (order.carrierLogs?.error) return order.carrierLogs.error;
@@ -117,189 +112,8 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
     return order.dispatchError || "The order could not be sent to the courier. Please check the provided details and try again or contact support.";
   };
 
-  const handleAramexDispatch = async (req: USendRequest) => {
-    setIsDispatching(true);
-    try {
-      let numericCod = 0;
-      if (req.orderAmount) {
-        const parsed = parseInt(req.orderAmount.replace(/[^0-9]/g, ''), 10);
-        if (!isNaN(parsed)) {
-          numericCod = parsed;
-        }
-      }
+  /* handleAramexDispatch, handleNoonDispatch, handlePickupRequest removed — USend Fleet only */
 
-      const aramexConfig = courierConfigs?.aramex;
-      const activeCreds = aramexConfig
-        ? (aramexConfig.currentMode === 'sandbox' ? aramexConfig.sandboxCreds : aramexConfig.productionCreds)
-        : null;
-      const hasValidAramex = activeCreds && activeCreds.username && activeCreds.accountNumber;
-      const finalAramexCreds = hasValidAramex
-        ? { ...activeCreds, apiEnv: aramexConfig?.currentMode || 'sandbox' }
-        : defaultAramexCreds;
-
-      const res = await courierIntegrationService.createShipment('aramex', {
-        credentials: finalAramexCreds,
-        senderName: "USend Central Depot",
-        senderPhone: "+971500000000",
-        senderCity: "Dubai",
-        senderCountry: "AE",
-        senderAddress: "Jebel Ali Area Node A",
-        receiverName: req.name || "Recipient Buyer",
-        receiverPhone: req.phone || "+971520000000",
-        receiverCity: req.toDestination || "Abu Dhabi",
-        receiverCountry: "AE",
-        receiverAddress: req.address || req.toDestination || "Corniche Street Apt 4",
-        goodsDescription: req.itemType || "E-Commerce Delivery Order Cargo",
-        weightKg: 1.5,
-        codAmountAED: numericCod
-      });
-
-      if (res.success) {
-        await updateRequest(req.id, {
-          status: 'Assigned',
-          carrier: 'aramex',
-          externalTrackingNumber: res.trackingNumber,
-          awbLabelBase64: res.base64Label,
-          awbLabelUrl: res.labelUrl,
-          aramexLogs: {
-            request: res.requestPayload,
-            response: res.responsePayload,
-            timestamp: res.timestamp
-          }
-        });
-      } else {
-        alert("Aramex Dispatch Failed: " + (res.error || "Unknown error generating shipment."));
-        await updateRequest(req.id, {
-          aramexLogs: {
-            request: res.requestPayload || {},
-            response: res.responsePayload || { error: res.error },
-            timestamp: res.timestamp || new Date().toISOString()
-          }
-        });
-      }
-    } catch (err: any) {
-      console.error("Failed to dispatch to Aramex:", err);
-      alert("System Error: " + err.message);
-    } finally {
-      setIsDispatching(false);
-    }
-  };
-
-
-
-  const handleNoonDispatch = async (req: USendRequest) => {
-    setIsDispatching(true);
-    try {
-      let numericCod = 0;
-      if (req.orderAmount) {
-        const parsed = parseInt(req.orderAmount.replace(/[^0-9]/g, ''), 10);
-        if (!isNaN(parsed)) {
-          numericCod = parsed;
-        }
-      }
-
-      // Convert COD value to fills (Noon requirement: integer, in fills not dirhams)
-      const codValueFils = Math.round(numericCod * 100);
-
-      const noonConfig = courierConfigs?.noon;
-      const noonCreds = noonConfig
-        ? (noonConfig.currentMode === 'sandbox' ? noonConfig.sandboxCreds : noonConfig.productionCreds)
-        : undefined;
-
-      console.log(`[Noon Dispatch] Processing order ${req.id} through Noon API...`);
-      const payload = {
-        senderName: "USend Merchant",
-        senderPhone: "+971500000000",
-        senderCity: "Dubai",
-        senderCountry: "AE",
-        senderAddress: "Merchant Location",
-        receiverName: req.name || "Recipient Buyer",
-        receiverPhone: req.phone || "+971520000000",
-        receiverCity: "Dubai",
-        receiverCountry: "AE",
-        receiverAddress: req.address || "Corniche Street, Dubai, UAE",
-        goodsDescription: req.description || "Package",
-        weightKg: 1,
-        codAmountAED: numericCod,
-        reference: req.id,
-        credentials: noonCreds ? { ...noonCreds, apiEnv: noonConfig?.currentMode } : { apiEnv: 'sandbox' }
-      };
-
-      const res = await courierIntegrationService.createShipment('noon', payload);
-
-      if (res.success && res.trackingNumber) {
-        await updateRequest(req.id, {
-          status: 'Assigned',
-          carrier: 'noon',
-          externalTrackingNumber: res.trackingNumber,
-          carrierLogs: {
-            request: payload,
-            response: res,
-            timestamp: new Date().toISOString()
-          }
-        });
-        alert(`Noon Dispatch Succeeded! mp_task_nr: ${res.trackingNumber}`);
-      } else {
-        alert("Noon Dispatch Failed: " + (res.error || "Unknown error generating Noon delivery task."));
-        await updateRequest(req.id, {
-          carrierLogs: {
-            request: payload,
-            response: res,
-            timestamp: new Date().toISOString(),
-            error: res.error
-          }
-        });
-      }
-    } catch (err: any) {
-      console.error("Failed to dispatch to Noon:", err);
-      alert("System Error: " + err.message);
-    } finally {
-      setIsDispatching(false);
-    }
-  };
-
-  const handlePickupRequest = async (req: USendRequest) => {
-    setIsDispatching(true);
-    try {
-      const todayDate = new Date().toISOString().split('T')[0];
-      const res = await courierIntegrationService.schedulePickup('aramex', {
-         credentials: defaultAramexCreds,
-         pickupDate: todayDate,
-         readyTime: "14:00:00",
-         contactName: "Warehouse Ops",
-         contactPhone: "+971501234567",
-         contactRegion: "Dubai"
-      });
-
-      if (res.success) {
-        alert(`Pickup Scheduled successfully! Pickup ID: ${res.pickupId}`);
-        await updateRequest(req.id, {
-          aramexLogs: {
-            request: res.requestPayload,
-            response: res.responsePayload,
-            timestamp: res.timestamp,
-            pickupId: res.pickupId
-          }
-        });
-      } else {
-        alert("Aramex Pickup Request Failed: " + (res.error || "Unknown error"));
-        // update request with failure payload so user can see it in SOAP view
-        await updateRequest(req.id, {
-          aramexLogs: {
-            request: res.requestPayload || {},
-            response: res.responsePayload || { error: res.error },
-            timestamp: res.timestamp,
-            pickupId: req.aramexLogs?.pickupId
-          }
-        });
-      }
-    } catch (err: any) {
-      console.error("Failed to request pickup:", err);
-      alert("System Error: " + err.message);
-    } finally {
-      setIsDispatching(false);
-    }
-  };
 
   const filteredOrders = activeOrders.filter(order => {
     // 1. Status Filter
@@ -321,10 +135,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
     const matchesCarrier = (() => {
       if (carrierFilter === 'all_carriers') return true;
       const c = (order.carrier || '').toLowerCase();
-      if (carrierFilter === 'aramex') return c.includes('aramex') || (order.externalTrackingNumber && order.externalTrackingNumber.startsWith('4'));
-      if (carrierFilter === 'noon') return c.includes('noon') || !!order.noonTaskId;
-      if (carrierFilter === 'usend') return c.includes('usend') || c.includes('fleet') || c.includes('internal') || !order.carrier;
-      return c.includes(carrierFilter.toLowerCase());
+      return c.includes('usend') || c.includes('fleet') || c.includes('internal') || !order.carrier;
     })();
 
     // 4. Date Range Filter
@@ -490,8 +301,6 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                   className="bg-zinc-50 border border-zinc-200 rounded-xl px-3.5 h-10 outline-none text-zinc-800 text-xs font-bold shrink-0 cursor-pointer hover:border-[#113f36] transition-colors"
                 >
                   <option value="all_carriers">{isRTL ? 'جميع الناقلين' : 'All Carriers'}</option>
-                  <option value="aramex">{isRTL ? 'أرامكس إكسبريس' : 'Aramex Express'}</option>
-                  <option value="noon">{isRTL ? 'توصيل نون (Noon)' : 'Noon Delivery'}</option>
                   <option value="usend">{isRTL ? 'أسطول يوسند' : 'USend Fleet'}</option>
                 </select>
 
@@ -676,7 +485,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                       <div className="flex justify-between items-start mb-6 relative z-10">
                         <div className="flex flex-col">
                            <h3 className="text-xl font-black italic tracking-tighter text-zinc-900 uppercase">
-                             {(selectedOrder.courier || '').toLowerCase().includes('noon') ? 'noon' : (selectedOrder.courier || '').toLowerCase().includes('aramex') ? 'aramex' : 'usend'}
+                             usend
                            </h3>
                            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Tracking Waybill</span>
                         </div>
@@ -771,12 +580,7 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                                {selectedOrder.courier || 'USEND'}
                             </p>
                             <div className="mt-1">
-                               {(selectedOrder.courier || '').toLowerCase().includes('noon') && (
-                                  <div className="bg-[#feee00] text-black text-[9px] font-black uppercase px-2 py-0.5 rounded-md inline-block">noon</div>
-                               )}
-                               {(selectedOrder.courier || '').toLowerCase().includes('aramex') && (
-                                  <div className="bg-[#e2001a] text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-md inline-block">Aramex</div>
-                               )}
+                               <div className="bg-[#113f36] text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-md inline-block">USend Fleet</div>
                             </div>
                           </div>
                         </div>
@@ -889,150 +693,22 @@ export default function MerchantTracking({ onNavigate }: MerchantTrackingProps) 
                   </div>
                 </div>
 
-                  {/* Courier Dispatch Actions */}
+                  {/* USend Fleet Assignment Status */}
                   {!liveSelectedOrder.externalTrackingNumber && liveSelectedOrder.status !== 'Rejected' && liveSelectedOrder.status !== 'Cancelled' && (
-                    <>
-                      {/* Courier Dispatch Actions — check .carrier (not .courier) */}
-                      {(liveSelectedOrder.carrier || '').toLowerCase().includes('noon') ? (
-                        <motion.div 
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-5 space-y-3"
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="text-base font-extrabold tracking-tight text-amber-600 lowercase font-sans select-none">noon <span className="font-light text-zinc-400">RoD</span></span>
-                            <span className="text-[15px] bg-amber-500/15 text-amber-700 px-2 py-0.5 rounded font-black uppercase tracking-wider">Staging API Ready</span>
-                          </div>
-                          <p className="text-[12px] text-zinc-500 leading-normal">
-                            This order hasn&apos;t been connected to an active Noon Rider on Demand task yet. Send dispatch signal to verify Noon Staging Hyperlocal API integrations.
-                          </p>
-                          <button 
-                            onClick={() => handleNoonDispatch(liveSelectedOrder)}
-                            disabled={isDispatching}
-                            className="w-full bg-amber-500 hover:bg-zinc-950 text-white font-black text-[12px] uppercase tracking-widest py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5 disabled:opacity-50 select-none cursor-pointer"
-                          >
-                            {isDispatching ? (
-                              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                            ) : (
-                              <Play className="w-3.5 h-3.5" />
-                            )}
-                            <span>Dispatch to Noon Staging</span>
-                          </button>
-                        </motion.div>
-                      ) : (
-                        /* Aramex Sandbox Courier Dispatch Action */
-                        <motion.div 
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          className="bg-[#d12421]/5 border border-[#d12421]/20 rounded-2xl p-5 space-y-3"
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="text-base font-extrabold tracking-tight text-[#d12421] lowercase font-sans select-none">aramex</span>
-                            <span className="text-[15px] bg-[#d12421]/15 text-[#d12421] px-2 py-0.5 rounded font-black uppercase tracking-wider">Sandbox API Ready</span>
-                          </div>
-                          <p className="text-[12px] text-zinc-500 leading-normal">
-                            This order hasn&apos;t been connected to an active delivery agent carrier yet. Send dispatch signal to verify Aramex SOAP Web Service integrations.
-                          </p>
-                          <button 
-                            onClick={() => handleAramexDispatch(liveSelectedOrder)}
-                            disabled={isDispatching}
-                            className="w-full bg-[#d12421] hover:bg-zinc-950 text-white font-black text-[12px] uppercase tracking-widest py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5 disabled:opacity-50 select-none cursor-pointer"
-                          >
-                            {isDispatching ? (
-                              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                            ) : (
-                              <Play className="w-3.5 h-3.5" />
-                            )}
-                            <span>Dispatch to Aramex Courier</span>
-                          </button>
-                        </motion.div>
-                      )}
-                    </>
+                    <motion.div 
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="bg-[#113f36]/5 border border-[#113f36]/20 rounded-2xl p-5 space-y-3"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-base font-extrabold tracking-tight text-[#113f36] font-sans select-none">USend Fleet</span>
+                        <span className="text-[15px] bg-[#113f36]/15 text-[#113f36] px-2 py-0.5 rounded font-black uppercase tracking-wider">Manual Assign</span>
+                      </div>
+                      <p className="text-[12px] text-zinc-500 leading-normal">
+                        This order is pending manual driver assignment by the operations team. A fleet driver will be assigned shortly.
+                      </p>
+                    </motion.div>
                   )}
-
-                  {/* API Traces Expanders */}
-                  <div className="space-y-3">
-                    {/* Aramex Waybill Signal Status */}
-                    {liveSelectedOrder.externalTrackingNumber && (liveSelectedOrder.carrier || '').toLowerCase().includes('aramex') && (
-                       <div className="flex items-center justify-between bg-[#113f36]/5 p-3 rounded-xl border border-[#113f36]/10">
-                          <div className="flex items-center gap-2">
-                             <div className="w-1.5 h-4 bg-[#d12421] rounded-full" />
-                             <h3 className="text-[11px] font-black uppercase tracking-wider text-zinc-500">Aramex Waybill Signal</h3>
-                          </div>
-                          <span className="text-[10px] text-[#113f36] font-extrabold flex items-center gap-1">
-                            <Check className="w-3 h-3" /> API REGISTERED
-                          </span>
-                       </div>
-                    )}
-
-                    {/* SOAP XML logs expander */}
-                    {liveSelectedOrder.aramexLogs && (
-                      <div className="border border-zinc-200 rounded-2xl overflow-hidden bg-zinc-50">
-                        <button 
-                          type="button"
-                          onClick={() => setShowSoapLogs(!showSoapLogs)}
-                          className="w-full p-3.5 font-extrabold text-[11px] text-zinc-500 flex items-center justify-between hover:bg-zinc-100 outline-hidden"
-                        >
-                          <span className="flex items-center gap-1.5 uppercase font-black tracking-widest">
-                            <Terminal className="w-3.5 h-3.5 text-[#113f36]" />
-                            ARAMEX SOAP TRACES
-                          </span>
-                          <span className="text-[10px] font-bold text-[#113f36] bg-[#113f36]/10 border border-[#113f36]/15 px-2 py-0.5 rounded uppercase">{showSoapLogs ? 'Hide' : 'API JSON'}</span>
-                        </button>
-                        
-                        {showSoapLogs && (
-                          <div className="p-3 border-t border-zinc-200 space-y-3 font-mono text-[11px] max-h-[220px] overflow-y-auto bg-[#113f36]/5 text-zinc-700">
-                            <div className="space-y-1">
-                              <span className="text-[#113f36] font-black block uppercase tracking-wider text-[11px]">WSDL ENDPOINT: https://ws.aramex.net/ShippingAPI.v1</span>
-                              <pre className="bg-white/80 border border-zinc-200 p-2 rounded text-zinc-600 overflow-x-auto select-all leading-normal">
-                                {JSON.stringify(liveSelectedOrder.aramexLogs.request, null, 2)}
-                              </pre>
-                            </div>
-                            <div className="space-y-1 pt-2 border-t border-zinc-200">
-                              <span className="text-[#6d8c55] font-black block uppercase tracking-wider text-[11px]">SOAP ACTION: 'CreateShipmentsResponse'</span>
-                              <pre className="bg-white/80 border border-zinc-200 p-2 rounded text-[#6d8c55] overflow-x-auto select-all leading-normal">
-                                {JSON.stringify(liveSelectedOrder.aramexLogs.response, null, 2)}
-                              </pre>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Noon JSON REST logs expander */}
-                    {liveSelectedOrder.noonLogs && (
-                      <div className="border border-zinc-200 rounded-2xl overflow-hidden bg-zinc-50">
-                        <button 
-                          type="button"
-                          onClick={() => setShowSoapLogs(!showSoapLogs)}
-                          className="w-full p-3.5 font-extrabold text-[11px] text-zinc-500 flex items-center justify-between hover:bg-zinc-100 outline-hidden"
-                        >
-                          <span className="flex items-center gap-1.5 uppercase font-black tracking-widest">
-                            <Terminal className="w-3.5 h-3.5 text-amber-600" />
-                            NOON STAGING REST TRACES
-                          </span>
-                          <span className="text-[10px] font-bold text-amber-700 bg-amber-100 border border-amber-200 px-2 py-0.5 rounded uppercase">{showSoapLogs ? 'Hide' : 'API JSON'}</span>
-                        </button>
-                        
-                        {showSoapLogs && (
-                          <div className="p-3 border-t border-zinc-200 space-y-3 font-mono text-[11px] max-h-[220px] overflow-y-auto bg-amber-50/70 text-zinc-700">
-                            <div className="space-y-1">
-                              <span className="text-amber-700 font-black block uppercase tracking-wider text-[11px]">REST ENDPOINT: POST https://food-api-team.noonstg.team/public/v1/create-task</span>
-                              <pre className="bg-white/80 border border-amber-200 p-2 rounded text-zinc-600 overflow-x-auto select-all leading-normal">
-                                {JSON.stringify(liveSelectedOrder.noonLogs.request, null, 2)}
-                              </pre>
-                            </div>
-                            <div className="space-y-1 pt-2 border-t border-amber-200">
-                              <span className="text-[#6d8c55] font-black block uppercase tracking-wider text-[11px]">RESPONSE CODES: 200/201 SUCCESS</span>
-                              <pre className="bg-white/80 border border-amber-200 p-2 rounded text-[#6d8c55] overflow-x-auto select-all leading-normal">
-                                {JSON.stringify(liveSelectedOrder.noonLogs.response, null, 2)}
-                              </pre>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
 
                   {(liveSelectedOrder.status === 'Pending' || liveSelectedOrder.status === 'pending' || liveSelectedOrder.status === 'assigning') && (
                     <div className="pt-4 border-t border-zinc-200">

@@ -3044,7 +3044,7 @@ function WalletManagementDesk() {
   const { t, isRTL } = useLanguage();
   const { activeRequests, users, merchants, updateUser, updateRequest } = useApp();
   
-  const [financialTab, setFinancialTab] = useState<'wallets' | 'ledger' | 'couriers' | 'stripe'>('wallets');
+  const [financialTab, setFinancialTab] = useState<'wallets' | 'ledger' | 'stripe'>('wallets');
   const [notif, setNotif] = useState("");
 
   // Stripe Live Diagnostics
@@ -3554,7 +3554,6 @@ function WalletManagementDesk() {
           {[
             { id: 'wallets', label: t('tab_user_merchant_wallets') || 'User & Merchant Wallets', count: allWalletAccounts.length },
             { id: 'ledger', label: t('tab_master_ledger') || 'Master Financial Ledger', count: masterLedger.length },
-            { id: 'couriers', label: t('tab_carrier_payables') || '3PL Carrier Payables', count: carrierPayables.length },
             { id: 'stripe', label: t('tab_stripe_details') || 'Stripe Gateway Live Details', count: stripeStatus?.connected ? 'Live' : 'Check' }
           ].map(tab => (
             <button
@@ -3813,69 +3812,6 @@ function WalletManagementDesk() {
           </div>
         )}
 
-        {/* --- TAB 3: 3PL Carrier Payables --- */}
-        {financialTab === 'couriers' && (
-          <div className="p-6 space-y-6">
-            <div className="overflow-x-auto">
-              <table className={`w-full ${isRTL ? 'text-right' : 'text-left'} border-collapse min-w-[900px]`}>
-                <thead>
-                  <tr className="bg-zinc-50/50 text-zinc-400 text-[10px] font-black uppercase tracking-widest border-b border-zinc-100">
-                    <th className="p-4">{t('payable_batch_id') || 'Payable Batch ID'}</th>
-                    <th className="p-4">{t('logistics_partner') || 'Logistics Partner'}</th>
-                    <th className="p-4">{t('type') || 'Type'}</th>
-                    <th className="p-4 text-center font-mono">{t('dispatched_shipments') || 'Dispatched Shipments'}</th>
-                    <th className={`p-4 font-mono ${isRTL ? 'text-left' : 'text-right'}`}>{t('contract_rate') || 'Contract Rate'}</th>
-                    <th className={`p-4 font-mono ${isRTL ? 'text-left' : 'text-right'} text-red-600`}>{t('total_accrued_payable') || 'Total Accrued Payable'}</th>
-                    <th className="p-4 text-center">{t('status') || 'Status'}</th>
-                    <th className={`p-4 ${isRTL ? 'text-left' : 'text-right'}`}>{t('actions') || 'Action'}</th>
-                  </tr>
-                </thead>
-                <tbody className="text-xs font-semibold text-zinc-700">
-                  {carrierPayables.map((pay) => (
-                    <tr key={pay.id} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50/60 transition-colors">
-                      <td className="p-4 font-mono font-bold text-zinc-900">{pay.id}</td>
-
-                      <td className="p-4">
-                        <div className="flex items-center gap-2">
-                          <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${pay.badgeColor}`}>
-                            {pay.carrier.split(' ')[0]}
-                          </span>
-                          <span className="font-bold text-zinc-900">{pay.carrier}</span>
-                        </div>
-                      </td>
-
-                      <td className="p-4 text-zinc-500">{pay.type}</td>
-
-                      <td className="p-4 font-mono text-center font-bold text-zinc-900">{pay.shipments}</td>
-
-                      <td className={`p-4 font-mono ${isRTL ? 'text-left' : 'text-right'} text-zinc-600`}>{pay.ratePerOrder}</td>
-
-                      <td className={`p-4 font-mono ${isRTL ? 'text-left' : 'text-right'} font-black text-sm text-red-600`}>
-                        {pay.totalPayable.toFixed(2)} AED
-                      </td>
-
-                      <td className="p-4 text-center">
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                          {pay.status}
-                        </span>
-                      </td>
-
-                      <td className={`p-4 ${isRTL ? 'text-left' : 'text-right'}`}>
-                        <button
-                          onClick={() => triggerAction(`Cleared & authorized payout batch ${pay.id} for ${pay.carrier}.`)}
-                          className="px-3.5 py-1.5 bg-[#113f36] hover:bg-[#0c2a24] text-white rounded-lg text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer shadow-xs"
-                        >
-                          {t('approve_payout') || 'Approve Payout'}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
         {/* --- TAB 4: Stripe Gateway Live Details --- */}
         {financialTab === 'stripe' && (
           <div className="p-8 space-y-6">
@@ -4118,7 +4054,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
           <nav className="flex-1 space-y-1.5 overflow-y-auto hide-scrollbar">
             {[
               { id: 'overview', icon: <LayoutDashboard className="w-[18px] h-[18px]" />, label: t('dashboard') || 'Dashboard' },
-              { id: 'requests', icon: <Inbox className="w-[18px] h-[18px]" />, label: t('requests_orders') || 'Courier Requests & Orders' },
+              { id: 'requests', icon: <Inbox className="w-[18px] h-[18px]" />, label: t('requests_orders') || 'Fleet Requests & Orders' },
               { id: 'finance', icon: <Coins className="w-[18px] h-[18px]" />, label: t('ledger_cod_settling') || 'Platform Wallets & Ledger' },
               { id: 'merchants', icon: <Building2 className="w-[18px] h-[18px]" />, label: t('merchant_directory') || 'Merchant Directory' },
               { id: 'users', icon: <UserCircle2 className="w-[18px] h-[18px]" />, label: t('users_directory') || 'Users Directory' },
@@ -4193,7 +4129,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
               <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900 uppercase">
                 {[
                   { id: 'overview', label: t('dashboard') || 'Dashboard' },
-                  { id: 'requests', label: t('requests_orders') || 'Courier Requests & Orders' },
+                  { id: 'requests', label: t('requests_orders') || 'Fleet Requests & Orders' },
                   { id: 'finance', label: t('ledger_cod_settling') || 'Platform Wallets & Ledger' },
                   { id: 'merchants', label: t('merchant_directory') || 'Merchant Directory' },
                   { id: 'users', label: t('users_directory') || 'Users Directory' },
