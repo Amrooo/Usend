@@ -167,6 +167,10 @@ async function getAuthHeaders(extra?: Record<string, string>): Promise<Record<st
 export const courierIntegrationService = {
   calculateRate: async (courierId: string, params: RateParams) => {
     try {
+      if (courierId === 'noon' || courierId === 'aramex') {
+        throw new Error(`Carrier ${courierId} is no longer supported.`);
+      }
+
       const canonicalPayload = {
         originCity: params.originCity,
         originCountry: params.originCountry,
@@ -211,6 +215,10 @@ export const courierIntegrationService = {
 
   createShipment: async (courierId: string, params: ShipmentParams) => {
     try {
+      if (courierId === 'noon' || courierId === 'aramex') {
+        throw new Error(`Carrier ${courierId} is no longer supported.`);
+      }
+
       // Generate idempotency key for Noon (required; prevents duplicate tasks)
       const idempotencyKey = params.orderId
         ? `usend-${params.orderId}-${courierId}`
