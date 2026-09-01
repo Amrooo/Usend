@@ -15,8 +15,6 @@ proc run_rsync {src dst} {
 puts "=== Syncing dist/ ==="
 run_rsync "dist/" "master_awqbxuyqcq@134.209.28.27:/home/1150801.cloudwaysapps.com/mksqztfeks/public_html/"
 
-puts "=== Syncing usendadmin2026/ ==="
-run_rsync "usendadmin2026/" "master_awqbxuyqcq@134.209.28.27:/home/1150801.cloudwaysapps.com/mksqztfeks/public_html/usendadmin2026/"
 
 puts "=== Syncing functions/server.cjs ==="
 run_rsync "functions/server.cjs" "master_awqbxuyqcq@134.209.28.27:/home/1150801.cloudwaysapps.com/mksqztfeks/public_html/functions/server.cjs"

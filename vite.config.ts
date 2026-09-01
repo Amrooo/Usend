@@ -5,15 +5,14 @@ import {defineConfig, loadEnv} from 'vite';
 
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
-  const isAdmin = process.env.BUILD_TARGET === 'admin';
 
   return {
-    base: isAdmin ? '/usendadmin2026/' : '/',
+    base: '/',
     build: {
-      outDir: isAdmin ? 'usendadmin2026' : 'dist',
+      outDir: 'dist',
       emptyOutDir: true,
       rollupOptions: {
-        input: isAdmin ? path.resolve(__dirname, 'admin.html') : path.resolve(__dirname, 'index.html'),
+        input: path.resolve(__dirname, 'index.html'),
       }
     },
     plugins: [react(), tailwindcss()],
