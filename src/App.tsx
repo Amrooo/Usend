@@ -27,11 +27,7 @@ import MerchantSettings from './screens/merchant/MerchantSettings';
 import MerchantInventory from './screens/merchant/MerchantInventory';
 import MerchantIntegrations from './screens/merchant/MerchantIntegrations';
 import MerchantWallet from './screens/merchant/MerchantWallet';
-import UserDashboard from './screens/user/UserDashboard';
-import UserIndividualOrder from './screens/user/UserIndividualOrder';
-import UserTracking from './screens/user/UserTracking';
-import UserPayments from './screens/user/UserPayments';
-import UserOrders from './screens/user/UserOrders';
+
 import { AlertCircle, Bell, CheckCircle2, Info, LogIn, X, ShieldAlert } from 'lucide-react';
 
 import { AppProvider, useApp } from './context/AppContext';
@@ -206,7 +202,6 @@ export default function App() {
   };
 
   const isMerchantScreen = currentScreen.startsWith('merchant_');
-  const isUserScreen = currentScreen.startsWith('user_');
 
   const isPublicScreen = currentScreen === 'landing_page' || currentScreen === 'about_us' || currentScreen === 'contact_us';
   const isLogin = currentScreen === 'login' || currentScreen === 'hub';
@@ -241,18 +236,6 @@ export default function App() {
               {currentScreen === 'merchant_inventory' && <MerchantInventory key="merchant_inventory" onNavigate={navigate} />}
               {currentScreen === 'merchant_integrations' && <MerchantIntegrations key="merchant_integrations" onNavigate={navigate} />}
               {currentScreen === 'merchant_wallet' && <MerchantWallet key="merchant_wallet" onNavigate={navigate} />}
-            </AnimatePresence>
-          </div>
-        </AuthGuard>
-      ) : isUserScreen ? (
-        <AuthGuard requiredRole="user" onNavigate={navigate}>
-          <div className="min-h-screen bg-zinc-50 text-zinc-900 font-sans transition-colors duration-300 w-full">
-            <AnimatePresence mode="wait" initial={false}>
-              {currentScreen === 'user_dashboard' && <UserDashboard key="user_dashboard" onNavigate={navigate} />}
-              {currentScreen === 'user_individual' && <UserIndividualOrder key="user_individual" onNavigate={navigate} />}
-              {currentScreen === 'user_tracking' && <UserTracking key="user_tracking" onNavigate={navigate} />}
-              {currentScreen === 'user_payments' && <UserPayments key="user_payments" onNavigate={navigate} />}
-              {currentScreen === 'user_orders' && <UserOrders key="user_orders" onNavigate={navigate} />}
             </AnimatePresence>
           </div>
         </AuthGuard>
