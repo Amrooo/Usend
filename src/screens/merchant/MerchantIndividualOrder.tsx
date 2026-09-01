@@ -1237,7 +1237,6 @@ export default function MerchantIndividualOrder({ onNavigate }: MerchantIndividu
                       </div>
                     </div>
                   </div>
-                </div>
 
                 {/* SUMMARY & PAYMENT - RELOCATED DIRECTLY UNDER COURIER SECTION */}
                 <div className="bg-white border border-[#EBEFE9] rounded-[2.5rem] p-6 md:p-8 shadow-[0_8px_30px_rgb(220,225,235,0.45)] space-y-6">
